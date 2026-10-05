@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "repo-market-liquidity"
+version = "0.0.1"
+description = "Phase 3 of repo-market-model: latent reserves and deployable liquidity"
+readme = "README.md"
+license = {file = "LICENSE"}
+authors = [{name = "Eleonora Bjornberg"}]
+requires-python = ">=3.11,<3.12"
+# The parent, pinned to one commit (repo-market-model main at the time this repository was set up).
+# Moving the pin is a reviewed change (docs/decisions/dependencies.md).
+dependencies = [
+  "repo-market-model @ git+https://github.com/eleonorabjornberg/repo-market-model@71ab387e5557cc9ecefb12d1b2bf21d086571388",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
