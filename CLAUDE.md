@@ -1,6 +1,7 @@
 # repo-market-liquidity: standing rules
 
-**DRAFT, proposed by the orchestrating session for Eleonora's review. This file is hers.**
+**This file is Eleonora's** (approved 5 October 2026). A pull request may propose changes to it, and must say so in its
+description.
 
 This repository is Phase 3 of repo-market-model. The parent's rules apply here unless this file says otherwise. Where
 they disagree, the parent's `docs/decisions/` and this repository's `docs/decisions/` decide, and this file is the bug.

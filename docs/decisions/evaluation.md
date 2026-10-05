@@ -1,6 +1,7 @@
 # Decision: how Phase 3 is judged
 
-**DRAFT for Eleonora's review. Not in force until she merges it. No Phase 3 result is computed before it is merged.**
+**Status: decided by Eleonora, 5 October 2026. In force once this record merges.** Every rule below is hers; nothing is a proposal any more.
+No Phase 3 result is computed except under this record.
 
 Ruling (Eleonora, 5 October 2026, on repo-market-model#233, question 4): "Yes, let's do that."
 
@@ -23,16 +24,19 @@ Ruling (Eleonora, 5 October 2026; relayed by the orchestrating session): "Done, 
 - **Only days logged that way are confirmatory evidence.** Live-record days before the freeze are treated like
   2026-01-01 onwards: shown if useful, labelled as seen, never used to claim anything.
 
-## To be fixed here before anything is scored (Eleonora's decision)
+## The comparison, the pass rule and the scoring dates
+
+Ruling (Eleonora, 5 October 2026; relayed by the orchestrating session), accepting the primary comparison, the pass
+rule, the scoring dates and the secondary Brier result as drafted below: "deal".
 
 - **The primary metric is CRPS** (Eleonora, 5 October 2026; relayed by the orchestrating session: "Let's use crps"). Every day
   informs it, where a pressure-day Brier score rests on rare days, and it is the metric of the live record's primary
   result.
-- **The primary comparison.** Proposed: the parent's published predictive distribution of the spread, one day ahead,
+- **The primary comparison.** The parent's published predictive distribution of the spread, one day ahead,
   with and without the latent state, paired by day, CRPS; as-of persistence reported beside it, as in the live record.
   The pressure probability (P(spread > +5 bp), Brier, against calendar climatology and the persistence-logistic model)
   is reported as a secondary result and is not part of the pass rule.
-- **The pass rule.** Proposed, as the parent's final test: mean paired CRPS gain above 0 and its 90%
+- **The pass rule.** As the parent's final test: mean paired CRPS gain above 0 and its 90%
   stationary-bootstrap lower bound above 0; labels "shown better", "not shown", "shown worse".
 - **Splits.** By regime and by pressure-day type, as the parent requires. A pooled figure alone is not a result.
-- **Scoring dates on the live record.** Proposed: as the parent's live record, 2027-04-01 and then each 1 October.
+- **Scoring dates on the live record.** As the parent's live record, 2027-04-01 and then each 1 October.
