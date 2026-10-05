@@ -16,9 +16,20 @@ jobs:
         run: |
           git init -q . && git remote add origin "https://github.com/${GITHUB_REPOSITORY}"
           git fetch -q --depth 1 origin "${GITHUB_SHA}" && git checkout -q FETCH_HEAD
+      # The parent reads its metadata/ relative to its own source tree, so a pip
+      # install from git imports but cannot build the panel. It is checked out
+      # at the pinned commit (PARENT_COMMIT) and installed editable from there;
+      # nothing of it is copied here. tests/test_parent_pin.py checks that the
+      # imported parent is that clean checkout, that pyproject.toml pins the
+      # same commit, and that the panel rebuilds to the published digest.
+      - name: Check out the parent at the pin
+        run: |
+          COMMIT=$(sed -n 's/^PARENT_COMMIT = "\([0-9a-f]*\)"$/\1/p' src/repo_liquidity/__init__.py)
+          git init -q parent && git -C parent remote add origin https://github.com/eleonorabjornberg/repo-market-model
+          git -C parent fetch -q --depth 1 origin "$COMMIT" && git -C parent checkout -q FETCH_HEAD
       - name: Install (Python 3.11 from the runner's tool cache)
         run: |
           PY=$(ls -d /opt/hostedtoolcache/Python/3.11*/x64/bin | tail -1)/python3
-          "$PY" -m venv .venv && .venv/bin/pip install -q -e .
+          "$PY" -m venv .venv && .venv/bin/pip install -q -e ./parent && .venv/bin/pip install -q --no-deps -e .
       - name: Test
-        run: .venv/bin/python -m unittest discover -s tests
+        run: PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -B -m unittest discover -s tests -v

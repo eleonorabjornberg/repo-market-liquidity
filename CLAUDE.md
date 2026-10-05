@@ -27,4 +27,4 @@ they disagree, the parent's `docs/decisions/` and this repository's `docs/decisi
 ## Tests
 
 - Write the test first and watch it fail. Run the full suite in one process before asking for review.
-- CI checks the parent pin and the panel digest.
+- CI checks the parent pin and the panel digest (`tests/test_parent_pin.py`).
