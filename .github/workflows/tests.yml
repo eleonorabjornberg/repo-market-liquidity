@@ -1,0 +1,24 @@
+name: tests
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        run: |
+          git init -q . && git remote add origin "https://github.com/${GITHUB_REPOSITORY}"
+          git fetch -q --depth 1 origin "${GITHUB_SHA}" && git checkout -q FETCH_HEAD
+      - name: Install (Python 3.11 from the runner's tool cache)
+        run: |
+          PY=$(ls -d /opt/hostedtoolcache/Python/3.11*/x64/bin | tail -1)/python3
+          "$PY" -m venv .venv && .venv/bin/pip install -q -e .
+      - name: Test
+        run: .venv/bin/python -m unittest discover -s tests
