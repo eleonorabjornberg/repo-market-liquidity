@@ -15,3 +15,15 @@ need to crowd the model."
   checkout of `PARENT_COMMIT`, that `pyproject.toml` pins the same commit, and that the panel rebuilt from the
   parent's tracked fixtures has the published digest.
 - Python follows the parent's declaration (3.11), so the parent's records reproduce here to the bit.
+
+## statsmodels (approved 6 October 2026)
+
+Ruling (Eleonora, 6 October 2026; relayed by the orchestrating session), on `PLAN.md` D3: "Approve statsmodels now."
+
+- **statsmodels is approved** for Phase 3's state-space models and their estimation (Stage 3 on).
+- **Version:** 0.14.6, the latest release pip resolves for CPython 3.11 on 6 October 2026 (0.15.0 exists but does not
+  install on 3.11). 0.14.6 fixes an import error under numpy 2.4, the version the parent's `ml` extra pins.
+- **It enters `pyproject.toml` when Stage 3 first uses it,** as an optional extra pinned exactly, together with the
+  versions of its own dependencies (scipy, pandas, patsy) that the install resolves; CI installs the same pins. Those
+  transitive pins are recorded here in the same pull request.
+- A figure that moves with statsmodels' version is a figure of record only on the pinned version.

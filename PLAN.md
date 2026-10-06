@@ -99,19 +99,18 @@ observe. Which of them Stage 1 carries, and what each means, is Nicholas's call.
 **A design rule for Stage 3:** collateral scarcity is kept apart from cash scarcity. A security on special signals
 scarce collateral, not scarce cash, so its indicators are observed separately and never read as deployable liquidity.
 
-## Reform dates (proposed, 6 October 2026)
+## Reform dates (Eleonora, 6 October 2026)
 
 The desired buffer is partly regulatory (the parent's `PLAN.md` lists "regulatory liquidity needs"). The parent tracks
 no reform, and its regimes are calendar groups, not reform dates. The confirmatory window crosses three reforms, one
-of them between the two scoring dates. A draft record,
-[`docs/decisions/drafts/reform-dates.md`](docs/decisions/drafts/reform-dates.md), lists the dates with their sources as
-a declared input, fixed before anything is scored. Proposed uses:
+of them between the two scoring dates.
+[`docs/decisions/reform-dates.md`](docs/decisions/reform-dates.md) lists the dates with their sources as a
+declared input, fixed before anything is scored. Uses:
 
 - **Stage 2:** also split the curve at the 2021 and 2023 reforms, and report whether the bend moves at a reform date.
 - **Stage 3:** reforms may enter as declared shifts in the buffer; decided when Stage 3 is designed.
 - **Evaluation:** the confirmatory result is also reported before and after the clearing mandates, reported only and
-  never deciding the verdict. This amends a decided record, so it is drafted for Eleonora in
-  [`docs/decisions/drafts/evaluation-amendment-reform-splits.md`](docs/decisions/drafts/evaluation-amendment-reform-splits.md).
+  never deciding the verdict (amendment in [`docs/decisions/evaluation.md`](docs/decisions/evaluation.md)).
 
 ## Stages
 
@@ -130,12 +129,10 @@ from 2018-04-03.
 | Announced runoff caps | Absent | A new scheduled input from FOMC statements, with evidence per announcement, as the parent's `fed_iorb_announcements` |
 | A bank-size split (for Stage 4) | Absent | Nicholas to name a source |
 
-- **Where the new declarations and parsers live is Eleonora's decision (D1).** Proposed: here, as a registry overlay
-  validated by the parent's own validators (`contract.validate_release_lag`, `asof.validate_scheduled_availability`,
-  `registry.check_availability_provenance`), with Phase 3's parsers and tracked snapshots. The alternative is the
-  parent, switched off; but under the parent's publish rule any change to its `src/`, `metadata/` or
-  `tests/fixtures/snapshots/` makes records scored before it unpublishable, so a change during the final test would
-  stale that test's records.
+- **New declarations and parsers live here** (D1, [`docs/decisions/input-declarations.md`](docs/decisions/input-declarations.md)):
+  a registry overlay validated by the parent's own validators (`contract.validate_release_lag`,
+  `asof.validate_scheduled_availability`, `registry.check_availability_provenance`), with Phase 3's parsers and
+  tracked snapshots. The parent is not changed.
 - **Each new input** gets an availability declaration, a leakage test (`LookAheadError`) and a staleness test
   (`StaleReadError`), each with one recorded mutation that kills it.
 - **The measurement panel** is built by the parent's build over the parent's fixture snapshots plus Phase 3's own. Its
@@ -145,7 +142,7 @@ from 2018-04-03.
 - *Must show:* every input passes the parent's guards and each new guard's mutation is killed; coverage from
   2018-04-03 to 2025-12-31 with every hole and refusal listed, and late-starting inputs shown with the treatment
   Nicholas chose.
-- *Waits on:* Nicholas's answers (issue #1) and D1. No scores, no figures.
+- *Waits on:* Nicholas's answers (issue #1). No scores, no figures.
 
 ### Stage 2: the reserve demand curve (descriptive)
 
@@ -160,10 +157,10 @@ scarce.
 - **Compared with** the parent's satiation band and its sensitivity variants (`scarcity.SENSITIVITY_VARIANTS`).
 - **Window:** 2018-04-03 to 2025-12-31 only. 2026 is held by the parent's lockbox, and describing it before the final
   test would spend the near-blind tier.
-- *Must show:* a bend whose location is stable enough across regimes to be worth modelling. The threshold is
-  Eleonora's (D2). Proposed: every regime with enough days on the scarce side has a 90% kink interval overlapping the
-  pooled interval, and the pooled interval is narrower than the 11–14% range of the parent's sensitivity variants.
-  If it is not shown, Stage 3 is reconsidered before it is designed.
+- *Must show* (D2, [`docs/decisions/stage-2-bend.md`](docs/decisions/stage-2-bend.md)): every regime with enough days on
+  the scarce side has a 90% interval for the bend overlapping the pooled interval, and the pooled interval is narrower
+  than the 11–14% range of the parent's sensitivity variants. If it is not shown, Stage 3 is reconsidered before it is
+  designed.
 
 ### Stage 3: the latent model
 
@@ -175,9 +172,9 @@ scarce.
 - **Estimated by** a Kalman filter if the Stage 2 curve allows a linear-Gaussian form, otherwise a non-linear filter.
 - **Two leakage rules for filters:** a forecast uses filtered estimates only, never smoothed ones; and parameters are
   fitted on the training prefix at each refit (`asof.refit_blocks`).
-- **Packages are Eleonora's decision (D3).** Proposed: start with a filter written on numpy, which the parent's `ml`
-  extra already pins, so no new package is needed; a state-space or probabilistic-programming library only if the
-  design requires it, recorded in `docs/decisions/dependencies.md` first.
+- **Package** (D3, [`docs/decisions/dependencies.md`](docs/decisions/dependencies.md)): statsmodels 0.14.6 is approved for
+  the state-space model and its estimation; it enters `pyproject.toml`, pinned with its own dependencies, when Stage 3
+  first uses it.
 - *Must show:* filtered intervals stable across refits, and a stated sensitivity of the state to the form of the
   Stage 2 curve.
 - **The freeze:** at the end of Stage 3 the model is frozen by a declaration checksum, as the parent freezes its final
@@ -216,18 +213,21 @@ Under [`docs/decisions/evaluation.md`](docs/decisions/evaluation.md):
 - **Provenance.** Every Phase 3 record carries this repository's commit and whether its tree was modified, the parent
   pin, the parent panel digest and the Phase 3 panel digest.
 - **Publishing.** A draft rule for this repository is in
-  [`docs/decisions/drafts/publish-rule.md`](docs/decisions/drafts/publish-rule.md), for Eleonora's decision (D4).
+  [`docs/decisions/publish-rule.md`](docs/decisions/publish-rule.md) (D4).
 - **Reproducibility.** Figures of record are computed on Python 3.11 with the parent's pinned numpy and scikit-learn.
   Development may run on the Mac; a published figure is reproduced in CI before it is published.
 
-## Decisions for Eleonora
+## Decisions (Eleonora, 6 October 2026)
 
-- **D1.** Where Phase 3's new inputs are declared and parsed: here, as an overlay (proposed), or in the parent.
-- **D2.** Stage 2's "stable enough" threshold: the proposal above, or another.
-- **D3.** Stage 3's numerics: a numpy filter with no new package (proposed), or a library now.
-- **D4.** The publish rule for this repository (draft).
-- **D5.** The reform dates as a declared input (draft), and the reported-only reform splits in the evaluation (draft
-  amendment).
+- **D1.** New inputs are declared and parsed here, as an overlay checked by the parent's validators:
+  [`docs/decisions/input-declarations.md`](docs/decisions/input-declarations.md).
+- **D2.** Stage 2's bar is the proposed rule: [`docs/decisions/stage-2-bend.md`](docs/decisions/stage-2-bend.md).
+- **D3.** statsmodels is approved, pinned at 0.14.6: [`docs/decisions/dependencies.md`](docs/decisions/dependencies.md).
+- **D4.** The publish rule: [`docs/decisions/publish-rule.md`](docs/decisions/publish-rule.md).
+- **D5.** The reform dates are a declared input ([`docs/decisions/reform-dates.md`](docs/decisions/reform-dates.md)),
+  and the confirmatory result is also reported split at the clearing mandates (amendment to `evaluation.md`).
+
+Each is in force once its record merges.
 
 ## Open questions for Nicholas Beroud (data meaning, issue #1)
 
