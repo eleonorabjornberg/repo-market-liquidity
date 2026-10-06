@@ -193,19 +193,21 @@
       "publication": "New York Fed repo operation results (temporary open market operations, 2019-09-17 to 2021-07-28): the Desk publishes a summary of results after each operation, at no stated clock time. 16:00 ET on the next business day is the conservative availability instant declared here."
     },
     "coverage": [
-      "Temporary overnight and term repo amounts accepted by the Desk, per operation date, 2019-09-17 to 2021-07-28"
+      "Temporary overnight and term repo amounts accepted by the Desk, per operation date, and term repos outstanding per weekday, 2019-09-17 to 2021-07-28"
     ],
     "field_frequencies": {
       "temp_repo_take_up": "business_daily",
+      "temp_repo_term_outstanding": "business_daily",
       "temp_repo_term_take_up": "business_daily"
     },
     "fields": [
       "temp_repo_take_up",
+      "temp_repo_term_outstanding",
       "temp_repo_term_take_up"
     ],
     "frequency": "business daily",
     "identities": [],
-    "limitation": "temp_repo_take_up is totalAmtAccepted summed over every operation of an operationDate whose operationType is 'Repo' and term 'Overnight'; temp_repo_term_take_up the same for term 'Term'; both in USD billions, from 2019-09-17 to 2021-07-28, leaving out small-value exercises (repo_liquidity.fed_repo). A day the Desk operated and nothing was taken is 0.0. Read from the unmodified search responses under tests/fixtures/snapshots/nyfed_temp_repo/, saved by scripts/fetch_temp_repo.py. Whether term repos count as take-up is Nicholas's question 14 (issue #1); until he answers, the take-up is overnight and term is kept beside it. docs/decisions/data-meaning.md, answer 5; docs/stages/stage-1a-correction.md, item 2.",
+    "limitation": "temp_repo_take_up is totalAmtAccepted summed over every operation of an operationDate whose operationType is 'Repo' and term 'Overnight'; temp_repo_term_take_up the same for term 'Term'; temp_repo_term_outstanding is the term repos settled on or before each weekday and maturing after it (settlementDate, maturityDate); all in USD billions, from 2019-09-17 to 2021-07-28, leaving out small-value exercises (repo_liquidity.fed_repo). A day the Desk operated and nothing was taken is 0.0. Read from the unmodified search responses under tests/fixtures/snapshots/nyfed_temp_repo/, saved by scripts/fetch_temp_repo.py. Nicholas's answer to question 14 (issue #1): take-up is overnight plus term outstanding; the material-use event counts each operation on its operation date, overnight and term alike; in 2019-20 the Fed set term offering sizes, partly for year-end, so take-up reflects its design as well as demand. docs/decisions/data-meaning.md, answers 5 and 14; docs/stages/stage-1a-correction.md, item 2.",
     "provider": "Federal Reserve Bank of New York",
     "release_lag": {
       "available_time": "16:00",

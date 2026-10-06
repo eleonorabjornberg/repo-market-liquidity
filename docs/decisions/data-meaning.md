@@ -1,4 +1,4 @@
-# Decision: data meaning for Phase 3, questions 1 to 13
+# Decision: data meaning for Phase 3, questions 1 to 14
 
 **Status: decided by Nicholas Beroud, 6 October 2026, on issue #1** ([his answer](https://github.com/eleonorabjornberg/repo-market-liquidity/issues/1#issuecomment-6020655371)).
 In force once this record merges. Under the parent's `PLAN.md` the choice of data and its meaning are his. Where he
@@ -22,6 +22,7 @@ as she asked. This record summarizes him. His comment on issue #1 is the authori
 | 11 | Reforms | **The SLR exclusion ending (2021-03-31) is the most material to banks' desired reserves.** The SRF and IORB change (2021-07-29) matters much less: banks do not treat the facility as a substitute for their own reserves. The others are second-order, though the BTFP marks precautionary hoarding after SVB. **Mandatory repo clearing (2027-06-30) is a measurement break in SOFR volume and dispersion.** |
 | 12 | ON RRP take-up | **Use the rate gap, not the level: TGCR minus the ON RRP rate.** Near zero, cash is abundant and parked at the Fed; well above, money funds lend in the market and the buffer is gone. Take-up stays only as the "buffer present or gone" flag (parent #232). |
 | 13 | Facility take-up | **Material use at $1bn or more, fixed in advance, as an event the model should explain.** Small take-ups are operational test trades. The amount is not modelled. The continuous input stays the distance from SOFR to the facility's rate. |
+| 14 | 2019–21 term repos (asked 6 October 2026; [his answer](https://github.com/eleonorabjornberg/repo-market-liquidity/issues/1#issuecomment-6021810713)) | **Option (c), with one addition.** Take-up counts each term repo as an amount outstanding from settlement to maturity, because its cash stays in the system for its term. The material-use event ($1bn or more) counts each operation on its operation date, overnight and term alike, because that is when the demand showed. **Caveat:** in 2019–20 the Fed set the term offering sizes, partly to cover year-end, so take-up reflects the Fed's design as well as market demand. The two May 2019 tests stay out. |
 
 ## Ownership: the MBS scenario (Eleonora, 6 October 2026)
 
@@ -40,7 +41,7 @@ and its scenarios are his. The realized MBS change (answer 1) is the input it bu
 - **Question 5, the 2019 to 2021 repo operations: checked.** The NY Fed's operation results (the endpoint of the parent's
   `nyfed_srf`) show the Desk's repo operations from 2019-09-17, overnight and term, through 2020 into 2021, until
   2021-07-28. The two repo operations of May 2019 ($65m each) were tests. Saved under
-  `tests/fixtures/snapshots/nyfed_temp_repo/`. Whether term repos count as take-up is question 14, open on issue #1.
+  `tests/fixtures/snapshots/nyfed_temp_repo/`. Term repos count as an amount outstanding over their term (answer 14).
 
 ## What this changes (each is a later piece of work, planned before it is built)
 

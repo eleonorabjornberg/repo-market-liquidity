@@ -71,6 +71,8 @@ class TemporaryRepoDeclarationTests(unittest.TestCase):
             obs for term, series in (("Overnight", fed_repo.SERIES), ("Term", fed_repo.TERM_SERIES))
             for obs in fed_repo.observations(fed_repo.daily_take_up(operations, term=term), series=series,
                                              source_sha=sha)]
+        cls.observations += fed_repo.observations(fed_repo.term_outstanding(operations),
+                                                  series=fed_repo.TERM_OUTSTANDING_SERIES, source_sha=sha)
 
     @classmethod
     def tearDownClass(cls):
@@ -97,8 +99,8 @@ class EndToEndTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.tmp = tempfile.TemporaryDirectory()
-        cls.path = pathlib.Path(cls.tmp.name) / "phase3_panel_v2.csv"
-        cls.manifest = panel.build(cls.path, version=2)
+        cls.path = pathlib.Path(cls.tmp.name) / "phase3_panel_v3.csv"
+        cls.manifest = panel.build(cls.path, version=3)
         from repo_model.data import load_daily_panel
 
         cls.rows = load_daily_panel(cls.path)
@@ -131,6 +133,17 @@ class EndToEndTests(unittest.TestCase):
             info = rule.information_set(dates, 1500)
             read = next(r for r in info.reads if r.feature == "soma_treasury_weekly_change")
             moved = info._replace(reads=tuple(r._replace(row=r.row + 1) if r is read else r for r in info.reads))
+            with self.assertRaises(LookAheadError):
+                rule.check(dates, moved)
+
+    def test_an_effr_read_moved_one_row_later_is_leakage(self):
+        """The parent's guard on an input Stage 1b switches on (`effr`, the parent's own `nyfed_effr` declaration)."""
+        dates = [row.date for row in self.rows]
+        with declaration.phase3_declaration():
+            rule = InformationRule(declaration.registry(), ["effr"], decision_time=time(16, 0))
+            info = rule.information_set(dates, 1500)
+            moved = info._replace(reads=tuple(r._replace(row=r.row + 1) if r.feature == "effr" else r
+                                              for r in info.reads))
             with self.assertRaises(LookAheadError):
                 rule.check(dates, moved)
 
