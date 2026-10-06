@@ -12,7 +12,8 @@ directive, those win and this file is stale. Update it at the end of each sessio
 | 1a: the inputs already ruled on | Merged (#6) | `metadata/sources_phase3.json`, `src/repo_liquidity/{declaration,h41,scheduled,panel}.py`, `metadata/phase3_panel_manifest.json` |
 | 1b: the indicator families (questions 7 to 10) | **Not started: waits on Nicholas (issue #1)** | `PLAN.md`, Stage 1 |
 | 2: the reserve demand curve | Merged (#7) | `src/repo_liquidity/demand_curve.py`, `results/stage2/`, `docs/decisions/stage-2-bend.md` |
-| 3: the latent buffer | **On the branch, in review: not shown** | `docs/stages/stage-3.md`, `src/repo_liquidity/latent.py`, `scripts/stage3_latent.py`, `results/stage3/latent.json` |
+| 3: the latent buffer | Merged (#8): **not shown** | `docs/stages/stage-3.md`, `src/repo_liquidity/latent.py`, `scripts/stage3_latent.py`, `results/stage3/latent.json` |
+| 3b: the buffer on a fixed curve | **In review: benchmark shown, stability not shown** | `docs/stages/stage-3b.md`, `src/repo_liquidity/anchored.py`, `scripts/stage3b_anchored.py`, `results/stage3b/anchored.json` |
 | 4, 5: evaluation, the frozen daily log | Not started. Stage 4 needs a frozen Stage 3 model | `PLAN.md`, `docs/decisions/evaluation.md` |
 
 ## Stage 2, in one paragraph
@@ -69,9 +70,33 @@ Two refits did not report convergence. The record counts them and keeps their pa
 
 Any of these changes the directive, so it needs a new directive written before the fit is rerun.
 
+## Stage 3b: what the run showed
+
+Eleonora chose option 1 with 3 from the diagnosis, with 2 as a sensitivity and 4 put to Nicholas (questions 12 and 13
+on issue #1). The directive is `docs/stages/stage-3b.md`, written before the fit.
+
+- **Benchmark: shown.** On the walk-forward path the 2025 buffer is 7.6 points above 2018 to March 2020, 90% interval
+  [2.9, 12.3]. On the full-window fit it is 3.3 points above, [2.8, 3.7]: about 9% then, 12 to 13% in 2025.
+- **Stability: not shown.** Almost every breach comes from one refit transition, 2022-10-19 to 2022-11-18. Before it,
+  28 of 32 refits did not converge, and the warm-started chain sat at an initial buffer near 4%. From 2022-11-18 on,
+  every refit converges near 9.4%, and only a few days breach the bar. The walk-forward's 2018 to 2020 level (about
+  5%) comes from that stuck chain, which is why its shift is larger than the full window's.
+- **What the shift rests on:**
+  - With drift held at 0 (option 2), there is no shift, but that fit is much worse (log-likelihood −8130 against
+    −7333).
+  - At `s = 0.002` there is no shift either; at `s = 0.01` there is (+3.2 points).
+  - The rise comes in late 2022, as reserves fell back toward the buffer, not at a reform date.
+  - From 2020 to 2022 reserves were plentiful and the buffer cannot be seen: its standard deviation grows to about 5
+    points.
+  - The drift sits at its bound in every fit.
+- **Possible next steps, Eleonora's call:**
+  - refit from several fresh starts at each refit rather than warm-starting, so that the chain cannot stay stuck;
+  - or start the walk-forward once the fit is identified, and state why;
+  - either one changes the directive before any rerun.
+
 ## Waiting on others
 
-- **Nicholas (issue #1):** questions 1 to 11 are unanswered. Questions 1 to 5 have Eleonora's preliminary rulings
+- **Nicholas (issue #1):** questions 1 to 13 are unanswered (12 and 13, on ON RRP and facility take-up, were added after Stage 3). Questions 1 to 5 have Eleonora's preliminary rulings
   (`docs/decisions/data-meaning-preliminary.md`). Stage 1b waits on questions 7 to 10.
 - **Eleonora, two possible reform dates found while building, not yet in `reform-dates.md`:** the standing repo
   facility moved to a fixed rate and dropped its aggregate limit on 2025-12-10, and reserve-management bill purchases
