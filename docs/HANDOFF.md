@@ -96,7 +96,7 @@ on issue #1). The directive is `docs/stages/stage-3b.md`, written before the fit
 
 ## Waiting on others
 
-- **Nicholas (issue #1):** questions 1 to 13 are unanswered (12 and 13, on ON RRP and facility take-up, were added after Stage 3). Questions 1 to 5 have Eleonora's preliminary rulings
+- **Nicholas (issue #1) answered questions 1 to 13 on 6 October 2026**, recorded in `docs/decisions/data-meaning.md`, which also lists the work it creates (Stage 1a corrections, Stage 1b's first wave). Questions 1 to 5 have Eleonora's preliminary rulings
   (`docs/decisions/data-meaning-preliminary.md`). Stage 1b waits on questions 7 to 10.
 - **Eleonora, two possible reform dates found while building, not yet in `reform-dates.md`:** the standing repo
   facility moved to a fixed rate and dropped its aggregate limit on 2025-12-10, and reserve-management bill purchases
