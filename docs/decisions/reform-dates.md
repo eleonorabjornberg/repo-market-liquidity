@@ -53,3 +53,21 @@ the model already reads through the reserves ratio and the weekly H.4.1 change. 
 buffer, so a declared jump on that date would let the model treat a supply change as a demand shift.
 
 Whether the facility change is material to the buffer is Nicholas's call (issue #1, question 11).
+
+## Amendment, 6 October 2026: materiality (Nicholas Beroud)
+
+Nicholas answered question 11 on 6 October 2026 (`docs/decisions/data-meaning.md`). Eleonora asked for it to be built
+in. The list and its dates are unchanged; this records how material each reform is to banks' desired buffer.
+
+| Reform | Materiality to the desired buffer | Where it is used |
+|---|---|---|
+| 2021-03-31, the SLR exclusion ends | **Most material.** Reserves counted against leverage limits again, banks pushed deposits out to money funds, and the ON RRP ballooned. | Stage 3b reports jumps at this date alone (amendment 2) beside the main jump set |
+| 2021-07-29, the standing repo facility and IORB | Much less: banks do not treat the facility as a substitute for their own reserves | In the main jump set |
+| 2025-12-11, the facility at a fixed rate | Minor, by the same reasoning (he did not address it directly) | A Stage 3b sensitivity only |
+| 2023-03-12, the BTFP | Second-order, but it marks precautionary hoarding after SVB | In the main jump set |
+| 2023-07-12, money fund reform; 2023-12-13, the Treasury clearing rule; 2026-04-01, eSLR; the GENIUS Act | Second-order | In the main jump set (the dev-window dates) or the live filter |
+| 2027-06-30, mandatory clearing of Treasury repo | **A measurement break**, not a buffer shift: uncleared bilateral repo enters SOFR, so volume jumps and dispersion may change | The dispersion head is re-estimated after it, never read across it (`docs/stages/stage-3b.md`, amendment 2) |
+
+The main jump set stays as Stage 3b declared it before any fit. Changing it now, after seeing results, would be choosing
+a model by its answer. His ranking enters as the SLR-only sensitivity and as the measurement break. Promoting the
+SLR-only set to the main model is Eleonora's call, and would be declared before the next fit.

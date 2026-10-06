@@ -23,6 +23,12 @@ as she asked. This record summarizes him. His comment on issue #1 is the authori
 | 12 | ON RRP take-up | **Use the rate gap, not the level: TGCR minus the ON RRP rate.** Near zero, cash is abundant and parked at the Fed; well above, money funds lend in the market and the buffer is gone. Take-up stays only as the "buffer present or gone" flag (parent #232). |
 | 13 | Facility take-up | **Material use at $1bn or more, fixed in advance, as an event the model should explain.** Small take-ups are operational test trades. The amount is not modelled. The continuous input stays the distance from SOFR to the facility's rate. |
 
+## Ownership: the MBS scenario (Eleonora, 6 October 2026)
+
+**Nicholas owns the MBS "clog" scenario**, as he asked: the balance sheet's MBS runoff and reinvestment, and the tail
+case of active MBS sales draining reserves and hitting mortgage and mREIT repo funding. Its narrative, its data meaning
+and its scenarios are his. The realized MBS change (answer 1) is the input it builds on.
+
 ## Checked against our sources (6 October 2026)
 
 - **Question 1, the reinvestment regime: confirmed.** The FOMC implementation note of 29 October 2025 says: "Beginning on

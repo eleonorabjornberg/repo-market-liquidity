@@ -123,6 +123,17 @@ Stage 1 is built in two parts (Eleonora, 6 October 2026):
   `scripts/build_panel.py` into a measurement panel whose manifest is `metadata/phase3_panel_manifest.json`.
 - **Stage 1b, the indicator families (questions 7 to 10):** written once Nicholas has answered.
 
+**Nicholas answered questions 1 to 13 on 6 October 2026** (`docs/decisions/data-meaning.md`). Two more pieces follow,
+each planned before it is built (Eleonora, 6 October 2026):
+
+- **Stage 1a correction** (`docs/stages/stage-1a-correction.md`): the realized weekly MBS change beside the Treasury
+  change; the Fed's 2019 to 2021 repo operations as take-up from a different facility; a structural zero before
+  2019-09-17; and the facility's material-use event ($1bn or more).
+- **Stage 1b, first wave** (`docs/stages/stage-1b.md`): pricing and the Fed's facilities, as Nicholas set out.
+
+**Nicholas owns the MBS scenario** (the balance sheet's MBS runoff, reinvestment and the active-sales tail), as he asked
+and Eleonora agreed on 6 October 2026.
+
 
 **Goal:** a Phase 3 measurement panel in which every input is read only as it was public at the decision instant,
 from 2018-04-03.
