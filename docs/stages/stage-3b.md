@@ -1,0 +1,72 @@
+# Stage 3b directive: the buffer on a fixed curve
+
+**Written 6 October 2026, before any Stage 3b model was fitted.** Eleonora chose it on 6 October 2026 from
+`docs/stages/stage-3-diagnosis.md`: "1 with 3, then 2 as a sensitivity, with 4 put to Nicholas". Stage 3
+(`docs/stages/stage-3.md`, #8) was not shown. The diagnosis found the buffer could not be identified apart from the
+curve's slope and intercept. It also found that ON RRP and facility take-up measure other things, and that the drift
+absorbed calendar noise.
+
+## The model
+
+- **State:** the desired buffer `B_t` in units of the reserves ratio, as in Stage 3. It is carried as
+  `z_t`, with `B_t = 0.30 * logistic(z_t)`, so the buffer stays between 0 and 30% of bank assets.
+- **Transition:** `z_t = z_{t-1} + eta_t`, with `eta_t ~ N(0, q)` each business day and variance `q + j` on a reform
+  date. The dates are the same as Stage 3's: 2021-03-31, 2021-07-29, 2023-03-12, 2023-07-12 and 2023-12-13.
+- **Scarcity:** `g_t = s * log(1 + exp((B_t - x_t) / s))`, with `s = 0.005`, as in Stage 3.
+- **Two observation heads,** each `y = a + b * g_t + c_type + e`, with `e ~ N(0, r)`:
+  1. **The corridor position, on a fixed curve.** Its `a` and `b` are not estimated. They are the intercept and slope
+     of Stage 2's broken-stick fit on 2018 to 13 March 2020 (`results/stage2/demand_curve.json`, `revised_test`,
+     episode "2018 to March 2020": intercept 1.057938, slope 133.2055 per unit). Stage 2's hinge `max(kink - x, 0)` is
+     the limit of `g` as `s` goes to 0, so `B` is the curve's kink. Only `r` and the calendar terms are estimated.
+  2. **SOFR dispersion** (75th minus 25th percentile, bp), with `a`, `b` and `r` estimated.
+- **Calendar terms (option 3):** each head has an additive term for the day's pressure-day type, by the parent's
+  declaration (`metadata/evaluation_splits.json`, read with `evaluation_splits.load_split_declaration`): quarter-end,
+  month-end (two calendar days or fewer before it, as declared there) or tax date, with ordinary days at 0. That
+  declaration is provisional in the parent; Stage 3b uses it as it stands at the pin. A day's type is calendar
+  knowledge, public in advance.
+- **ON RRP and facility take-up (option 4)** are not in the state. Their monthly medians are reported beside the
+  buffer. How they should be measured before they can re-enter is put to Nicholas on issue #1.
+- **Estimation:** an extended Kalman filter, linearized in `z`. The parameters are `q`, `j`, the initial buffer, the
+  corridor's `r`, the dispersion head's `a`, `b` and `r`, and the calendar terms. They are fitted by maximum
+  likelihood with statsmodels, as in Stage 3. Bounds: drift standard deviation at most 0.03 in `z` (about 0.2 points
+  of the ratio per day near a 10% buffer), and jump standard deviation at most 0.75 in `z` (about 5 points).
+
+## Information
+
+- **The fixed curve uses data to 2020-03-13**, so no refit may be dated earlier. A guard refuses a refit whose cutoff
+  precedes the curve's last day (`LookAheadError`).
+- **The walk-forward:** the first refit is at 2020-03-13, then one every 21 business days to 2025-12-31.
+- **The first refit's filter covers 2018 to 13 March 2020,** so that period is in-sample by construction and is also
+  the curve's training window. Every later day is filtered with parameters fitted before it.
+- **The forecast for day T** uses the filter through T − 2, filtered and never smoothed, as in Stage 3. The parent's
+  lockbox holds 2026.
+
+## What Stage 3b must show (unchanged from Stage 3)
+
+1. **Stability.** For every date both refits cover, the filtered buffer from one walk-forward refit and the next
+   differs by less than **0.5 points** of the reserves ratio.
+2. **The like-for-like benchmark.** The mean filtered buffer over 2025 minus its mean over 2018 to 13 March 2020 is
+   positive, with a 90% interval above 0. The interval combines the filter's own state variances, mapped from `z` to
+   `B`, taken as perfectly correlated within each period, and stated in the record.
+3. **Reported beside them, full window, not judged:**
+   - `s = 0.002` and `s = 0.01`;
+   - jumps only at the legal breaks (2021-03-31, 2023-03-12);
+   - **option 2:** drift held at 0, so the buffer moves only at reform dates;
+   - no calendar terms, to show what option 3 does.
+
+If 1 or 2 fails, the pull request says so plainly and nothing is frozen. If both hold, the model is frozen by checksum,
+and Stage 5a's daily log can start once Eleonora merges.
+
+## Known limits, stated before the fit
+
+- The fixed curve's flat level (1.06) is 2018 to 2019's. In 2021 to 2022 the corridor position sat near 0 at the floor.
+  The corridor head cannot fit those days, and they show up as a large corridor `r`. The dispersion head carries the
+  buffer there.
+- Stage 2's 2025 curve is flatter (slope 60). On a fixed 2018 curve, part of any shift may be a change in shape, not
+  in position.
+- The benchmark interval ignores parameter uncertainty, as in Stage 3.
+
+## Not in Stage 3b
+
+Nothing is scored (that is Stage 4) and nothing is published. No Stage 1b input is used. The merged Stage 3 record is
+not edited.
