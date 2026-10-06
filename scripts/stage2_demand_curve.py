@@ -34,7 +34,8 @@ def compute():
     with tempfile.TemporaryDirectory() as tmp:
         path = Path(tmp) / "phase3_panel.csv"
         manifest = panel.build(path)
-        days = dc.sample(load_daily_panel(path))
+        rows_cache = load_daily_panel(path)
+        days = dc.sample(rows_cache)
     splits = load_split_declaration(parent_root() / "metadata" / "evaluation_splits.json")
 
     regimes = {}
@@ -63,6 +64,51 @@ def compute():
     tail = dc.describe([dc.Day(d.day, d.ratio, d.p75_spread_bp, None, d.on_rrp_bn) for d in tail_days],
                        "p75 pooled")
 
+    # Diagnosis (6 October 2026): why the decided rule returned "not shown". Descriptive; decides nothing.
+    from statistics import median
+    from repo_liquidity import scheduled
+
+    floors = scheduled.load_on_rrp_rates()
+    values = {row.date: row.values for row in rows_cache}
+    diagnosis = {"by_regime": {}, "note": "Descriptive only; written after the decided rule returned not shown."}
+    for label in splits.regime_labels:
+        group = [d for d in days if splits.regime(d.day) == label]
+        if not group:
+            continue
+        abundant = [d.spread_bp for d in group if d.ratio >= 0.15]
+        ordinary = [d for d in group if splits.day_type(values[d.day]) == "ordinary"]
+        corridor = sorted({round(100 * (values[d.day]["iorb"] - scheduled.rate_in_force(floors, d.day))) for d in group})
+        try:
+            ordinary_kink = dc.fit_broken_stick([d.ratio for d in ordinary], [d.spread_bp for d in ordinary]).kink
+        except ValueError:
+            ordinary_kink = None
+        diagnosis["by_regime"][label] = {
+            "abundant_days_ratio_15pct_or_more": len(abundant),
+            "abundant_median_spread_bp": median(abundant) if abundant else None,
+            "corridor_iorb_minus_on_rrp_bp": corridor,
+            "kink_ordinary_days_only": ordinary_kink,
+            "share_of_days_sofr_above_iorb": round(sum(d.spread_bp > 0 for d in group) / len(group), 4),
+            "logistic_midpoint_p_above_iorb": dc.logistic_midpoint([d.ratio for d in group],
+                                                                   [1 if d.spread_bp > 0 else 0 for d in group]),
+        }
+
+    # The revised test (post-hoc): corridor position, two episodes, 60 scarce days (stage-2-bend.md amendment).
+    episodes, data, members = {}, {}, {}
+    for label, start, end in dc.EPISODES:
+        group = [d for d in days if start <= d.day <= end and d.corridor is not None]
+        entry = dc.describe(group, f"episode {label}", outcome="corridor")
+        entry["eligible"] = entry["scarce_days"] >= dc.MIN_SCARCE_DAYS_REVISED
+        episodes[label] = entry
+        data[label] = ([d.ratio for d in group], [d.corridor for d in group])
+        members[label] = group
+    labels = [label for label, _, _ in dc.EPISODES]
+    revised_verdict = dc.revised_verdict({label: {"eligible": e["eligible"], "interval": tuple(e["kink_interval_90"])}
+                                          for label, e in episodes.items()})
+    shift = {
+        "point": round(episodes[labels[1]]["fit"]["kink"] - episodes[labels[0]]["fit"]["kink"], 6),
+        "interval_90": list(dc.shift_interval(data[labels[0]], data[labels[1]], seed=dc.seed_for("shift"))),
+    }
+
     return {
         "stage": "2",
         "what": "Descriptive. The spread SOFR - IORB (bp) on day T against reserves / bank assets known at T's "
@@ -85,6 +131,18 @@ def compute():
         "regimes": regimes,
         "verdict": verdict,
         "reported_only": {"on_rrp_buffer": buffer, "reform_periods": reforms, "p75_spread": tail},
+        "diagnosis": diagnosis,
+        "revised_test": {
+            "post_hoc": True,
+            "rule": "docs/decisions/stage-2-bend.md, amendment of 6 October 2026",
+            "outcome": "(SOFR - ON RRP rate) / (IORB - ON RRP rate), the ON RRP rate in force on the day",
+            "min_scarce_days": dc.MIN_SCARCE_DAYS_REVISED,
+            "episodes": episodes,
+            "verdict": revised_verdict,
+            "shift": shift,
+            "same_ratio_comparison": dc.overlap_comparison(members[labels[0]], members[labels[1]],
+                                                           seed=dc.seed_for("overlap")),
+        },
     }
 
 
@@ -102,7 +160,8 @@ def main(argv=None):
         return 0
     RECORD.parent.mkdir(parents=True, exist_ok=True)
     RECORD.write_text(text, encoding="utf-8")
-    print(json.dumps(record["verdict"], indent=2))
+    print(json.dumps({"decided_rule": record["verdict"], "revised_post_hoc": record["revised_test"]["verdict"],
+                      "shift": record["revised_test"]["shift"]}, indent=2))
     return 0
 
 

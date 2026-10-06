@@ -71,6 +71,44 @@ def main():
         xs = [X0, k, X1]
         pts = " ".join(f"{sx(x):.1f},{sy(a + b * max(k - x, 0)):.1f}" for x in xs)
         parts.append(f'<polyline class="fit l{slot}" points="{pts}"/>')
+    rev = record["revised_test"]
+    cy0, cy1 = -0.5, 3.0
+
+    def cy(y):
+        return T + (cy1 - min(max(y, cy0), cy1)) / (cy1 - cy0) * (H - T - B)
+
+    second = []
+    for i in range(8):
+        y = cy0 + i * 0.5
+        second.append(f'<line class="grid" x1="{L}" x2="{W-R}" y1="{cy(y):.1f}" y2="{cy(y):.1f}"/>'
+                      f'<text class="axis" x="{L-8}" y="{cy(y)+4:.1f}" text-anchor="end">{y:.1f}</text>')
+    for i in range(14):
+        x = X0 + i * 0.01
+        second.append(f'<text class="axis" x="{sx(x):.1f}" y="{H-B+18}" text-anchor="middle">{x*100:.0f}%</text>')
+    for y, name in ((0, "floor (ON RRP rate)"), (1, "IORB")):
+        second.append(f'<line class="zero" x1="{L}" x2="{W-R}" y1="{cy(y):.1f}" y2="{cy(y):.1f}"/>'
+                      f'<text class="note" x="{W-R-4}" y="{cy(y)-4:.1f}" text-anchor="end">{name}</text>')
+    episode_labels = [label for label, _, _ in dc.EPISODES]
+    for slot, (label, start, end) in enumerate(dc.EPISODES):
+        for d in days:
+            if start <= d.day <= end and d.corridor is not None:
+                title = html.escape(f"{d.day}: ratio {d.ratio*100:.2f}%, corridor position {d.corridor:.2f}")
+                second.append(f'<circle class="s{slot}" cx="{sx(d.ratio):.1f}" cy="{cy(d.corridor):.1f}" r="2.5">'
+                              f'<title>{title}</title></circle>')
+        e = rev["episodes"][label]
+        k, a, b = e["fit"]["kink"], e["fit"]["intercept"], e["fit"]["slope_per_unit"]
+        lo, hi = e["ratio_range"]
+        pts = " ".join(f"{sx(x):.1f},{cy(a + b * max(k - x, 0)):.1f}" for x in (lo, min(max(k, lo), hi), hi))
+        second.append(f'<polyline class="fit l{slot}" points="{pts}"/>')
+        ilo, ihi = e["kink_interval_90"]
+        second.append(f'<rect class="band" x="{sx(ilo):.1f}" y="{T}" width="{sx(ihi)-sx(ilo):.1f}" height="{H-T-B}"/>')
+    second_legend = "".join(
+        f'<span class="key"><svg width="12" height="12"><circle class="s{i}" cx="6" cy="6" r="5"/></svg>'
+        f'{html.escape(label)}: bend {rev["episodes"][label]["fit"]["kink"]*100:.2f}% '
+        f'({rev["episodes"][label]["kink_interval_90"][0]*100:.2f}% to {rev["episodes"][label]["kink_interval_90"][1]*100:.2f}%)</span>'
+        for i, label in enumerate(episode_labels))
+    rv = rev["verdict"]
+    shift = rev["shift"]
     legend = "".join(
         f'<span class="key"><svg width="12" height="12"><circle class="s{i}" cx="6" cy="6" r="5"/></svg>'
         f'{html.escape(label)}</span>' for i, label in enumerate(labels))
@@ -97,6 +135,7 @@ circle:hover{{opacity:1;stroke:var(--ink);stroke-width:1.5}} .fit{{fill:none;str
 td,th{{padding:4px 10px;border-bottom:1px solid var(--grid);text-align:left}} .muted{{color:var(--muted)}}
 </style></head><body>
 <h1>Stage 2: the reserve demand curve</h1>
+<h2>Decided rule: SOFR &minus; IORB, five regimes</h2>
 <p class="muted">SOFR minus IORB (bp) on each day from {record['settings']['window'][0]} to {record['settings']['window'][1]},
 against reserves over commercial-bank assets known at that day's 4 pm decision instant. Lines: each regime's
 broken-stick fit. Shaded: the pooled bend's 90% interval. Descriptive only; not published.</p>
@@ -111,6 +150,31 @@ pooled interval width {v['pooled_width']*100:.2f} points ({'under' if v['pooled_
 <text class="axis" x="14" y="{T+(H-T-B)/2}" transform="rotate(-90 14 {T+(H-T-B)/2})" text-anchor="middle">SOFR - IORB, bp</text>
 </svg>
 <p class="muted">Spreads outside {Y0:+.0f} to {Y1:+.0f} bp are drawn at the edge. Hover a point for its date.</p>
+<h2>Revised test (post-hoc): SOFR measured from the floor, two scarce episodes</h2>
+<p class="muted">Outcome: (SOFR &minus; ON RRP rate) / (IORB &minus; ON RRP rate), 0 on the floor and 1 at IORB.
+Written in docs/decisions/stage-2-bend.md (amendment of 6 October 2026) after the decided rule returned not shown.
+Shaded: each episode's 90% interval for its bend; each line is drawn only over the ratios its episode saw.</p>
+<p><strong>Revised rule: {'shown' if rv['shown'] else 'not shown'} (post-hoc).</strong>
+Shift of the bend, 2025 minus 2018&ndash;March 2020: {shift['point']*100:+.2f} points
+(90% interval {shift['interval_90'][0]*100:+.2f} to {shift['interval_90'][1]*100:+.2f}).
+The two episodes' ratio ranges overlap only from {max(rev['episodes'][episode_labels[0]]['ratio_range'][0], rev['episodes'][episode_labels[1]]['ratio_range'][0])*100:.1f}%
+to {min(rev['episodes'][episode_labels[0]]['ratio_range'][1], rev['episodes'][episode_labels[1]]['ratio_range'][1])*100:.1f}%,
+so each bend is found inside its own episode's range. <strong>The two bends mark different features</strong>: in
+2018&ndash;March 2020 SOFR sat at about IORB and the bend is where it rises above it; in 2025 SOFR sat mid-corridor and the
+bend is where it rises toward IORB. The like-for-like comparison is at the same ratio, in the shared band
+{rev['same_ratio_comparison']['ratio_band'][0]*100:.1f}% to {rev['same_ratio_comparison']['ratio_band'][1]*100:.1f}%:
+median corridor position {rev['same_ratio_comparison']['median_position'][0]:.2f} then
+{rev['same_ratio_comparison']['median_position'][1]:.2f}, a difference of {rev['same_ratio_comparison']['difference']:+.2f}
+(90% interval {rev['same_ratio_comparison']['difference_interval_90'][0]:+.2f} to {rev['same_ratio_comparison']['difference_interval_90'][1]:+.2f});
+SOFR at or above IORB on {rev['same_ratio_comparison']['share_at_or_above_iorb'][0]:.0%} of those days then,
+{rev['same_ratio_comparison']['share_at_or_above_iorb'][1]:.0%} in 2025.</p>
+<div>{second_legend}</div>
+<svg class="chart" viewBox="0 0 {W} {H}" role="img" aria-label="Corridor position against reserves ratio, two episodes">
+{''.join(second)}
+<text class="axis" x="{(W+L)/2}" y="{H-8}" text-anchor="middle">reserves / bank assets</text>
+<text class="axis" x="14" y="{T+(H-T-B)/2}" transform="rotate(-90 14 {T+(H-T-B)/2})" text-anchor="middle">corridor position</text>
+</svg>
+<h2>All fits</h2>
 <table><tr><th>Sample</th><th>Days</th><th>Days below 13%</th><th>Bend</th><th>90% interval</th><th>Counts in test</th></tr>{rows}</table>
 </body></html>
 """

@@ -35,6 +35,7 @@ def _fields():
         "srf_take_up": tuple(contract.SRF_OPERATION_RESULTS_FIELDS),
         "soma_treasury_weekly_change": (("frb_h41_treasury", "soma_treasury_weekly_change"),),
         "srf_rate": (("fed_srf_rate", "srf_rate"),),
+        "on_rrp_rate": (("fed_on_rrp_rate", "on_rrp_rate"),),
         "runoff_cap_treasury_bn": (("fomc_runoff_caps", "runoff_cap_treasury_bn"),),
         "runoff_cap_mbs_bn": (("fomc_runoff_caps", "runoff_cap_mbs_bn"),),
     }
@@ -44,7 +45,7 @@ FIELDS: Mapping[str, tuple] = MappingProxyType(_fields())
 
 #: The columns the panel build prices from snapshots; the rest are scheduled and written on rows afterwards.
 BUILT_COLUMNS = ("on_rrp", "bank_total_assets", "srf_take_up", "soma_treasury_weekly_change")
-SCHEDULED_COLUMNS = ("srf_rate", "runoff_cap_treasury_bn", "runoff_cap_mbs_bn")
+SCHEDULED_COLUMNS = ("srf_rate", "on_rrp_rate", "runoff_cap_treasury_bn", "runoff_cap_mbs_bn")
 
 
 def parent_registry() -> Dict[str, Mapping]:

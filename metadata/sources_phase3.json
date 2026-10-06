@@ -113,5 +113,45 @@
     "structural_zeros": [],
     "structural_zeros_reviewed": true,
     "url": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
+  },
+  "fed_on_rrp_rate": {
+    "access": "public",
+    "coverage": [
+      "ON RRP (overnight reverse repurchase) offering rate, the floor of the policy corridor, from FOMC implementation notes"
+    ],
+    "field_frequencies": {
+      "on_rrp_rate": "business_daily"
+    },
+    "fields": [
+      "on_rrp_rate"
+    ],
+    "frequency": "event",
+    "identities": [],
+    "limitation": "Not a built panel column. repo_liquidity.scheduled writes it on each row from tests/fixtures/snapshots/fomc_notes/on_rrp_rate.csv, reading only implementation notes announced at or before that row's decision instant. Every row is read from a saved federalreserve.gov implementation note and cross-checked against the offering rate of every overnight ON RRP operation in the parent's snapshots. Used by Stage 2's revised test (docs/decisions/stage-2-bend.md, amendment of 6 October 2026) to measure SOFR from the floor.",
+    "provider": "Board of Governors of the Federal Reserve System",
+    "release_lag": {
+      "available_time": "23:59",
+      "basis": "record_date",
+      "days": 0,
+      "note": "Not read: the field is scheduled (scheduled_availability), as the parent's fed_iorb_announcements states it.",
+      "timezone": "America/New_York",
+      "unit": "calendar_days"
+    },
+    "reviewed_note": "No structural zeros.",
+    "scheduled_availability": {
+      "basis": "announced_before_ref_date",
+      "unit": "business_days",
+      "days": 1,
+      "available_time": "16:00",
+      "timezone": "America/New_York",
+      "fields": [
+        "on_rrp_rate"
+      ],
+      "evidence": "Keyed on the announcement time. The value for row T is the rate of the latest implementation note announced (14:00 New York, the FOMC statement's release time) at or before 16:00 on the panel day before T and effective on or before T. tests/test_scheduled.py checks every row's announcement is at or before 16:00 on the business day before its effective date, and that a note announced after a decision instant never changes the value read at it.",
+      "note": "16:00 is the decision time of every Phase 3 run, as of the parent's published records."
+    },
+    "structural_zeros": [],
+    "structural_zeros_reviewed": true,
+    "url": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
   }
 }

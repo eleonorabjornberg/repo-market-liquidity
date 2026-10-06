@@ -30,6 +30,12 @@ LEVEL = 0.90
 #: The grid the bend is searched on: reserves over bank assets from 6% to 22%, in steps of 0.05 points.
 GRID = tuple(round(0.06 + 0.0005 * i, 4) for i in range(321))
 LAST_DAY = date(2025, 12, 31)
+
+# The post-hoc revised test (`docs/decisions/stage-2-bend.md`, amendment of 6 October 2026).
+#: The two scarce episodes: to the last business day before the FOMC's 15 March 2020 actions, and calendar 2025.
+EPISODES = (("2018 to March 2020", date(2018, 1, 1), date(2020, 3, 13)),
+            ("2025", date(2025, 1, 1), date(2025, 12, 31)))
+MIN_SCARCE_DAYS_REVISED = 60
 DECISION_TIME = time(16, 0)
 
 
@@ -137,6 +143,19 @@ class Day:
     spread_bp: float
     p75_spread_bp: Optional[float]
     on_rrp_bn: Optional[float]
+    corridor: Optional[float] = None
+
+
+def corridor_position(*, sofr: float, iorb: float, on_rrp_rate: float) -> float:
+    """SOFR's place in the corridor: 0 on the ON RRP rate, 1 at IORB.
+
+    Raises:
+        ValueError: if the corridor is not positive.
+    """
+    width = iorb - on_rrp_rate
+    if not width > 0:
+        raise ValueError(f"IORB {iorb} is not above the ON RRP rate {on_rrp_rate}")
+    return round((sofr - on_rrp_rate) / width, 9)
 
 
 def sample(rows) -> List[Day]:
@@ -148,8 +167,9 @@ def sample(rows) -> List[Day]:
     from repo_model.asof import InformationRule
     from repo_model.splits import SplitError
 
-    from repo_liquidity import declaration
+    from repo_liquidity import declaration, scheduled
 
+    floors = scheduled.load_on_rrp_rates()
     rows = [row for row in rows if row.date <= LAST_DAY]
     dates = [row.date for row in rows]
     require_window(dates)
@@ -171,12 +191,16 @@ def sample(rows) -> List[Day]:
             if today.get("sofr") is None or today.get("iorb") is None:
                 continue
             p75 = today.get("sofr_p75")
+            # The realized outcome on day T uses the floor in force on T, by effective date.
+            floor = scheduled.rate_in_force(floors, dates[index])
             out.append(Day(
                 day=dates[index],
                 ratio=reserves / assets,
                 spread_bp=round(100.0 * (today["sofr"] - today["iorb"]), 6),
                 p75_spread_bp=None if p75 is None else round(100.0 * (p75 - today["iorb"]), 6),
                 on_rrp_bn=seen.get("on_rrp"),
+                corridor=None if floor is None else corridor_position(
+                    sofr=today["sofr"], iorb=today["iorb"], on_rrp_rate=floor),
             ))
     return out
 
@@ -205,9 +229,9 @@ def _median(values: Sequence[float]) -> float:
     return values[n // 2] if n % 2 else (values[n // 2 - 1] + values[n // 2]) / 2
 
 
-def describe(days: Sequence[Day], label: str, *, replications: int = REPLICATIONS) -> Dict:
+def describe(days: Sequence[Day], label: str, *, replications: int = REPLICATIONS, outcome: str = "spread_bp") -> Dict:
     xs = [d.ratio for d in days]
-    ys = [d.spread_bp for d in days]
+    ys = [getattr(d, outcome) for d in days]
     entry = {
         "label": label,
         "first": days[0].day.isoformat() if days else None,
@@ -222,6 +246,107 @@ def describe(days: Sequence[Day], label: str, *, replications: int = REPLICATION
         entry["fit"] = None
         entry["note"] = str(error)
         return entry
-    entry["fit"] = {"kink": fit.kink, "intercept_bp": round(fit.intercept, 6), "slope_bp_per_unit": round(fit.slope, 4)}
+    entry["fit"] = {"kink": fit.kink, "intercept": round(fit.intercept, 6), "slope_per_unit": round(fit.slope, 4)}
+    if outcome == "spread_bp":
+        entry["fit"] = {"kink": fit.kink, "intercept_bp": round(fit.intercept, 6), "slope_bp_per_unit": round(fit.slope, 4)}
     entry["kink_interval_90"] = list(kink_interval(xs, ys, seed=seed_for(label), replications=replications))
     return entry
+
+
+def revised_verdict(episodes: Dict[str, Dict]) -> Dict:
+    """The revised rule: both episodes count, and each episode's 90% bend interval is narrower than 3 points."""
+    sharp = {label: (e["interval"][1] - e["interval"][0]) < SHARP_WIDTH for label, e in episodes.items()}
+    eligible = {label: e["eligible"] for label, e in episodes.items()}
+    return {
+        "post_hoc": True,
+        "eligible": eligible,
+        "sharp": sharp,
+        "widths": {label: e["interval"][1] - e["interval"][0] for label, e in episodes.items()},
+        "shown": len(episodes) == 2 and all(eligible.values()) and all(sharp.values()),
+    }
+
+
+def shift_interval(first: Tuple[Sequence[float], Sequence[float]], second: Tuple[Sequence[float], Sequence[float]],
+                   *, seed: int, replications: int = REPLICATIONS) -> Tuple[float, float]:
+    """90% interval for (second's bend - first's bend), from independent stationary bootstraps of each, in date order."""
+    import random
+
+    from repo_model.metrics import stationary_bootstrap_indices
+
+    rng = random.Random(seed)
+    (x1, y1), (x2, y2) = first, second
+    shifts = []
+    for _ in range(replications):
+        i1 = stationary_bootstrap_indices(len(x1), BLOCK_LENGTH, rng)
+        i2 = stationary_bootstrap_indices(len(x2), BLOCK_LENGTH, rng)
+        k1 = fit_broken_stick([x1[i] for i in i1], [y1[i] for i in i1]).kink
+        k2 = fit_broken_stick([x2[i] for i in i2], [y2[i] for i in i2]).kink
+        shifts.append(k2 - k1)
+    shifts.sort()
+    tail = (1 - LEVEL) / 2
+    low = shifts[int(tail * (replications - 1))]
+    high = shifts[int(round((1 - tail) * (replications - 1)))]
+    return round(low, 6), round(high, 6)
+
+
+def logistic_midpoint(xs: Sequence[float], above: Sequence[int], *, iterations: int = 50) -> Optional[float]:
+    """The ratio at which a one-variable logistic fit of P(above) crosses 50%; None if it does not fall with the ratio.
+
+    Diagnosis only: a second functional form for the bend's location.
+    """
+    import math
+
+    a = b = 0.0
+    for _ in range(iterations):
+        g0 = g1 = h00 = h01 = h11 = 0.0
+        for x, y in zip(xs, above):
+            z = (x - SCARCE_BELOW) * 100
+            p = 1 / (1 + math.exp(-(a + b * z)))
+            w = p * (1 - p)
+            g0 += y - p
+            g1 += (y - p) * z
+            h00 += w
+            h01 += w * z
+            h11 += w * z * z
+        det = h00 * h11 - h01 * h01
+        if det <= 1e-12:
+            return None
+        a += (h11 * g0 - h01 * g1) / det
+        b += (-h01 * g0 + h00 * g1) / det
+    return None if b >= 0 else round(SCARCE_BELOW + (-a / b) / 100, 5)
+
+
+def overlap_comparison(first: Sequence[Day], second: Sequence[Day], *, seed: int,
+                       replications: int = REPLICATIONS) -> Dict:
+    """SOFR's corridor position at the same reserves ratio in two episodes: the band both episodes saw.
+
+    Reported only (post-hoc diagnosis): the median position in each episode inside the overlap of their ratio
+    ranges, the difference (second minus first) with a 90% interval from independent stationary bootstraps, and the
+    share of days at or above IORB. Unlike two bends, this compares like with like.
+    """
+    import random
+    from statistics import median
+
+    from repo_model.metrics import stationary_bootstrap_indices
+
+    low = max(min(d.ratio for d in first), min(d.ratio for d in second))
+    high = min(max(d.ratio for d in first), max(d.ratio for d in second))
+    a = [d.corridor for d in first if low <= d.ratio <= high and d.corridor is not None]
+    b = [d.corridor for d in second if low <= d.ratio <= high and d.corridor is not None]
+    rng = random.Random(seed)
+    diffs = []
+    for _ in range(replications):
+        ia = stationary_bootstrap_indices(len(a), BLOCK_LENGTH, rng)
+        ib = stationary_bootstrap_indices(len(b), BLOCK_LENGTH, rng)
+        diffs.append(median([b[i] for i in ib]) - median([a[i] for i in ia]))
+    diffs.sort()
+    tail = (1 - LEVEL) / 2
+    return {
+        "ratio_band": [round(low, 5), round(high, 5)],
+        "days": [len(a), len(b)],
+        "median_position": [round(median(a), 6), round(median(b), 6)],
+        "difference": round(median(b) - median(a), 6),
+        "difference_interval_90": [round(diffs[int(tail * (replications - 1))], 6),
+                                   round(diffs[int(round((1 - tail) * (replications - 1)))], 6)],
+        "share_at_or_above_iorb": [round(sum(x >= 1 for x in a) / len(a), 4), round(sum(x >= 1 for x in b) / len(b), 4)],
+    }

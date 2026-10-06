@@ -94,6 +94,65 @@
   ],
   "days": 1925,
   "decided_rule": "docs/decisions/stage-2-bend.md",
+  "diagnosis": {
+    "by_regime": {
+      "2018-19": {
+        "abundant_days_ratio_15pct_or_more": 0,
+        "abundant_median_spread_bp": null,
+        "corridor_iorb_minus_on_rrp_bp": [
+          10,
+          15,
+          20,
+          25
+        ],
+        "kink_ordinary_days_only": 0.117,
+        "logistic_midpoint_p_above_iorb": 0.10177,
+        "share_of_days_sofr_above_iorb": 0.5457
+      },
+      "2020": {
+        "abundant_days_ratio_15pct_or_more": 66,
+        "abundant_median_spread_bp": -3.0,
+        "corridor_iorb_minus_on_rrp_bp": [
+          10
+        ],
+        "kink_ordinary_days_only": 0.103,
+        "logistic_midpoint_p_above_iorb": 0.03204,
+        "share_of_days_sofr_above_iorb": 0.0797
+      },
+      "2021-23": {
+        "abundant_days_ratio_15pct_or_more": 342,
+        "abundant_median_spread_bp": -10.0,
+        "corridor_iorb_minus_on_rrp_bp": [
+          10
+        ],
+        "kink_ordinary_days_only": 0.152,
+        "logistic_midpoint_p_above_iorb": -0.37299,
+        "share_of_days_sofr_above_iorb": 0.0013
+      },
+      "2024": {
+        "abundant_days_ratio_15pct_or_more": 69,
+        "abundant_median_spread_bp": -9.0,
+        "corridor_iorb_minus_on_rrp_bp": [
+          10,
+          15
+        ],
+        "kink_ordinary_days_only": 0.155,
+        "logistic_midpoint_p_above_iorb": 0.12387,
+        "share_of_days_sofr_above_iorb": 0.024
+      },
+      "2025-26": {
+        "abundant_days_ratio_15pct_or_more": 0,
+        "abundant_median_spread_bp": null,
+        "corridor_iorb_minus_on_rrp_bp": [
+          15
+        ],
+        "kink_ordinary_days_only": 0.1345,
+        "logistic_midpoint_p_above_iorb": 0.12671,
+        "share_of_days_sofr_above_iorb": 0.2771
+      }
+    },
+    "note": "Descriptive only; written after the decided rule returned not shown."
+  },
   "pooled": {
     "days": 1925,
     "first": "2018-04-17",
@@ -115,7 +174,7 @@
     "scarce_days": 575
   },
   "provenance": {
-    "panel_sha256": "b24714cbfb3568ab818fff9bf2133046770de8ca7072354d6816bdd89d13eb95",
+    "panel_sha256": "acb77874e0ca2c9eeee1c33a229f5e12745e65bb1224088d52c391dbf54be2ab",
     "parent_commit": "71ab387e5557cc9ecefb12d1b2bf21d086571388",
     "parent_panel_sha256": "4ddc3882cd6d406b11e1088f8ff6195e16dde175a0ad6818abe40dd5bdac8999",
     "splits_sha256": "d92d48f17aef1475d3773406d2dfb6c650cbe470fd4f9e8074e965c37a23bc96"
@@ -405,6 +464,102 @@
           0.15543
         ],
         "scarce_days": 77
+      }
+    }
+  },
+  "revised_test": {
+    "episodes": {
+      "2018 to March 2020": {
+        "days": 477,
+        "eligible": true,
+        "first": "2018-04-17",
+        "fit": {
+          "intercept": 1.057938,
+          "kink": 0.092,
+          "slope_per_unit": 133.2055
+        },
+        "kink_interval_90": [
+          0.0895,
+          0.11649999999999999
+        ],
+        "label": "episode 2018 to March 2020",
+        "last": "2020-03-13",
+        "ratio_range": [
+          0.07968,
+          0.12889
+        ],
+        "scarce_days": 477
+      },
+      "2025": {
+        "days": 249,
+        "eligible": true,
+        "first": "2025-01-02",
+        "fit": {
+          "intercept": 0.552032,
+          "kink": 0.1345,
+          "slope_per_unit": 59.6358
+        },
+        "kink_interval_90": [
+          0.131,
+          0.1365
+        ],
+        "label": "episode 2025",
+        "last": "2025-12-31",
+        "ratio_range": [
+          0.11604,
+          0.1447
+        ],
+        "scarce_days": 77
+      }
+    },
+    "min_scarce_days": 60,
+    "outcome": "(SOFR - ON RRP rate) / (IORB - ON RRP rate), the ON RRP rate in force on the day",
+    "post_hoc": true,
+    "rule": "docs/decisions/stage-2-bend.md, amendment of 6 October 2026",
+    "same_ratio_comparison": {
+      "days": [
+        79,
+        67
+      ],
+      "difference": 0.493333,
+      "difference_interval_90": [
+        0.32,
+        0.653333
+      ],
+      "median_position": [
+        0.84,
+        1.333333
+      ],
+      "ratio_band": [
+        0.11604,
+        0.12889
+      ],
+      "share_at_or_above_iorb": [
+        0.2278,
+        0.9254
+      ]
+    },
+    "shift": {
+      "interval_90": [
+        0.0175,
+        0.0455
+      ],
+      "point": 0.0425
+    },
+    "verdict": {
+      "eligible": {
+        "2018 to March 2020": true,
+        "2025": true
+      },
+      "post_hoc": true,
+      "sharp": {
+        "2018 to March 2020": true,
+        "2025": true
+      },
+      "shown": true,
+      "widths": {
+        "2018 to March 2020": 0.026999999999999996,
+        "2025": 0.005500000000000005
       }
     }
   },

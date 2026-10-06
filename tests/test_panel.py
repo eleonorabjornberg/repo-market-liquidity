@@ -50,7 +50,7 @@ class PanelTests(unittest.TestCase):
     def test_every_other_phase3_column_covers_the_panel(self):
         for column in ("on_rrp", "bank_total_assets", "soma_treasury_weekly_change"):
             self.assertEqual(self.built["coverage"][column]["missing_rows"], 0, column)
-        for column in ("runoff_cap_treasury_bn", "runoff_cap_mbs_bn"):
+        for column in ("runoff_cap_treasury_bn", "runoff_cap_mbs_bn", "on_rrp_rate"):
             # The first row has no decision instant before it, as in the parent's scheduled inputs.
             self.assertEqual(self.built["coverage"][column]["missing_rows"], 1, column)
 
