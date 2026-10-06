@@ -34,3 +34,22 @@ this record merges.
 - **Stage 2:** the demand curve is also split at the 2021 and 2023 reforms, reported beside the parent's regimes.
 - **Stage 3:** a reform may enter as a declared shift in the buffer; decided when Stage 3 is designed.
 - **Evaluation:** the reported-only reform splits in `evaluation.md`.
+
+## Amendment, 6 October 2026: the standing repo facility at a fixed rate
+
+**Decided by Eleonora, 6 October 2026** ("Add the facility change as a new row … Don't add the bill purchases").
+**Added after Stage 3b's first run had been seen** (#9). It applies from the next directive onward and does not
+change Stage 3b's declared jump dates.
+
+| Effective | Reform | Announced | Source |
+|---|---|---|---|
+| 2025-12-11 | Standing overnight repo operations move to a fixed rate (3.75%), full allotment, with no aggregate operation limit (it was $500bn); at most $40bn per proposition | 2025-12-10, 14:00 | [FOMC implementation note, 10 December 2025](https://www.federalreserve.gov/newsevents/pressreleases/monetary20251210a1.htm) (tracked as `tests/fixtures/snapshots/fomc_notes/pages/monetary20251210a1.htm.gz`); [New York Fed statement, 10 December 2025](https://www.newyorkfed.org/markets/opolicy/operating_policy_251210) |
+
+**Considered and not added: reserve management purchases** (same implementation note; [New York Fed statement, 10
+December 2025](https://www.newyorkfed.org/markets/opolicy/operating_policy_251210a)). These are Treasury bill purchases
+"to maintain an ample level of reserves". The first schedule was about $40bn, purchases started on 2025-12-12, and
+monthly amounts are announced around the ninth business day of each month. They change the supply of reserves, which
+the model already reads through the reserves ratio and the weekly H.4.1 change. They do not change banks' demand for a
+buffer, so a declared jump on that date would let the model treat a supply change as a demand shift.
+
+Whether the facility change is material to the buffer is Nicholas's call (issue #1, question 11).

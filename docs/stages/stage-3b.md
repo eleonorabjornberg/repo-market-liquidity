@@ -70,3 +70,35 @@ and Stage 5a's daily log can start once Eleonora merges.
 
 Nothing is scored (that is Stage 4) and nothing is published. No Stage 1b input is used. The merged Stage 3 record is
 not edited.
+
+## Amendment, 6 October 2026: fresh starts at every refit (written after the first run)
+
+**This amendment was written after Stage 3b's first run had been seen** (#9): benchmark shown, stability not shown.
+Eleonora chose it on 6 October 2026 from the options in that pull request.
+
+**What the first run found.** Almost every stability breach came from one refit transition (2022-10-19 to 2022-11-18).
+Before it, 28 of 32 refits did not converge. Each was warm-started from the previous refit, so the chain stayed in a
+local optimum with an initial buffer near 4%. From 2022-11-18, every refit converged near 9.4%.
+
+**The change: procedure only.** Every fit, including the walk-forward refits, the full-window fit and each sensitivity,
+is run from several starting points, and the one with the highest likelihood is kept. The starting points are:
+
+- the previous refit's answer (for the walk-forward), or the full-window fit's answer (for a sensitivity);
+- the data-scaled start;
+- the data-scaled start with the initial buffer set to each of 5%, 9%, 13% and 17%.
+
+The record lists each refit's likelihood from every start, and which start won.
+
+**Unchanged:** the model, the fixed curve, the jump dates, both must-shows, and the 0.5-point bar.
+
+**What is carried forward (Eleonora, 6 October 2026).** The full-window shift is the headline result, with three caveats
+stated wherever it is quoted:
+
+1. it appears only when the buffer may drift between reform dates (with drift held at 0 there is no shift, though that
+   fit is much worse);
+2. the rise came in late 2022, as reserves fell back toward the buffer, not on a reform date, so no single reform can be
+   credited with it;
+3. at the sharpest kink scale (`s = 0.002`) it disappears.
+
+**One added sensitivity, reported and not judged:** jumps also allowed at 2025-12-11, the standing repo facility's move
+to a fixed rate (added to `docs/decisions/reform-dates.md` on 6 October 2026).
