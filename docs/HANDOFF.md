@@ -105,6 +105,8 @@ After the multi-start amendment:
 - the full-window shift is +3.3 points [2.8, 3.7];
 - the remaining stability breaches come from the refits of April 2020 to April 2021, which re-draw the 2018 to 2020
   buffer, plus a few weeks in late 2022.
+- the shift holds with the corridor read from TGCR (+3.3 [2.9, 3.7]) and with jumps only at the SLR end (+3.3); it
+  vanishes only with drift held at 0 and at `s = 0.002`.
 
 ## Waiting on others
 
