@@ -141,6 +141,9 @@ each planned before it is built (Eleonora, 6 October 2026):
    says so. It may use the new inputs (the MBS flow, the material-use event). It is judged once.
 4. **If Stage 3c fails,** the latent buffer is set aside and Stage 2's curve becomes the Stage 4 model (option 5 of
    `docs/stages/stage-3-diagnosis.md`).
+   **Stage 3c's result (6 October 2026, #12 in review):** not shown. The real-time buffer moved by up to 4.2 points
+   between refits, in four refit blocks: April–May 2020, November–December 2020, April–May 2021 and December
+   2022–January 2023. Under point 4, Stage 2's curve becomes the Stage 4 model once Eleonora merges.
 5. Nicholas is asked whether the 2019 to 2021 term repos count as take-up (issue #1, question 14). The Stage 1a
    correction waits on his answer for that column only.
 
