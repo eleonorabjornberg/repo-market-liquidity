@@ -102,3 +102,30 @@ stated wherever it is quoted:
 
 **One added sensitivity, reported and not judged:** jumps also allowed at 2025-12-11, the standing repo facility's move
 to a fixed rate (added to `docs/decisions/reform-dates.md` on 6 October 2026).
+
+## Amendment 2, 6 October 2026: Nicholas's answers (written after the first run, before the second)
+
+Nicholas Beroud answered the data questions on 6 October 2026 (`docs/decisions/data-meaning.md`). Eleonora asked for
+two of his answers to be built into Stage 3b. The model, the main jump dates and both must-shows are unchanged. Two
+sensitivities are added, each reported and not judged.
+
+**1. TGCR minus the ON RRP rate (his answer 12): the corridor read from TGCR.** The diagnosis
+(`scripts/diagnostics/tgcr_gap.py`) found that this gap repeats the corridor head:
+
+- TGCR − ON RRP = (SOFR − ON RRP) + (TGCR − SOFR), and TGCR − SOFR is nearly constant (median −2bp, 5th to 95th
+  percentile −4 to 0bp);
+- the gap's daily changes correlate 0.99 with the corridor position's;
+- as a separate head, the filter would read the same news twice as if it were independent, and its intervals would be
+  too narrow.
+
+So it is built as the same corridor head read from TGCR instead of SOFR: (TGCR − ON RRP rate) / (IORB − ON RRP rate).
+It sits on its own fixed curve, fitted by Stage 2's broken-stick method (`demand_curve.fit_broken_stick`) on the same
+days (2018 to 13 March 2020). As a check of the method, the same fit on the SOFR corridor must reproduce Stage 2's
+recorded curve.
+
+**2. The SLR exclusion ending (his answer 11): jumps only at 2021-03-31,** the reform he rates most material to the
+desired buffer. The existing legal-breaks sensitivity (2021-03-31 and 2023-03-12) stays.
+
+**Also recorded, for the live filter:** mandatory clearing of Treasury repo (2027-06-30) is a measurement break in SOFR
+volume and dispersion (his answer 11). The dispersion head is re-estimated after it, never read across it. This is
+declared now and applies when the live filter reaches that date.
