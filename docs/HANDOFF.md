@@ -55,6 +55,8 @@ What the diagnosis found (reported, not tuned):
 
 Two refits did not report convergence. The record counts them and keeps their paths.
 
+**The diagnosis that followed is `docs/stages/stage-3-diagnosis.md`**, which supersedes the options listed below.
+
 **What to do next is Eleonora's call.** Options to put to her, none of them started:
 
 - drop or down-weight the ON RRP head, or let it read a share rather than a level;
