@@ -24,17 +24,21 @@ from pathlib import Path
 from types import MappingProxyType
 from typing import Dict, List, Sequence
 
-from repo_liquidity import declaration, fed_repo, h41, parent_root, scheduled
+from repo_liquidity import declaration, fed_repo, h41, indicators, parent_root, scheduled
 
 ROOT = Path(__file__).resolve().parents[2]
 MANIFEST = ROOT / "metadata" / "phase3_panel_manifest.json"
 #: The Stage 1a correction's panel (`docs/stages/stage-1a-correction.md`). Version 1 is kept byte for byte, because
 #: the Stage 2, 3 and 3b records name its digest.
 MANIFEST_V2 = ROOT / "metadata" / "phase3_panel_v2_manifest.json"
-MANIFESTS = {1: MANIFEST, 2: MANIFEST_V2}
+#: Stage 1b's panel (`docs/stages/stage-1b.md`): version 2 plus the first-wave indicators.
+MANIFEST_V3 = ROOT / "metadata" / "phase3_panel_v3_manifest.json"
+MANIFESTS = {1: MANIFEST, 2: MANIFEST_V2, 3: MANIFEST_V3}
 H41_EXTRACT = ROOT / "tests" / "fixtures" / "snapshots" / "h41" / "h41_treasury_first_print.csv"
 H41_MBS_EXTRACT = ROOT / "tests" / "fixtures" / "snapshots" / "h41" / "h41_mbs_first_print.csv"
 PARENT_RAW_ROOTS = ("funding_inputs", "on_rrp_inputs", "h8_inputs", "srf_inputs")
+#: Stage 1b reads the parent's EFFR snapshots too; earlier versions do not, so their builds are unchanged.
+PARENT_RAW_ROOTS_V3 = PARENT_RAW_ROOTS + ("nyfed_effr_inputs",)
 
 
 @contextmanager
@@ -52,14 +56,14 @@ def _weekly_carry():
         data.CARRY_FORWARD_COLUMNS = saved
 
 
-def _parent_rows(workdir: Path):
+def _parent_rows(workdir: Path, roots=PARENT_RAW_ROOTS):
     from repo_model.data import load_point_in_time_panel
     from repo_model.ingest import build_point_in_time_snapshot, load_snapshot_manifest
 
     snapshots = parent_root() / "tests" / "fixtures" / "snapshots"
     artifacts = [
         load_snapshot_manifest(path)
-        for root in PARENT_RAW_ROOTS
+        for root in roots
         for path in sorted((snapshots / root).glob("*/*.manifest.json"))
     ]
     long_path = workdir / "phase3_point_in_time.csv"
@@ -89,7 +93,7 @@ def build(output: Path, version: int = 1) -> Dict:
 
     with tempfile.TemporaryDirectory() as tmp:
         workdir = Path(tmp)
-        rows, snapshot, retrieved = _parent_rows(workdir)
+        rows, snapshot, retrieved = _parent_rows(workdir, PARENT_RAW_ROOTS_V3 if version >= 3 else PARENT_RAW_ROOTS)
         parent_registry = declaration.parent_registry()
 
         published = build_daily_panel(rows, parent_registry, build_cutoff=cutoff, decision_time=decision,
@@ -100,11 +104,12 @@ def build(output: Path, version: int = 1) -> Dict:
 
     if version not in MANIFESTS:
         raise ValueError(f"the panel has versions {sorted(MANIFESTS)}, not {version!r}")
-    built_columns = declaration.BUILT_COLUMNS if version == 1 else declaration.BUILT_COLUMNS_V2
+    built_columns = {1: declaration.BUILT_COLUMNS, 2: declaration.BUILT_COLUMNS_V2,
+                     3: declaration.BUILT_COLUMNS_V3}[version]
     extract_sha = hashlib.sha256(H41_EXTRACT.read_bytes()).hexdigest()
     extra_rows = h41.observations(h41.load_extract(H41_EXTRACT), source_sha=extract_sha)
     v2_shas = {}
-    if version == 2:
+    if version >= 2:
         mbs_sha = hashlib.sha256(H41_MBS_EXTRACT.read_bytes()).hexdigest()
         extra_rows += h41.observations(h41.load_extract(H41_MBS_EXTRACT), source_sha=mbs_sha, series=h41.MBS_SERIES)
         operations, repo_sha = fed_repo.load_snapshots()
@@ -126,9 +131,12 @@ def build(output: Path, version: int = 1) -> Dict:
 
     observations = scheduled.with_scheduled(phase3.observations, decision_time=decision)
     derived_columns = []
-    if version == 2:
+    if version >= 2:
         observations = _with_repo_take_up(observations)
         derived_columns = list(declaration.DERIVED_COLUMNS_V2)
+    if version >= 3:
+        observations = indicators.with_indicators(observations)
+        derived_columns += list(indicators.COLUMNS)
     phase3_columns = list(built_columns) + list(declaration.SCHEDULED_COLUMNS) + derived_columns
     columns = list(published_columns) + phase3_columns
     _write(observations, columns, output)
@@ -153,8 +161,12 @@ def build(output: Path, version: int = 1) -> Dict:
         "refusals": dict(phase3.refusals),
         "sha256": digest,
     }
-    if version == 2:
-        manifest.update(v2_shas, version=2, v1_sha256=_v1_digest())
+    if version >= 2:
+        manifest.update(v2_shas, version=version, v1_sha256=_v1_digest())
+    if version >= 3:
+        manifest.update(v2_sha256=json.loads(MANIFEST_V2.read_text(encoding="utf-8"))["sha256"],
+                        measurement_breaks={day: list(columns)
+                                            for day, columns in indicators.MEASUREMENT_BREAKS.items()})
     return manifest
 
 

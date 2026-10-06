@@ -15,6 +15,7 @@ directive, those win and this file is stale. Update it at the end of each sessio
 | 3: the latent buffer | Merged (#8): **not shown** | `docs/stages/stage-3.md`, `src/repo_liquidity/latent.py`, `scripts/stage3_latent.py`, `results/stage3/latent.json` |
 | 3b: the buffer on a fixed curve | **In review: benchmark shown, stability not shown** | `docs/stages/stage-3b.md`, `src/repo_liquidity/anchored.py`, `scripts/stage3b_anchored.py`, `results/stage3b/anchored.json` |
 | 1a correction: MBS, 2019–21 repo operations, material use | **In review** | `docs/stages/stage-1a-correction.md`, `src/repo_liquidity/fed_repo.py`, `metadata/phase3_panel_v2_manifest.json` (panel version 2; version 1 is unchanged) |
+| 1b, first wave: pricing and the Fed's facilities | **In review** | `docs/stages/stage-1b.md`, `src/repo_liquidity/indicators.py`, `metadata/phase3_panel_v3_manifest.json` (panel version 3; versions 1 and 2 unchanged) |
 | 4, 5: evaluation, the frozen daily log | Not started. Stage 4 needs a frozen Stage 3 model | `PLAN.md`, `docs/decisions/evaluation.md` |
 
 ## Stage 2, in one paragraph
@@ -111,7 +112,7 @@ After the multi-start amendment:
 
 ## Waiting on others
 
-- **Nicholas (issue #1) answered questions 1 to 13 on 6 October 2026** (question 14, on the 2019 to 2021 term repos, is open), recorded in `docs/decisions/data-meaning.md`, which also lists the work it creates (Stage 1a corrections, Stage 1b's first wave). Questions 1 to 5 have Eleonora's preliminary rulings
+- **Nicholas (issue #1) answered questions 1 to 13 on 6 October 2026** (question 14 answered too; question 15, agency debt, is open), recorded in `docs/decisions/data-meaning.md`, which also lists the work it creates (Stage 1a corrections, Stage 1b's first wave). Questions 1 to 5 have Eleonora's preliminary rulings
   (`docs/decisions/data-meaning-preliminary.md`). Stage 1b waits on questions 7 to 10.
 - **Eleonora, two possible reform dates found while building, not yet in `reform-dates.md`:** the standing repo
   facility moved to a fixed rate and dropped its aggregate limit on 2025-12-10, and reserve-management bill purchases
