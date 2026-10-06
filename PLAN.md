@@ -123,6 +123,30 @@ Stage 1 is built in two parts (Eleonora, 6 October 2026):
   `scripts/build_panel.py` into a measurement panel whose manifest is `metadata/phase3_panel_manifest.json`.
 - **Stage 1b, the indicator families (questions 7 to 10):** written once Nicholas has answered.
 
+**Nicholas answered questions 1 to 13 on 6 October 2026** (`docs/decisions/data-meaning.md`). Two more pieces follow,
+each planned before it is built (Eleonora, 6 October 2026):
+
+- **Stage 1a correction** (`docs/stages/stage-1a-correction.md`): the realized weekly MBS change beside the Treasury
+  change; the Fed's 2019 to 2021 repo operations as take-up from a different facility; a structural zero before
+  2019-09-17; and the facility's material-use event ($1bn or more).
+- **Stage 1b, first wave** (`docs/stages/stage-1b.md`): pricing and the Fed's facilities, as Nicholas set out.
+
+**After Stage 3b (Eleonora, 6 October 2026):**
+
+1. Stage 3b closes as not shown (benchmark shown, stability not shown), with no further amendment. Its full-window
+   shift is kept as a descriptive finding, with its three caveats (`docs/stages/stage-3b.md`).
+2. Next, in order: the Stage 1a correction, then Stage 1b's first wave, then Stage 3c.
+3. **Stage 3c,** written before any fit, judges stability on each refit's real-time buffer (the state a forecast reads,
+   day T − 2), not on revisions to earlier history. That change of must-show is made after Stage 3b, and the directive
+   says so. It may use the new inputs (the MBS flow, the material-use event). It is judged once.
+4. **If Stage 3c fails,** the latent buffer is set aside and Stage 2's curve becomes the Stage 4 model (option 5 of
+   `docs/stages/stage-3-diagnosis.md`).
+5. Nicholas is asked whether the 2019 to 2021 term repos count as take-up (issue #1, question 14). The Stage 1a
+   correction waits on his answer for that column only.
+
+**Nicholas owns the MBS scenario** (the balance sheet's MBS runoff, reinvestment and the active-sales tail), as he asked
+and Eleonora agreed on 6 October 2026.
+
 
 **Goal:** a Phase 3 measurement panel in which every input is read only as it was public at the decision instant,
 from 2018-04-03.

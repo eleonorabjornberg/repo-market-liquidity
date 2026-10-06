@@ -1,5 +1,7 @@
 # Decision: data meaning for Stage 1, questions 1 to 3 (preliminary)
 
+**Superseded by `data-meaning.md` (Nicholas Beroud, 6 October 2026), which corrects answers 1 and 5 and confirms 2 to 4.**
+
 **Status: a PRELIMINARY ruling by Eleonora, 6 October 2026, pending Nicholas Beroud.** Under the parent's `PLAN.md`
 the choice of data and its meaning is Nicholas's. This record lets Stage 1 be planned against a stated answer. It
 becomes final when he confirms it on issue #1, and is replaced if he corrects it; his answer is recorded here either
