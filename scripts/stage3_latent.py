@@ -144,7 +144,7 @@ def main():
                       "shown": stability["shown"] and benchmark["shown"]},
         "walk_forward_monthly": {d.isoformat(): [round(s.mean, 5), round(math.sqrt(s.variance), 5)]
                                  for d, s in sorted(walk.items())
-                                 if not any(o > d and o.month == d.month for o in walk)},
+                                 if not any(o > d and (o.year, o.month) == (d.year, d.month) for o in walk)},
         "full_window": summary(full, observations, jumps, latent.SCALE),
         "sensitivities": sensitivities,
         "diagnosis": diagnosis,
