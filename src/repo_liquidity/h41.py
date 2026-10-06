@@ -31,14 +31,23 @@ NEW_YORK = ZoneInfo("America/New_York")
 
 #: The column the panel carries: the change from the previous week in the week average, as printed.
 SERIES = "soma_treasury_weekly_change"
+#: The same for the MBS row (`docs/stages/stage-1a-correction.md`, item 1).
+MBS_SERIES = "soma_mbs_weekly_change"
 
-_ROW = re.compile(
-    r"U\.S\. Treasury securities\s+"
+#: Table 1 rows the parser reads.
+TREASURY_ROW = "U.S. Treasury securities"
+MBS_ROW = "Mortgage-backed securities"
+ROWS = {TREASURY_ROW: SERIES, MBS_ROW: MBS_SERIES}
+
+_NUMBERS = (
+    # An optional footnote mark, printed "(4)" in older releases and a bare "4" in newer ones, then the four values.
+    r"\s+(?:\(?\d{1,2}\)?\s+)?"
     r"(?P<average>[\d,]+)\s+"
     r"(?P<week>[+-]\s*[\d,]+|0)\s+"
     r"(?P<year>[+-]\s*[\d,]+|0)\s+"
     r"(?P<wednesday>[\d,]+)"
 )
+_ROW_PATTERNS = {label: re.compile(re.escape(label) + _NUMBERS) for label in ROWS}
 _DATE = re.compile(r"\b([A-Z][a-z]{2,3})\.? (\d{1,2}), (\d{4})\b")
 _MONTHS = {
     "Jan": 1, "Feb": 2, "Mar": 3, "Apr": 4, "May": 5, "Jun": 6, "June": 6, "Jul": 7, "July": 7,
@@ -65,22 +74,24 @@ def _signed(token: str) -> int:
     return int(token)
 
 
-def parse_release(page: str, *, release_date: date) -> Release:
-    """Table 1's U.S. Treasury securities row from one archived H.4.1 page.
+def parse_release(page: str, *, release_date: date, row: str = TREASURY_ROW) -> Release:
+    """One table 1 row (`TREASURY_ROW` or `MBS_ROW`) from one archived H.4.1 page.
 
     Raises:
-        ValueError: if the row or the week's date is not found, or the week does not end on the Wednesday before
-            the release.
+        ValueError: if `row` is not one the parser reads, if the row or the week's date is not found, or if the week
+            does not end on the Wednesday before the release.
     """
+    if row not in _ROW_PATTERNS:
+        raise ValueError(f"the parser reads {sorted(_ROW_PATTERNS)}, not {row!r}")
     text = _text(page)
     start = text.find("Averages of daily figures")
     if start < 0:
         start = text.find("Reserve Bank credit, related items")
     if start < 0:
         raise ValueError("no table 1 header in the page")
-    match = _ROW.search(text, start)
+    match = _ROW_PATTERNS[row].search(text, start)
     if match is None:
-        raise ValueError("no 'U.S. Treasury securities' row in table 1")
+        raise ValueError(f"no {row!r} row in table 1")
     week_ended = None
     for month, day, year in _DATE.findall(text[start:match.start()]):
         if month in _MONTHS:
@@ -160,13 +171,13 @@ def worst_case_lag_days(releases: Iterable[Release]) -> int:
     return max((release.release_date - release.week_ended).days for release in releases)
 
 
-def observations(releases: Iterable[Release], *, source_sha: str):
-    """The extract as the parent's point-in-time rows: one per week, dated the Wednesday, public at release."""
+def observations(releases: Iterable[Release], *, source_sha: str, series: str = SERIES):
+    """An extract as the parent's point-in-time rows: one per week, dated the Wednesday, public at release."""
     from repo_model.data import PointInTimeObservation
 
     return [
         PointInTimeObservation(
-            series_id=SERIES,
+            series_id=series,
             ref_date=release.week_ended,
             available_at=available_at(release.release_date),
             value=release.change_from_prior_week / 1000.0,
@@ -198,7 +209,7 @@ def check_declared_lag(entry, releases: Iterable[Release]) -> None:
 
     lag = entry["release_lag"]
     if lag.get("basis") != "record_date" or lag.get("unit") != "calendar_days":
-        raise ValueError(f"frb_h41_treasury must be declared record_date/calendar_days, not {lag}")
+        raise ValueError(f"an H.4.1 source must be declared record_date/calendar_days, not {lag}")
     moment = time.fromisoformat(lag["available_time"])
     for release in releases:
         declared = datetime.combine(release.week_ended + timedelta(days=int(lag["days"])), moment)

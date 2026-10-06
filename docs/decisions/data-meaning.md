@@ -37,7 +37,10 @@ and its scenarios are his. The realized MBS change (answer 1) is the input it bu
   So since 1 December 2025, MBS paydowns are a composition shift from MBS into bills, neutral for reserves.
 - **Question 1, the source:** H.4.1 table 1 carries a "Mortgage-backed securities" row in the same layout as the Treasury
   row, so the same archived releases give the realized MBS change.
-- **Question 5, the 2019 to 2021 repo operations:** not yet checked against the NY Fed's operation history.
+- **Question 5, the 2019 to 2021 repo operations: checked.** The NY Fed's operation results (the endpoint of the parent's
+  `nyfed_srf`) show the Desk's repo operations from 2019-09-17, overnight and term, through 2020 into 2021, until
+  2021-07-28. The two repo operations of May 2019 ($65m each) were tests. Saved under
+  `tests/fixtures/snapshots/nyfed_temp_repo/`. Whether term repos count as take-up is question 14, open on issue #1.
 
 ## What this changes (each is a later piece of work, planned before it is built)
 

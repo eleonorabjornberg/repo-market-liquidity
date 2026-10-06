@@ -2,6 +2,10 @@
 """Fetch archived H.4.1 releases and write the tracked first-print extract.
 
     PYTHONPATH=src python3 scripts/fetch_h41.py --first 2017-12-27 --last 2026-09-02
+    PYTHONPATH=src python3 scripts/fetch_h41.py --first 2017-12-27 --last 2026-09-02 --row mbs
+
+`--row mbs` writes the MBS extract (`docs/stages/stage-1a-correction.md`, item 1) and checks every week's Treasury
+row on the same page against the tracked Treasury extract, so both extracts read the same first prints.
 
 Needs network access to federalreserve.gov. Each week's release is found in the eight days after its Wednesday,
 parsed by `repo_liquidity.h41.parse_release`, and recorded with its URL and the page's sha256. A week whose
@@ -22,6 +26,7 @@ from repo_liquidity import h41
 
 ROOT = Path(__file__).resolve().parents[1]
 EXTRACT = ROOT / "tests/fixtures/snapshots/h41/h41_treasury_first_print.csv"
+MBS_EXTRACT = ROOT / "tests/fixtures/snapshots/h41/h41_mbs_first_print.csv"
 
 
 def fetch(url):
@@ -43,7 +48,11 @@ def main(argv=None):
     parser = argparse.ArgumentParser()
     parser.add_argument("--first", type=date.fromisoformat, required=True)
     parser.add_argument("--last", type=date.fromisoformat, required=True)
+    parser.add_argument("--row", choices=("treasury", "mbs"), default="treasury")
     args = parser.parse_args(argv)
+    row = h41.MBS_ROW if args.row == "mbs" else h41.TREASURY_ROW
+    target = MBS_EXTRACT if args.row == "mbs" else EXTRACT
+    treasury = {r.week_ended: r for r in h41.load_extract(EXTRACT)} if args.row == "mbs" else {}
     if args.first.weekday() != 2 or args.last.weekday() != 2:
         parser.error("--first and --last must be Wednesdays")
     rows, gaps = [], []
@@ -55,9 +64,13 @@ def main(argv=None):
         else:
             release_date, url, page = found
             try:
-                release = h41.parse_release(page, release_date=release_date)
+                release = h41.parse_release(page, release_date=release_date, row=row)
                 if release.week_ended != week:
                     raise ValueError(f"page reports week ended {release.week_ended}")
+                if treasury:
+                    check = h41.parse_release(page, release_date=release_date)
+                    if check != treasury.get(week):
+                        raise ValueError(f"its Treasury row {check} is not the tracked extract's {treasury.get(week)}")
                 rows.append((week.isoformat(), release_date.isoformat(), url,
                              hashlib.sha256(page.encode("utf-8")).hexdigest(), release.week_average,
                              release.change_from_prior_week, release.wednesday_level))
@@ -68,8 +81,8 @@ def main(argv=None):
     if gaps:
         print("GAPS:", *gaps, sep="\n", file=sys.stderr)
         return 1
-    digest = h41.write_extract(rows, EXTRACT)
-    print(f"wrote {EXTRACT.relative_to(ROOT)} sha256 {digest}")
+    digest = h41.write_extract(rows, target)
+    print(f"wrote {target.relative_to(ROOT)} sha256 {digest}")
     return 0
 
 

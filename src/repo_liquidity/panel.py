@@ -24,11 +24,16 @@ from pathlib import Path
 from types import MappingProxyType
 from typing import Dict, List, Sequence
 
-from repo_liquidity import declaration, h41, parent_root, scheduled
+from repo_liquidity import declaration, fed_repo, h41, parent_root, scheduled
 
 ROOT = Path(__file__).resolve().parents[2]
 MANIFEST = ROOT / "metadata" / "phase3_panel_manifest.json"
+#: The Stage 1a correction's panel (`docs/stages/stage-1a-correction.md`). Version 1 is kept byte for byte, because
+#: the Stage 2, 3 and 3b records name its digest.
+MANIFEST_V2 = ROOT / "metadata" / "phase3_panel_v2_manifest.json"
+MANIFESTS = {1: MANIFEST, 2: MANIFEST_V2}
 H41_EXTRACT = ROOT / "tests" / "fixtures" / "snapshots" / "h41" / "h41_treasury_first_print.csv"
+H41_MBS_EXTRACT = ROOT / "tests" / "fixtures" / "snapshots" / "h41" / "h41_mbs_first_print.csv"
 PARENT_RAW_ROOTS = ("funding_inputs", "on_rrp_inputs", "h8_inputs", "srf_inputs")
 
 
@@ -39,7 +44,8 @@ def _weekly_carry():
 
     saved = data.CARRY_FORWARD_COLUMNS
     data.CARRY_FORWARD_COLUMNS = MappingProxyType(
-        {**saved, h41.SERIES: data.WEEKLY_CARRY_MAX_STALENESS_DAYS})
+        {**saved, h41.SERIES: data.WEEKLY_CARRY_MAX_STALENESS_DAYS,
+         h41.MBS_SERIES: data.WEEKLY_CARRY_MAX_STALENESS_DAYS})
     try:
         yield
     finally:
@@ -63,8 +69,11 @@ def _parent_rows(workdir: Path):
     return load_point_in_time_panel(long_path), snapshot, retrieved
 
 
-def build(output: Path) -> Dict:
+def build(output: Path, version: int = 1) -> Dict:
     """Build the panel to `output` (CSV) and return its manifest.
+
+    Version 1 is Stage 1a's panel. Version 2 adds the Stage 1a correction's columns: the weekly MBS change, the
+    2019 to 2021 temporary repo operations, and the derived repo take-up, its facility and the material-use event.
 
     Raises:
         ValueError: if the published columns do not reproduce the parent's digest, if a Phase 3 column is refused,
@@ -89,12 +98,24 @@ def build(output: Path) -> Dict:
         write_daily_panel(published, published_path, source_shas=snapshot.source_shas)
         parent_digest = verify_daily_panel(published_path, published_manifest_path)
 
+    if version not in MANIFESTS:
+        raise ValueError(f"the panel has versions {sorted(MANIFESTS)}, not {version!r}")
+    built_columns = declaration.BUILT_COLUMNS if version == 1 else declaration.BUILT_COLUMNS_V2
     extract_sha = hashlib.sha256(H41_EXTRACT.read_bytes()).hexdigest()
-    h41_rows = h41.observations(h41.load_extract(H41_EXTRACT), source_sha=extract_sha)
+    extra_rows = h41.observations(h41.load_extract(H41_EXTRACT), source_sha=extract_sha)
+    v2_shas = {}
+    if version == 2:
+        mbs_sha = hashlib.sha256(H41_MBS_EXTRACT.read_bytes()).hexdigest()
+        extra_rows += h41.observations(h41.load_extract(H41_MBS_EXTRACT), source_sha=mbs_sha, series=h41.MBS_SERIES)
+        operations, repo_sha = fed_repo.load_snapshots()
+        for term, series in (("Overnight", fed_repo.SERIES), ("Term", fed_repo.TERM_SERIES)):
+            extra_rows += fed_repo.observations(fed_repo.daily_take_up(operations, term=term), series=series,
+                                                source_sha=repo_sha)
+        v2_shas = {"h41_mbs_extract_sha256": mbs_sha, "temp_repo_snapshots_sha256": repo_sha}
 
     with declaration.phase3_declaration(), _weekly_carry():
-        phase3 = build_daily_panel(list(rows) + h41_rows, declaration.registry(), build_cutoff=cutoff,
-                                   decision_time=decision, columns=published_columns + declaration.BUILT_COLUMNS,
+        phase3 = build_daily_panel(list(rows) + extra_rows, declaration.registry(), build_cutoff=cutoff,
+                                   decision_time=decision, columns=published_columns + built_columns,
                                    snapshot_retrieved_at=retrieved)
     if phase3.refusals:
         raise ValueError(f"the Phase 3 build refused {dict(phase3.refusals)}")
@@ -102,7 +123,12 @@ def build(output: Path) -> Dict:
         raise ValueError("the Phase 3 panel's dates are not the published panel's")
 
     observations = scheduled.with_scheduled(phase3.observations, decision_time=decision)
-    columns = list(published_columns) + list(declaration.BUILT_COLUMNS) + list(declaration.SCHEDULED_COLUMNS)
+    derived_columns = []
+    if version == 2:
+        observations = _with_repo_take_up(observations)
+        derived_columns = list(declaration.DERIVED_COLUMNS_V2)
+    phase3_columns = list(built_columns) + list(declaration.SCHEDULED_COLUMNS) + derived_columns
+    columns = list(published_columns) + phase3_columns
     _write(observations, columns, output)
     digest = hashlib.sha256(output.read_bytes()).hexdigest()
 
@@ -119,13 +145,32 @@ def build(output: Path) -> Dict:
         "start_date": observations[0].date.isoformat(),
         "end_date": observations[-1].date.isoformat(),
         "columns": columns,
-        "phase3_columns": list(declaration.BUILT_COLUMNS) + list(declaration.SCHEDULED_COLUMNS),
-        "coverage": _coverage(observations, list(declaration.BUILT_COLUMNS) + list(declaration.SCHEDULED_COLUMNS)),
-        "holes": {column: phase3.holes.get(column, 0) for column in declaration.BUILT_COLUMNS},
+        "phase3_columns": phase3_columns,
+        "coverage": _coverage(observations, phase3_columns),
+        "holes": {column: phase3.holes.get(column, 0) for column in built_columns},
         "refusals": dict(phase3.refusals),
         "sha256": digest,
     }
+    if version == 2:
+        manifest.update(v2_shas, version=2, v1_sha256=_v1_digest())
     return manifest
+
+
+def _v1_digest() -> str:
+    return json.loads(MANIFEST.read_text(encoding="utf-8"))["sha256"]
+
+
+def _with_repo_take_up(observations):
+    """Each row with the derived repo take-up, its facility and the standing facility's material-use event."""
+    from repo_model.data import DailyObservation
+
+    out = []
+    for row in observations:
+        take_up, facility = fed_repo.combined({"date": row.date, **row.values})
+        values = dict(row.values, fed_repo_take_up=take_up, fed_repo_facility=facility,
+                      srf_material_use=fed_repo.material_use(row.values.get("srf_take_up")))
+        out.append(DailyObservation(date=row.date, values=values))
+    return out
 
 
 def _parent_commit() -> str:
@@ -159,9 +204,9 @@ def _coverage(observations, columns: Sequence[str]) -> Dict[str, Dict]:
     return out
 
 
-def write_manifest(manifest: Dict) -> None:
-    MANIFEST.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+def write_manifest(manifest: Dict, version: int = 1) -> None:
+    MANIFESTS[version].write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
-def load_manifest() -> Dict:
-    return json.loads(MANIFEST.read_text(encoding="utf-8"))
+def load_manifest(version: int = 1) -> Dict:
+    return json.loads(MANIFESTS[version].read_text(encoding="utf-8"))
