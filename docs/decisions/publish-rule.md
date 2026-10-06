@@ -1,7 +1,8 @@
 # Decision: publishing a Phase 3 record
 
-**Status: a DRAFT for Eleonora, not in force.** It takes effect only when she moves it to `docs/decisions/` and merges
-it. Until then no Phase 3 record is published.
+**Status: decided by Eleonora, 6 October 2026. In force once this record merges.**
+
+Ruling (Eleonora, 6 October 2026; relayed by the orchestrating session), accepting `PLAN.md` D4 as drafted.
 
 It mirrors the parent's `docs/decisions/publish-rule.md`, adapted to a repository that is pinned to another.
 

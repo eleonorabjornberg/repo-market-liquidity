@@ -40,3 +40,17 @@ rule, the scoring dates and the secondary Brier result as drafted below: "deal".
   stationary-bootstrap lower bound above 0; labels "shown better", "not shown", "shown worse".
 - **Splits.** By regime and by pressure-day type, as the parent requires. A pooled figure alone is not a result.
 - **Scoring dates on the live record.** As the parent's live record, 2027-04-01 and then each 1 October.
+
+## Amendment: reform splits (reported only)
+
+Ruling (Eleonora, 6 October 2026; relayed by the orchestrating session), accepting `PLAN.md` D5 (the reform splits).
+
+The confirmatory evidence crosses mandatory Treasury clearing: cash transactions from 2026-12-31 and repo transactions
+from 2027-06-30, the latter between the scoring dates 2027-04-01 and 2027-10-01 (`reform-dates.md`).
+
+- The confirmatory CRPS result is also reported split before and after each of those two dates, with the same interval
+  method as the pooled result.
+- **These splits are reported only.** They never decide the verdict. The primary comparison and the pass rule are
+  unchanged.
+- A split with too few days on one side is reported with its estimate and interval and labelled as such, never
+  dropped.
