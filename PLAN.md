@@ -58,6 +58,61 @@ Read at the pin, these facts shape the stages below.
   `baseline.rolling_exceedance_backtest`), as the parent's own `compare` command does. The parent's records stamp the
   parent's commit, so every Phase 3 record adds its own provenance.
 
+## Repo-liquidity indicators (Eleonora, 6 October 2026)
+
+Deployable liquidity stays the target. The indicators below are what Stage 1 may carry and what the Stage 3 model may
+observe. Which of them Stage 1 carries, and what each means, is Nicholas's call. Status is read at the pin
+(`metadata/sources.json`).
+
+**1. Pricing**
+
+| Indicator | Status at the pin | Proposed |
+|---|---|---|
+| SOFR, BGCR, TGCR, with their percentiles and volumes | Declared (`nyfed_sofr`, `nyfed_bgcr`, `nyfed_tgcr`; business day + 1 at 15:00). The panel builds SOFR, its 25th and 75th percentiles and volume, TGCR and BGCR | Cross-venue spreads (SOFR − TGCR, BGCR − TGCR) and tail widths |
+| General collateral versus specials | No specials rate is public. SOFR's delivery-versus-payment (DVP) part drops the low-rate tail as specials, so OFR's DVP rate minus BGCR is a partial proxy, declared and off (`ofr_stfm_repo`, `dvp_segment`, from 2020-09-09); SOFR's 1st percentile is a lower-tail proxy | These proxies, plus two public collateral-scarcity measures: the NY Fed's SOMA securities-lending results and FR 2004 settlement fails |
+| Haircuts | Not in the parent; no daily public source is known | Check OFR's public releases from its bilateral repo collection; otherwise recorded as not observable |
+
+**2. Segment distribution**
+
+| Indicator | Status at the pin | Proposed |
+|---|---|---|
+| Tri-party, GCF and cleared DVP activity | Derivable from the declared TGCR, BGCR and SOFR volumes and OFR's DVP volume (`REPO-DVP_TV_OO-F`, declared, unused) | Segment volumes and shares: what mandatory repo clearing will move |
+| Non-centrally cleared bilateral repo | Not declared | As for haircuts |
+
+**3. Dealer intermediation and cash supply and demand**
+
+| Indicator | Status at the pin | Proposed |
+|---|---|---|
+| Dealer balance-sheet capacity | `nyfed_fr2004` declares dealer positions only (`dealer_treasury_position` is built) | FR 2004 financing (repo and reverse repo by segment) and fails series |
+| Quarter-end tightening | Built: `quarter_end`, `days_to_month_end`, and the quarter-end window split | Reused |
+| Money-fund cash supply | `sec_nmfp` declares `mmf_repo_holdings` and `mmf_on_rrp`, refused in the published panel as latest vintage | Dated by filing date, so they can be priced |
+| Hedge-fund demand (the basis trade) | Absent | The CFTC's Traders in Financial Futures report: leveraged funds' Treasury futures positions, weekly, Tuesday's positions released on Friday |
+| GSE, foreign-bank and bank lenders | Absent | No new source: the GSE mid-month cycle is calendar, and foreign-bank quarter-end behaviour shows in the quarter-end split |
+
+**4. Central-bank backstops**
+
+| Indicator | Status at the pin | Proposed |
+|---|---|---|
+| Standing repo facility usage (the ceiling) | `nyfed_srf`, off, from 2021-07-29 | Stage 1 |
+| ON RRP usage (the floor) | `nyfed_on_rrp`, off | Stage 1 |
+
+**A design rule for Stage 3:** collateral scarcity is kept apart from cash scarcity. A security on special signals
+scarce collateral, not scarce cash, so its indicators are observed separately and never read as deployable liquidity.
+
+## Reform dates (proposed, 6 October 2026)
+
+The desired buffer is partly regulatory (the parent's `PLAN.md` lists "regulatory liquidity needs"). The parent tracks
+no reform, and its regimes are calendar groups, not reform dates. The confirmatory window crosses three reforms, one
+of them between the two scoring dates. A draft record,
+[`docs/decisions/drafts/reform-dates.md`](docs/decisions/drafts/reform-dates.md), lists the dates with their sources as
+a declared input, fixed before anything is scored. Proposed uses:
+
+- **Stage 2:** also split the curve at the 2021 and 2023 reforms, and report whether the bend moves at a reform date.
+- **Stage 3:** reforms may enter as declared shifts in the buffer; decided when Stage 3 is designed.
+- **Evaluation:** the confirmatory result is also reported before and after the clearing mandates, reported only and
+  never deciding the verdict. This amends a decided record, so it is drafted for Eleonora in
+  [`docs/decisions/drafts/evaluation-amendment-reform-splits.md`](docs/decisions/drafts/evaluation-amendment-reform-splits.md).
+
 ## Stages
 
 ### Stage 1: data, as of 4 pm
@@ -171,6 +226,8 @@ Under [`docs/decisions/evaluation.md`](docs/decisions/evaluation.md):
 - **D2.** Stage 2's "stable enough" threshold: the proposal above, or another.
 - **D3.** Stage 3's numerics: a numpy filter with no new package (proposed), or a library now.
 - **D4.** The publish rule for this repository (draft).
+- **D5.** The reform dates as a declared input (draft), and the reported-only reform splits in the evaluation (draft
+  amendment).
 
 ## Open questions for Nicholas Beroud (data meaning, issue #1)
 
@@ -184,6 +241,12 @@ Under the parent's `PLAN.md`, the choice of data and its meaning rests with Nich
 4. ON RRP from the NY Fed's operation results, as the parent's measurement runs use?
 5. Facility usage before 2021-07-29, when the facility did not exist: a structural zero, or missing?
 6. A bank-size split for the concentration sensitivity, since H.8 total assets has none?
+7. Which of the four indicator families above should Stage 1 carry?
+8. Are OFR's DVP rate minus BGCR, and SOFR's 1st percentile, acceptable proxies for specials?
+9. Are the CFTC's leveraged-fund Treasury futures positions the right proxy for basis-trade demand?
+10. Is there a public source for haircuts?
+11. Which of the reforms in the draft reform-dates record are material to the buffer, and does mandatory repo clearing
+    change what SOFR volume and dispersion measure?
 
 His evidence pack (parent branch `advisor/evidence-pack`, and his comment on parent PR #219) points to the ON RRP buffer
 and a QT restart as the levers.
