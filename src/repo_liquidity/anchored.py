@@ -178,6 +178,47 @@ def objective(observations, params, *, anchor: Anchor, jump_days, scale: float =
     return value if math.isfinite(value) else IMPOSSIBLE
 
 
+def realtime_stability(observations: Sequence[Observation], refits: Sequence[Tuple[int, Sequence[float]]], *,
+                       anchor: Anchor, jump_days, scale: float = latent.SCALE) -> Dict:
+    """Stage 3c's stability test (`docs/stages/stage-3c.md`), on the buffer a forecast reads.
+
+    `refits` is each refit's cutoff (an index into `observations`) and its parameters, in order. Refit k serves the
+    days after its cutoff, up to and including the next refit's cutoff. For each day T it serves, k >= 1, the gap is
+    the filtered buffer two observation days before T under refit k's parameters, against the same under refit
+    k - 1's. The filter is causal, so a buffer read at T - 2 uses observations through T - 2 alone.
+
+    Raises:
+        ValueError: if the cutoffs are not strictly increasing.
+    """
+    cutoffs = [cutoff for cutoff, _ in refits]
+    if any(b <= a for a, b in zip(cutoffs, cutoffs[1:])):
+        raise ValueError(f"refit cutoffs must increase, not {cutoffs}")
+    gaps: Dict[str, float] = {}
+    worst = {"gap": 0.0}
+    for k in range(1, len(refits)):
+        start = cutoffs[k] + 1
+        end = cutoffs[k + 1] if k + 1 < len(refits) else len(observations) - 1
+        if start > end:
+            continue
+        horizon = observations[: end + 1]
+        new = filter_path(horizon, refits[k][1], anchor=anchor, jump_days=jump_days, scale=scale)
+        old = filter_path(horizon, refits[k - 1][1], anchor=anchor, jump_days=jump_days, scale=scale)
+        for index in range(start, end + 1):
+            if index < 2:
+                continue
+            gap = abs(new[index - 2].mean - old[index - 2].mean)
+            day = observations[index].day.isoformat()
+            gaps[day] = gap
+            if gap > worst["gap"]:
+                worst = {"gap": gap, "day": day, "read": observations[index - 2].day.isoformat(),
+                         "refits": [observations[cutoffs[k - 1]].day.isoformat(),
+                                    observations[cutoffs[k]].day.isoformat()]}
+    ordered = sorted(gaps.values())
+    return {"days_compared": len(gaps), "worst": worst, "gaps": gaps,
+            "median": ordered[len(ordered) // 2] if ordered else None,
+            "p95": ordered[int(0.95 * (len(ordered) - 1))] if ordered else None}
+
+
 def require_anchor_before(cutoff: date, anchor: Anchor) -> None:
     """Refuse a refit dated before the fixed curve's last day of data.
 
