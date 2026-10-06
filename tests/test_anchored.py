@@ -58,6 +58,12 @@ class FilterTests(unittest.TestCase):
         self.assertNotIn("b_corridor_position", anchored.PARAM_NAMES)
         self.assertEqual(len(fit.params), len(anchored.PARAM_NAMES))
 
+    def test_a_point_that_overflows_scores_as_impossible(self):
+        obs, _, jump_day = simulate(n=60)
+        params = list(anchored.start_params(obs, ANCHOR))
+        params[anchored.PARAM_NAMES.index("b_sofr_dispersion_bp")] = 1e6
+        self.assertEqual(anchored.objective(obs, params, anchor=ANCHOR, jump_days=[jump_day]), anchored.IMPOSSIBLE)
+
     def test_held_parameters_stay_where_they_are_held(self):
         obs, _, jump_day = simulate(n=200)
         held = {anchored.PARAM_NAMES.index("drift_sd"): anchored.HELD_OFF}

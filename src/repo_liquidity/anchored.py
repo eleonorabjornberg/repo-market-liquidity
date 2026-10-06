@@ -165,6 +165,19 @@ def filter_path(observations, params, *, anchor: Anchor, jump_days, scale: float
     return _run(observations, params, anchor, jump_days, scale, keep=True)[1]
 
 
+#: The objective's value at a parameter point the model cannot evaluate (a non-finite likelihood or an overflow).
+IMPOSSIBLE = -1e12
+
+
+def objective(observations, params, *, anchor: Anchor, jump_days, scale: float = latent.SCALE) -> float:
+    """The likelihood the optimizer maximizes: `loglike`, or `IMPOSSIBLE` where it overflows or is not finite."""
+    try:
+        value = loglike(observations, params, anchor=anchor, jump_days=jump_days, scale=scale)
+    except OverflowError:
+        return IMPOSSIBLE
+    return value if math.isfinite(value) else IMPOSSIBLE
+
+
 def require_anchor_before(cutoff: date, anchor: Anchor) -> None:
     """Refuse a refit dated before the fixed curve's last day of data.
 
@@ -227,8 +240,7 @@ def fit(observations: Sequence[Observation], *, anchor: Anchor, jump_days, cutof
 
     class _Model(GenericLikelihoodModel):
         def loglike(self, z):
-            value = loglike(observations, full(z), anchor=anchor, jump_days=jump_days, scale=scale)
-            return value if math.isfinite(value) else -1e12
+            return objective(observations, full(z), anchor=anchor, jump_days=jump_days, scale=scale)
 
     model = _Model(endog=np.zeros(len(observations)), exog=np.ones((len(observations), 1)))
     model.exog_names[:] = ["const"]
@@ -236,7 +248,7 @@ def fit(observations: Sequence[Observation], *, anchor: Anchor, jump_days, cutof
     result = model.fit(start_params=z0, method="nm", maxiter=maxiter, disp=0)
     result = model.fit(start_params=result.params, method="bfgs", maxiter=maxiter, disp=0)
     params = tuple(full(result.params))
-    return Fit(params=params, loglike=loglike(observations, params, anchor=anchor, jump_days=jump_days, scale=scale),
+    return Fit(params=params, loglike=objective(observations, params, anchor=anchor, jump_days=jump_days, scale=scale),
                converged=bool(result.mle_retvals.get("converged", False)), cutoff=cutoff, scale=scale)
 
 
