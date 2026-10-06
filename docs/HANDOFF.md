@@ -16,6 +16,7 @@ directive, those win and this file is stale. Update it at the end of each sessio
 | 3b: the buffer on a fixed curve | **In review: benchmark shown, stability not shown** | `docs/stages/stage-3b.md`, `src/repo_liquidity/anchored.py`, `scripts/stage3b_anchored.py`, `results/stage3b/anchored.json` |
 | 1a correction: MBS, 2019–21 repo operations, material use | **In review** | `docs/stages/stage-1a-correction.md`, `src/repo_liquidity/fed_repo.py`, `metadata/phase3_panel_v2_manifest.json` (panel version 2; version 1 is unchanged) |
 | 1b, first wave: pricing and the Fed's facilities | **In review** | `docs/stages/stage-1b.md`, `src/repo_liquidity/indicators.py`, `metadata/phase3_panel_v3_manifest.json` (panel version 3; versions 1 and 2 unchanged) |
+| 3c: Stage 3b's model, stability on the real-time buffer | **In review: not shown** (judged once). Stage 2's curve becomes the Stage 4 model | `docs/stages/stage-3c.md`, `scripts/stage3c_realtime.py`, `results/stage3c/realtime.json` |
 | 4, 5: evaluation, the frozen daily log | Not started. Stage 4 needs a frozen Stage 3 model | `PLAN.md`, `docs/decisions/evaluation.md` |
 
 ## Stage 2, in one paragraph

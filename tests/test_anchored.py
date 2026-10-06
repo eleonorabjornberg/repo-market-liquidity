@@ -156,5 +156,37 @@ class MultiStartTests(unittest.TestCase):
         self.assertEqual(len(tried), 2 + len(anchored.START_BUFFERS))
 
 
+
+class RealTimeStabilityTests(unittest.TestCase):
+    """Stage 3c (`docs/stages/stage-3c.md`): the buffer a forecast reads, under the refit in force and the one before."""
+
+    def setUp(self):
+        self.obs, _, self.jump = simulate(n=200)
+        self.params = anchored.start_params(self.obs, ANCHOR)
+
+    def test_identical_refits_have_no_gap(self):
+        refits = [(60, self.params), (120, self.params), (180, self.params)]
+        result = anchored.realtime_stability(self.obs, refits, anchor=ANCHOR, jump_days=[self.jump])
+        self.assertEqual(result["worst"]["gap"], 0.0)
+        self.assertEqual(result["days_compared"], 199 - 120)
+
+    def test_the_first_refits_days_are_not_compared_and_gaps_are_read_two_days_back(self):
+        moved = list(self.params)
+        moved[0] = self.params[0] + 1.0
+        refits = [(60, self.params), (120, tuple(moved))]
+        result = anchored.realtime_stability(self.obs, refits, anchor=ANCHOR, jump_days=[self.jump])
+        self.assertEqual(result["days_compared"], 199 - 120)
+        self.assertGreater(result["worst"]["gap"], 0.0)
+        old = anchored.filter_path(self.obs, self.params, anchor=ANCHOR, jump_days=[self.jump])
+        new = anchored.filter_path(self.obs, moved, anchor=ANCHOR, jump_days=[self.jump])
+        day = self.obs[121].day
+        self.assertAlmostEqual(result["gaps"][day.isoformat()], abs(new[119].mean - old[119].mean), places=12)
+
+    def test_a_refit_list_out_of_order_is_refused(self):
+        with self.assertRaises(ValueError):
+            anchored.realtime_stability(self.obs, [(120, self.params), (60, self.params)], anchor=ANCHOR,
+                                        jump_days=[self.jump])
+
+
 if __name__ == "__main__":
     unittest.main()
