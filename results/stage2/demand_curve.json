@@ -1,0 +1,442 @@
+{
+  "binned_curve": [
+    {
+      "days": 5,
+      "median_spread_bp": 8.0,
+      "ratio_from": 0.07,
+      "ratio_to": 0.08,
+      "share_above_5bp": 0.6
+    },
+    {
+      "days": 139,
+      "median_spread_bp": 5.0,
+      "ratio_from": 0.08,
+      "ratio_to": 0.09,
+      "share_above_5bp": 0.4029
+    },
+    {
+      "days": 161,
+      "median_spread_bp": 0.0,
+      "ratio_from": 0.09,
+      "ratio_to": 0.1,
+      "share_above_5bp": 0.2174
+    },
+    {
+      "days": 61,
+      "median_spread_bp": 0.0,
+      "ratio_from": 0.1,
+      "ratio_to": 0.11,
+      "share_above_5bp": 0.1639
+    },
+    {
+      "days": 121,
+      "median_spread_bp": 0.0,
+      "ratio_from": 0.11,
+      "ratio_to": 0.12,
+      "share_above_5bp": 0.1736
+    },
+    {
+      "days": 88,
+      "median_spread_bp": -2.0,
+      "ratio_from": 0.12,
+      "ratio_to": 0.13,
+      "share_above_5bp": 0.1364
+    },
+    {
+      "days": 423,
+      "median_spread_bp": -9.0,
+      "ratio_from": 0.13,
+      "ratio_to": 0.14,
+      "share_above_5bp": 0.0071
+    },
+    {
+      "days": 450,
+      "median_spread_bp": -9.0,
+      "ratio_from": 0.14,
+      "ratio_to": 0.15,
+      "share_above_5bp": 0.0044
+    },
+    {
+      "days": 173,
+      "median_spread_bp": -7.0,
+      "ratio_from": 0.15,
+      "ratio_to": 0.16,
+      "share_above_5bp": 0.0
+    },
+    {
+      "days": 77,
+      "median_spread_bp": -10.0,
+      "ratio_from": 0.16,
+      "ratio_to": 0.17,
+      "share_above_5bp": 0.0
+    },
+    {
+      "days": 54,
+      "median_spread_bp": -10.0,
+      "ratio_from": 0.17,
+      "ratio_to": 0.18,
+      "share_above_5bp": 0.0
+    },
+    {
+      "days": 153,
+      "median_spread_bp": -10.0,
+      "ratio_from": 0.18,
+      "ratio_to": 0.19,
+      "share_above_5bp": 0.0
+    },
+    {
+      "days": 20,
+      "median_spread_bp": -10.0,
+      "ratio_from": 0.19,
+      "ratio_to": 0.2,
+      "share_above_5bp": 0.0
+    }
+  ],
+  "days": 1925,
+  "decided_rule": "docs/decisions/stage-2-bend.md",
+  "pooled": {
+    "days": 1925,
+    "first": "2018-04-17",
+    "fit": {
+      "intercept_bp": -8.494456,
+      "kink": 0.145,
+      "slope_bp_per_unit": 263.3431
+    },
+    "kink_interval_90": [
+      0.1335,
+      0.1535
+    ],
+    "label": "pooled",
+    "last": "2025-12-31",
+    "ratio_range": [
+      0.07968,
+      0.19233
+    ],
+    "scarce_days": 575
+  },
+  "provenance": {
+    "panel_sha256": "b24714cbfb3568ab818fff9bf2133046770de8ca7072354d6816bdd89d13eb95",
+    "parent_commit": "71ab387e5557cc9ecefb12d1b2bf21d086571388",
+    "parent_panel_sha256": "4ddc3882cd6d406b11e1088f8ff6195e16dde175a0ad6818abe40dd5bdac8999",
+    "splits_sha256": "d92d48f17aef1475d3773406d2dfb6c650cbe470fd4f9e8074e965c37a23bc96"
+  },
+  "regimes": {
+    "2018-19": {
+      "days": 427,
+      "first": "2018-04-17",
+      "fit": {
+        "intercept_bp": -2.719294,
+        "kink": 0.116,
+        "slope_bp_per_unit": 372.8807
+      },
+      "kink_interval_90": [
+        0.0905,
+        0.123
+      ],
+      "label": "regime 2018-19",
+      "last": "2019-12-31",
+      "ratio_range": [
+        0.07968,
+        0.12889
+      ],
+      "scarce_days": 427
+    },
+    "2020": {
+      "days": 251,
+      "first": "2020-01-02",
+      "fit": {
+        "intercept_bp": -2.589646,
+        "kink": 0.103,
+        "slope_bp_per_unit": 284.3713
+      },
+      "kink_interval_90": [
+        0.091,
+        0.1605
+      ],
+      "label": "regime 2020",
+      "last": "2020-12-31",
+      "ratio_range": [
+        0.09054,
+        0.16098
+      ],
+      "scarce_days": 67
+    },
+    "2021-23": {
+      "days": 748,
+      "first": "2021-01-04",
+      "fit": {
+        "intercept_bp": -9.464389,
+        "kink": 0.152,
+        "slope_bp_per_unit": -54.8078
+      },
+      "kink_interval_90": [
+        0.1485,
+        0.1835
+      ],
+      "label": "regime 2021-23",
+      "last": "2023-12-29",
+      "ratio_range": [
+        0.12343,
+        0.19233
+      ],
+      "scarce_days": 4
+    },
+    "2024": {
+      "days": 250,
+      "first": "2024-01-02",
+      "fit": {
+        "intercept_bp": -8.997458,
+        "kink": 0.1545,
+        "slope_bp_per_unit": 208.8617
+      },
+      "kink_interval_90": [
+        0.144,
+        0.155
+      ],
+      "label": "regime 2024",
+      "last": "2024-12-31",
+      "ratio_range": [
+        0.13223,
+        0.15543
+      ],
+      "scarce_days": 0
+    },
+    "2025-26": {
+      "days": 249,
+      "first": "2025-01-02",
+      "fit": {
+        "intercept_bp": -6.719517,
+        "kink": 0.1345,
+        "slope_bp_per_unit": 894.5373
+      },
+      "kink_interval_90": [
+        0.131,
+        0.1365
+      ],
+      "label": "regime 2025-26",
+      "last": "2025-12-31",
+      "ratio_range": [
+        0.11604,
+        0.1447
+      ],
+      "scarce_days": 77
+    }
+  },
+  "reported_only": {
+    "on_rrp_buffer": {
+      "on_rrp_at_or_above_100bn": {
+        "days": 1052,
+        "first": "2020-03-30",
+        "fit": {
+          "intercept_bp": -9.926984,
+          "kink": 0.1725,
+          "slope_bp_per_unit": 36.0629
+        },
+        "kink_interval_90": [
+          0.1465,
+          0.192
+        ],
+        "label": "on_rrp >= 100bn",
+        "last": "2025-08-06",
+        "ratio_range": [
+          0.10308,
+          0.19233
+        ],
+        "scarce_days": 11
+      },
+      "on_rrp_below_100bn": {
+        "days": 873,
+        "first": "2018-04-17",
+        "fit": {
+          "intercept_bp": -8.998902,
+          "kink": 0.181,
+          "slope_bp_per_unit": 159.3334
+        },
+        "kink_interval_90": [
+          0.0915,
+          0.1865
+        ],
+        "label": "on_rrp < 100bn",
+        "last": "2025-12-31",
+        "ratio_range": [
+          0.07968,
+          0.18691
+        ],
+        "scarce_days": 564
+      }
+    },
+    "p75_spread": {
+      "days": 1923,
+      "first": "2018-04-17",
+      "fit": {
+        "intercept_bp": -9.476743,
+        "kink": 0.169,
+        "slope_bp_per_unit": 270.2943
+      },
+      "kink_interval_90": [
+        0.16,
+        0.1765
+      ],
+      "label": "p75 pooled",
+      "last": "2025-12-31",
+      "ratio_range": [
+        0.07968,
+        0.19233
+      ],
+      "scarce_days": 574
+    },
+    "reform_periods": {
+      "2018-04-17 to 2021-03-31": {
+        "days": 738,
+        "first": "2018-04-17",
+        "fit": {
+          "intercept_bp": -3.188949,
+          "kink": 0.116,
+          "slope_bp_per_unit": 354.0328
+        },
+        "kink_interval_90": [
+          0.092,
+          0.175
+        ],
+        "label": "reform 2018-04-17",
+        "last": "2021-03-30",
+        "ratio_range": [
+          0.07968,
+          0.17515
+        ],
+        "scarce_days": 494
+      },
+      "2021-03-31 to 2021-07-29": {
+        "days": 83,
+        "first": "2021-03-31",
+        "fit": {
+          "intercept_bp": -9.278195,
+          "kink": 0.178,
+          "slope_bp_per_unit": -417.3532
+        },
+        "kink_interval_90": [
+          0.17647499999999997,
+          0.1865
+        ],
+        "label": "reform 2021-03-31",
+        "last": "2021-07-28",
+        "ratio_range": [
+          0.17598,
+          0.18691
+        ],
+        "scarce_days": 0
+      },
+      "2021-07-29 to 2023-03-12": {
+        "days": 403,
+        "first": "2021-07-29",
+        "fit": {
+          "intercept_bp": -10.232259,
+          "kink": 0.192,
+          "slope_bp_per_unit": -20.9949
+        },
+        "kink_interval_90": [
+          0.136,
+          0.192
+        ],
+        "label": "reform 2021-07-29",
+        "last": "2023-03-10",
+        "ratio_range": [
+          0.12343,
+          0.19233
+        ],
+        "scarce_days": 4
+      },
+      "2023-03-12 to 2023-07-12": {
+        "days": 83,
+        "first": "2023-03-13",
+        "fit": {
+          "intercept_bp": -9.160494,
+          "kink": 0.131,
+          "slope_bp_per_unit": -2129.3418
+        },
+        "kink_interval_90": [
+          0.131,
+          0.1485
+        ],
+        "label": "reform 2023-03-12",
+        "last": "2023-07-11",
+        "ratio_range": [
+          0.13061,
+          0.14853
+        ],
+        "scarce_days": 0
+      },
+      "2023-07-12 to 2023-12-13": {
+        "days": 107,
+        "first": "2023-07-12",
+        "fit": {
+          "intercept_bp": -7.846714,
+          "kink": 0.149,
+          "slope_bp_per_unit": -167.9109
+        },
+        "kink_interval_90": [
+          0.141,
+          0.149
+        ],
+        "label": "reform 2023-07-12",
+        "last": "2023-12-12",
+        "ratio_range": [
+          0.13631,
+          0.14937
+        ],
+        "scarce_days": 0
+      },
+      "2023-12-13 to 2026-01-01": {
+        "days": 511,
+        "first": "2023-12-13",
+        "fit": {
+          "intercept_bp": -6.805061,
+          "kink": 0.1345,
+          "slope_bp_per_unit": 899.2915
+        },
+        "kink_interval_90": [
+          0.1305,
+          0.1395
+        ],
+        "label": "reform 2023-12-13",
+        "last": "2025-12-31",
+        "ratio_range": [
+          0.11604,
+          0.15543
+        ],
+        "scarce_days": 77
+      }
+    }
+  },
+  "settings": {
+    "block_length": 10,
+    "decision_time": "16:00:00",
+    "grid": [
+      0.06,
+      0.22,
+      0.0005
+    ],
+    "level": 0.9,
+    "min_scarce_days": 120,
+    "replications": 2000,
+    "scarce_below": 0.13,
+    "sharp_width": 0.030000000000000013,
+    "window": [
+      "2018-04-17",
+      "2025-12-31"
+    ]
+  },
+  "stage": "2",
+  "verdict": {
+    "eligible_regimes": [
+      "2018-19"
+    ],
+    "non_overlapping": [
+      "2018-19"
+    ],
+    "pooled_sharp": true,
+    "pooled_width": 0.01999999999999999,
+    "shown": false
+  },
+  "what": "Descriptive. The spread SOFR - IORB (bp) on day T against reserves / bank assets known at T's decision instant; broken stick spread = a + b * max(k - ratio, 0). Nothing is forecast or scored."
+}

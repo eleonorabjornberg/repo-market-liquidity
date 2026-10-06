@@ -154,6 +154,9 @@ from 2018-04-03.
 
 ### Stage 2: the reserve demand curve (descriptive)
 
+**Result (6 October 2026):** the bend is **not shown** stable under `docs/decisions/stage-2-bend.md`; see
+`results/stage2/demand_curve.json` and the review pull request. Stage 3 waits on Eleonora's reading of it.
+
 **Goal:** a transparent first estimate of the desired buffer: where the spread starts to respond as reserves become
 scarce.
 
