@@ -27,6 +27,8 @@ REFORMS = (date(2021, 3, 31), date(2021, 7, 29), date(2023, 3, 12), date(2023, 7
 LEGAL = (date(2021, 3, 31), date(2023, 3, 12))
 #: The standing repo facility's move to a fixed rate (`docs/decisions/reform-dates.md`, amendment of 6 October 2026).
 SRF_FIXED_RATE = date(2025, 12, 11)
+#: The SLR exclusion's end, the reform Nicholas rates most material (`docs/stages/stage-3b.md`, amendment 2).
+SLR_END = (date(2021, 3, 31),)
 REFIT_EVERY = 21
 STABILITY_LIMIT = 0.005
 EPISODE_1 = (date(2018, 1, 1), date(2020, 3, 13))
@@ -83,10 +85,17 @@ def _main(pool):
         manifest = panel.build(path)
         rows = load_daily_panel(path)
     observations = anchored.assemble(rows)
+    tgcr_observations = anchored.assemble(rows, rate="tgcr")
+    # Amendment 2: Stage 2's method must reproduce Stage 2's curve before it is trusted to fit TGCR's.
+    method_check = anchored.anchor_from(observations, anchor.last_day)
+    if method_check != anchor:
+        raise ValueError(f"Stage 2's method gives {method_check}, not the recorded curve {anchor}")
+    tgcr_anchor = anchored.anchor_from(tgcr_observations, anchor.last_day)
     days = [o.day for o in observations]
     jumps = latent.jump_days(observations, REFORMS)
     legal = latent.jump_days(observations, LEGAL)
     with_srf = latent.jump_days(observations, REFORMS + (SRF_FIXED_RATE,))
+    slr_only = latent.jump_days(observations, SLR_END)
 
     # Walk-forward: the first refit on the curve's last day, then every 21 observation days.
     first = days.index(anchor.last_day)
@@ -145,16 +154,23 @@ def _main(pool):
             ("legal_breaks_only", latent.SCALE, legal, {}),
             ("steps_only_drift_held_at_0", latent.SCALE, jumps, {DRIFT: anchored.HELD_OFF}),
             ("no_calendar_terms", latent.SCALE, jumps, {i: 0.0 for i in CALENDAR_TERMS}),
-            ("jump_also_at_2025-12-11", latent.SCALE, with_srf, {})):
+            ("jump_also_at_2025-12-11", latent.SCALE, with_srf, {}),
+            ("jumps_only_at_slr_end", latent.SCALE, slr_only, {})):
         f, _ = anchored.fit_best(observations, anchor=anchor, jump_days=jdays, cutoff=last, scale=scale, held=held,
                                  previous=full.params, mapper=pool.map)
         sensitivities[name] = summary(f, observations, anchor, jdays, scale)
+    f, _ = anchored.fit_best(tgcr_observations, anchor=tgcr_anchor, jump_days=jumps, cutoff=last,
+                             previous=full.params, mapper=pool.map)
+    sensitivities["corridor_from_tgcr"] = {**summary(f, tgcr_observations, tgcr_anchor, jumps, latent.SCALE),
+                                           "anchor": {"intercept": tgcr_anchor.intercept, "slope": tgcr_anchor.slope,
+                                                      "last_day": tgcr_anchor.last_day.isoformat()}}
 
     record = {
         "stage": "3b",
         "directive": "docs/stages/stage-3b.md",
         "anchor": {"intercept": anchor.intercept, "slope": anchor.slope, "last_day": anchor.last_day.isoformat(),
-                   "source": "results/stage2/demand_curve.json", "source_sha256": stage2_sha},
+                   "source": "results/stage2/demand_curve.json", "source_sha256": stage2_sha,
+                   "method_check": "Stage 2's broken-stick method on the SOFR corridor reproduces this curve exactly"},
         "settings": {"refit_every": REFIT_EVERY, "scale": latent.SCALE,
                      "jump_days": [d.isoformat() for d in jumps],
                      "bounds": {"buffer_max": anchored.BUFFER_MAX, "drift_sd_max_z": anchored.DRIFT_SD_MAX,

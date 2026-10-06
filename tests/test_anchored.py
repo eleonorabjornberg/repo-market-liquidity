@@ -80,6 +80,28 @@ class AnchorTests(unittest.TestCase):
         self.assertEqual(len(digest), 64)
 
 
+class AnchorFromTests(unittest.TestCase):
+    def test_the_broken_stick_curve_is_recovered_from_its_training_days(self):
+        rng = random.Random(11)
+        day, obs = date(2018, 4, 17), []
+        for t in range(400):
+            while day.weekday() >= 5:
+                day += timedelta(days=1)
+            x = 0.07 + 0.06 * rng.random()
+            y = 1.05 + 130.0 * max(0.092 - x, 0.0) + rng.gauss(0, 0.02)
+            obs.append(anchored.Observation(day, x, (y, None), "ordinary"))
+            day += timedelta(days=1)
+        last = obs[299].day
+        anchor = anchored.anchor_from(obs, last)
+        self.assertEqual(anchor.last_day, last)
+        self.assertAlmostEqual(anchor.intercept, 1.05, delta=0.02)
+        self.assertAlmostEqual(anchor.slope, 130.0, delta=10.0)
+
+    def test_only_sofr_or_tgcr_can_be_read_as_the_corridor(self):
+        with self.assertRaises(ValueError):
+            anchored.assemble([], rate="bgcr")
+
+
 class CalendarTests(unittest.TestCase):
     def test_a_days_type_follows_the_parents_declaration(self):
         declaration = anchored.split_declaration()

@@ -282,25 +282,51 @@ def fit_best(observations: Sequence[Observation], *, anchor: Anchor, jump_days, 
     return best, tried
 
 
-def assemble(rows) -> List[Observation]:
+#: Rates the corridor position may be read from (`docs/stages/stage-3b.md`, amendment 2).
+CORRIDOR_RATES = ("sofr", "tgcr")
+
+
+def assemble(rows, rate: str = "sofr") -> List[Observation]:
     """Stage 3b's observations from the Phase 3 panel rows, to 2025-12-31.
 
-    x and the corridor position come from Stage 2's `demand_curve.sample`, as in Stage 3. Dispersion is the day's SOFR
-    75th minus 25th percentile. The type is the day's pressure-day type, read from its own calendar columns.
+    x comes from Stage 2's `demand_curve.sample`, as in Stage 3. The corridor position is read from `rate`: SOFR (the
+    directive's model, as Stage 2 computes it) or TGCR (amendment 2), each against the IORB and the ON RRP rate in force
+    that day. Dispersion is the day's SOFR 75th minus 25th percentile. The type is the day's pressure-day type, read from
+    its own calendar columns.
+
+    Raises:
+        ValueError: if `rate` is not in `CORRIDOR_RATES`.
     """
-    from repo_liquidity import demand_curve
+    if rate not in CORRIDOR_RATES:
+        raise ValueError(f"the corridor is read from one of {CORRIDOR_RATES}, not {rate!r}")
+    from repo_liquidity import demand_curve, scheduled
 
     declaration = split_declaration()
+    floors = scheduled.load_on_rrp_rates()
     by_day = {row.date: row.values for row in rows}
     out = []
     for day in demand_curve.sample(rows):
         values = by_day[day.day]
         p25, p75 = values.get("sofr_p25"), values.get("sofr_p75")
+        corridor = day.corridor
+        if rate == "tgcr":
+            floor = scheduled.rate_in_force(floors, day.day)
+            corridor = None if floor is None or values.get("tgcr") is None else demand_curve.corridor_position(
+                sofr=values["tgcr"], iorb=values["iorb"], on_rrp_rate=floor)
         out.append(Observation(day.day, day.ratio, (
-            day.corridor,
+            corridor,
             None if p25 is None or p75 is None else round(100.0 * (p75 - p25), 6),
         ), declaration.day_type(values)))
     return out
+
+
+def anchor_from(observations: Sequence[Observation], last_day: date) -> Anchor:
+    """A fixed curve by Stage 2's method: the broken stick of the corridor position on the ratio, days to `last_day`."""
+    from repo_liquidity import demand_curve
+
+    days = [o for o in observations if o.day <= last_day and o.y[0] is not None]
+    fit = demand_curve.fit_broken_stick([o.x for o in days], [o.y[0] for o in days])
+    return Anchor(intercept=round(fit.intercept, 6), slope=round(fit.slope, 4), last_day=last_day)
 
 
 def beside(rows, days: Sequence[date]) -> Dict[str, Dict[str, Optional[float]]]:

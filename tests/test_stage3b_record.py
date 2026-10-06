@@ -60,7 +60,8 @@ class Stage3bRecordTests(unittest.TestCase):
     def test_the_directive_sensitivities_are_reported(self):
         self.assertEqual(set(self.record["sensitivities"]),
                          {"scale_0.002", "scale_0.01", "legal_breaks_only", "steps_only_drift_held_at_0",
-                          "no_calendar_terms", "jump_also_at_2025-12-11"})
+                          "no_calendar_terms", "jump_also_at_2025-12-11", "jumps_only_at_slr_end",
+                          "corridor_from_tgcr"})
 
 
 if __name__ == "__main__":
