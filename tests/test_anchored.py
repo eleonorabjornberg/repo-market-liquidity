@@ -1,0 +1,109 @@
+"""Stage 3b: the buffer on a fixed curve (`docs/stages/stage-3b.md`)."""
+
+import math
+import random
+import unittest
+from datetime import date, timedelta
+
+from repo_model.splits import LookAheadError
+
+from repo_liquidity import anchored, latent
+
+ANCHOR = anchored.Anchor(intercept=1.0, slope=120.0, last_day=date(2019, 1, 1))
+
+
+def simulate(n=500, jump_at=None, jump=0.02, seed=5):
+    jump_at = n // 2 if jump_at is None else jump_at
+    rng = random.Random(seed)
+    day = date(2019, 1, 1)
+    obs, truth, b = [], [], 0.11
+    for t in range(n):
+        while day.weekday() >= 5:
+            day += timedelta(days=1)
+        b += rng.gauss(0, 0.0003) + (jump if t == jump_at else 0.0)
+        x = 0.12 + 0.03 * math.sin(t / 60.0) + rng.gauss(0, 0.003)
+        kind = "quarter_end" if t % 63 == 62 else "month_end" if t % 21 == 20 else "ordinary"
+        bump = 2.0 if kind == "quarter_end" else 0.0
+        g = latent.softplus(b - x, latent.SCALE)
+        y = (ANCHOR.intercept + ANCHOR.slope * g + 0.1 * bump + rng.gauss(0, 0.15),
+             2.0 + 300 * g + bump + rng.gauss(0, 1.0))
+        obs.append(anchored.Observation(day, x, y, kind))
+        truth.append(b)
+        day += timedelta(days=1)
+    return obs, truth, obs[jump_at].day
+
+
+class FilterTests(unittest.TestCase):
+    def test_the_filter_tracks_a_known_buffer_through_a_jump(self):
+        obs, truth, jump_day = simulate()
+        fit = anchored.fit(obs, anchor=ANCHOR, jump_days=[jump_day], cutoff=obs[-1].day)
+        path = anchored.filter_path(obs, fit.params, anchor=ANCHOR, jump_days=[jump_day])
+        errors = [abs(p.mean - b) for p, b in zip(path[150:], truth[150:])]
+        self.assertLess(sum(errors) / len(errors), 0.005)
+        before = sum(p.mean for p in path[200:250]) / 50
+        after = sum(p.mean for p in path[300:350]) / 50
+        self.assertGreater(after - before, 0.01)
+
+    def test_the_buffer_stays_between_0_and_its_maximum(self):
+        obs, _, jump_day = simulate(n=200)
+        wild = [anchored.Observation(o.day, o.x, (50.0 if i % 2 else -50.0, o.y[1]), o.kind)
+                for i, o in enumerate(obs)]
+        path = anchored.filter_path(wild, anchored.start_params(wild, ANCHOR), anchor=ANCHOR, jump_days=[jump_day])
+        self.assertTrue(all(0.0 < p.mean < anchored.BUFFER_MAX for p in path))
+
+    def test_the_corridor_curve_is_not_estimated(self):
+        obs, _, jump_day = simulate(n=200)
+        fit = anchored.fit(obs, anchor=ANCHOR, jump_days=[jump_day], cutoff=obs[-1].day, maxiter=50)
+        self.assertNotIn("a_corridor_position", anchored.PARAM_NAMES)
+        self.assertNotIn("b_corridor_position", anchored.PARAM_NAMES)
+        self.assertEqual(len(fit.params), len(anchored.PARAM_NAMES))
+
+    def test_held_parameters_stay_where_they_are_held(self):
+        obs, _, jump_day = simulate(n=200)
+        held = {anchored.PARAM_NAMES.index("drift_sd"): anchored.HELD_OFF}
+        fit = anchored.fit(obs, anchor=ANCHOR, jump_days=[jump_day], cutoff=obs[-1].day, held=held, maxiter=50)
+        self.assertEqual(fit.params[anchored.PARAM_NAMES.index("drift_sd")], anchored.HELD_OFF)
+        self.assertLess(anchored.natural(fit.params)[1], 1e-12)
+
+
+class AnchorTests(unittest.TestCase):
+    def test_the_anchor_is_stage_2s_2018_to_march_2020_curve(self):
+        anchor, digest = anchored.load_anchor()
+        self.assertEqual((anchor.intercept, anchor.slope), (1.057938, 133.2055))
+        self.assertEqual(anchor.last_day, date(2020, 3, 13))
+        self.assertEqual(len(digest), 64)
+
+
+class CalendarTests(unittest.TestCase):
+    def test_a_days_type_follows_the_parents_declaration(self):
+        declaration = anchored.split_declaration()
+        quarter = {"quarter_end": 1.0, "tax_date": 0.0, "days_to_month_end": 0.0}
+        month = {"quarter_end": 0.0, "tax_date": 0.0, "days_to_month_end": 1.0}
+        tax = {"quarter_end": 0.0, "tax_date": 1.0, "days_to_month_end": 10.0}
+        plain = {"quarter_end": 0.0, "tax_date": 0.0, "days_to_month_end": 10.0}
+        self.assertEqual([declaration.day_type(v) for v in (quarter, month, tax, plain)],
+                         ["quarter_end", "month_end", "tax_date", "ordinary"])
+
+
+class GuardTests(unittest.TestCase):
+    def test_a_refit_before_the_curves_last_day_is_refused(self):
+        """Leakage guard: the fixed curve uses data to its last day, so no refit may be dated earlier.
+
+        Recorded mutation (6 October 2026): replacing `if cutoff < anchor.last_day:` in
+        `anchored.require_anchor_before` with `if False:` makes this test fail with
+        AssertionError: LookAheadError not raised.
+        """
+        obs, _, jump_day = simulate(n=60)
+        late = anchored.Anchor(ANCHOR.intercept, ANCHOR.slope, last_day=obs[-1].day + timedelta(days=1))
+        with self.assertRaises(LookAheadError):
+            anchored.fit(obs, anchor=late, jump_days=[jump_day], cutoff=obs[-1].day)
+
+    def test_a_fit_given_an_observation_after_its_cutoff_is_refused(self):
+        """Leakage guard reused from Stage 3 (`latent.require_before`, whose mutation is recorded there)."""
+        obs, _, jump_day = simulate(n=60)
+        with self.assertRaises(LookAheadError):
+            anchored.fit(obs, anchor=ANCHOR, jump_days=[jump_day], cutoff=obs[30].day)
+
+
+if __name__ == "__main__":
+    unittest.main()
