@@ -48,6 +48,11 @@ class Stage3bRecordTests(unittest.TestCase):
         self.assertAlmostEqual(benchmark["interval_90"][0], difference - half, places=5)
         self.assertEqual(benchmark["shown"], benchmark["interval_90"][0] > 0)
 
+    def test_every_refit_keeps_its_best_start(self):
+        for cutoff, refit in self.record["refit_params"].items():
+            by_start = refit["loglike_by_start"]
+            self.assertEqual(by_start[refit["winning_start"]], max(by_start.values()), cutoff)
+
     def test_the_model_is_shown_only_if_both_hold(self):
         must = self.record["must_show"]
         self.assertEqual(must["shown"], must["stability"]["shown"] and must["benchmark"]["shown"])
@@ -55,7 +60,7 @@ class Stage3bRecordTests(unittest.TestCase):
     def test_the_directive_sensitivities_are_reported(self):
         self.assertEqual(set(self.record["sensitivities"]),
                          {"scale_0.002", "scale_0.01", "legal_breaks_only", "steps_only_drift_held_at_0",
-                          "no_calendar_terms"})
+                          "no_calendar_terms", "jump_also_at_2025-12-11"})
 
 
 if __name__ == "__main__":

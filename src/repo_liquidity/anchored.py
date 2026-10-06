@@ -42,6 +42,8 @@ JUMP_SD_MAX = 0.75
 #: An unconstrained value that holds a standard deviation at (numerically) 0.
 HELD_OFF = -40.0
 INITIAL_VARIANCE = 1.0
+#: Initial buffers the multi-start grid tries (`docs/stages/stage-3b.md`, amendment of 6 October 2026).
+START_BUFFERS = (0.05, 0.09, 0.13, 0.17)
 _CORRIDOR_CALENDAR = slice(4, 7)
 _DISPERSION_CALENDAR = slice(10, 13)
 
@@ -236,6 +238,36 @@ def fit(observations: Sequence[Observation], *, anchor: Anchor, jump_days, cutof
     params = tuple(full(result.params))
     return Fit(params=params, loglike=loglike(observations, params, anchor=anchor, jump_days=jump_days, scale=scale),
                converged=bool(result.mle_retvals.get("converged", False)), cutoff=cutoff, scale=scale)
+
+
+def start_grid(observations: Sequence[Observation], anchor: Anchor) -> List[Tuple[float, ...]]:
+    """The data-scaled start, then the same start with each initial buffer in `START_BUFFERS`."""
+    base = start_params(observations, anchor)
+    return [base] + [(_logit(b / BUFFER_MAX),) + tuple(base[1:]) for b in START_BUFFERS]
+
+
+def _fit_job(job) -> Fit:
+    observations, kwargs = job
+    return fit(observations, **kwargs)
+
+
+def fit_best(observations: Sequence[Observation], *, anchor: Anchor, jump_days, cutoff: date,
+             scale: float = latent.SCALE, previous: Optional[Sequence[float]] = None,
+             held: Optional[Mapping[int, float]] = None, maxiter: int = 400,
+             mapper=map) -> Tuple[Fit, List[Tuple[str, Fit]]]:
+    """`fit` from every start (the previous answer first, if given, then `start_grid`); the highest likelihood wins.
+
+    `mapper` runs the starts (the built-in `map`, or a process pool's). Returns the winning fit and every
+    (start label, fit) tried, in order.
+    """
+    starts: List[Tuple[str, Sequence[float]]] = [] if previous is None else [("previous", previous)]
+    grid = start_grid(observations, anchor)
+    starts += [("data", grid[0])] + [(f"buffer_{b}", s) for b, s in zip(START_BUFFERS, grid[1:])]
+    jobs = [(list(observations), dict(anchor=anchor, jump_days=list(jump_days), cutoff=cutoff, scale=scale,
+                                      start=tuple(start), held=held, maxiter=maxiter)) for _, start in starts]
+    tried = list(zip([label for label, _ in starts], mapper(_fit_job, jobs)))
+    best = max((f for _, f in tried), key=lambda f: f.loglike if math.isfinite(f.loglike) else -math.inf)
+    return best, tried
 
 
 def assemble(rows) -> List[Observation]:

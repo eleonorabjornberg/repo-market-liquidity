@@ -13,6 +13,7 @@ buffer. Nothing is scored or published. Needs the `state-space` extra.
 import json
 import math
 import sys
+from concurrent.futures import ProcessPoolExecutor
 import tempfile
 import warnings
 from datetime import date
@@ -24,6 +25,8 @@ ROOT = Path(__file__).resolve().parents[1]
 RECORD = ROOT / "results" / "stage3b" / "anchored.json"
 REFORMS = (date(2021, 3, 31), date(2021, 7, 29), date(2023, 3, 12), date(2023, 7, 12), date(2023, 12, 13))
 LEGAL = (date(2021, 3, 31), date(2023, 3, 12))
+#: The standing repo facility's move to a fixed rate (`docs/decisions/reform-dates.md`, amendment of 6 October 2026).
+SRF_FIXED_RATE = date(2025, 12, 11)
 REFIT_EVERY = 21
 STABILITY_LIMIT = 0.005
 EPISODE_1 = (date(2018, 1, 1), date(2020, 3, 13))
@@ -66,9 +69,14 @@ def summary(fit, observations, anchor, jumps, scale):
 
 
 def main():
+    warnings.simplefilter("ignore")
+    with ProcessPoolExecutor(max_workers=4, initializer=warnings.simplefilter, initargs=("ignore",)) as pool:
+        return _main(pool)
+
+
+def _main(pool):
     from repo_model.data import load_daily_panel
 
-    warnings.simplefilter("ignore")
     anchor, stage2_sha = anchored.load_anchor()
     with tempfile.TemporaryDirectory() as tmp:
         path = Path(tmp) / "panel.csv"
@@ -78,6 +86,7 @@ def main():
     days = [o.day for o in observations]
     jumps = latent.jump_days(observations, REFORMS)
     legal = latent.jump_days(observations, LEGAL)
+    with_srf = latent.jump_days(observations, REFORMS + (SRF_FIXED_RATE,))
 
     # Walk-forward: the first refit on the curve's last day, then every 21 observation days.
     first = days.index(anchor.last_day)
@@ -85,14 +94,15 @@ def main():
     refits, start, walk = [], None, {}
     for k, index in enumerate(cutoffs):
         cutoff = days[index]
-        fit = anchored.fit(observations[: index + 1], anchor=anchor, jump_days=[d for d in jumps if d <= cutoff],
-                           cutoff=cutoff, start=start)
+        fit, tried = anchored.fit_best(observations[: index + 1], anchor=anchor,
+                                       jump_days=[d for d in jumps if d <= cutoff], cutoff=cutoff, previous=start,
+                                       mapper=pool.map)
         start = fit.params
         end = cutoffs[k + 1] if k + 1 < len(cutoffs) else len(observations) - 1
         horizon = observations[: end + 1]
         states = anchored.filter_path(horizon, fit.params, anchor=anchor,
                                       jump_days=[d for d in jumps if d <= horizon[-1].day])
-        refits.append({"cutoff": cutoff, "fit": fit, "states": {s.day: s for s in states}})
+        refits.append({"cutoff": cutoff, "fit": fit, "states": {s.day: s for s in states}, "tried": tried})
         # The first refit's filter covers the training window (in-sample by construction); later ones only their block.
         for s in states[(0 if k == 0 else index + 1): end + 1]:
             walk[s.day] = s
@@ -127,16 +137,17 @@ def main():
 
     # 3. Full window and the directive's sensitivities, reported and not judged.
     last = days[-1]
-    full = anchored.fit(observations, anchor=anchor, jump_days=jumps, cutoff=last)
+    full, full_tried = anchored.fit_best(observations, anchor=anchor, jump_days=jumps, cutoff=last, mapper=pool.map)
     sensitivities = {}
     for name, scale, jdays, held in (
             ("scale_0.002", 0.002, jumps, {}),
             ("scale_0.01", 0.01, jumps, {}),
             ("legal_breaks_only", latent.SCALE, legal, {}),
             ("steps_only_drift_held_at_0", latent.SCALE, jumps, {DRIFT: anchored.HELD_OFF}),
-            ("no_calendar_terms", latent.SCALE, jumps, {i: 0.0 for i in CALENDAR_TERMS})):
-        f = anchored.fit(observations, anchor=anchor, jump_days=jdays, cutoff=last, scale=scale, held=held,
-                         start=full.params)
+            ("no_calendar_terms", latent.SCALE, jumps, {i: 0.0 for i in CALENDAR_TERMS}),
+            ("jump_also_at_2025-12-11", latent.SCALE, with_srf, {})):
+        f, _ = anchored.fit_best(observations, anchor=anchor, jump_days=jdays, cutoff=last, scale=scale, held=held,
+                                 previous=full.params, mapper=pool.map)
         sensitivities[name] = summary(f, observations, anchor, jdays, scale)
 
     record = {
@@ -156,11 +167,17 @@ def main():
         "refit_params": {r["cutoff"].isoformat(): {
             "converged": r["fit"].converged,
             **{name: round(v, 6) for name, v in zip(anchored.PARAM_NAMES, anchored.natural(r["fit"].params))
-               if name in ("buffer_0", "drift_sd", "jump_sd", "b_sofr_dispersion_bp")}} for r in refits},
+               if name in ("buffer_0", "drift_sd", "jump_sd", "b_sofr_dispersion_bp")},
+            "loglike_by_start": {label: round(f.loglike, 4) for label, f in r["tried"]},
+            "winning_start": next(label for label, f in r["tried"] if f is r["fit"])} for r in refits},
         "must_show": {"stability": stability, "benchmark": bench,
                       "shown": stability["shown"] and bench["shown"]},
         "walk_forward_monthly": monthly(walk_path),
-        "full_window": summary(full, observations, anchor, jumps, latent.SCALE),
+        "full_window": {**summary(full, observations, anchor, jumps, latent.SCALE),
+                        "loglike_by_start": {label: round(f.loglike, 4) for label, f in full_tried}},
+        "multi_start": {"start_buffers": list(anchored.START_BUFFERS),
+                        "rule": "docs/stages/stage-3b.md, amendment of 6 October 2026: every fit from several starts, "
+                                "highest likelihood kept; written after the first run was seen"},
         "sensitivities": sensitivities,
         "beside_not_filtered": anchored.beside(rows, days),
     }

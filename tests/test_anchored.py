@@ -105,5 +105,28 @@ class GuardTests(unittest.TestCase):
             anchored.fit(obs, anchor=ANCHOR, jump_days=[jump_day], cutoff=obs[30].day)
 
 
+class MultiStartTests(unittest.TestCase):
+    def test_the_start_grid_sets_each_declared_initial_buffer(self):
+        obs, _, _ = simulate(n=200)
+        starts = anchored.start_grid(obs, ANCHOR)
+        buffers = sorted(round(anchored.natural(s)[0], 6) for s in starts[1:])
+        self.assertEqual(buffers, list(anchored.START_BUFFERS))
+        self.assertEqual(starts[0], anchored.start_params(obs, ANCHOR))
+
+    def test_the_best_start_is_kept_and_every_start_is_reported(self):
+        obs, _, jump_day = simulate(n=200)
+        best, tried = anchored.fit_best(obs, anchor=ANCHOR, jump_days=[jump_day], cutoff=obs[-1].day, maxiter=40)
+        self.assertEqual(len(tried), 1 + len(anchored.START_BUFFERS))
+        self.assertEqual(best.loglike, max(fit.loglike for _, fit in tried))
+
+    def test_a_previous_answer_is_tried_first(self):
+        obs, _, jump_day = simulate(n=200)
+        previous = anchored.start_params(obs, ANCHOR)
+        _, tried = anchored.fit_best(obs, anchor=ANCHOR, jump_days=[jump_day], cutoff=obs[-1].day, maxiter=40,
+                                     previous=previous)
+        self.assertEqual(tried[0][0], "previous")
+        self.assertEqual(len(tried), 2 + len(anchored.START_BUFFERS))
+
+
 if __name__ == "__main__":
     unittest.main()
