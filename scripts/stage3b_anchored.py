@@ -99,13 +99,15 @@ def main():
         print(f"refit {k + 1}/{len(cutoffs)} {cutoff} converged={fit.converged}", flush=True)
 
     # 1. Stability: consecutive refits on every date both cover, each through its own cutoff.
-    worst, differences = {"difference": 0.0}, []
+    worst, differences, over = {"difference": 0.0}, [], {}
     for before, after in zip(refits, refits[1:]):
         for day, state in before["states"].items():
             if day > before["cutoff"] or day not in after["states"]:
                 continue
             gap = abs(after["states"][day].mean - state.mean)
             differences.append(gap)
+            if gap >= STABILITY_LIMIT:
+                over.setdefault(after["cutoff"].isoformat(), []).append(day)
             if gap > worst["difference"]:
                 worst = {"difference": round(gap, 6), "day": day.isoformat(),
                          "refits": [before["cutoff"].isoformat(), after["cutoff"].isoformat()]}
@@ -113,7 +115,11 @@ def main():
     stability = {"limit": STABILITY_LIMIT, "worst": worst,
                  "median": round(differences[len(differences) // 2], 6),
                  "p95": round(differences[int(0.95 * (len(differences) - 1))], 6),
-                 "shown": worst["difference"] < STABILITY_LIMIT}
+                 "shown": worst["difference"] < STABILITY_LIMIT,
+                 "pairs_compared": len(differences),
+                 "share_at_or_over_limit": round(sum(d >= STABILITY_LIMIT for d in differences) / len(differences), 6),
+                 "over_limit_by_refit": {cut: {"days": len(ds), "first": min(ds).isoformat(), "last": max(ds).isoformat()}
+                                         for cut, ds in sorted(over.items())}}
 
     # 2. The benchmark on the walk-forward path.
     walk_path = [walk[d] for d in sorted(walk)]
@@ -147,6 +153,10 @@ def main():
         "provenance": {"panel_sha256": manifest["sha256"], "parent_commit": manifest["parent_commit"]},
         "refits": len(refits),
         "refits_converged": sum(r["fit"].converged for r in refits),
+        "refit_params": {r["cutoff"].isoformat(): {
+            "converged": r["fit"].converged,
+            **{name: round(v, 6) for name, v in zip(anchored.PARAM_NAMES, anchored.natural(r["fit"].params))
+               if name in ("buffer_0", "drift_sd", "jump_sd", "b_sofr_dispersion_bp")}} for r in refits},
         "must_show": {"stability": stability, "benchmark": bench,
                       "shown": stability["shown"] and bench["shown"]},
         "walk_forward_monthly": monthly(walk_path),
