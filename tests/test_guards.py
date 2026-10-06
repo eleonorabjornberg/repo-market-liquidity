@@ -71,6 +71,8 @@ class TemporaryRepoDeclarationTests(unittest.TestCase):
             obs for term, series in (("Overnight", fed_repo.SERIES), ("Term", fed_repo.TERM_SERIES))
             for obs in fed_repo.observations(fed_repo.daily_take_up(operations, term=term), series=series,
                                              source_sha=sha)]
+        cls.observations += fed_repo.observations(fed_repo.term_outstanding(operations),
+                                                  series=fed_repo.TERM_OUTSTANDING_SERIES, source_sha=sha)
 
     @classmethod
     def tearDownClass(cls):

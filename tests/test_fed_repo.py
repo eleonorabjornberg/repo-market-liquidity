@@ -12,8 +12,9 @@ from zoneinfo import ZoneInfo
 from repo_liquidity import fed_repo
 
 
-def op(day, amount, term="Overnight", kind="Repo", note=""):
-    return {"operationDate": day, "operationType": kind, "term": term, "totalAmtAccepted": amount, "note": note}
+def op(day, amount, term="Overnight", kind="Repo", note="", settle=None, mature=None):
+    return {"operationDate": day, "operationType": kind, "term": term, "totalAmtAccepted": amount, "note": note,
+            "settlementDate": settle or day, "maturityDate": mature}
 
 
 class DailyTakeUpTests(unittest.TestCase):
@@ -38,6 +39,32 @@ class DailyTakeUpTests(unittest.TestCase):
             fed_repo.daily_take_up([op("2020-01-02", None)], term="Overnight")
 
 
+class TermOutstandingTests(unittest.TestCase):
+    """Question 14 (Nicholas, 6 October 2026): a term repo counts while it is outstanding, settlement to maturity."""
+
+    def test_a_term_repo_is_outstanding_from_settlement_until_the_day_before_maturity(self):
+        ops = [op("2019-12-16", 50_000_000_000, term="Term", mature="2020-01-17"),
+               op("2019-12-17", 6_100_000_000, term="Term", mature="2019-12-30")]
+        out = fed_repo.term_outstanding(ops)
+        self.assertEqual(out[date(2019, 12, 16)], 50.0)
+        self.assertEqual(out[date(2019, 12, 17)], 56.1)
+        self.assertEqual(out[date(2019, 12, 27)], 56.1)
+        self.assertEqual(out[date(2019, 12, 30)], 50.0)
+        self.assertEqual(out[date(2020, 1, 16)], 50.0)
+        self.assertEqual(out[date(2020, 1, 17)], 0.0)
+
+    def test_every_weekday_of_the_window_carries_a_value_and_no_weekend_does(self):
+        out = fed_repo.term_outstanding([])
+        self.assertEqual(min(out), fed_repo.FIRST_OPERATION)
+        self.assertEqual(max(out), fed_repo.LAST_OPERATION)
+        self.assertTrue(all(day.weekday() < 5 for day in out))
+        self.assertEqual(set(out.values()), {0.0})
+
+    def test_a_term_repo_without_a_maturity_is_refused(self):
+        with self.assertRaises(ValueError):
+            fed_repo.term_outstanding([op("2019-12-16", 1_000_000_000, term="Term")])
+
+
 class AvailabilityTests(unittest.TestCase):
     def test_a_day_is_public_at_16_00_on_the_next_weekday(self):
         rows = fed_repo.observations({date(2019, 9, 20): 1.0}, series=fed_repo.SERIES, source_sha="x")
@@ -46,8 +73,15 @@ class AvailabilityTests(unittest.TestCase):
 
 
 class CombinedTests(unittest.TestCase):
-    def combine(self, day, temporary=None, standing=None):
-        return fed_repo.combined({"date": day, "temp_repo_take_up": temporary, "srf_take_up": standing})
+    def combine(self, day, temporary=None, standing=None, term=None):
+        return fed_repo.combined({"date": day, "temp_repo_take_up": temporary, "srf_take_up": standing,
+                                  "temp_repo_term_outstanding": term})
+
+    def test_the_temporary_take_up_adds_the_term_repos_outstanding(self):
+        self.assertEqual(self.combine(date(2019, 12, 17), temporary=20.0, term=56.1), (76.1, fed_repo.TEMPORARY))
+
+    def test_a_day_with_no_overnight_operation_stays_missing_whatever_is_outstanding(self):
+        self.assertEqual(self.combine(date(2020, 4, 9), term=10.0), (None, None))
 
     def test_before_the_first_operation_take_up_is_a_structural_zero(self):
         self.assertEqual(self.combine(date(2019, 9, 16)), (0.0, fed_repo.NONE))
@@ -66,6 +100,29 @@ class CombinedTests(unittest.TestCase):
     def test_both_facilities_on_one_row_is_refused(self):
         with self.assertRaises(ValueError):
             self.combine(date(2021, 7, 30), temporary=0.0, standing=0.0)
+
+
+class RepoMaterialUseTests(unittest.TestCase):
+    """Question 14: the event counts each operation on its operation date, overnight and term alike."""
+
+    def event(self, day, overnight=None, term=None, standing=None):
+        return fed_repo.repo_material_use({"date": day, "temp_repo_take_up": overnight,
+                                           "temp_repo_term_take_up": term, "srf_take_up": standing})
+
+    def test_before_the_first_operation_there_is_no_event(self):
+        self.assertEqual(self.event(date(2019, 9, 16)), 0.0)
+
+    def test_a_temporary_day_counts_overnight_and_term_accepted_that_day(self):
+        self.assertEqual(self.event(date(2019, 12, 16), overnight=0.5, term=0.6), 1.0)
+        self.assertEqual(self.event(date(2019, 12, 16), overnight=0.5), 0.0)
+        self.assertEqual(self.event(date(2019, 12, 16), term=2.0), 1.0)
+
+    def test_a_standing_facility_day_is_its_take_up(self):
+        self.assertEqual(self.event(date(2025, 12, 31), standing=74.6), 1.0)
+        self.assertEqual(self.event(date(2025, 12, 30), standing=0.003), 0.0)
+
+    def test_a_day_with_nothing_read_after_the_zero_is_missing(self):
+        self.assertIsNone(self.event(date(2020, 6, 1)))
 
 
 class MaterialUseTests(unittest.TestCase):

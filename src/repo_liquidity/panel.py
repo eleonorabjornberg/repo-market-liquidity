@@ -111,6 +111,8 @@ def build(output: Path, version: int = 1) -> Dict:
         for term, series in (("Overnight", fed_repo.SERIES), ("Term", fed_repo.TERM_SERIES)):
             extra_rows += fed_repo.observations(fed_repo.daily_take_up(operations, term=term), series=series,
                                                 source_sha=repo_sha)
+        extra_rows += fed_repo.observations(fed_repo.term_outstanding(operations),
+                                            series=fed_repo.TERM_OUTSTANDING_SERIES, source_sha=repo_sha)
         v2_shas = {"h41_mbs_extract_sha256": mbs_sha, "temp_repo_snapshots_sha256": repo_sha}
 
     with declaration.phase3_declaration(), _weekly_carry():
@@ -161,14 +163,16 @@ def _v1_digest() -> str:
 
 
 def _with_repo_take_up(observations):
-    """Each row with the derived repo take-up, its facility and the standing facility's material-use event."""
+    """Each row with the derived repo take-up, its facility, and the material-use events (standing facility, and all
+    Fed repo operations from the start)."""
     from repo_model.data import DailyObservation
 
     out = []
     for row in observations:
         take_up, facility = fed_repo.combined({"date": row.date, **row.values})
         values = dict(row.values, fed_repo_take_up=take_up, fed_repo_facility=facility,
-                      srf_material_use=fed_repo.material_use(row.values.get("srf_take_up")))
+                      srf_material_use=fed_repo.material_use(row.values.get("srf_take_up")),
+                      fed_repo_material_use=fed_repo.repo_material_use({"date": row.date, **row.values}))
         out.append(DailyObservation(date=row.date, values=values))
     return out
 

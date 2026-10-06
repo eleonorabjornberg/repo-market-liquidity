@@ -41,10 +41,14 @@ def _fields():
         "soma_mbs_weekly_change": (("frb_h41_mbs", "soma_mbs_weekly_change"),),
         "temp_repo_take_up": (("nyfed_temp_repo", "temp_repo_take_up"),),
         "temp_repo_term_take_up": (("nyfed_temp_repo", "temp_repo_term_take_up"),),
+        "temp_repo_term_outstanding": (("nyfed_temp_repo", "temp_repo_term_outstanding"),),
         # Derived on each row from the two facilities' take-up, so read under both sources' declarations.
-        "fed_repo_take_up": (("nyfed_temp_repo", "temp_repo_take_up"),) + tuple(contract.SRF_OPERATION_RESULTS_FIELDS),
+        "fed_repo_take_up": (("nyfed_temp_repo", "temp_repo_take_up"), ("nyfed_temp_repo", "temp_repo_term_outstanding"))
+        + tuple(contract.SRF_OPERATION_RESULTS_FIELDS),
         "fed_repo_facility": (("nyfed_temp_repo", "temp_repo_take_up"),) + tuple(contract.SRF_OPERATION_RESULTS_FIELDS),
         "srf_material_use": tuple(contract.SRF_OPERATION_RESULTS_FIELDS),
+        "fed_repo_material_use": (("nyfed_temp_repo", "temp_repo_take_up"), ("nyfed_temp_repo", "temp_repo_term_take_up"))
+        + tuple(contract.SRF_OPERATION_RESULTS_FIELDS),
     }
 
 
@@ -55,8 +59,9 @@ BUILT_COLUMNS = ("on_rrp", "bank_total_assets", "srf_take_up", "soma_treasury_we
 SCHEDULED_COLUMNS = ("srf_rate", "on_rrp_rate", "runoff_cap_treasury_bn", "runoff_cap_mbs_bn")
 #: The Stage 1a correction's panel (version 2, `docs/stages/stage-1a-correction.md`): its added built columns, and the
 #: columns derived on each row from columns already read at that row's decision instant (`repo_liquidity.fed_repo`).
-BUILT_COLUMNS_V2 = BUILT_COLUMNS + ("soma_mbs_weekly_change", "temp_repo_take_up", "temp_repo_term_take_up")
-DERIVED_COLUMNS_V2 = ("fed_repo_take_up", "fed_repo_facility", "srf_material_use")
+BUILT_COLUMNS_V2 = BUILT_COLUMNS + ("soma_mbs_weekly_change", "temp_repo_take_up", "temp_repo_term_take_up",
+                                    "temp_repo_term_outstanding")
+DERIVED_COLUMNS_V2 = ("fed_repo_take_up", "fed_repo_facility", "srf_material_use", "fed_repo_material_use")
 
 
 def parent_registry() -> Dict[str, Mapping]:

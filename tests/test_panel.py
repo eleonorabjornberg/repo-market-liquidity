@@ -105,7 +105,12 @@ class PanelV2Tests(unittest.TestCase):
                 self.assertEqual((row["fed_repo_take_up"], row["fed_repo_facility"]), ("0", "0"), day)
             elif day < scheduled.SRF_INCEPTION.isoformat():
                 self.assertIn(row["fed_repo_facility"], ("1", ""), day)
-                self.assertEqual(row["fed_repo_take_up"], row["temp_repo_take_up"], day)
+                if row["temp_repo_take_up"] == "":
+                    self.assertEqual(row["fed_repo_take_up"], "", day)
+                else:
+                    # Question 14: overnight plus the term repos outstanding that day.
+                    expected = float(row["temp_repo_take_up"]) + float(row["temp_repo_term_outstanding"] or 0)
+                    self.assertAlmostEqual(float(row["fed_repo_take_up"]), expected, places=6, msg=day)
             else:
                 self.assertEqual(row["fed_repo_facility"], "2", day)
                 self.assertEqual(row["fed_repo_take_up"], row["srf_take_up"], day)
@@ -114,6 +119,22 @@ class PanelV2Tests(unittest.TestCase):
         for row in self.rows:
             if row["temp_repo_take_up"] != "":
                 self.assertTrue("2019-09-17" <= row["date"] <= "2021-07-28", row["date"])
+
+    def test_term_repos_outstanding_cover_every_weekday_of_the_window_and_no_other(self):
+        for row in self.rows:
+            inside = "2019-09-17" <= row["date"] <= "2021-07-28"
+            self.assertEqual(row["temp_repo_term_outstanding"] != "", inside, row["date"])
+
+    def test_the_repo_material_use_event_counts_each_days_operations(self):
+        for row in self.rows:
+            day = row["date"]
+            if day < "2019-09-17":
+                self.assertEqual(row["fed_repo_material_use"], "0", day)
+            elif row["srf_take_up"] != "":
+                self.assertEqual(row["fed_repo_material_use"], row["srf_material_use"], day)
+            elif row["temp_repo_take_up"] != "" or row["temp_repo_term_take_up"] != "":
+                accepted = float(row["temp_repo_take_up"] or 0) + float(row["temp_repo_term_take_up"] or 0)
+                self.assertEqual(row["fed_repo_material_use"], "1" if accepted >= 1.0 else "0", day)
 
     def test_material_use_is_take_up_of_at_least_one_billion(self):
         for row in self.rows:

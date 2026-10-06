@@ -8,9 +8,12 @@
   They are read here from the NY Fed's operation results, saved under `tests/fixtures/snapshots/nyfed_temp_repo/`;
 - **from 2021-07-29** the standing facility's take-up is the parent's `nyfed_srf`, as Stage 1a reads it.
 
-Overnight operations are the take-up. Term operations are kept as their own column until Nicholas answers question 14
-on issue #1. Material use of the standing facility is take-up of $1bn or more, a threshold he fixed in advance.
-Standard library only.
+Nicholas's answer to question 14 (issue #1, 6 October 2026): take-up is the overnight operations plus the term repos
+**outstanding** on the day, from settlement to maturity, because a term repo's cash stays in the system for its term.
+The material-use event ($1bn or more, a threshold he fixed in advance) counts each operation on its **operation date**,
+overnight and term alike, because that is when the demand showed. His caveat, for the record: in 2019 and 2020 the
+Fed set the term offering sizes, partly to cover year-end, so take-up reflects the Fed's design as well as market
+demand. Standard library only.
 """
 
 from __future__ import annotations
@@ -29,7 +32,10 @@ URL = "https://markets.newyorkfed.org/api/rp/results/search.json?startDate={firs
 FIRST_OPERATION = date(2019, 9, 17)
 LAST_OPERATION = date(2021, 7, 28)
 SERIES = "temp_repo_take_up"
+#: Term repos accepted on their operation date (for the material-use event).
 TERM_SERIES = "temp_repo_term_take_up"
+#: Term repos outstanding on the day, settlement to maturity (for take-up).
+TERM_OUTSTANDING_SERIES = "temp_repo_term_outstanding"
 #: The standing facility's material-use threshold, USD billions (Nicholas, answer 13).
 MATERIAL_USE_BN = 1.0
 #: `fed_repo_facility` codes.
@@ -61,6 +67,38 @@ def daily_take_up(operations: Iterable[Mapping[str, object]], *, term: str) -> D
             raise ValueError(f"the repo operation on {day} has no numeric totalAmtAccepted ({accepted!r})")
         totals[day] = totals.get(day, 0) + accepted
     return {day: round(total / 1e9, 9) for day, total in sorted(totals.items())}
+
+
+def term_outstanding(operations: Iterable[Mapping[str, object]]) -> Dict[date, float]:
+    """USD billions of the Desk's term repos outstanding on each weekday of the window: settled on or before the day
+    and maturing after it. A weekday with nothing outstanding is 0.0, since the operations were on offer.
+
+    Raises:
+        ValueError: on a kept term operation with no numeric amount, settlement date or maturity date.
+    """
+    spans = []
+    for operation in operations:
+        if operation.get("operationType") != "Repo" or operation.get("term") != "Term":
+            continue
+        day = date.fromisoformat(str(operation["operationDate"]))
+        if not FIRST_OPERATION <= day <= LAST_OPERATION or _small_value_exercise(operation):
+            continue
+        accepted = operation.get("totalAmtAccepted")
+        if isinstance(accepted, bool) or not isinstance(accepted, (int, float)):
+            raise ValueError(f"the term repo on {day} has no numeric totalAmtAccepted ({accepted!r})")
+        try:
+            settled = date.fromisoformat(str(operation["settlementDate"]))
+            matures = date.fromisoformat(str(operation["maturityDate"]))
+        except (KeyError, TypeError, ValueError) as error:
+            raise ValueError(f"the term repo on {day} has no valid settlement or maturity date") from error
+        spans.append((settled, matures, accepted))
+    out: Dict[date, float] = {}
+    day = FIRST_OPERATION
+    while day <= LAST_OPERATION:
+        if day.weekday() < 5:
+            out[day] = round(sum(a for s, m, a in spans if s <= day < m) / 1e9, 9)
+        day += timedelta(days=1)
+    return out
 
 
 def available_at(day: date) -> datetime:
@@ -115,10 +153,28 @@ def combined(row: Mapping[str, object]) -> Tuple[Optional[float], Optional[float
     if standing is not None:
         return standing, STANDING
     if temporary is not None:
-        return temporary, TEMPORARY
+        # A day with no overnight operation stays missing (a hole, never filled), whatever term repos are outstanding.
+        return round(temporary + (row.get(TERM_OUTSTANDING_SERIES) or 0.0), 9), TEMPORARY
     if row["date"] < FIRST_OPERATION:
         return 0.0, NONE
     return None, None
+
+
+def repo_material_use(row: Mapping[str, object]) -> Optional[float]:
+    """The material-use event on every row from the start: 1.0 when the operations of the row's own date accepted
+    `MATERIAL_USE_BN` or more in total, overnight and term alike (question 14), else 0.0.
+
+    Before the first operation there were none, so 0.0. During the temporary operations a day's overnight and term
+    operations are added. From the standing facility it is the facility's take-up. Missing on a day with no operation.
+    """
+    standing, overnight, term = row.get("srf_take_up"), row.get(SERIES), row.get(TERM_SERIES)
+    if standing is not None:
+        return material_use(standing)
+    if overnight is not None or term is not None:
+        return material_use((overnight or 0.0) + (term or 0.0))
+    if row["date"] < FIRST_OPERATION:
+        return 0.0
+    return None
 
 
 def material_use(take_up: Optional[float]) -> Optional[float]:
