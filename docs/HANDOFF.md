@@ -94,9 +94,21 @@ on issue #1). The directive is `docs/stages/stage-3b.md`, written before the fit
   - or start the walk-forward once the fit is identified, and state why;
   - either one changes the directive before any rerun.
 
+## Decided after Stage 3b (Eleonora, 6 October 2026)
+
+Stage 3b closes as not shown, with no third amendment. Next: the Stage 1a correction, Stage 1b's first wave, then Stage
+3c (stability on the real-time buffer, judged once), with Stage 2's curve as the fallback. The full list is in `PLAN.md`,
+Stage 1.
+
+After the multi-start amendment:
+- 64 of 69 refits converge;
+- the full-window shift is +3.3 points [2.8, 3.7];
+- the remaining stability breaches come from the refits of April 2020 to April 2021, which re-draw the 2018 to 2020
+  buffer, plus a few weeks in late 2022.
+
 ## Waiting on others
 
-- **Nicholas (issue #1) answered questions 1 to 13 on 6 October 2026**, recorded in `docs/decisions/data-meaning.md`, which also lists the work it creates (Stage 1a corrections, Stage 1b's first wave). Questions 1 to 5 have Eleonora's preliminary rulings
+- **Nicholas (issue #1) answered questions 1 to 13 on 6 October 2026** (question 14, on the 2019 to 2021 term repos, is open), recorded in `docs/decisions/data-meaning.md`, which also lists the work it creates (Stage 1a corrections, Stage 1b's first wave). Questions 1 to 5 have Eleonora's preliminary rulings
   (`docs/decisions/data-meaning-preliminary.md`). Stage 1b waits on questions 7 to 10.
 - **Eleonora, two possible reform dates found while building, not yet in `reform-dates.md`:** the standing repo
   facility moved to a fixed rate and dropped its aggregate limit on 2025-12-10, and reserve-management bill purchases
