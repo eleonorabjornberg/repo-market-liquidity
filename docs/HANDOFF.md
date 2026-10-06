@@ -46,8 +46,8 @@ What the diagnosis found (reported, not tuned):
   swings by orders of magnitude for reasons other than the buffer (money-fund allocation, bill supply).
 - **The drift variance sits at its upper bound** (0.2 points a day) and the jump variance is near zero: the filter
   moves the buffer daily rather than at reform dates.
-- **The buffer's path is not bounded below 0.** Only the initial buffer is bounded; the filtered state can and does go
-  negative in 2025.
+- **The buffer's path is not bounded below 0.** Only the initial buffer is bounded. The walk-forward buffer falls from
+  about 5 to 7% in 2018 to 2021 to below 0 from 2022 on, as ON RRP take-up surges, and stays there through 2025.
 - **The corridor head alone** (a labelled diagnostic, not the directive's model) gives a buffer near 17.8% in both
   periods: no shift.
 - **Sensitivities** (`s = 0.002`, `s = 0.01`, jumps only at the legal breaks), fitted on the full window, give no upward
@@ -85,7 +85,7 @@ Any of these changes the directive, so it needs a new directive written before t
 - **The Phase 3 panel** is built by `python3 scripts/build_panel.py` (`--check` verifies it) from tracked fixtures, with
   no network. Its manifest is generated, never hand-edited.
 - **Stage 3 needs the `state-space` extra** (statsmodels and its exact pins, in `pyproject.toml` and
-  `docs/decisions/dependencies.md`). The walk-forward takes about an hour, so CI checks the tracked record's
+  `docs/decisions/dependencies.md`). The walk-forward takes about a quarter of an hour, so CI checks the tracked record's
   consistency (`tests/test_stage3_record.py`), not its regeneration. Regenerate it with
   `PYTHONPATH=src python3 scripts/stage3_latent.py`.
 - **Network from the cloud:** federalreserve.gov, the NY Fed and FRED graph are reachable. ALFRED and the FRED API are
