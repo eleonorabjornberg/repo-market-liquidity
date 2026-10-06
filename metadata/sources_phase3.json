@@ -1,0 +1,117 @@
+{
+  "frb_h41_treasury": {
+    "access": "public",
+    "availability_provenance": {
+      "note": "Recorded 6 October 2026 for Stage 1a. The H.4.1 About page (https://www.federalreserve.gov/releases/h41/about.htm, fetched 6 October 2026) says the release \"is typically published on Thursday afternoon around 4:30 p.m.\" Of the 454 weekly releases from the week ended 2017-12-27 to the week ended 2026-09-02, 439 were published one calendar day after the week's Wednesday, 13 two days after, and 2 five days after (the weeks ended 2020-12-23 and 2025-12-24). 16:30 is after the 16:00 decision instant, so a release is read from the next business day's decision.",
+      "publication": "Board of Governors, H.4.1 Factors Affecting Reserve Balances, archived release pages at https://www.federalreserve.gov/releases/h41/<YYYYMMDD>/; published Thursdays (later around holidays) at about 4:30 p.m. Eastern Time."
+    },
+    "coverage": [
+      "U.S. Treasury securities held outright by the Federal Reserve: change from the previous week in the week average, as printed in each release (first print)"
+    ],
+    "field_frequencies": {
+      "soma_treasury_weekly_change": "weekly"
+    },
+    "fields": [
+      "soma_treasury_weekly_change"
+    ],
+    "frequency": "weekly",
+    "identities": [],
+    "limitation": "Table 1, row \"U.S. Treasury securities\", column \"Change from week ended\" (the previous week), in USD billions (the release prints millions). Week averages, as the parent's reserves and TGA are. Each week is read from the release that first prints it and from no later release, in tests/fixtures/snapshots/h41/h41_treasury_first_print.csv, cut by scripts/fetch_h41.py from the archived pages, with each page's SHA-256. In every week of the extract the printed change equals the difference of the two weeks' first-print averages, so no prior week was revised in the window. Phase 3 only (docs/decisions/data-meaning-preliminary.md, question 1).",
+    "provider": "Board of Governors of the Federal Reserve System",
+    "release_lag": {
+      "available_time": "16:30",
+      "basis": "record_date",
+      "days": 5,
+      "note": "The measured worst case from the week's Wednesday to its release over the extract (five calendar days, twice), at the stated release time. An ordinary week is read up to four days later than it could be: staleness on the safe side, not leakage. scripts/fetch_h41.py refuses a week whose release is not in the eight days after its Wednesday, and repo_liquidity.h41.worst_case_lag_days is tested against this declaration.",
+      "timezone": "America/New_York",
+      "unit": "calendar_days"
+    },
+    "reviewed_note": "No structural zeros: a printed 0 is a week with no change.",
+    "structural_zeros": [],
+    "structural_zeros_reviewed": true,
+    "url": "https://www.federalreserve.gov/releases/h41/"
+  },
+  "fed_srf_rate": {
+    "access": "public",
+    "coverage": [
+      "standing overnight repo facility rate (minimum bid rate until December 2025, then the operation rate), from FOMC implementation notes"
+    ],
+    "field_frequencies": {
+      "srf_rate": "business_daily"
+    },
+    "fields": [
+      "srf_rate"
+    ],
+    "frequency": "event",
+    "identities": [],
+    "limitation": "Not a built panel column. repo_liquidity.scheduled writes it on each row from tests/fixtures/snapshots/fomc_notes/srf_rate.csv, reading only implementation notes announced at or before that row's decision instant. Missing before 2021-07-29, when the facility did not exist (docs/decisions/data-meaning-preliminary.md and the Q5 ruling of 6 October 2026). Every row is read from a saved federalreserve.gov implementation note and cross-checked against the rate in the parent's facility operation snapshots.",
+    "provider": "Board of Governors of the Federal Reserve System",
+    "release_lag": {
+      "available_time": "23:59",
+      "basis": "record_date",
+      "days": 0,
+      "note": "Not read: the field is scheduled (scheduled_availability), as the parent's fed_iorb_announcements states it.",
+      "timezone": "America/New_York",
+      "unit": "calendar_days"
+    },
+    "reviewed_note": "No structural zeros.",
+    "scheduled_availability": {
+      "basis": "announced_before_ref_date",
+      "unit": "business_days",
+      "days": 1,
+      "available_time": "16:00",
+      "timezone": "America/New_York",
+      "fields": [
+        "srf_rate"
+      ],
+      "evidence": "Keyed on the announcement time. The value for row T is the rate of the latest implementation note announced (14:00 New York, the FOMC statement's release time) at or before 16:00 on the panel day before T and effective on or before T. tests/test_scheduled.py checks every row's announcement is at or before 16:00 on the business day before its effective date, and that a note announced after a decision instant never changes the value read at it.",
+      "note": "16:00 is the decision time of every Phase 3 run, as of the parent's published records."
+    },
+    "structural_zeros": [],
+    "structural_zeros_reviewed": true,
+    "url": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
+  },
+  "fomc_runoff_caps": {
+    "access": "public",
+    "coverage": [
+      "monthly caps on the runoff of the Fed's Treasury and agency (MBS) holdings, from FOMC implementation notes and balance-sheet plans"
+    ],
+    "field_frequencies": {
+      "runoff_cap_mbs_bn": "business_daily",
+      "runoff_cap_treasury_bn": "business_daily"
+    },
+    "fields": [
+      "runoff_cap_mbs_bn",
+      "runoff_cap_treasury_bn"
+    ],
+    "frequency": "event",
+    "identities": [],
+    "limitation": "Not a built panel column. repo_liquidity.scheduled writes both on each row from tests/fixtures/snapshots/fomc_notes/runoff_caps.csv. A cap is the most the holdings may run off in a month without reinvestment, in USD billions; 0 when all principal is rolled over or reinvested. It is a maximum pace, not the realized one (frb_h41_treasury). Each step is dated by the earliest FOMC publication that states its amount and its start, which for some steps is later than a plan that announced it in outline: the conservative direction. docs/decisions/data-meaning-preliminary.md, questions 1 and 3.",
+    "provider": "Board of Governors of the Federal Reserve System",
+    "release_lag": {
+      "available_time": "23:59",
+      "basis": "record_date",
+      "days": 0,
+      "note": "Not read: both fields are scheduled (scheduled_availability).",
+      "timezone": "America/New_York",
+      "unit": "calendar_days"
+    },
+    "reviewed_note": "No structural zeros: a cap of 0 is a stated policy, not a missing value.",
+    "scheduled_availability": {
+      "basis": "announced_before_ref_date",
+      "unit": "business_days",
+      "days": 1,
+      "available_time": "16:00",
+      "timezone": "America/New_York",
+      "fields": [
+        "runoff_cap_mbs_bn",
+        "runoff_cap_treasury_bn"
+      ],
+      "evidence": "Keyed on the announcement time, as fed_srf_rate. tests/test_scheduled.py checks that every cap row is announced at or before 16:00 on the business day before its effective date, that each row's amounts appear in its saved source page, and that a publication after a decision instant never changes the value read at it.",
+      "note": "16:00 is the decision time of every Phase 3 run."
+    },
+    "structural_zeros": [],
+    "structural_zeros_reviewed": true,
+    "url": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
+  }
+}

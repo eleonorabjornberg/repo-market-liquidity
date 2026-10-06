@@ -20,3 +20,11 @@ It mirrors the parent's `docs/decisions/publish-rule.md`, adapted to a repositor
 - **A published record is never edited in place.** It is re-scored and published anew, or archived with a note saying
   why.
 - **No figure is transcribed by hand** into a published page; pages cite the record.
+
+## Amendment: publish when Eleonora says so
+
+Ruling (Eleonora, 6 October 2026; relayed by the orchestrating session), on D4: "publish when i say so."
+
+- **A Phase 3 record is published only when Eleonora says so.** The conditions above are necessary, not sufficient.
+- **No session opens a publish pull request on its own initiative.** A record that has been scored waits unpublished,
+  outside `docs/runs/`, until she asks for it to be published.
