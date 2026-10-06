@@ -231,6 +231,9 @@ Each is in force once its record merges.
 
 ## Open questions for Nicholas Beroud (data meaning, issue #1)
 
+Questions 1 to 3 have a preliminary ruling by Eleonora, pending Nicholas:
+[`docs/decisions/data-meaning-preliminary.md`](docs/decisions/data-meaning-preliminary.md).
+
 Under the parent's `PLAN.md`, the choice of data and its meaning rests with Nicholas. Before Stage 1 is written:
 
 1. Which QE/QT measure: the level of the Fed's holdings, its weekly change, the announced runoff caps, or a combination?
