@@ -37,6 +37,7 @@ def weekdays(first, last):
 class TableTests(unittest.TestCase):
     def test_tables_match_their_manifests(self):
         scheduled.load_srf_rates()
+        scheduled.load_on_rrp_rates()
         scheduled.load_runoff_caps()
 
     def test_an_edited_table_is_refused(self):
@@ -50,11 +51,28 @@ class TableTests(unittest.TestCase):
             path.write_bytes(original)
 
     def test_every_row_is_announced_before_the_business_day_before_it_takes_effect(self):
-        for row in scheduled.load_srf_rates() + scheduled.load_runoff_caps():
+        """One exception, named: the FOMC's Sunday action of 15 March 2020 (17:00), effective Monday 16 March. At the
+        decision instant before it (Friday 13 March, 16:00) it was not public, so it is read one day late: staleness
+        on the safe side, never leakage (`test_the_sunday_2020_action_is_read_one_day_late`)."""
+        late = []
+        for row in scheduled.load_srf_rates() + scheduled.load_on_rrp_rates() + scheduled.load_runoff_caps():
             previous = row.effective - timedelta(days=1)
             while previous.weekday() >= 5:
                 previous -= timedelta(days=1)
-            self.assertLessEqual(row.announced_at, datetime.combine(previous, DECISION), row)
+            if row.announced_at > datetime.combine(previous, DECISION):
+                late.append(row.announced_at)
+        self.assertEqual(late, [datetime(2020, 3, 15, 17, 0)])
+
+    def test_the_sunday_2020_action_is_read_one_day_late(self):
+        dates = weekdays(date(2020, 3, 12), date(2020, 3, 18))
+        values = scheduled.on_rrp_rate_values(dates, decision_time=DECISION)
+        self.assertEqual(values[dates.index(date(2020, 3, 16))], 1.0)
+        self.assertEqual(values[dates.index(date(2020, 3, 17))], 0.0)
+
+    def test_the_rate_in_force_is_read_by_effective_date(self):
+        rows = scheduled.load_on_rrp_rates()
+        self.assertEqual(scheduled.rate_in_force(rows, date(2020, 3, 16)), 0.0)
+        self.assertEqual(scheduled.rate_in_force(rows, date(2020, 3, 13)), 1.0)
 
     def test_every_srf_rate_is_in_its_page(self):
         for row in scheduled.load_srf_rates():
@@ -62,6 +80,16 @@ class TableTests(unittest.TestCase):
             self.assertRegex(text, rf"repurchase agreement operations (with|at) (a minimum bid rate of|a rate of) "
                                    rf"{re.escape(row.raw_values[0])} percent", row.page)
             self.assertIn(f"Effective {row.effective:%B} {row.effective.day}, {row.effective.year}", text)
+
+    def test_every_on_rrp_rate_is_in_its_page(self):
+        for row in scheduled.load_on_rrp_rates():
+            text = page_text(row.page)
+            self.assertRegex(text, rf"reverse repurchase (agreement )?operations[^.]*?at an offering rate of "
+                                   rf"{re.escape(row.raw_values[0])} percent", row.page)
+            self.assertIn(f"Effective {row.effective:%B} {row.effective.day}, {row.effective.year}", text)
+
+    def test_on_rrp_rates_match_the_parent_operation_snapshots(self):
+        self.assertGreater(scheduled.cross_check_on_rrp_operations(), 0)
 
     def test_every_cap_is_in_its_page(self):
         for row in scheduled.load_runoff_caps():
@@ -90,6 +118,12 @@ class ReadTests(unittest.TestCase):
         self.assertEqual(values[dates.index(date(2026, 9, 16))], 3.75)
         self.assertEqual(values[dates.index(date(2026, 9, 17))], 4.0)
 
+    def test_the_floor_moves_on_its_effective_day(self):
+        dates = weekdays(date(2024, 12, 17), date(2024, 12, 20))
+        values = scheduled.on_rrp_rate_values(dates, decision_time=DECISION)
+        self.assertEqual(values[dates.index(date(2024, 12, 18))], 4.55)
+        self.assertEqual(values[dates.index(date(2024, 12, 19))], 4.25)
+
     def test_caps_follow_their_effective_dates(self):
         dates = weekdays(date(2025, 3, 28), date(2025, 4, 2))
         values = scheduled.runoff_cap_values(dates, decision_time=DECISION)
@@ -109,6 +143,7 @@ class ReadTests(unittest.TestCase):
         """
         dates = weekdays(date(2017, 12, 1), date(2026, 9, 30))
         for loader, reader in ((scheduled.load_srf_rates, scheduled.srf_rate_values),
+                               (scheduled.load_on_rrp_rates, scheduled.on_rrp_rate_values),
                                (scheduled.load_runoff_caps, scheduled.runoff_cap_values)):
             rows = loader()
             baseline = reader(dates, decision_time=DECISION, rows=rows)

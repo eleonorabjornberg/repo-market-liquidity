@@ -154,6 +154,13 @@ from 2018-04-03.
 
 ### Stage 2: the reserve demand curve (descriptive)
 
+**Result (6 October 2026):** under the decided rule the bend is **not shown** stable. A diagnosis found the outcome
+mixed in administered-rate floors; a revised test written after it (post-hoc, amendment in
+`docs/decisions/stage-2-bend.md`) measures SOFR from the floor in two scarce episodes and is shown, but its two bends
+mark different features of the curve. The like-for-like comparison, at the same reserves ratio, finds SOFR higher in
+the corridor in 2025 than in 2018 to March 2020: the demand curve shifted up. All in `results/stage2/`. Stage 3
+waits on Eleonora's reading.
+
 **Goal:** a transparent first estimate of the desired buffer: where the spread starts to respond as reserves become
 scarce.
 

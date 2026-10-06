@@ -1,4 +1,4 @@
-"""Scheduled inputs: the standing repo facility's rate and the FOMC runoff caps.
+"""Scheduled inputs: the standing repo facility's rate, the ON RRP offering rate and the FOMC runoff caps.
 
 Both are announced before they take effect, so each is a scheduled input under the parent's information-set rule
 (`metadata/sources_phase3.json`, `scheduled_availability`): the value for row T is read at T's decision instant,
@@ -21,11 +21,13 @@ from typing import List, NamedTuple, Optional, Sequence, Tuple
 NOTES = Path(__file__).resolve().parents[2] / "tests" / "fixtures" / "snapshots" / "fomc_notes"
 SRF_TABLE = NOTES / "srf_rate.csv"
 CAPS_TABLE = NOTES / "runoff_caps.csv"
+ON_RRP_RATE_TABLE = NOTES / "on_rrp_rate.csv"
 
 #: The facility's first operation (the FOMC established it on 28 July 2021): no rate before it.
 SRF_INCEPTION = date(2021, 7, 29)
 
 SRF_COLUMN = "srf_rate"
+ON_RRP_RATE_COLUMN = "on_rrp_rate"
 CAP_COLUMNS = ("runoff_cap_treasury_bn", "runoff_cap_mbs_bn")
 
 
@@ -65,6 +67,10 @@ def load_srf_rates() -> List[Publication]:
     return _publications(SRF_TABLE, ("rate_percent",))
 
 
+def load_on_rrp_rates() -> List[Publication]:
+    return _publications(ON_RRP_RATE_TABLE, ("rate_percent",))
+
+
 def load_runoff_caps() -> List[Publication]:
     return _publications(CAPS_TABLE, ("treasury_cap_bn", "mbs_cap_bn"))
 
@@ -92,11 +98,23 @@ def _values(dates: Sequence[date], rows: Sequence[Publication], decision_time: t
     return out
 
 
+def rate_in_force(rows: Sequence[Publication], day: date) -> Optional[float]:
+    """The rate in force on `day` by effective date, whenever announced: for a realized outcome, never a model input."""
+    row = max((r for r in rows if r.effective <= day), key=lambda r: r.effective, default=None)
+    return None if row is None else row.values[0]
+
+
 def srf_rate_values(dates: Sequence[date], *, decision_time: time, rows=None) -> List[Optional[float]]:
     """The facility's rate on each row, read at its decision instant; missing before the facility existed."""
     rows = load_srf_rates() if rows is None else rows
     return [None if row is None or day < SRF_INCEPTION else row.values[0]
             for day, row in zip(dates, _values(dates, rows, decision_time))]
+
+
+def on_rrp_rate_values(dates: Sequence[date], *, decision_time: time, rows=None) -> List[Optional[float]]:
+    """The ON RRP offering rate on each row, read at its decision instant."""
+    rows = load_on_rrp_rates() if rows is None else rows
+    return [None if row is None else row.values[0] for row in _values(dates, rows, decision_time)]
 
 
 def runoff_cap_values(dates: Sequence[date], *, decision_time: time, rows=None) -> List[Optional[Tuple[float, float]]]:
@@ -113,26 +131,28 @@ def with_scheduled(observations, *, decision_time: time):
     """
     from repo_model.data import DailyObservation
 
-    columns = (SRF_COLUMN,) + CAP_COLUMNS
+    columns = (SRF_COLUMN, ON_RRP_RATE_COLUMN) + CAP_COLUMNS
     for row in observations:
         clash = [column for column in columns if column in row.values]
         if clash:
             raise ValueError(f"{row.date} already carries {clash}")
     dates = [row.date for row in observations]
     rates = srf_rate_values(dates, decision_time=decision_time)
+    floors = on_rrp_rate_values(dates, decision_time=decision_time)
     caps = runoff_cap_values(dates, decision_time=decision_time)
     out = []
-    for row, rate, cap in zip(observations, rates, caps):
+    for row, rate, floor, cap in zip(observations, rates, floors, caps):
         values = dict(row.values)
         values[SRF_COLUMN] = rate
+        values[ON_RRP_RATE_COLUMN] = floor
         values[CAP_COLUMNS[0]] = None if cap is None else cap[0]
         values[CAP_COLUMNS[1]] = None if cap is None else cap[1]
         out.append(DailyObservation(row.date, values))
     return out
 
 
-def cross_check_srf_operations() -> int:
-    """Check every facility operation in the parent's snapshots ran at the rate this table puts in force that day.
+def _cross_check(rows, directory: str, operation_type: str, rate_key: str, first: Optional[date]) -> int:
+    """Check every overnight operation in the parent's snapshots ran at the rate this table puts in force that day.
 
     Returns the number of operation days checked.
 
@@ -141,25 +161,33 @@ def cross_check_srf_operations() -> int:
     """
     from repo_liquidity import parent_root
 
-    rows = load_srf_rates()
     checked = 0
-    for path in sorted((parent_root() / "tests/fixtures/snapshots/srf_inputs/nyfed_srf").glob("*.json")):
+    for path in sorted((parent_root() / "tests/fixtures/snapshots" / directory).glob("*.json")):
         if path.name.endswith(".manifest.json"):
             continue
         payload = json.loads(path.read_text(encoding="utf-8"))
         for operation in payload.get("repo", {}).get("operations", []):
-            if operation.get("operationType") != "Repo" or operation.get("term") != "Overnight":
+            if operation.get("operationType") != operation_type or operation.get("term") != "Overnight":
                 continue
             day = date.fromisoformat(operation["operationDate"])
-            if day < SRF_INCEPTION:
+            if first is not None and day < first:
                 continue
-            rates = {detail.get("percentOfferingRate") for detail in operation.get("details", [])}
+            rates = {detail.get(rate_key) for detail in operation.get("details", [])}
             rates.discard(None)
             if not rates:
                 continue
             row = max((r for r in rows if r.effective <= day), key=lambda r: r.effective, default=None)
             expected = None if row is None else row.values[0]
-            if any(abs(rate - expected) > 1e-9 for rate in rates):
-                raise ValueError(f"{day}: operation rate {sorted(rates)} but the table has {expected}")
+            if expected is None or any(abs(rate - expected) > 1e-9 for rate in rates):
+                raise ValueError(f"{day}: {operation_type} rate {sorted(rates)} but the table has {expected}")
             checked += 1
     return checked
+
+
+def cross_check_srf_operations() -> int:
+    return _cross_check(load_srf_rates(), "srf_inputs/nyfed_srf", "Repo", "percentOfferingRate", SRF_INCEPTION)
+
+
+def cross_check_on_rrp_operations() -> int:
+    return _cross_check(load_on_rrp_rates(), "on_rrp_inputs/nyfed_on_rrp", "Reverse Repo", "percentOfferingRate",
+                        None)
