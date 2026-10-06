@@ -1,0 +1,13 @@
+announcement_date,announcement_time,timezone,effective_date,treasury_cap_bn,mbs_cap_bn,source_url,page
+2017-09-20,14:00,America/New_York,2017-10-01,6,4,https://www.federalreserve.gov/newsevents/pressreleases/monetary20170920a1.htm,monetary20170920a1.htm.gz
+2017-12-13,14:00,America/New_York,2018-01-01,12,8,https://www.federalreserve.gov/newsevents/pressreleases/monetary20171213a1.htm,monetary20171213a1.htm.gz
+2018-03-21,14:00,America/New_York,2018-04-01,18,12,https://www.federalreserve.gov/newsevents/pressreleases/monetary20180321a1.htm,monetary20180321a1.htm.gz
+2018-06-13,14:00,America/New_York,2018-07-01,24,16,https://www.federalreserve.gov/newsevents/pressreleases/monetary20180613a1.htm,monetary20180613a1.htm.gz
+2018-09-26,14:00,America/New_York,2018-10-01,30,20,https://www.federalreserve.gov/newsevents/pressreleases/monetary20180926a1.htm,monetary20180926a1.htm.gz
+2019-03-20,14:00,America/New_York,2019-05-01,15,20,https://www.federalreserve.gov/newsevents/pressreleases/monetary20190320c.htm,monetary20190320c.htm.gz
+2019-07-31,14:00,America/New_York,2019-08-01,0,0,https://www.federalreserve.gov/newsevents/pressreleases/monetary20190731a1.htm,monetary20190731a1.htm.gz
+2022-05-04,14:00,America/New_York,2022-06-01,30,17.5,https://www.federalreserve.gov/newsevents/pressreleases/monetary20220504b.htm,monetary20220504b.htm.gz
+2022-05-04,14:00,America/New_York,2022-09-01,60,35,https://www.federalreserve.gov/newsevents/pressreleases/monetary20220504b.htm,monetary20220504b.htm.gz
+2024-05-01,14:00,America/New_York,2024-06-01,25,35,https://www.federalreserve.gov/newsevents/pressreleases/monetary20240501a1.htm,monetary20240501a1.htm.gz
+2025-03-19,14:00,America/New_York,2025-04-01,5,35,https://www.federalreserve.gov/newsevents/pressreleases/monetary20250319a1.htm,monetary20250319a1.htm.gz
+2025-10-29,14:00,America/New_York,2025-12-01,0,0,https://www.federalreserve.gov/newsevents/pressreleases/monetary20251029a1.htm,monetary20251029a1.htm.gz

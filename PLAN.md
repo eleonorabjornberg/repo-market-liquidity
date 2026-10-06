@@ -116,6 +116,14 @@ declared input, fixed before anything is scored. Uses:
 
 ### Stage 1: data, as of 4 pm
 
+Stage 1 is built in two parts (Eleonora, 6 October 2026):
+
+- **Stage 1a, the inputs already ruled on:** ON RRP, H.8 bank assets, standing repo facility usage and its rate, the
+  weekly change in the Fed's Treasury holdings (H.4.1 first prints), and the announced runoff caps. Built by
+  `scripts/build_panel.py` into a measurement panel whose manifest is `metadata/phase3_panel_manifest.json`.
+- **Stage 1b, the indicator families (questions 7 to 10):** written once Nicholas has answered.
+
+
 **Goal:** a Phase 3 measurement panel in which every input is read only as it was public at the decision instant,
 from 2018-04-03.
 
@@ -223,7 +231,8 @@ Under [`docs/decisions/evaluation.md`](docs/decisions/evaluation.md):
   [`docs/decisions/input-declarations.md`](docs/decisions/input-declarations.md).
 - **D2.** Stage 2's bar is the proposed rule: [`docs/decisions/stage-2-bend.md`](docs/decisions/stage-2-bend.md).
 - **D3.** statsmodels is approved, pinned at 0.14.6: [`docs/decisions/dependencies.md`](docs/decisions/dependencies.md).
-- **D4.** The publish rule: [`docs/decisions/publish-rule.md`](docs/decisions/publish-rule.md).
+- **D4.** The publish rule, and a record is published only when Eleonora says so:
+  [`docs/decisions/publish-rule.md`](docs/decisions/publish-rule.md).
 - **D5.** The reform dates are a declared input ([`docs/decisions/reform-dates.md`](docs/decisions/reform-dates.md)),
   and the confirmatory result is also reported split at the clearing mandates (amendment to `evaluation.md`).
 
