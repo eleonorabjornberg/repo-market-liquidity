@@ -16,5 +16,19 @@ dependencies = [
   "repo-market-model @ git+https://github.com/eleonorabjornberg/repo-market-model@71ab387e5557cc9ecefb12d1b2bf21d086571388",
 ]
 
+# Stage 3 (docs/decisions/dependencies.md, statsmodels approved 6 October 2026): pinned exactly, with the
+# versions of statsmodels' own dependencies that the install resolved on CPython 3.11, and numpy at the parent's pin.
+[project.optional-dependencies]
+state-space = [
+  "statsmodels==0.14.6",
+  "numpy==2.4.6",
+  "scipy==1.17.1",
+  "pandas==3.0.6",
+  "patsy==1.0.3",
+  "python-dateutil==2.9.0.post0",
+  "six==1.17.0",
+  "packaging==26.3",
+]
+
 [tool.setuptools.packages.find]
 where = ["src"]

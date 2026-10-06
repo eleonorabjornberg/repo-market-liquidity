@@ -27,3 +27,6 @@ Ruling (Eleonora, 6 October 2026; relayed by the orchestrating session), on `PLA
   versions of its own dependencies (scipy, pandas, patsy) that the install resolves; CI installs the same pins. Those
   transitive pins are recorded here in the same pull request.
 - A figure that moves with statsmodels' version is a figure of record only on the pinned version.
+- **Entered for Stage 3 (6 October 2026)** as the `state-space` extra in `pyproject.toml`, pinned exactly with what
+  the install resolved on CPython 3.11: statsmodels 0.14.6, numpy 2.4.6 (the parent's `ml` pin), scipy 1.17.1,
+  pandas 3.0.6, patsy 1.0.3, python-dateutil 2.9.0.post0, six 1.17.0, packaging 26.3. CI installs the same pins.

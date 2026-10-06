@@ -30,6 +30,6 @@ jobs:
       - name: Install (Python 3.11 from the runner's tool cache)
         run: |
           PY=$(ls -d /opt/hostedtoolcache/Python/3.11*/x64/bin | tail -1)/python3
-          "$PY" -m venv .venv && .venv/bin/pip install -q -e ./parent && .venv/bin/pip install -q --no-deps -e .
+          "$PY" -m venv .venv && .venv/bin/pip install -q -e ./parent && .venv/bin/pip install -q --no-deps -e . && .venv/bin/pip install -q "statsmodels==0.14.6" "numpy==2.4.6" "scipy==1.17.1" "pandas==3.0.6" "patsy==1.0.3" "python-dateutil==2.9.0.post0" "six==1.17.0" "packaging==26.3"
       - name: Test
         run: PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -B -m unittest discover -s tests -v
