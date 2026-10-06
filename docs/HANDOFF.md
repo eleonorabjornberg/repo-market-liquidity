@@ -14,6 +14,7 @@ directive, those win and this file is stale. Update it at the end of each sessio
 | 2: the reserve demand curve | Merged (#7) | `src/repo_liquidity/demand_curve.py`, `results/stage2/`, `docs/decisions/stage-2-bend.md` |
 | 3: the latent buffer | Merged (#8): **not shown** | `docs/stages/stage-3.md`, `src/repo_liquidity/latent.py`, `scripts/stage3_latent.py`, `results/stage3/latent.json` |
 | 3b: the buffer on a fixed curve | **In review: benchmark shown, stability not shown** | `docs/stages/stage-3b.md`, `src/repo_liquidity/anchored.py`, `scripts/stage3b_anchored.py`, `results/stage3b/anchored.json` |
+| 1a correction: MBS, 2019–21 repo operations, material use | **In review** | `docs/stages/stage-1a-correction.md`, `src/repo_liquidity/fed_repo.py`, `metadata/phase3_panel_v2_manifest.json` (panel version 2; version 1 is unchanged) |
 | 4, 5: evaluation, the frozen daily log | Not started. Stage 4 needs a frozen Stage 3 model | `PLAN.md`, `docs/decisions/evaluation.md` |
 
 ## Stage 2, in one paragraph

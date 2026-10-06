@@ -1,0 +1,6 @@
+{
+  "path": "rp_2019-09-17_2019-12-31.json",
+  "sha256": "dc62e888363e7266b1d421ab7fd9f5c079f6f632f3ad2b9dcd04fa8691cb0760",
+  "retrieved_at": "2026-10-06T17:30:34Z",
+  "url": "https://markets.newyorkfed.org/api/rp/results/search.json?startDate=2019-09-17&endDate=2019-12-31"
+}

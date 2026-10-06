@@ -26,7 +26,7 @@ def _parent_contract():
 
 
 #: Phase 3's columns and the (source, field) pairs each reads. The first three switch on inputs the parent declares
-#: and keeps off; the last two read this repository's new sources.
+#: and keeps off; the rest read this repository's new sources.
 def _fields():
     contract = _parent_contract()
     return {
@@ -38,6 +38,13 @@ def _fields():
         "on_rrp_rate": (("fed_on_rrp_rate", "on_rrp_rate"),),
         "runoff_cap_treasury_bn": (("fomc_runoff_caps", "runoff_cap_treasury_bn"),),
         "runoff_cap_mbs_bn": (("fomc_runoff_caps", "runoff_cap_mbs_bn"),),
+        "soma_mbs_weekly_change": (("frb_h41_mbs", "soma_mbs_weekly_change"),),
+        "temp_repo_take_up": (("nyfed_temp_repo", "temp_repo_take_up"),),
+        "temp_repo_term_take_up": (("nyfed_temp_repo", "temp_repo_term_take_up"),),
+        # Derived on each row from the two facilities' take-up, so read under both sources' declarations.
+        "fed_repo_take_up": (("nyfed_temp_repo", "temp_repo_take_up"),) + tuple(contract.SRF_OPERATION_RESULTS_FIELDS),
+        "fed_repo_facility": (("nyfed_temp_repo", "temp_repo_take_up"),) + tuple(contract.SRF_OPERATION_RESULTS_FIELDS),
+        "srf_material_use": tuple(contract.SRF_OPERATION_RESULTS_FIELDS),
     }
 
 
@@ -46,6 +53,10 @@ FIELDS: Mapping[str, tuple] = MappingProxyType(_fields())
 #: The columns the panel build prices from snapshots; the rest are scheduled and written on rows afterwards.
 BUILT_COLUMNS = ("on_rrp", "bank_total_assets", "srf_take_up", "soma_treasury_weekly_change")
 SCHEDULED_COLUMNS = ("srf_rate", "on_rrp_rate", "runoff_cap_treasury_bn", "runoff_cap_mbs_bn")
+#: The Stage 1a correction's panel (version 2, `docs/stages/stage-1a-correction.md`): its added built columns, and the
+#: columns derived on each row from columns already read at that row's decision instant (`repo_liquidity.fed_repo`).
+BUILT_COLUMNS_V2 = BUILT_COLUMNS + ("soma_mbs_weekly_change", "temp_repo_take_up", "temp_repo_term_take_up")
+DERIVED_COLUMNS_V2 = ("fed_repo_take_up", "fed_repo_facility", "srf_material_use")
 
 
 def parent_registry() -> Dict[str, Mapping]:

@@ -153,5 +153,72 @@
     "structural_zeros": [],
     "structural_zeros_reviewed": true,
     "url": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
+  },
+  "frb_h41_mbs": {
+    "access": "public",
+    "availability_provenance": {
+      "note": "Recorded 6 October 2026 for the Stage 1a correction. The same releases as frb_h41_treasury, so the same release dates and the same measured worst case: Recorded 6 October 2026 for Stage 1a. The H.4.1 About page (https://www.federalreserve.gov/releases/h41/about.htm, fetched 6 October 2026) says the release \"is typically published on Thursday afternoon around 4:30 p.m.\" Of the 454 weekly releases from the week ended 2017-12-27 to the week ended 2026-09-02, 439 were published one calendar day after the week's Wednesday, 13 two days after, and 2 five days after (the weeks ended 2020-12-23 and 2025-12-24). 16:30 is after the 16:00 decision instant, so a release is read from the next business day's decision.",
+      "publication": "Board of Governors, H.4.1 Factors Affecting Reserve Balances, archived release pages at https://www.federalreserve.gov/releases/h41/<YYYYMMDD>/; published Thursdays (later around holidays) at about 4:30 p.m. Eastern Time."
+    },
+    "coverage": [
+      "Mortgage-backed securities held outright by the Federal Reserve: change from the previous week in the week average, as printed in each release (first print)"
+    ],
+    "field_frequencies": {
+      "soma_mbs_weekly_change": "weekly"
+    },
+    "fields": [
+      "soma_mbs_weekly_change"
+    ],
+    "frequency": "weekly",
+    "identities": [],
+    "limitation": "Table 1, row \"Mortgage-backed securities\", column \"Change from week ended\" (the previous week), in USD billions (the release prints millions). Read from the same archived release pages as frb_h41_treasury, into tests/fixtures/snapshots/h41/h41_mbs_first_print.csv by scripts/fetch_h41.py --row mbs, which also checks every page's Treasury row against the tracked Treasury extract. MBS holdings change in steps at principal-payment and settlement dates, so most weeks print 0 and some print large changes. Phase 3 only (docs/decisions/data-meaning.md, answer 1, Nicholas Beroud; docs/stages/stage-1a-correction.md, item 1).",
+    "provider": "Board of Governors of the Federal Reserve System",
+    "release_lag": {
+      "available_time": "16:30",
+      "basis": "record_date",
+      "days": 5,
+      "note": "The same releases as frb_h41_treasury, so the same measured worst case (five calendar days, twice). repo_liquidity.h41.check_declared_lag is tested against this declaration on the MBS extract.",
+      "timezone": "America/New_York",
+      "unit": "calendar_days"
+    },
+    "reviewed_note": "No structural zeros: a printed 0 is a week with no change.",
+    "structural_zeros": [],
+    "structural_zeros_reviewed": true,
+    "url": "https://www.federalreserve.gov/releases/h41/"
+  },
+  "nyfed_temp_repo": {
+    "access": "public",
+    "availability_provenance": {
+      "note": "Recorded 6 October 2026 for the Stage 1a correction. The same endpoint as the parent's nyfed_srf and nyfed_on_rrp, which declare a day's results available at 16:00 ET on the next business day because the Desk states no publication time (parent #45, #127). The same conservative reading is taken here.",
+      "publication": "New York Fed repo operation results (temporary open market operations, 2019-09-17 to 2021-07-28): the Desk publishes a summary of results after each operation, at no stated clock time. 16:00 ET on the next business day is the conservative availability instant declared here."
+    },
+    "coverage": [
+      "Temporary overnight and term repo amounts accepted by the Desk, per operation date, 2019-09-17 to 2021-07-28"
+    ],
+    "field_frequencies": {
+      "temp_repo_take_up": "business_daily",
+      "temp_repo_term_take_up": "business_daily"
+    },
+    "fields": [
+      "temp_repo_take_up",
+      "temp_repo_term_take_up"
+    ],
+    "frequency": "business daily",
+    "identities": [],
+    "limitation": "temp_repo_take_up is totalAmtAccepted summed over every operation of an operationDate whose operationType is 'Repo' and term 'Overnight'; temp_repo_term_take_up the same for term 'Term'; both in USD billions, from 2019-09-17 to 2021-07-28, leaving out small-value exercises (repo_liquidity.fed_repo). A day the Desk operated and nothing was taken is 0.0. Read from the unmodified search responses under tests/fixtures/snapshots/nyfed_temp_repo/, saved by scripts/fetch_temp_repo.py. Whether term repos count as take-up is Nicholas's question 14 (issue #1); until he answers, the take-up is overnight and term is kept beside it. docs/decisions/data-meaning.md, answer 5; docs/stages/stage-1a-correction.md, item 2.",
+    "provider": "Federal Reserve Bank of New York",
+    "release_lag": {
+      "available_time": "16:00",
+      "basis": "ref_date",
+      "days": 1,
+      "note": "Conservative, under docs/decisions/information-set.md (#127): a day's take-up is declared available at 16:00 ET on the next business day, not at its 13:45 close, because the Desk states no publication time and lastUpdated is a write time that was rewritten days later on 2021-09-03 and 2021-09-10 (both on 2021-09-16). nyfed_on_rrp declares the same lag for the same endpoint.",
+      "timezone": "America/New_York",
+      "unit": "business_days",
+      "worst_case_calendar_days": 6
+    },
+    "reviewed_note": "The structural zero before 2019-09-17 is written by repo_liquidity.fed_repo.combined into fed_repo_take_up, not into these fields, which have no row before the first operation.",
+    "structural_zeros": [],
+    "structural_zeros_reviewed": true,
+    "url": "https://markets.newyorkfed.org/api/rp/results/search.json"
   }
 }

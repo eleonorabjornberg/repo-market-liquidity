@@ -42,5 +42,32 @@ class ParseTests(unittest.TestCase):
             h41.parse_release("<html>no table here</html>", release_date=date(2025, 1, 2))
 
 
+
+class MbsRowTests(unittest.TestCase):
+    """Table 1's "Mortgage-backed securities" row (`docs/stages/stage-1a-correction.md`, item 1).
+
+    Its footnote mark is printed as "(4)" in 2018 and as a bare "4" in 2025; neither may be read as a number.
+    """
+
+    def test_old_format_2018(self):
+        row = h41.parse_release(page("20180405.htm.gz"), release_date=date(2018, 4, 5), row=h41.MBS_ROW)
+        self.assertEqual((row.week_ended, row.week_average, row.change_from_prior_week, row.wednesday_level),
+                         (date(2018, 4, 4), 1754368, -5030, 1754368))
+
+    def test_new_format_2025(self):
+        row = h41.parse_release(page("20250102.htm.gz"), release_date=date(2025, 1, 2), row=h41.MBS_ROW)
+        self.assertEqual((row.week_ended, row.week_average, row.change_from_prior_week, row.wednesday_level),
+                         (date(2025, 1, 1), 2233262, -12690, 2233262))
+
+    def test_the_treasury_row_is_still_the_default(self):
+        default = h41.parse_release(page("20250102.htm.gz"), release_date=date(2025, 1, 2))
+        named = h41.parse_release(page("20250102.htm.gz"), release_date=date(2025, 1, 2), row=h41.TREASURY_ROW)
+        self.assertEqual(default, named)
+
+    def test_an_unknown_row_is_refused(self):
+        with self.assertRaises(ValueError):
+            h41.parse_release(page("20250102.htm.gz"), release_date=date(2025, 1, 2), row="Gold certificate account")
+
+
 if __name__ == "__main__":
     unittest.main()
