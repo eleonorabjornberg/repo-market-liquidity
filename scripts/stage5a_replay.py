@@ -15,6 +15,7 @@ Writes `results/stage5a/replay.json`. Scores nothing new and publishes nothing.
 
 import importlib.util
 import json
+import multiprocessing
 import sys
 from concurrent.futures import ProcessPoolExecutor
 from datetime import date
@@ -117,7 +118,8 @@ def main():
     brier_held = all(abs(ours - theirs) <= PROBABILITY_TOLERANCE
                      for arms in brier_check.values() for ours, theirs in arms.values())
 
-    with ProcessPoolExecutor(max_workers=4) as pool:
+    # Spawned, not forked: the parent process has already initialised OpenMP through the development run.
+    with ProcessPoolExecutor(max_workers=3, mp_context=multiprocessing.get_context("spawn")) as pool:
         replayed = dict(pool.map(_replay_one, [day.isoformat() for day in days]))
 
     entries, held = [], brier_held
