@@ -10,7 +10,7 @@ curve-implied spread (`curve_feature.CurveFeatureExceedance`, with the curve-pas
 benchmarks (calendar climatology, the persistence-logistic model) beside them.
 
 Model A is first checked against the published exceedance record: the same scored days, and the same Brier at every
-declared threshold, to 1e-12. The secondary result is P(spread > +5 bp) at h = 1; the other declared thresholds are
+threshold it pools (+5 and +10 bp), to 1e-12. The secondary result is P(spread > +5 bp) at h = 1; the other declared thresholds are
 reported beside it. Paired day by day by the parent's `benchmark_comparison_document`. Not part of the pass rule.
 Writes `results/stage4/brier.json`. Nothing is published.
 """
@@ -77,10 +77,12 @@ def main():
                          for bench_name, features, bench in benchmarks]
 
         ours = _brier_by_tau(report_a)
-        theirs = {key: entry["brier"] for key, entry in published["metrics"]["by_tau"].items()}
+        # The published record pools the Brier at +5 and +10 bp; +20 and +50 bp are reported event by event.
+        theirs = {key: entry["brier"] for key, entry in published["metrics"]["by_tau"].items() if "brier" in entry}
         gaps = {key: abs(ours[key] - theirs[key]) for key in theirs}
         check = {"held": (len(report_a.scored_dates) == published["metrics"]["scored_days"]
-                          and set(ours) == set(theirs) and max(gaps.values()) <= TOLERANCE),
+                          and SECONDARY_TAU in theirs and max(gaps.values()) <= TOLERANCE),
+                 "taus_checked": sorted(theirs, key=float),
                  "scored_days": len(report_a.scored_dates), "published_scored_days": published["metrics"]["scored_days"],
                  "largest_gap": max(gaps.values()), "tolerance": TOLERANCE}
 
