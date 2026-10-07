@@ -1,0 +1,42 @@
+{
+  "fed_iorb_rate": {
+    "access": "public",
+    "coverage": [
+      "Interest rate on reserve balances (IOER before 2021-07-29) in force on each day, the top of the policy corridor, from FOMC implementation notes"
+    ],
+    "field_frequencies": {
+      "iorb_in_force": "business_daily"
+    },
+    "fields": [
+      "iorb_in_force"
+    ],
+    "frequency": "event",
+    "identities": [],
+    "limitation": "Not a built panel column. repo_liquidity.scheduled adds it in memory for Stage 4 (docs/stages/stage-4.md) from the parent's own dated table of implementation notes (tests/fixtures/snapshots/fed-iorb-announcements/iorb_changes.csv at the pin, read by repo_model.announced_iorb.load_announcements against its manifest), reading only notes announced at or before that row's decision instant. The panel's iorb column is the realized rate, the target's constituent, read at the anchor; this column is the rate a forecast for T may know is in force on T. Used only to convert the curve's corridor position into SOFR - IORB.",
+    "provider": "Board of Governors of the Federal Reserve System",
+    "release_lag": {
+      "available_time": "23:59",
+      "basis": "record_date",
+      "days": 0,
+      "note": "Not read: the field is scheduled (scheduled_availability), as the parent's fed_iorb_announcements states it.",
+      "timezone": "America/New_York",
+      "unit": "calendar_days"
+    },
+    "reviewed_note": "No structural zeros.",
+    "scheduled_availability": {
+      "available_time": "16:00",
+      "basis": "announced_before_ref_date",
+      "days": 1,
+      "evidence": "Keyed on the announcement time, as fed_on_rrp_rate. The value for row T is the rate of the latest implementation note announced at or before 16:00 on the panel day before T and effective on or before T. tests/test_curve_feature.py checks that a note announced after a decision instant never changes the value read at it, and that the column equals the panel's realized iorb on every day but those whose rate was announced after the decision instant before them.",
+      "fields": [
+        "iorb_in_force"
+      ],
+      "note": "16:00 is the decision time of every Phase 3 run, as of the parent's published records.",
+      "timezone": "America/New_York",
+      "unit": "business_days"
+    },
+    "structural_zeros": [],
+    "structural_zeros_reviewed": true,
+    "url": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
+  }
+}

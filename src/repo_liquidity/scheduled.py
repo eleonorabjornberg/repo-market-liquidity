@@ -117,6 +117,28 @@ def on_rrp_rate_values(dates: Sequence[date], *, decision_time: time, rows=None)
     return [None if row is None else row.values[0] for row in _values(dates, rows, decision_time)]
 
 
+#: Stage 4 (`docs/stages/stage-4.md`): the IORB in force on each row, read at its decision instant. Not built into any
+#: panel version; `curve_feature.with_stage4_columns` adds it in memory.
+IORB_COLUMN = "iorb_in_force"
+
+
+def load_iorb_rates() -> List[Publication]:
+    """The parent's own dated table of IORB (IOER) implementation notes, checked against its manifest."""
+    from repo_model import announced_iorb
+
+    from repo_liquidity import parent_root
+
+    table = parent_root() / "tests" / "fixtures" / "snapshots" / "fed-iorb-announcements" / "iorb_changes.csv"
+    return [Publication(note.announced_at, note.effective, (note.rate_bps / 100.0,), (str(note.rate_bps),), "")
+            for note in announced_iorb.load_announcements(table)]
+
+
+def iorb_in_force_values(dates: Sequence[date], *, decision_time: time, rows=None) -> List[Optional[float]]:
+    """The IORB in force on each row, in percent, read at its decision instant."""
+    rows = load_iorb_rates() if rows is None else rows
+    return [None if row is None else row.values[0] for row in _values(dates, rows, decision_time)]
+
+
 def runoff_cap_values(dates: Sequence[date], *, decision_time: time, rows=None) -> List[Optional[Tuple[float, float]]]:
     """The (Treasury, MBS) monthly runoff caps in force on each row, read at its decision instant."""
     rows = load_runoff_caps() if rows is None else rows
