@@ -642,7 +642,7 @@
   }
  ],
  "provenance": {
-  "commit": "7e89020365b1399a6ae11ae1d95ea963c2111719",
+  "commit": "f15b655b86dd7c5b708ec770fbaf592b6fb955c8",
   "tree_modified": false,
   "parent_commit": "71ab387e5557cc9ecefb12d1b2bf21d086571388",
   "parent_panel_sha256": "4ddc3882cd6d406b11e1088f8ff6195e16dde175a0ad6818abe40dd5bdac8999",
@@ -1268,7 +1268,7 @@
    }
   },
   "panel": {
-   "path": "/tmp/tmp_qnibk9a/phase3_panel_v3.csv",
+   "path": "/tmp/tmpbsfdrukw/phase3_panel_v3.csv",
    "sha256": "b49140a902ec2f4850803c198926a6804b226ddcb44e858f83254d45ef55ab30",
    "row_count": 2104,
    "first_date": "2018-04-03",
@@ -1277,8 +1277,8 @@
   "provenance": {
    "inputs": {
     "source_registry": {
-     "path": "/tmp/tmp_qnibk9a/registry.json",
-     "sha256": "4cb6be295a4d19492e32435b4a676a3e5bd584c414637040526015355a40983a"
+     "path": "/tmp/tmpbsfdrukw/registry.json",
+     "sha256": "91931e09cea570378a9968968cad83be915de2bb3c572e3b6fc42b4f9992552d"
     }
    },
    "code": {

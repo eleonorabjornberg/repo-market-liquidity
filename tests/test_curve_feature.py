@@ -101,10 +101,35 @@ class ScheduledIorbTests(unittest.TestCase):
         values = scheduled.iorb_in_force_values(dates, decision_time=DECISION, rows=notes)
         self.assertEqual(values, [None, 2.20, 2.20])
 
-    def test_the_table_is_the_parents_own(self):
-        rows = scheduled.load_iorb_rates()
-        self.assertGreater(len(rows), 0)
-        self.assertTrue(all(row.announced_at.date() < row.effective for row in rows))
+    def test_the_table_matches_the_parents_through_the_pin(self):
+        """Eleonora, 7 October 2026: IORB moves to this repository's own table, seeded from the parent's.
+
+        Every note in the parent's table at the pin is in this one, with the same announcement, effective date and
+        rate; rows after the parent's last note are this repository's own, added after each FOMC by a reviewed PR.
+        """
+        from repo_model import announced_iorb
+
+        from repo_liquidity import parent_root
+
+        parent = announced_iorb.load_announcements(
+            parent_root() / "tests" / "fixtures" / "snapshots" / "fed-iorb-announcements" / "iorb_changes.csv")
+        ours = scheduled.load_iorb_rates()
+        self.assertEqual([(row.announced_at, row.effective, round(row.values[0] * 100)) for row in ours[:len(parent)]],
+                         [(note.announced_at, note.effective, note.rate_bps) for note in parent])
+        self.assertTrue(all(row.announced_at.date() < row.effective for row in ours))
+
+    def test_every_iorb_rate_is_in_its_page(self):
+        import gzip
+        import html
+        import re
+
+        for row in scheduled.load_iorb_rates():
+            raw = gzip.decompress((scheduled.NOTES / "pages" / row.page).read_bytes()).decode("utf-8", errors="replace")
+            text = re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", " ", raw)))
+            found = re.search(r"reserve balances (?:at|to) ([0-9.]+) percent", text)
+            self.assertIsNotNone(found, row.page)
+            self.assertAlmostEqual(float(found.group(1)), row.values[0], places=9, msg=row.page)
+            self.assertIn(f"{row.effective:%B} {row.effective.day}, {row.effective.year}", text, row.page)
 
     def test_it_equals_the_realized_rate_except_where_a_note_came_after_the_decision(self):
         rows = [row for row in _panel_rows() if row.date <= date(2025, 12, 31)]
