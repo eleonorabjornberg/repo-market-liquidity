@@ -1,0 +1,1381 @@
+{
+ "stage": "4, the curve pass",
+ "what": "The constrained curve (slope at or above 0) fitted alone at every refit of the parent's fold grid, on the training frame the fold loop hands the fitter. No gbm is fitted and nothing is scored.",
+ "settings": {
+  "minimum_history": 61,
+  "refit_every": 21,
+  "decision_time": "16:00",
+  "end": "2025-12-31",
+  "grid": [
+   0.06,
+   0.22,
+   321
+  ],
+  "scarce_below": 0.13
+ },
+ "verdict": "stops: a refit's curve failed",
+ "failures": 1,
+ "refits": [
+  {
+   "first_scored": "2018-06-29",
+   "train_start": "2018-04-03",
+   "cutoff": "2018-06-27",
+   "train_rows": 61,
+   "curve_days": 51,
+   "scarce_days": 51,
+   "ratio_range": [
+    0.117302,
+    0.128891
+   ],
+   "kink": 0.123,
+   "intercept": 0.881141877,
+   "slope": 0.861457066
+  },
+  {
+   "first_scored": "2018-07-31",
+   "train_start": "2018-04-03",
+   "cutoff": "2018-07-27",
+   "train_rows": 82,
+   "curve_days": 72,
+   "scarce_days": 72,
+   "ratio_range": [
+    0.114581,
+    0.128891
+   ],
+   "failed": "the constrained fit's slope is 0 (bend 0.115): the curve carries no reserves signal",
+   "unconstrained": {
+    "kink": 0.1175,
+    "intercept": 0.893713923,
+    "slope": -38.861145602
+   }
+  },
+  {
+   "first_scored": "2018-08-29",
+   "train_start": "2018-04-03",
+   "cutoff": "2018-08-27",
+   "train_rows": 103,
+   "curve_days": 93,
+   "scarce_days": 93,
+   "ratio_range": [
+    0.114581,
+    0.128891
+   ],
+   "kink": 0.1155,
+   "intercept": 0.861609602,
+   "slope": 20.844912798
+  },
+  {
+   "first_scored": "2018-09-28",
+   "train_start": "2018-04-03",
+   "cutoff": "2018-09-26",
+   "train_rows": 124,
+   "curve_days": 114,
+   "scarce_days": 114,
+   "ratio_range": [
+    0.112005,
+    0.128891
+   ],
+   "kink": 0.1155,
+   "intercept": 0.862307626,
+   "slope": 35.819648704
+  },
+  {
+   "first_scored": "2018-10-30",
+   "train_start": "2018-04-03",
+   "cutoff": "2018-10-26",
+   "train_rows": 145,
+   "curve_days": 135,
+   "scarce_days": 135,
+   "ratio_range": [
+    0.107828,
+    0.128891
+   ],
+   "kink": 0.116,
+   "intercept": 0.871311053,
+   "slope": 10.838488828
+  },
+  {
+   "first_scored": "2018-11-30",
+   "train_start": "2018-04-03",
+   "cutoff": "2018-11-28",
+   "train_rows": 166,
+   "curve_days": 156,
+   "scarce_days": 156,
+   "ratio_range": [
+    0.103916,
+    0.128891
+   ],
+   "kink": 0.116,
+   "intercept": 0.867666502,
+   "slope": 18.374512387
+  },
+  {
+   "first_scored": "2019-01-03",
+   "train_start": "2018-04-03",
+   "cutoff": "2018-12-31",
+   "train_rows": 187,
+   "curve_days": 177,
+   "scarce_days": 177,
+   "ratio_range": [
+    0.099704,
+    0.128891
+   ],
+   "kink": 0.1035,
+   "intercept": 0.918656756,
+   "slope": 394.29081999
+  },
+  {
+   "first_scored": "2019-02-04",
+   "train_start": "2018-04-03",
+   "cutoff": "2019-01-31",
+   "train_rows": 208,
+   "curve_days": 198,
+   "scarce_days": 198,
+   "ratio_range": [
+    0.094843,
+    0.128891
+   ],
+   "kink": 0.115,
+   "intercept": 0.861858346,
+   "slope": 34.547353068
+  },
+  {
+   "first_scored": "2019-03-06",
+   "train_start": "2018-04-03",
+   "cutoff": "2019-03-04",
+   "train_rows": 229,
+   "curve_days": 219,
+   "scarce_days": 219,
+   "ratio_range": [
+    0.094843,
+    0.128891
+   ],
+   "kink": 0.116,
+   "intercept": 0.877524733,
+   "slope": 21.88847917
+  },
+  {
+   "first_scored": "2019-04-04",
+   "train_start": "2018-04-03",
+   "cutoff": "2019-04-02",
+   "train_rows": 250,
+   "curve_days": 240,
+   "scarce_days": 240,
+   "ratio_range": [
+    0.094843,
+    0.128891
+   ],
+   "kink": 0.116,
+   "intercept": 0.879933085,
+   "slope": 20.335367866
+  },
+  {
+   "first_scored": "2019-05-06",
+   "train_start": "2018-04-03",
+   "cutoff": "2019-05-02",
+   "train_rows": 271,
+   "curve_days": 261,
+   "scarce_days": 261,
+   "ratio_range": [
+    0.08793,
+    0.128891
+   ],
+   "kink": 0.116,
+   "intercept": 0.864519806,
+   "slope": 24.282215565
+  },
+  {
+   "first_scored": "2019-06-05",
+   "train_start": "2018-04-03",
+   "cutoff": "2019-06-03",
+   "train_rows": 292,
+   "curve_days": 282,
+   "scarce_days": 282,
+   "ratio_range": [
+    0.085466,
+    0.128891
+   ],
+   "kink": 0.1155,
+   "intercept": 0.867427302,
+   "slope": 25.088293328
+  },
+  {
+   "first_scored": "2019-07-05",
+   "train_start": "2018-04-03",
+   "cutoff": "2019-07-02",
+   "train_rows": 313,
+   "curve_days": 303,
+   "scarce_days": 303,
+   "ratio_range": [
+    0.085466,
+    0.128891
+   ],
+   "kink": 0.1155,
+   "intercept": 0.867764132,
+   "slope": 25.010287566
+  },
+  {
+   "first_scored": "2019-08-05",
+   "train_start": "2018-04-03",
+   "cutoff": "2019-08-01",
+   "train_rows": 334,
+   "curve_days": 324,
+   "scarce_days": 324,
+   "ratio_range": [
+    0.084185,
+    0.128891
+   ],
+   "kink": 0.114,
+   "intercept": 0.865540102,
+   "slope": 29.806249739
+  },
+  {
+   "first_scored": "2019-09-04",
+   "train_start": "2018-04-03",
+   "cutoff": "2019-08-30",
+   "train_rows": 355,
+   "curve_days": 345,
+   "scarce_days": 345,
+   "ratio_range": [
+    0.084185,
+    0.128891
+   ],
+   "kink": 0.1155,
+   "intercept": 0.861293763,
+   "slope": 25.869005339
+  },
+  {
+   "first_scored": "2019-10-03",
+   "train_start": "2018-04-03",
+   "cutoff": "2019-10-01",
+   "train_rows": 376,
+   "curve_days": 366,
+   "scarce_days": 366,
+   "ratio_range": [
+    0.079684,
+    0.128891
+   ],
+   "kink": 0.0915,
+   "intercept": 1.073270377,
+   "slope": 217.364804358
+  },
+  {
+   "first_scored": "2019-11-04",
+   "train_start": "2018-04-03",
+   "cutoff": "2019-10-31",
+   "train_rows": 397,
+   "curve_days": 387,
+   "scarce_days": 387,
+   "ratio_range": [
+    0.079684,
+    0.128891
+   ],
+   "kink": 0.097,
+   "intercept": 1.017828573,
+   "slope": 95.225338026
+  },
+  {
+   "first_scored": "2019-12-05",
+   "train_start": "2018-04-03",
+   "cutoff": "2019-12-03",
+   "train_rows": 418,
+   "curve_days": 408,
+   "scarce_days": 408,
+   "ratio_range": [
+    0.079684,
+    0.128891
+   ],
+   "kink": 0.1055,
+   "intercept": 0.909698504,
+   "slope": 50.80083602
+  },
+  {
+   "first_scored": "2020-01-07",
+   "train_start": "2018-04-03",
+   "cutoff": "2020-01-03",
+   "train_rows": 439,
+   "curve_days": 429,
+   "scarce_days": 429,
+   "ratio_range": [
+    0.079684,
+    0.128891
+   ],
+   "kink": 0.0965,
+   "intercept": 1.015622393,
+   "slope": 82.367537997
+  },
+  {
+   "first_scored": "2020-02-06",
+   "train_start": "2018-04-03",
+   "cutoff": "2020-02-04",
+   "train_rows": 460,
+   "curve_days": 450,
+   "scarce_days": 450,
+   "ratio_range": [
+    0.079684,
+    0.128891
+   ],
+   "kink": 0.092,
+   "intercept": 1.064870587,
+   "slope": 132.302203285
+  },
+  {
+   "first_scored": "2020-03-09",
+   "train_start": "2018-04-03",
+   "cutoff": "2020-03-05",
+   "train_rows": 481,
+   "curve_days": 471,
+   "scarce_days": 471,
+   "ratio_range": [
+    0.079684,
+    0.128891
+   ],
+   "kink": 0.092,
+   "intercept": 1.055751793,
+   "slope": 133.717620653
+  },
+  {
+   "first_scored": "2020-04-07",
+   "train_start": "2018-04-03",
+   "cutoff": "2020-04-03",
+   "train_rows": 502,
+   "curve_days": 492,
+   "scarce_days": 492,
+   "ratio_range": [
+    0.079684,
+    0.128891
+   ],
+   "kink": 0.092,
+   "intercept": 1.044545613,
+   "slope": 135.221956829
+  },
+  {
+   "first_scored": "2020-05-07",
+   "train_start": "2018-04-03",
+   "cutoff": "2020-05-05",
+   "train_rows": 523,
+   "curve_days": 513,
+   "scarce_days": 494,
+   "ratio_range": [
+    0.079684,
+    0.154896
+   ],
+   "kink": 0.0925,
+   "intercept": 0.991645673,
+   "slope": 133.137817855
+  },
+  {
+   "first_scored": "2020-06-08",
+   "train_start": "2018-04-03",
+   "cutoff": "2020-06-04",
+   "train_rows": 544,
+   "curve_days": 534,
+   "scarce_days": 494,
+   "ratio_range": [
+    0.079684,
+    0.160984
+   ],
+   "kink": 0.097,
+   "intercept": 0.878256094,
+   "slope": 88.218803092
+  },
+  {
+   "first_scored": "2020-07-08",
+   "train_start": "2018-04-03",
+   "cutoff": "2020-07-06",
+   "train_rows": 565,
+   "curve_days": 555,
+   "scarce_days": 494,
+   "ratio_range": [
+    0.079684,
+    0.160984
+   ],
+   "kink": 0.097,
+   "intercept": 0.876971333,
+   "slope": 88.349174402
+  },
+  {
+   "first_scored": "2020-08-06",
+   "train_start": "2018-04-03",
+   "cutoff": "2020-08-04",
+   "train_rows": 586,
+   "curve_days": 576,
+   "scarce_days": 494,
+   "ratio_range": [
+    0.079684,
+    0.160984
+   ],
+   "kink": 0.0965,
+   "intercept": 0.895427018,
+   "slope": 91.072982658
+  },
+  {
+   "first_scored": "2020-09-04",
+   "train_start": "2018-04-03",
+   "cutoff": "2020-09-02",
+   "train_rows": 607,
+   "curve_days": 597,
+   "scarce_days": 494,
+   "ratio_range": [
+    0.079684,
+    0.160984
+   ],
+   "kink": 0.0965,
+   "intercept": 0.893137354,
+   "slope": 91.31309638
+  },
+  {
+   "first_scored": "2020-10-06",
+   "train_start": "2018-04-03",
+   "cutoff": "2020-10-02",
+   "train_rows": 628,
+   "curve_days": 618,
+   "scarce_days": 494,
+   "ratio_range": [
+    0.079684,
+    0.160984
+   ],
+   "kink": 0.0965,
+   "intercept": 0.891319465,
+   "slope": 91.503735698
+  },
+  {
+   "first_scored": "2020-11-05",
+   "train_start": "2018-04-03",
+   "cutoff": "2020-11-03",
+   "train_rows": 649,
+   "curve_days": 639,
+   "scarce_days": 494,
+   "ratio_range": [
+    0.079684,
+    0.160984
+   ],
+   "kink": 0.0965,
+   "intercept": 0.891049988,
+   "slope": 91.531995423
+  },
+  {
+   "first_scored": "2020-12-08",
+   "train_start": "2018-04-03",
+   "cutoff": "2020-12-04",
+   "train_rows": 670,
+   "curve_days": 660,
+   "scarce_days": 494,
+   "ratio_range": [
+    0.079684,
+    0.160984
+   ],
+   "kink": 0.097,
+   "intercept": 0.881232579,
+   "slope": 87.916763789
+  },
+  {
+   "first_scored": "2021-01-08",
+   "train_start": "2018-04-03",
+   "cutoff": "2021-01-06",
+   "train_rows": 691,
+   "curve_days": 681,
+   "scarce_days": 494,
+   "ratio_range": [
+    0.079684,
+    0.160984
+   ],
+   "kink": 0.097,
+   "intercept": 0.879946489,
+   "slope": 88.047270012
+  },
+  {
+   "first_scored": "2021-02-09",
+   "train_start": "2018-04-03",
+   "cutoff": "2021-02-05",
+   "train_rows": 712,
+   "curve_days": 702,
+   "scarce_days": 494,
+   "ratio_range": [
+    0.079684,
+    0.160984
+   ],
+   "kink": 0.097,
+   "intercept": 0.869219366,
+   "slope": 89.13580668
+  },
+  {
+   "first_scored": "2021-03-11",
+   "train_start": "2018-04-03",
+   "cutoff": "2021-03-09",
+   "train_rows": 733,
+   "curve_days": 723,
+   "scarce_days": 494,
+   "ratio_range": [
+    0.079684,
+    0.162841
+   ],
+   "kink": 0.0975,
+   "intercept": 0.840271777,
+   "slope": 87.612534297
+  },
+  {
+   "first_scored": "2021-04-12",
+   "train_start": "2018-04-03",
+   "cutoff": "2021-04-08",
+   "train_rows": 754,
+   "curve_days": 744,
+   "scarce_days": 494,
+   "ratio_range": [
+    0.079684,
+    0.183504
+   ],
+   "kink": 0.1035,
+   "intercept": 0.758744561,
+   "slope": 59.009237882
+  },
+  {
+   "first_scored": "2021-05-11",
+   "train_start": "2018-04-03",
+   "cutoff": "2021-05-07",
+   "train_rows": 775,
+   "curve_days": 765,
+   "scarce_days": 494,
+   "ratio_range": [
+    0.079684,
+    0.18691
+   ],
+   "kink": 0.105,
+   "intercept": 0.720824048,
+   "slope": 55.875240948
+  },
+  {
+   "first_scored": "2021-06-10",
+   "train_start": "2018-04-03",
+   "cutoff": "2021-06-08",
+   "train_rows": 796,
+   "curve_days": 786,
+   "scarce_days": 494,
+   "ratio_range": [
+    0.079684,
+    0.18691
+   ],
+   "kink": 0.182,
+   "intercept": 0.102144846,
+   "slope": 14.903239347
+  },
+  {
+   "first_scored": "2021-07-12",
+   "train_start": "2018-04-03",
+   "cutoff": "2021-07-08",
+   "train_rows": 817,
+   "curve_days": 807,
+   "scarce_days": 494,
+   "ratio_range": [
+    0.079684,
+    0.18691
+   ],
+   "kink": 0.182,
+   "intercept": 0.088409038,
+   "slope": 15.080823215
+  },
+  {
+   "first_scored": "2021-08-10",
+   "train_start": "2018-04-03",
+   "cutoff": "2021-08-06",
+   "train_rows": 838,
+   "curve_days": 828,
+   "scarce_days": 494,
+   "ratio_range": [
+    0.079684,
+    0.18691
+   ],
+   "kink": 0.1825,
+   "intercept": 0.070698649,
+   "slope": 15.21201828
+  },
+  {
+   "first_scored": "2021-09-09",
+   "train_start": "2018-04-03",
+   "cutoff": "2021-09-07",
+   "train_rows": 859,
+   "curve_days": 849,
+   "scarce_days": 494,
+   "ratio_range": [
+    0.079684,
+    0.191023
+   ],
+   "kink": 0.184,
+   "intercept": 0.045544798,
+   "slope": 15.241939519
+  },
+  {
+   "first_scored": "2021-10-08",
+   "train_start": "2018-04-03",
+   "cutoff": "2021-10-06",
+   "train_rows": 880,
+   "curve_days": 870,
+   "scarce_days": 494,
+   "ratio_range": [
+    0.079684,
+    0.192329
+   ],
+   "kink": 0.1855,
+   "intercept": 0.023377626,
+   "slope": 15.233147256
+  },
+  {
+   "first_scored": "2021-11-09",
+   "train_start": "2018-04-03",
+   "cutoff": "2021-11-05",
+   "train_rows": 901,
+   "curve_days": 891,
+   "scarce_days": 494,
+   "ratio_range": [
+    0.079684,
+    0.192329
+   ],
+   "kink": 0.188,
+   "intercept": -0.013174435,
+   "slope": 15.214030013
+  },
+  {
+   "first_scored": "2021-12-10",
+   "train_start": "2018-04-03",
+   "cutoff": "2021-12-08",
+   "train_rows": 922,
+   "curve_days": 912,
+   "scarce_days": 494,
+   "ratio_range": [
+    0.079684,
+    0.192329
+   ],
+   "kink": 0.188,
+   "intercept": -0.016848858,
+   "slope": 15.258582384
+  },
+  {
+   "first_scored": "2022-01-11",
+   "train_start": "2018-04-03",
+   "cutoff": "2022-01-07",
+   "train_rows": 943,
+   "curve_days": 933,
+   "scarce_days": 494,
+   "ratio_range": [
+    0.079684,
+    0.192329
+   ],
+   "kink": 0.186,
+   "intercept": 0.005657022,
+   "slope": 15.359104681
+  },
+  {
+   "first_scored": "2022-02-10",
+   "train_start": "2018-04-03",
+   "cutoff": "2022-02-08",
+   "train_rows": 964,
+   "curve_days": 954,
+   "scarce_days": 494,
+   "ratio_range": [
+    0.079684,
+    0.192329
+   ],
+   "kink": 0.1845,
+   "intercept": 0.008470928,
+   "slope": 15.601472692
+  },
+  {
+   "first_scored": "2022-03-14",
+   "train_start": "2018-04-03",
+   "cutoff": "2022-03-10",
+   "train_rows": 985,
+   "curve_days": 975,
+   "scarce_days": 494,
+   "ratio_range": [
+    0.079684,
+    0.192329
+   ],
+   "kink": 0.183,
+   "intercept": 0.009628302,
+   "slope": 15.86830366
+  },
+  {
+   "first_scored": "2022-04-12",
+   "train_start": "2018-04-03",
+   "cutoff": "2022-04-08",
+   "train_rows": 1006,
+   "curve_days": 996,
+   "scarce_days": 494,
+   "ratio_range": [
+    0.079684,
+    0.192329
+   ],
+   "kink": 0.1805,
+   "intercept": 0.016998868,
+   "slope": 16.284414928
+  },
+  {
+   "first_scored": "2022-05-12",
+   "train_start": "2018-04-03",
+   "cutoff": "2022-05-10",
+   "train_rows": 1027,
+   "curve_days": 1017,
+   "scarce_days": 494,
+   "ratio_range": [
+    0.079684,
+    0.192329
+   ],
+   "kink": 0.177,
+   "intercept": 0.025386345,
+   "slope": 16.906612248
+  },
+  {
+   "first_scored": "2022-06-13",
+   "train_start": "2018-04-03",
+   "cutoff": "2022-06-09",
+   "train_rows": 1048,
+   "curve_days": 1038,
+   "scarce_days": 494,
+   "ratio_range": [
+    0.079684,
+    0.192329
+   ],
+   "kink": 0.1745,
+   "intercept": 0.024159642,
+   "slope": 17.397126869
+  },
+  {
+   "first_scored": "2022-07-14",
+   "train_start": "2018-04-03",
+   "cutoff": "2022-07-12",
+   "train_rows": 1069,
+   "curve_days": 1059,
+   "scarce_days": 494,
+   "ratio_range": [
+    0.079684,
+    0.192329
+   ],
+   "kink": 0.1715,
+   "intercept": 0.016346084,
+   "slope": 18.060426961
+  },
+  {
+   "first_scored": "2022-08-12",
+   "train_start": "2018-04-03",
+   "cutoff": "2022-08-10",
+   "train_rows": 1090,
+   "curve_days": 1080,
+   "scarce_days": 494,
+   "ratio_range": [
+    0.079684,
+    0.192329
+   ],
+   "kink": 0.1695,
+   "intercept": 0.013828139,
+   "slope": 18.513050356
+  },
+  {
+   "first_scored": "2022-09-13",
+   "train_start": "2018-04-03",
+   "cutoff": "2022-09-09",
+   "train_rows": 1111,
+   "curve_days": 1101,
+   "scarce_days": 494,
+   "ratio_range": [
+    0.079684,
+    0.192329
+   ],
+   "kink": 0.1675,
+   "intercept": 0.012764867,
+   "slope": 18.996946115
+  },
+  {
+   "first_scored": "2022-10-13",
+   "train_start": "2018-04-03",
+   "cutoff": "2022-10-11",
+   "train_rows": 1132,
+   "curve_days": 1122,
+   "scarce_days": 494,
+   "ratio_range": [
+    0.079684,
+    0.192329
+   ],
+   "kink": 0.1655,
+   "intercept": 0.006014099,
+   "slope": 19.510935802
+  },
+  {
+   "first_scored": "2022-11-14",
+   "train_start": "2018-04-03",
+   "cutoff": "2022-11-09",
+   "train_rows": 1153,
+   "curve_days": 1143,
+   "scarce_days": 494,
+   "ratio_range": [
+    0.079684,
+    0.192329
+   ],
+   "kink": 0.146,
+   "intercept": 0.152625352,
+   "slope": 24.538517138
+  },
+  {
+   "first_scored": "2022-12-14",
+   "train_start": "2018-04-03",
+   "cutoff": "2022-12-12",
+   "train_rows": 1174,
+   "curve_days": 1164,
+   "scarce_days": 494,
+   "ratio_range": [
+    0.079684,
+    0.192329
+   ],
+   "kink": 0.1455,
+   "intercept": 0.147180099,
+   "slope": 24.851058049
+  },
+  {
+   "first_scored": "2023-01-17",
+   "train_start": "2018-04-03",
+   "cutoff": "2023-01-12",
+   "train_rows": 1195,
+   "curve_days": 1185,
+   "scarce_days": 496,
+   "ratio_range": [
+    0.079684,
+    0.192329
+   ],
+   "kink": 0.1365,
+   "intercept": 0.191865685,
+   "slope": 29.255792393
+  },
+  {
+   "first_scored": "2023-02-15",
+   "train_start": "2018-04-03",
+   "cutoff": "2023-02-13",
+   "train_rows": 1216,
+   "curve_days": 1206,
+   "scarce_days": 498,
+   "ratio_range": [
+    0.079684,
+    0.192329
+   ],
+   "kink": 0.135,
+   "intercept": 0.191646976,
+   "slope": 30.327980126
+  },
+  {
+   "first_scored": "2023-03-17",
+   "train_start": "2018-04-03",
+   "cutoff": "2023-03-15",
+   "train_rows": 1237,
+   "curve_days": 1227,
+   "scarce_days": 498,
+   "ratio_range": [
+    0.079684,
+    0.192329
+   ],
+   "kink": 0.1345,
+   "intercept": 0.187043206,
+   "slope": 30.801917887
+  },
+  {
+   "first_scored": "2023-04-18",
+   "train_start": "2018-04-03",
+   "cutoff": "2023-04-14",
+   "train_rows": 1258,
+   "curve_days": 1248,
+   "scarce_days": 498,
+   "ratio_range": [
+    0.079684,
+    0.192329
+   ],
+   "kink": 0.1345,
+   "intercept": 0.185336843,
+   "slope": 30.84041135
+  },
+  {
+   "first_scored": "2023-05-17",
+   "train_start": "2018-04-03",
+   "cutoff": "2023-05-15",
+   "train_rows": 1279,
+   "curve_days": 1269,
+   "scarce_days": 498,
+   "ratio_range": [
+    0.079684,
+    0.192329
+   ],
+   "kink": 0.1345,
+   "intercept": 0.181942083,
+   "slope": 30.926640499
+  },
+  {
+   "first_scored": "2023-06-16",
+   "train_start": "2018-04-03",
+   "cutoff": "2023-06-14",
+   "train_rows": 1300,
+   "curve_days": 1290,
+   "scarce_days": 498,
+   "ratio_range": [
+    0.079684,
+    0.192329
+   ],
+   "kink": 0.1345,
+   "intercept": 0.178834922,
+   "slope": 31.005564442
+  },
+  {
+   "first_scored": "2023-07-19",
+   "train_start": "2018-04-03",
+   "cutoff": "2023-07-17",
+   "train_rows": 1321,
+   "curve_days": 1311,
+   "scarce_days": 498,
+   "ratio_range": [
+    0.079684,
+    0.192329
+   ],
+   "kink": 0.1345,
+   "intercept": 0.176225758,
+   "slope": 31.07183895
+  },
+  {
+   "first_scored": "2023-08-17",
+   "train_start": "2018-04-03",
+   "cutoff": "2023-08-15",
+   "train_rows": 1342,
+   "curve_days": 1332,
+   "scarce_days": 498,
+   "ratio_range": [
+    0.079684,
+    0.192329
+   ],
+   "kink": 0.1345,
+   "intercept": 0.172836874,
+   "slope": 31.157918854
+  },
+  {
+   "first_scored": "2023-09-18",
+   "train_start": "2018-04-03",
+   "cutoff": "2023-09-14",
+   "train_rows": 1363,
+   "curve_days": 1353,
+   "scarce_days": 498,
+   "ratio_range": [
+    0.079684,
+    0.192329
+   ],
+   "kink": 0.135,
+   "intercept": 0.167142962,
+   "slope": 30.909563507
+  },
+  {
+   "first_scored": "2023-10-18",
+   "train_start": "2018-04-03",
+   "cutoff": "2023-10-16",
+   "train_rows": 1384,
+   "curve_days": 1374,
+   "scarce_days": 498,
+   "ratio_range": [
+    0.079684,
+    0.192329
+   ],
+   "kink": 0.135,
+   "intercept": 0.165942094,
+   "slope": 30.939788651
+  },
+  {
+   "first_scored": "2023-11-16",
+   "train_start": "2018-04-03",
+   "cutoff": "2023-11-14",
+   "train_rows": 1405,
+   "curve_days": 1395,
+   "scarce_days": 498,
+   "ratio_range": [
+    0.079684,
+    0.192329
+   ],
+   "kink": 0.135,
+   "intercept": 0.165429275,
+   "slope": 30.952695981
+  },
+  {
+   "first_scored": "2023-12-18",
+   "train_start": "2018-04-03",
+   "cutoff": "2023-12-14",
+   "train_rows": 1426,
+   "curve_days": 1416,
+   "scarce_days": 498,
+   "ratio_range": [
+    0.079684,
+    0.192329
+   ],
+   "kink": 0.135,
+   "intercept": 0.166904942,
+   "slope": 30.91555433
+  },
+  {
+   "first_scored": "2024-01-19",
+   "train_start": "2018-04-03",
+   "cutoff": "2024-01-17",
+   "train_rows": 1447,
+   "curve_days": 1437,
+   "scarce_days": 498,
+   "ratio_range": [
+    0.079684,
+    0.192329
+   ],
+   "kink": 0.1345,
+   "intercept": 0.172586616,
+   "slope": 31.164275567
+  },
+  {
+   "first_scored": "2024-02-20",
+   "train_start": "2018-04-03",
+   "cutoff": "2024-02-15",
+   "train_rows": 1468,
+   "curve_days": 1458,
+   "scarce_days": 498,
+   "ratio_range": [
+    0.079684,
+    0.192329
+   ],
+   "kink": 0.1345,
+   "intercept": 0.171475042,
+   "slope": 31.192510281
+  },
+  {
+   "first_scored": "2024-03-20",
+   "train_start": "2018-04-03",
+   "cutoff": "2024-03-18",
+   "train_rows": 1489,
+   "curve_days": 1479,
+   "scarce_days": 498,
+   "ratio_range": [
+    0.079684,
+    0.192329
+   ],
+   "kink": 0.135,
+   "intercept": 0.167861862,
+   "slope": 30.891469238
+  },
+  {
+   "first_scored": "2024-04-19",
+   "train_start": "2018-04-03",
+   "cutoff": "2024-04-17",
+   "train_rows": 1510,
+   "curve_days": 1500,
+   "scarce_days": 498,
+   "ratio_range": [
+    0.079684,
+    0.192329
+   ],
+   "kink": 0.135,
+   "intercept": 0.168123589,
+   "slope": 30.884881716
+  },
+  {
+   "first_scored": "2024-05-20",
+   "train_start": "2018-04-03",
+   "cutoff": "2024-05-16",
+   "train_rows": 1531,
+   "curve_days": 1521,
+   "scarce_days": 498,
+   "ratio_range": [
+    0.079684,
+    0.192329
+   ],
+   "kink": 0.135,
+   "intercept": 0.167254956,
+   "slope": 30.906744697
+  },
+  {
+   "first_scored": "2024-06-20",
+   "train_start": "2018-04-03",
+   "cutoff": "2024-06-17",
+   "train_rows": 1552,
+   "curve_days": 1542,
+   "scarce_days": 498,
+   "ratio_range": [
+    0.079684,
+    0.192329
+   ],
+   "kink": 0.135,
+   "intercept": 0.168250665,
+   "slope": 30.881683289
+  },
+  {
+   "first_scored": "2024-07-22",
+   "train_start": "2018-04-03",
+   "cutoff": "2024-07-18",
+   "train_rows": 1573,
+   "curve_days": 1563,
+   "scarce_days": 498,
+   "ratio_range": [
+    0.079684,
+    0.192329
+   ],
+   "kink": 0.1345,
+   "intercept": 0.173709881,
+   "slope": 31.135743904
+  },
+  {
+   "first_scored": "2024-08-20",
+   "train_start": "2018-04-03",
+   "cutoff": "2024-08-16",
+   "train_rows": 1594,
+   "curve_days": 1584,
+   "scarce_days": 498,
+   "ratio_range": [
+    0.079684,
+    0.192329
+   ],
+   "kink": 0.1345,
+   "intercept": 0.177799755,
+   "slope": 31.031858373
+  },
+  {
+   "first_scored": "2024-09-19",
+   "train_start": "2018-04-03",
+   "cutoff": "2024-09-17",
+   "train_rows": 1615,
+   "curve_days": 1605,
+   "scarce_days": 498,
+   "ratio_range": [
+    0.079684,
+    0.192329
+   ],
+   "kink": 0.1345,
+   "intercept": 0.181223426,
+   "slope": 30.944894871
+  },
+  {
+   "first_scored": "2024-10-21",
+   "train_start": "2018-04-03",
+   "cutoff": "2024-10-17",
+   "train_rows": 1636,
+   "curve_days": 1626,
+   "scarce_days": 498,
+   "ratio_range": [
+    0.079684,
+    0.192329
+   ],
+   "kink": 0.1345,
+   "intercept": 0.187671122,
+   "slope": 30.781675855
+  },
+  {
+   "first_scored": "2024-11-20",
+   "train_start": "2018-04-03",
+   "cutoff": "2024-11-18",
+   "train_rows": 1657,
+   "curve_days": 1647,
+   "scarce_days": 498,
+   "ratio_range": [
+    0.079684,
+    0.192329
+   ],
+   "kink": 0.1345,
+   "intercept": 0.189970177,
+   "slope": 30.723249883
+  },
+  {
+   "first_scored": "2024-12-20",
+   "train_start": "2018-04-03",
+   "cutoff": "2024-12-18",
+   "train_rows": 1678,
+   "curve_days": 1668,
+   "scarce_days": 498,
+   "ratio_range": [
+    0.079684,
+    0.192329
+   ],
+   "kink": 0.1345,
+   "intercept": 0.195302309,
+   "slope": 30.587744226
+  },
+  {
+   "first_scored": "2025-01-23",
+   "train_start": "2018-04-03",
+   "cutoff": "2025-01-21",
+   "train_rows": 1699,
+   "curve_days": 1689,
+   "scarce_days": 498,
+   "ratio_range": [
+    0.079684,
+    0.192329
+   ],
+   "kink": 0.134,
+   "intercept": 0.202683264,
+   "slope": 30.790605027
+  },
+  {
+   "first_scored": "2025-02-24",
+   "train_start": "2018-04-03",
+   "cutoff": "2025-02-20",
+   "train_rows": 1720,
+   "curve_days": 1710,
+   "scarce_days": 498,
+   "ratio_range": [
+    0.079684,
+    0.192329
+   ],
+   "kink": 0.134,
+   "intercept": 0.209589429,
+   "slope": 30.614290379
+  },
+  {
+   "first_scored": "2025-03-25",
+   "train_start": "2018-04-03",
+   "cutoff": "2025-03-21",
+   "train_rows": 1741,
+   "curve_days": 1731,
+   "scarce_days": 498,
+   "ratio_range": [
+    0.079684,
+    0.192329
+   ],
+   "kink": 0.134,
+   "intercept": 0.214459791,
+   "slope": 30.489270785
+  },
+  {
+   "first_scored": "2025-04-24",
+   "train_start": "2018-04-03",
+   "cutoff": "2025-04-22",
+   "train_rows": 1762,
+   "curve_days": 1752,
+   "scarce_days": 498,
+   "ratio_range": [
+    0.079684,
+    0.192329
+   ],
+   "kink": 0.134,
+   "intercept": 0.221927229,
+   "slope": 30.29758567
+  },
+  {
+   "first_scored": "2025-05-23",
+   "train_start": "2018-04-03",
+   "cutoff": "2025-05-21",
+   "train_rows": 1783,
+   "curve_days": 1773,
+   "scarce_days": 498,
+   "ratio_range": [
+    0.079684,
+    0.192329
+   ],
+   "kink": 0.1335,
+   "intercept": 0.226707072,
+   "slope": 30.56670317
+  },
+  {
+   "first_scored": "2025-06-25",
+   "train_start": "2018-04-03",
+   "cutoff": "2025-06-23",
+   "train_rows": 1804,
+   "curve_days": 1794,
+   "scarce_days": 498,
+   "ratio_range": [
+    0.079684,
+    0.192329
+   ],
+   "kink": 0.1335,
+   "intercept": 0.228214393,
+   "slope": 30.527660046
+  },
+  {
+   "first_scored": "2025-07-25",
+   "train_start": "2018-04-03",
+   "cutoff": "2025-07-23",
+   "train_rows": 1825,
+   "curve_days": 1815,
+   "scarce_days": 498,
+   "ratio_range": [
+    0.079684,
+    0.192329
+   ],
+   "kink": 0.1335,
+   "intercept": 0.234111668,
+   "slope": 30.377342829
+  },
+  {
+   "first_scored": "2025-08-25",
+   "train_start": "2018-04-03",
+   "cutoff": "2025-08-21",
+   "train_rows": 1846,
+   "curve_days": 1836,
+   "scarce_days": 498,
+   "ratio_range": [
+    0.079684,
+    0.192329
+   ],
+   "kink": 0.145,
+   "intercept": 0.158364512,
+   "slope": 24.638361605
+  },
+  {
+   "first_scored": "2025-09-24",
+   "train_start": "2018-04-03",
+   "cutoff": "2025-09-22",
+   "train_rows": 1867,
+   "curve_days": 1857,
+   "scarce_days": 507,
+   "ratio_range": [
+    0.079684,
+    0.192329
+   ],
+   "kink": 0.1455,
+   "intercept": 0.157997074,
+   "slope": 24.471247646
+  },
+  {
+   "first_scored": "2025-10-24",
+   "train_start": "2018-04-03",
+   "cutoff": "2025-10-22",
+   "train_rows": 1888,
+   "curve_days": 1878,
+   "scarce_days": 528,
+   "ratio_range": [
+    0.079684,
+    0.192329
+   ],
+   "kink": 0.1455,
+   "intercept": 0.162310706,
+   "slope": 24.56633078
+  },
+  {
+   "first_scored": "2025-11-25",
+   "train_start": "2018-04-03",
+   "cutoff": "2025-11-21",
+   "train_rows": 1909,
+   "curve_days": 1899,
+   "scarce_days": 549,
+   "ratio_range": [
+    0.079684,
+    0.192329
+   ],
+   "kink": 0.146,
+   "intercept": 0.161438851,
+   "slope": 24.64342746
+  },
+  {
+   "first_scored": "2025-12-26",
+   "train_start": "2018-04-03",
+   "cutoff": "2025-12-23",
+   "train_rows": 1930,
+   "curve_days": 1920,
+   "scarce_days": 570,
+   "ratio_range": [
+    0.079684,
+    0.192329
+   ],
+   "kink": 0.146,
+   "intercept": 0.164658318,
+   "slope": 24.832273021
+  }
+ ],
+ "provenance": {
+  "commit": "ec7716a94d762e1c264257acf7e3f49c6432dda2",
+  "tree_modified": false,
+  "parent_commit": "71ab387e5557cc9ecefb12d1b2bf21d086571388",
+  "parent_panel_sha256": "4ddc3882cd6d406b11e1088f8ff6195e16dde175a0ad6818abe40dd5bdac8999",
+  "phase3_panel_version": 3,
+  "phase3_panel_sha256": "b49140a902ec2f4850803c198926a6804b226ddcb44e858f83254d45ef55ab30"
+ }
+}

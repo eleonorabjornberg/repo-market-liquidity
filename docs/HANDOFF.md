@@ -17,7 +17,7 @@ directive, those win and this file is stale. Update it at the end of each sessio
 | 1a correction: MBS, 2019–21 repo operations, material use | Merged (#10) | `docs/stages/stage-1a-correction.md`, `src/repo_liquidity/fed_repo.py`, `metadata/phase3_panel_v2_manifest.json` (panel version 2; version 1 is unchanged) |
 | 1b, first wave: pricing and the Fed's facilities | Merged (#11) | `docs/stages/stage-1b.md`, `src/repo_liquidity/indicators.py`, `metadata/phase3_panel_v3_manifest.json` (panel version 3; versions 1 and 2 unchanged) |
 | 3c: Stage 3b's model, stability on the real-time buffer | Merged (#12): **not shown** (judged once). Stage 2's curve becomes the Stage 4 model | `docs/stages/stage-3c.md`, `scripts/stage3c_realtime.py`, `results/stage3c/realtime.json` |
-| 4: Stage 2's curve as one feature of the published gbm | **Plan in review** (rulings of 7 October 2026). Nothing built, fitted or scored | `docs/stages/stage-4.md`, draft amendment in `docs/decisions/evaluation.md` |
+| 4: Stage 2's curve as one feature of the published gbm | **Building, stopped at the curve pass.** Plan merged (#13). `ml` extra, the feature, the wrapper and guards built. The curve pass failed on one refit (cutoff 2018-07-27); the remedy (carry the last fitted curve) is an amendment in review. Nothing scored | `docs/stages/stage-4.md` (amendment), `src/repo_liquidity/curve_feature.py`, `scripts/stage4_curve_pass.py`, `results/stage4/curve_pass.json` |
 | 5a: Phase 3's own daily log | Not started. Starts from the Stage 4 freeze, whatever the development verdict | `PLAN.md`, Stage 5 |
 
 ## Stage 2, in one paragraph
