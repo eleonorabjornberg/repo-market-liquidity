@@ -224,6 +224,23 @@ scarce.
 
 ### Stage 4: evaluation
 
+**Planned 7 October 2026: [`docs/stages/stage-4.md`](docs/stages/stage-4.md), in review.** Stage 3c was not shown, so
+Stage 2's curve is the Stage 4 model. Eleonora ruled on 7 October 2026, taking the recommended option each time:
+- the curve enters as one curve-implied feature of the published gbm;
+- the curve is refit as of each refit;
+- one feature only, and the ml extra (numpy 2.4.6, scikit-learn 1.9.1) is approved;
+- the declaration is frozen and Stage 5a's log starts after the development run, whatever its verdict.
+
+On review of the plan (7 October 2026) she added:
+- the curve's slope is constrained to b ≥ 0;
+- a curve that fails at any refit stops the run for diagnosis and a remedy she rules on before anything is scored,
+  with no silent fallback;
+- Stage 5a logs both arms' forecasts each day.
+
+The amendment to `evaluation.md` that names the replacement for the latent state is drafted in the same pull request.
+Where the text below says "latent state", the plan and that amendment decide once merged. The text below is the
+original design, kept for the record.
+
 Under [`docs/decisions/evaluation.md`](docs/decisions/evaluation.md):
 
 - **Primary:** the parent's published distribution (`ml.fit_gradient_boosted_quantiles` with
@@ -243,7 +260,7 @@ Under [`docs/decisions/evaluation.md`](docs/decisions/evaluation.md):
 
 ### Stage 5: confirmatory log and monitoring
 
-- **The frozen daily log,** from the Stage 3 freeze: a GitHub Actions workflow here, after 4 pm New York time on each
+- **The frozen daily log,** from the Stage 4 freeze (Stage 5a, its own directive): a GitHub Actions workflow here, after 4 pm New York time on each
   business day, appending to a protected branch, reusing the parent's live-record helpers (`scripts/live_record.py`:
   `extend_panel`, `require_reads_on_real_rows`, `is_decision_day`, `write_record`) with its own record schema. Scored
   on the dates in `evaluation.md`.

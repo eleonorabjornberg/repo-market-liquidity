@@ -1,6 +1,6 @@
 # Handoff: where Phase 3 stands
 
-**Written 6 October 2026, at the end of the session that built Stages 1a to 3.** This file is a working note for the
+**Written 6 October 2026, at the end of the session that built Stages 1a to 3; updated 7 October 2026 with the Stage 4 plan.** This file is a working note for the
 next session, not a decision record. Where it disagrees with `docs/decisions/`, `CLAUDE.md`, `PLAN.md` or a stage
 directive, those win and this file is stale. Update it at the end of each session.
 
@@ -10,14 +10,15 @@ directive, those win and this file is stale. Update it at the end of each sessio
 |---|---|---|
 | Setup: pin, CI, plan, decisions | Merged | `README.md`, `PLAN.md`, `CLAUDE.md`, `docs/decisions/`, `tests/test_parent_pin.py` |
 | 1a: the inputs already ruled on | Merged (#6) | `metadata/sources_phase3.json`, `src/repo_liquidity/{declaration,h41,scheduled,panel}.py`, `metadata/phase3_panel_manifest.json` |
-| 1b: the indicator families (questions 7 to 10) | **Not started: waits on Nicholas (issue #1)** | `PLAN.md`, Stage 1 |
+| 1b: the indicator families (questions 7 to 10) | First wave merged (#11); later waves not started | `PLAN.md`, Stage 1 |
 | 2: the reserve demand curve | Merged (#7) | `src/repo_liquidity/demand_curve.py`, `results/stage2/`, `docs/decisions/stage-2-bend.md` |
 | 3: the latent buffer | Merged (#8): **not shown** | `docs/stages/stage-3.md`, `src/repo_liquidity/latent.py`, `scripts/stage3_latent.py`, `results/stage3/latent.json` |
-| 3b: the buffer on a fixed curve | **In review: benchmark shown, stability not shown** | `docs/stages/stage-3b.md`, `src/repo_liquidity/anchored.py`, `scripts/stage3b_anchored.py`, `results/stage3b/anchored.json` |
-| 1a correction: MBS, 2019–21 repo operations, material use | **In review** | `docs/stages/stage-1a-correction.md`, `src/repo_liquidity/fed_repo.py`, `metadata/phase3_panel_v2_manifest.json` (panel version 2; version 1 is unchanged) |
-| 1b, first wave: pricing and the Fed's facilities | **In review** | `docs/stages/stage-1b.md`, `src/repo_liquidity/indicators.py`, `metadata/phase3_panel_v3_manifest.json` (panel version 3; versions 1 and 2 unchanged) |
-| 3c: Stage 3b's model, stability on the real-time buffer | **In review: not shown** (judged once). Stage 2's curve becomes the Stage 4 model | `docs/stages/stage-3c.md`, `scripts/stage3c_realtime.py`, `results/stage3c/realtime.json` |
-| 4, 5: evaluation, the frozen daily log | Not started. Stage 4 needs a frozen Stage 3 model | `PLAN.md`, `docs/decisions/evaluation.md` |
+| 3b: the buffer on a fixed curve | Merged (#9): **benchmark shown, stability not shown** | `docs/stages/stage-3b.md`, `src/repo_liquidity/anchored.py`, `scripts/stage3b_anchored.py`, `results/stage3b/anchored.json` |
+| 1a correction: MBS, 2019–21 repo operations, material use | Merged (#10) | `docs/stages/stage-1a-correction.md`, `src/repo_liquidity/fed_repo.py`, `metadata/phase3_panel_v2_manifest.json` (panel version 2; version 1 is unchanged) |
+| 1b, first wave: pricing and the Fed's facilities | Merged (#11) | `docs/stages/stage-1b.md`, `src/repo_liquidity/indicators.py`, `metadata/phase3_panel_v3_manifest.json` (panel version 3; versions 1 and 2 unchanged) |
+| 3c: Stage 3b's model, stability on the real-time buffer | Merged (#12): **not shown** (judged once). Stage 2's curve becomes the Stage 4 model | `docs/stages/stage-3c.md`, `scripts/stage3c_realtime.py`, `results/stage3c/realtime.json` |
+| 4: Stage 2's curve as one feature of the published gbm | **Plan in review** (rulings of 7 October 2026). Nothing built, fitted or scored | `docs/stages/stage-4.md`, draft amendment in `docs/decisions/evaluation.md` |
+| 5a: Phase 3's own daily log | Not started. Starts from the Stage 4 freeze, whatever the development verdict | `PLAN.md`, Stage 5 |
 
 ## Stage 2, in one paragraph
 
