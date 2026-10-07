@@ -1,0 +1,74 @@
+{
+ "source": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm",
+ "page": "tests/fixtures/snapshots/fomc_calendar/fomccalendars.htm.gz",
+ "page_last_update": "September 16, 2026",
+ "statement_time": "14:00",
+ "timezone": "America/New_York",
+ "note": "Scheduled FOMC statements, released on each meeting's second day at 14:00 New York time (the time every row of the rate tables carries). Stage 5a's FOMC guard reads it (docs/stages/stage-5a.md). Dates are tentative until confirmed at the meeting before; a moved meeting is a reviewed change to this file, with the page saved again. Unscheduled actions are not listed.",
+ "statements": [
+  {
+   "meeting": "January 27-28, 2026",
+   "statement_date": "2026-01-28"
+  },
+  {
+   "meeting": "March 17-18, 2026",
+   "statement_date": "2026-03-18"
+  },
+  {
+   "meeting": "April 28-29, 2026",
+   "statement_date": "2026-04-29"
+  },
+  {
+   "meeting": "June 16-17, 2026",
+   "statement_date": "2026-06-17"
+  },
+  {
+   "meeting": "July 28-29, 2026",
+   "statement_date": "2026-07-29"
+  },
+  {
+   "meeting": "September 15-16, 2026",
+   "statement_date": "2026-09-16"
+  },
+  {
+   "meeting": "October 27-28, 2026",
+   "statement_date": "2026-10-28"
+  },
+  {
+   "meeting": "December 8-9, 2026",
+   "statement_date": "2026-12-09"
+  },
+  {
+   "meeting": "January 26-27, 2027",
+   "statement_date": "2027-01-27"
+  },
+  {
+   "meeting": "March 16-17, 2027",
+   "statement_date": "2027-03-17"
+  },
+  {
+   "meeting": "April 27-28, 2027",
+   "statement_date": "2027-04-28"
+  },
+  {
+   "meeting": "June 8-9, 2027",
+   "statement_date": "2027-06-09"
+  },
+  {
+   "meeting": "July 27-28, 2027",
+   "statement_date": "2027-07-28"
+  },
+  {
+   "meeting": "September 14-15, 2027",
+   "statement_date": "2027-09-15"
+  },
+  {
+   "meeting": "October 26-27, 2027",
+   "statement_date": "2027-10-27"
+  },
+  {
+   "meeting": "December 7-8, 2027",
+   "statement_date": "2027-12-08"
+  }
+ ]
+}
