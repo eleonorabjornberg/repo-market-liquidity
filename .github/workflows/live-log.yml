@@ -1,0 +1,153 @@
+name: live-log
+
+# Phase 3's own daily log (docs/stages/stage-5a.md; Eleonora's rulings of 7 October 2026). Each decision day after the
+# 16:00 New York decision instant, log both arms' forecasts for the next decision day: the published gbm without and
+# with the curve-implied spread, from the frozen Stage 4 declaration (docs/decisions/stage-4-freeze.md), as one JSON
+# record written before the outcome exists and appended to the `live-log` branch. Never main, never rewritten: the
+# branch is protected by a repository ruleset Eleonora adds (no deletion, no non-fast-forward push).
+#
+# THE SCHEDULE IS OFF (her ruling on the start): the workflow is run by hand in dry-run mode for about five decision
+# days, she checks the records, and a one-line pull request then uncomments the schedule. The first day that counts is
+# the first decision day after that merge.
+#
+# No third-party action is used: Python 3.11 comes from the runner's tool cache, git and gh are the runner's.
+
+on:
+  # schedule:
+  #   # 21:30 UTC is 17:30 EDT and 16:30 EST: after the decision instant either way.
+  #   - cron: "30 21 * * 1-5"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run: the record is posted to the dry-runs issue, never appended to live-log"
+        type: boolean
+        default: true
+      date:
+        description: "Decision day (YYYY-MM-DD); empty for today in New York. A dry run may name a past day."
+        type: string
+        default: ""
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: live-log
+  cancel-in-progress: false
+
+jobs:
+  log:
+    name: log the day's forecasts
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      PYTHONDONTWRITEBYTECODE: "1"
+      OMP_NUM_THREADS: "1"
+      # A scheduled run has no inputs, so it is never a dry run.
+      DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || false }}
+    steps:
+      - name: Python 3.11 from the runner's tool cache
+        id: python
+        run: |
+          base=$(ls -d /opt/hostedtoolcache/Python/3.11.*/x64 | sort -V | tail -1)
+          test -x "$base/bin/python3"
+          echo "PY=$base/bin/python3" >> "$GITHUB_ENV"
+          day="${{ inputs.date }}"
+          if [ -z "$day" ]; then day=$(TZ=America/New_York date +%F); fi
+          echo "DAY=$day" >> "$GITHUB_ENV"
+
+      - name: Check out main and the parent at the pin
+        id: checkout
+        run: |
+          git clone --quiet "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git" main
+          commit=$(sed -n 's/^PARENT_COMMIT = "\([0-9a-f]*\)"$/\1/p' main/src/repo_liquidity/__init__.py)
+          git init -q parent && git -C parent remote add origin https://github.com/eleonorabjornberg/repo-market-model
+          git -C parent fetch -q --depth 1 origin "$commit" && git -C parent checkout -q FETCH_HEAD
+          echo "CODE=$(git -C main rev-parse HEAD)" >> "$GITHUB_ENV"
+
+      - name: Install at the exact pins
+        id: install
+        run: |
+          "$PY" -m venv venv
+          venv/bin/pip install -q -e ./parent && venv/bin/pip install -q --no-deps -e ./main
+          venv/bin/pip install -q "numpy==2.4.6" "scikit-learn==1.9.1" "scipy==1.17.1" "joblib==1.6.0" \
+            "threadpoolctl==3.7.0" "narwhals==2.26.0"
+          venv/bin/pip freeze | grep -iE '^(numpy|scikit-learn)=='
+
+      - name: Check out the live-log branch
+        id: branch
+        run: |
+          url="https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git"
+          if git ls-remote --exit-code --heads "$url" live-log >/dev/null; then
+            git clone --quiet --branch live-log --single-branch "$url" live-log
+          else
+            git init --quiet -b live-log live-log
+            git -C live-log remote add origin "$url"
+          fi
+
+      - name: Write the day's record
+        id: record
+        run: |
+          cd main
+          flags=""
+          if [ "$DRY_RUN" = "true" ]; then flags="--dry-run"; fi
+          PYTHONPATH=src ../venv/bin/python -B scripts/stage5a_log.py run --date "$DAY" --out-dir ../live-log \
+            --workflow-run "$RUN_URL" $flags
+
+      - name: Append it to live-log
+        id: push
+        if: env.DRY_RUN != 'true'
+        run: |
+          file="live/$DAY.json"
+          cd live-log
+          if [ ! -f "$file" ]; then
+            echo "Not a decision day: nothing to append."
+            exit 0
+          fi
+          git add "$file"
+          git -c user.name="github-actions[bot]" \
+            -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit --quiet -m "Phase 3 log for $DAY (code $CODE)"
+          git push --quiet origin HEAD:refs/heads/live-log
+          echo "WROTE=1" >> "$GITHUB_ENV"
+
+      - name: Post a dry run's record for review
+        if: env.DRY_RUN == 'true'
+        run: |
+          file="live-log/dry-run/live/$DAY.json"
+          if [ ! -f "$file" ]; then echo "Not a decision day: nothing to post."; exit 0; fi
+          n=$(gh api --paginate "repos/$REPO/issues?state=open&per_page=100" \
+            -q '.[] | select(.pull_request|not) | select(.title=="Phase 3 log: dry runs") | .number' | head -1)
+          if [ -z "$n" ]; then
+            n=$(gh api "repos/$REPO/issues" -f title="Phase 3 log: dry runs" \
+              -f body="Dry runs of .github/workflows/live-log.yml, for Eleonora to check before the schedule is turned on (docs/stages/stage-5a.md). None is confirmatory." \
+              -q .number)
+          fi
+          {
+            echo "Dry run for $DAY (code $CODE, SHA-256 \`$(sha256sum "$file" | cut -d' ' -f1)\`). Run: $RUN_URL"
+            echo
+            echo '<details><summary>record</summary>'
+            echo
+            echo '```json'
+            cat "$file"
+            echo '```'
+            echo
+            echo '</details>'
+          } > dry.md
+          gh api "repos/$REPO/issues/$n/comments" -F body=@dry.md >/dev/null
+
+      - name: Open or update the failed-runs issue
+        if: failure()
+        run: |
+          n=$(gh api --paginate "repos/$REPO/issues?state=open&per_page=100" \
+            -q '.[] | select(.pull_request|not) | select(.title=="Phase 3 log: failed runs") | .number' | head -1)
+          if [ -z "$n" ]; then
+            n=$(gh api "repos/$REPO/issues" -f title="Phase 3 log: failed runs" \
+              -f body="Failed or refused runs of .github/workflows/live-log.yml. A missed day is never backfilled (docs/stages/stage-5a.md)." \
+              -q .number)
+          fi
+          echo "Failed: $DAY (dry run: $DRY_RUN). No record was appended. A refusal (for example the FOMC guard) is named in the run's log. Run: $RUN_URL" > failed.md
+          gh api "repos/$REPO/issues/$n/comments" -F body=@failed.md >/dev/null

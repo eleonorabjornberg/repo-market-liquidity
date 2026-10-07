@@ -18,7 +18,7 @@ directive, those win and this file is stale. Update it at the end of each sessio
 | 1b, first wave: pricing and the Fed's facilities | Merged (#11) | `docs/stages/stage-1b.md`, `src/repo_liquidity/indicators.py`, `metadata/phase3_panel_v3_manifest.json` (panel version 3; versions 1 and 2 unchanged) |
 | 3c: Stage 3b's model, stability on the real-time buffer | Merged (#12): **not shown** (judged once). Stage 2's curve becomes the Stage 4 model | `docs/stages/stage-3c.md`, `scripts/stage3c_realtime.py`, `results/stage3c/realtime.json` |
 | 4: Stage 2's curve as one feature of the published gbm | Merged (#13 to #15): **not shown** (+0.0038 bp, 90% [−0.0070, +0.0146]). Freeze in review | `docs/stages/stage-4.md`, `results/stage4/` |
-| 5a: Phase 3's own daily log | **Directive and freeze in review.** Rulings of 7 October 2026: IORB's own table plus an FOMC guard, a `live-log` branch, and a dry-run week before the schedule goes on. Nothing of 5a is built yet | `docs/stages/stage-5a.md`, `docs/decisions/stage-4-freeze.md`, `scripts/stage4_freeze.py` |
+| 5a: Phase 3's own daily log | **Built, in review; schedule off.** Replay held (every gap 0); guards built with mutations. Waits on: Eleonora's merge, the `live-log` ruleset, five dry runs she checks, then the one-line schedule PR. The 28 October FOMC needs a rate-table PR | `docs/stages/stage-5a.md`, `src/repo_liquidity/live.py`, `scripts/stage5a_log.py`, `.github/workflows/live-log.yml`, `results/stage5a/replay.json` |
 
 ## Stage 2, in one paragraph
 
