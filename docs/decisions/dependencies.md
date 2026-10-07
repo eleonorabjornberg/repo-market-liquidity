@@ -30,3 +30,16 @@ Ruling (Eleonora, 6 October 2026; relayed by the orchestrating session), on `PLA
 - **Entered for Stage 3 (6 October 2026)** as the `state-space` extra in `pyproject.toml`, pinned exactly with what
   the install resolved on CPython 3.11: statsmodels 0.14.6, numpy 2.4.6 (the parent's `ml` pin), scipy 1.17.1,
   pandas 3.0.6, patsy 1.0.3, python-dateutil 2.9.0.post0, six 1.17.0, packaging 26.3. CI installs the same pins.
+
+## scikit-learn and numpy for Stage 4 (approved 7 October 2026)
+
+Ruling (Eleonora, 7 October 2026; relayed by the orchestrating session), approving the parent's `ml` extra for Stage 4.
+
+- **Approved:** numpy 2.4.6 and scikit-learn 1.9.1, the lower bounds of the parent's `ml` extra at the pin
+  (`numpy>=2.4.6,<3`, `scikit-learn>=1.9.1,<2`). They are needed because Stage 4 refits the parent's published gbm
+  (`ml.fit_gradient_boosted_quantiles`), which is scikit-learn.
+- **They enter `pyproject.toml` when Stage 4 first uses them,** as an optional `ml` extra pinned exactly, with the
+  versions of scikit-learn's own dependencies that the install resolves on CPython 3.11. Where a package is already
+  pinned by the `state-space` extra (numpy, scipy), the two extras must pin the same version. CI installs the same
+  pins. Those transitive pins are recorded here in the same pull request.
+- A figure that moves with these versions is a figure of record only on the pinned versions.
