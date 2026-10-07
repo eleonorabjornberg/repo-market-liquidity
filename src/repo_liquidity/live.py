@@ -216,3 +216,96 @@ def write_record(out_dir: Path, day: date, record: Mapping) -> Written:
     except FileExistsError:
         raise ValueError(f"{day} already has a record ({path}); a day is written once") from None
     return Written(path, hashlib.sha256(payload).hexdigest())
+
+
+# -- the live build -----------------------------------------------------------------------------------------------
+
+
+def build_rows(raw_roots, build_cutoff: datetime, workdir: Path):
+    """The columns the frozen declaration reads, built point in time from the snapshots under `raw_roots`.
+
+    The parent's live columns (`live_record.BUILD_COLUMNS`) plus H.8 bank assets as first prints, under Phase 3's
+    declaration, by the parent's own `build_daily_panel`: the path `panel.build` takes for those columns. The two
+    scheduled rates are added after the panel is extended (`with_scheduled_rates`).
+
+    Returns:
+        `(rows, pit_path, snapshots)`: the rows, the long point-in-time file `extend_panel` reads settlements from,
+        and each snapshot's source, digest, retrieval time and URL.
+
+    Raises:
+        ValueError: if a column is refused.
+    """
+    from repo_model.data import build_daily_panel, load_point_in_time_panel
+    from repo_model.ingest import build_point_in_time_snapshot, load_snapshot_manifest
+
+    from repo_liquidity import declaration
+
+    module = parent_live()
+    artifacts = [load_snapshot_manifest(path) for root in raw_roots
+                 for path in sorted(Path(root).glob("*/*.manifest.json"))]
+    pit_path = Path(workdir) / "point_in_time.csv"
+    snapshot = build_point_in_time_snapshot(artifacts, pit_path,
+                                            registry_path=module.REPO / "metadata" / "sources.json")
+    retrieved = {artifact.sha256: artifact.retrieved_at for artifact in artifacts}
+    columns = tuple(module.BUILD_COLUMNS) + ("bank_total_assets",)
+    with declaration.phase3_declaration():
+        built = build_daily_panel(load_point_in_time_panel(pit_path), declaration.registry(),
+                                  build_cutoff=build_cutoff, decision_time=DECISION_TIME, columns=columns,
+                                  snapshot_retrieved_at=retrieved)
+    if built.refusals:
+        raise ValueError(f"the live build refused {dict(built.refusals)}")
+    snapshots = [{"source_id": artifact.source_id, "sha256": artifact.sha256,
+                  "retrieved_at": str(artifact.retrieved_at), "url": artifact.url} for artifact in artifacts]
+    return list(built.observations), pit_path, snapshots
+
+
+def with_scheduled_rates(rows):
+    """`rows` with `on_rrp_rate` and `iorb_in_force` on every row, each read at its row's decision instant."""
+    from repo_model.data import DailyObservation
+
+    from repo_liquidity import curve_feature
+
+    dates = [row.date for row in rows]
+    floors = scheduled.on_rrp_rate_values(dates, decision_time=DECISION_TIME)
+    clash = [row.date for row in rows if "on_rrp_rate" in row.values]
+    if clash:
+        raise ValueError(f"{clash[0]} already carries on_rrp_rate")
+    with_floor = [DailyObservation(row.date, {**row.values, "on_rrp_rate": floor}) for row, floor in zip(rows, floors)]
+    return curve_feature.with_stage4_columns(with_floor)
+
+
+def require_forecast_reads(rows, last_real: int, module=None) -> None:
+    """Every declared feature set's reads for the last row land on real rows, or are scheduled or calendar ones.
+
+    Raises:
+        LookAheadError: as `require_reads_on_real_rows`.
+    """
+    from repo_model.asof import InformationRule
+
+    from repo_liquidity import curve_feature
+
+    module = parent_live() if module is None else module
+    feature_sets = [("spread_bps",), curve_feature.PUBLISHED_FEATURES, curve_feature.DECLARED_FEATURES]
+    feature_sets += [tuple(features) for _name, features, _predictor in
+                     curve_feature.published_exceedance_arm()[3]]
+    for features in feature_sets:
+        rule = InformationRule(curve_feature.registry(), features, decision_time=DECISION_TIME)
+        require_reads_on_real_rows(rows, rule, len(rows) - 1, last_real, module=module)
+
+
+def rate_table_state() -> dict:
+    """Each rate table's digest and last announcement, for the record."""
+    out = {}
+    for path, rows in ((scheduled.IORB_RATE_TABLE, scheduled.load_iorb_rates()),
+                       (scheduled.ON_RRP_RATE_TABLE, scheduled.load_on_rrp_rates())):
+        out[path.name] = {"sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+                          "last_announced_at": rows[-1].announced_at.isoformat(),
+                          "last_effective": rows[-1].effective.isoformat()}
+    return out
+
+
+def package_versions() -> dict:
+    import platform
+    from importlib.metadata import version
+
+    return {"python": platform.python_version(), "numpy": version("numpy"), "scikit-learn": version("scikit-learn")}

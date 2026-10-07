@@ -161,3 +161,33 @@ class WriteOnceTests(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as tmp, self.assertRaises(ValueError):
             live.write_record(Path(tmp), date(2026, 10, 8), {"decision_day": "2026-10-09"})
+
+
+class LiveBuildTests(unittest.TestCase):
+    """The live build path reproduces the development panel on every column the frozen declaration reads."""
+
+    def test_the_tracked_fixtures_rebuild_the_development_columns(self):
+        import json
+        import tempfile
+        from datetime import datetime
+        from pathlib import Path
+
+        from test_curve_feature import _panel_rows
+
+        from repo_liquidity import curve_feature, parent_root
+
+        snapshots = parent_root() / "tests" / "fixtures" / "snapshots"
+        cutoff = datetime.fromisoformat(json.loads(
+            (parent_root() / "metadata" / "funding_panel_manifest.json").read_text(encoding="utf-8"))["build_cutoff"])
+        with tempfile.TemporaryDirectory() as tmp:
+            rows, pit_path, recorded = live.build_rows(
+                [snapshots / "funding_inputs", snapshots / "h8_inputs"], cutoff, Path(tmp))
+            self.assertTrue(pit_path.exists())
+        rows = live.with_scheduled_rates(rows)
+        development = _panel_rows()
+        self.assertEqual([row.date for row in rows], [row.date for row in development])
+        columns = (set(curve_feature.DECLARED_FEATURES) - {"spread_bps"}) | {"sofr", "iorb"}
+        for ours, theirs in zip(rows, development):
+            for column in sorted(columns):
+                self.assertEqual(ours.values.get(column), theirs.values.get(column), (ours.date, column))
+        self.assertTrue(all(entry["source_id"] for entry in recorded))
