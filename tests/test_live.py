@@ -191,3 +191,48 @@ class LiveBuildTests(unittest.TestCase):
             for column in sorted(columns):
                 self.assertEqual(ours.values.get(column), theirs.values.get(column), (ours.date, column))
         self.assertTrue(all(entry["source_id"] for entry in recorded))
+
+
+class H8SeamTests(unittest.TestCase):
+    """H.8 bank assets as first prints: the live extract continues the tracked one week for week (must-show 3)."""
+
+    HEADER = "week_ending,total_assets,release_date,release_sha256\n"
+
+    def _write(self, folder, lines):
+        from pathlib import Path
+
+        path = Path(folder) / "frb_h8" / "h8_total_assets_first_print.csv"
+        path.parent.mkdir(parents=True)
+        path.write_text(self.HEADER + "".join(line + "\n" for line in lines), encoding="utf-8")
+        return path
+
+    def test_a_gap_or_an_overlap_at_the_seam_is_refused(self):
+        """Recorded mutation (7 October 2026): in `live.require_h8_seam`, `if first != last + timedelta(days=7):`
+        changed to `if False:`. This test failed with AssertionError (ValueError not raised).
+        """
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as a, tempfile.TemporaryDirectory() as b, \
+                tempfile.TemporaryDirectory() as c:
+            tracked = self._write(a, ["2026-09-09,25841.7,2026-09-18,x", "2026-09-16,25713.2,2026-09-25,y"])
+            gap = self._write(b, ["2026-09-30,25700.0,2026-10-09,z"])
+            overlap = self._write(c, ["2026-09-16,25713.2,2026-09-25,y", "2026-09-23,25788.1,2026-10-02,w"])
+            for new in (gap, overlap):
+                with self.assertRaises(ValueError):
+                    live.require_h8_seam(tracked, new)
+
+    def test_the_next_week_passes(self):
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as a, tempfile.TemporaryDirectory() as b:
+            tracked = self._write(a, ["2026-09-16,25713.2,2026-09-25,y"])
+            new = self._write(b, ["2026-09-23,25788.1,2026-10-02,w"])
+            live.require_h8_seam(tracked, new)
+
+    def test_no_new_release_yet_passes(self):
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as a, tempfile.TemporaryDirectory() as b:
+            tracked = self._write(a, ["2026-09-16,25713.2,2026-09-25,y"])
+            new = self._write(b, [])
+            live.require_h8_seam(tracked, new)

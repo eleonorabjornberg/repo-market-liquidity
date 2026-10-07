@@ -108,3 +108,47 @@ against its page. The freeze is unaffected: it fixes the tables' rows at the fre
 - No publishing.
 - No backfilling.
 - No use of 2026 as evidence. Days before the schedule is turned on are not confirmatory.
+
+## Built (7 October 2026)
+
+Built under this directive after Eleonora merged it (#16). The schedule is off; nothing has been logged.
+
+**Must-show 1, the frozen declaration alone: built.** Each run recomputes the declaration's checksum
+(`scripts/stage4_freeze.py`) and refuses unless it is the one pinned in `docs/decisions/stage-4-freeze.md`. A test
+changes a setting and sees the run refused.
+
+**Must-show 2, a replayed day reproduces the development run: held.** `scripts/stage5a_replay.py` writes
+`results/stage5a/replay.json`. It runs the log's forecast core on the development panel cut at the first scored day of
+each of the twelve 2025 refit blocks. Both arms' CRPS equal the Stage 4 per-origin losses, and both arms' P(> +5 bp)
+and P(> +10 bp) equal the development run's, with every gap 0. The development probabilities were recomputed by
+`scripts/stage4_brier.py`'s code, and reproduce its Brier record exactly. Separately, the live build path, run on the
+tracked fixtures, reproduces the development panel on every column the declaration reads, on every date
+(`tests/test_live.py`).
+
+**Must-show 3, no look-ahead, by test: held.** Each guard has a recorded mutation that was run and killed:
+- the placeholder guard: the parent's, with the two scheduled rates allowed on a placeholder;
+- the FOMC guard;
+- write-once, and no development day;
+- the H.8 seam: the live first-print extract continues the tracked one week for week. Within each extract, the parent's
+  `extract_h8_first_prints.py` refuses a missing week or one printed later than `frb_h8` declares.
+
+**Must-show 4, five dry-run days checked by Eleonora: not yet.** Two dry runs were made in the build session:
+- one on the tracked fixtures, for 2026-09-04;
+- one fetching live, for 2026-10-07 (its outcome is reported in the pull request).
+
+The five that count are made by the workflow, by hand, and posted on the "Phase 3 log: dry runs" issue for her.
+
+**What was built:**
+- `metadata/fomc_calendar.json`, with the saved calendar page;
+- `src/repo_liquidity/live.py`: the guards, the live build and the forecast core;
+- `scripts/stage5a_log.py`: the runner;
+- `scripts/stage5a_replay.py`;
+- `.github/workflows/live-log.yml`, with the schedule commented out.
+
+**Costs.** A run takes about 15 minutes on one thread: the walk-forward through the day for six arms. A run with
+fetching adds a few minutes. Both fit within the workflow's 150-minute limit.
+
+**Known before the first counted day:**
+- The next scheduled FOMC statement is on 28 October 2026. From 29 October, the log refuses each day until the rate
+  tables carry that meeting's implementation note.
+- A dry run of a past day reads today's vintage of every source. It is a check of the machinery, never evidence.

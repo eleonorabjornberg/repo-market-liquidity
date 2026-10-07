@@ -309,3 +309,29 @@ def package_versions() -> dict:
     from importlib.metadata import version
 
     return {"python": platform.python_version(), "numpy": version("numpy"), "scikit-learn": version("scikit-learn")}
+
+
+def require_h8_seam(tracked: Path, new: Path) -> None:
+    """Raise unless the live H.8 extract continues the tracked one week for week.
+
+    Each extract is the parent's `extract_h8_first_prints.py` output, which already refuses a missing or late week
+    within its own range. This guards the seam between the two: the live extract's first week is the week after the
+    tracked extract's last, with nothing skipped and nothing printed twice. An empty live extract (no release since)
+    passes.
+
+    Raises:
+        ValueError: naming both weeks.
+    """
+    from datetime import timedelta
+
+    def weeks(path):
+        lines = Path(path).read_text(encoding="utf-8").splitlines()[1:]
+        return [date.fromisoformat(line.split(",")[0]) for line in lines if line.strip()]
+
+    old, fresh = weeks(tracked), weeks(new)
+    if not fresh:
+        return
+    last, first = old[-1], fresh[0]
+    if first != last + timedelta(days=7):
+        raise ValueError(f"the live H.8 extract starts at the week ending {first}, but the tracked one ends at "
+                         f"{last}; the first prints must continue week for week")

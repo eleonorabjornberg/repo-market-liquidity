@@ -98,6 +98,8 @@ def fetch(raw: Path, day: date, module) -> list:
     subprocess.run([sys.executable, str(parent_root() / "scripts" / "extract_h8_first_prints.py"),
                     "--raw-root", str(pages), "--output", str(new), "--start", start.isoformat(),
                     "--end", day.isoformat()], check=True, capture_output=True, cwd=parent_root())
+    live.require_h8_seam(tracked / "frb_h8" / "h8_total_assets_first_print.csv",
+                         new / "h8_total_assets_first_print.csv")
     return [raw, tracked, new.parent]
 
 
