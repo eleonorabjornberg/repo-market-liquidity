@@ -205,6 +205,79 @@ allows a remedy only on those terms, and asks that it say so.
    `iorb_in_force`. Its `features_read` reports `spread_bps` for the labels, so the parent's
    `_check_fitter_stayed_inside` covers everything the curve reads.
 
+## Result (7 October 2026): not shown
+
+Scored once under the plan and its amendment, development evidence only, to 2025-12-31. Records:
+`results/stage4/comparison.json` (primary), `results/stage4/brier.json` (secondary) and
+`results/stage4/curve_pass.json`. The Brier record was scored at commit `eaee930`. The primary was first scored at `c07d681`, then re-scored after the exceedance code landed, at `7e89020`; the two runs agree origin by origin. `7e89020` differs from `eaee930` only by the Brier record, so both scored records stand on the same code. Each carries its commit, a clean tree, the parent pin and both panel digests. No
+record is published.
+
+**Must-show 1, the baseline arm reproduces the published record: held.** On every published origin, model A's scored
+days and per-origin CRPS equal the parent's published gbm, with a largest gap of 0 bp. In the secondary run, model A's
+Brier equals the published exceedance record's at +5 and +10 bp, also with a gap of 0. (The record reports +20 and
++50 bp event by event, with no pooled Brier to compare.)
+
+**Must-show 2, no look-ahead by test: held.** Each guard raises `LookAheadError` and has a recorded mutation that kills
+it:
+- the scheduled IORB is keyed on the announcement;
+- the curve is fitted only on days at or before the refit's cutoff;
+- the feature's inputs are read as of the row's decision instant;
+- a curve input left out of the declaration is refused, on both the CRPS path and the exceedance path;
+- a carried curve fitted after the cutoff is refused.
+
+**Must-show 3, the development verdict: not shown.** The curve is not shown to help.
+
+| | Mean paired CRPS gain (A − B), bp | 90% interval |
+|---|---|---|
+| Pooled | +0.0038 | [−0.0070, +0.0146] |
+
+The gain is model A's CRPS minus model B's; positive means the curve helped. Pooled CRPS is 1.6592 bp for A and 1.6554
+bp for B, over the published origins. The interval is the 90% stationary bootstrap (block 2, 2000 replications).
+
+By regime and by pressure-day type (`baseline.add_comparison_splits`):
+
+| Split | Days | Mean gain, bp | 90% interval |
+|---|---|---|---|
+| 2018–19 | 375 | +0.0073 | [−0.0266, +0.0442] |
+| 2020 | 251 | +0.0288 | [+0.0014, +0.0572] |
+| 2021–23 | 748 | −0.0012 | [−0.0152, +0.0119] |
+| 2024 | 250 | +0.0010 | [−0.0202, +0.0205] |
+| 2025 (to 31 December) | 249 | −0.0090 | [−0.0406, +0.0211] |
+| Quarter-end | 31 | −0.0242 | [−0.1812, +0.1284] |
+| Month-end | 158 | −0.0022 | [−0.0478, +0.0390] |
+| Tax date | 89 | +0.0080 | [−0.0501, +0.0628] |
+| Ordinary | 1595 | +0.0047 | [−0.0055, +0.0158] |
+
+Only the 2020 regime's interval lies above 0. It is one split of many, and the pass rule is the pooled figure.
+2025, where the curve's shift should matter most, is slightly negative.
+
+**Beside it, as-of persistence** (persistence's CRPS minus the arm's, from the published persistence losses on the same
+origins): A +0.4268 bp [+0.1862, +0.7443]; B +0.4306 bp [+0.1861, +0.7395]. Both arms beat persistence by the same
+margin. This bootstrap's seed is derived from the Phase 3 panel, so A's interval differs slightly from the published
+[+0.1855, +0.7369]; the mean is the same.
+
+**Secondary, P(spread > +5 bp), Brier (not part of the pass rule):**
+- Brier is 0.049612 for A and 0.049571 for B. A minus B is +0.000041, 90% interval [−0.000752, +0.000817]: not shown.
+- Both arms beat calendar climatology (0.071413) and the persistence-logistic model (0.056329), with intervals above 0.
+- By day type, tax dates are worse with the curve: −0.00495 [−0.00971, −0.00096], over 89 days.
+- At +50 bp, B is slightly worse: −0.000033 [−0.000065, −0.000009].
+
+**Reported, not judged:**
+- The curve at every refit is in the record. One refit carried a curve: the one at cutoff 2018-07-27 used the curve from
+  2018-06-27, as the amendment says.
+- The bend moves with the sample:
+  - near 11.5% to 12.3% through 2018 and 2019, with 10.35% at the year-end refit of January 2019;
+  - near 9% to 10.5% from October 2019 into May 2021;
+  - near 16.5% to 18.5%, with the intercept near 0, from June 2021 to October 2022;
+  - near 14.6% at the end of 2022, near 13.5% from 2023 to July 2025, and near 14.5% from August 2025.
+
+  This is the instability Stage 3 met in another form.
+
+**What this means for the next step.** Under Eleonora's ruling of 7 October 2026, the freeze and Stage 5a's daily log
+go ahead whatever the verdict, once she has reviewed this run. A "not shown" development verdict with a near-zero
+point estimate means the confirmatory log is likely to show little. Whether to freeze this declaration as planned, or
+to reconsider first, is her decision.
+
 ## Not in Stage 4
 
 - No change to the parent, its published model, its pre-registration, its live record or its records.
