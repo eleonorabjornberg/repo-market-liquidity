@@ -134,7 +134,7 @@ tracked fixtures, reproduces the development panel on every column the declarati
 
 **Must-show 4, five dry-run days checked by Eleonora: not yet.** Two dry runs were made in the build session:
 - one on the tracked fixtures, for 2026-09-04;
-- one fetching live, for 2026-10-07 (its outcome is reported in the pull request).
+- one fetching live, for 2026-10-07: every source fetched, H.8 included, with real rows through 6 October and a forecast for 8 October, in about 17 minutes.
 
 The five that count are made by the workflow, by hand, and posted on the "Phase 3 log: dry runs" issue for her.
 
