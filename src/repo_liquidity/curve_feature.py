@@ -37,6 +37,8 @@ DECISION_TIME = time(16, 0)
 LAST_DAY = date(2025, 12, 31)
 #: The parent's published comparison record, read at the pin: the declaration model A reproduces.
 PUBLISHED_RECORD = "docs/runs/compare_persistence_vs_gbm_conformal_pid_nested_funding_crps.json"
+#: The parent's published exceedance record: the secondary Brier result's model A.
+PUBLISHED_EXCEEDANCE_RECORD = "docs/runs/exceedance_gbm_conformal_pid_nested_funding.json"
 MINIMUM_HISTORY = 61
 REFIT_EVERY = 21
 #: The published gbm's nine features, as its record lists them.
@@ -358,6 +360,31 @@ class RefitCurve:
     carried_from: Optional[date]
 
 
+def _refit_curve(curves: List[RefitCurve], train_frame, rule) -> Curve:
+    """The refit's curve, recorded in `curves`: fitted on the frame, or carried from the latest fitted one.
+
+    A second call at the same cutoff reuses that refit's curve. The carry is the curve-pass remedy (Eleonora,
+    7 October 2026).
+
+    Raises:
+        CurveFailure: if the curve fails and no earlier refit fitted one.
+        LookAheadError: if the carried curve was fitted after this refit's cutoff.
+    """
+    cutoff = train_frame[-1].date
+    if curves and curves[-1].cutoff == cutoff:
+        return curves[-1].curve
+    try:
+        curve, carried_from = fit_curve(train_frame, rule, cutoff=cutoff), None
+    except CurveFailure:
+        fitted = [entry for entry in curves if entry.carried_from is None]
+        if not fitted:
+            raise
+        require_on_or_before([fitted[-1].cutoff], cutoff)
+        curve, carried_from = fitted[-1].curve, fitted[-1].cutoff
+    curves.append(RefitCurve(cutoff, curve, carried_from))
+    return curve
+
+
 class CurveFeatureFitter:
     """Fits the curve on the fold's training frame, adds the feature, and calls the published fitter with it."""
 
@@ -381,16 +408,7 @@ class CurveFeatureFitter:
         if information is None:
             raise ValueError("the curve is read through the run's as-of rule; the fold loop must hand it over")
         rule = curve_rule(information.registry, information.decision_time)
-        cutoff = train_frame[-1].date
-        try:
-            curve, carried_from = fit_curve(train_frame, rule, cutoff=cutoff), None
-        except CurveFailure:
-            fitted = [entry for entry in self.curves if entry.carried_from is None]
-            if not fitted:
-                raise
-            require_on_or_before([fitted[-1].cutoff], cutoff)
-            curve, carried_from = fitted[-1].curve, fitted[-1].cutoff
-        self.curves.append(RefitCurve(cutoff, curve, carried_from))
+        curve = _refit_curve(self.curves, train_frame, rule)
         frame = with_training_feature(train_frame, rule, curve)
         inner = self.func(frame, regressors=self.regressors, minimum_history=minimum_history,
                           information=information, **self.settings)
@@ -438,3 +456,84 @@ class CurveFeatureModel:
             return attribute(*args, **kwargs)
 
         return call
+
+
+class CurveFeatureExceedance:
+    """The published gbm's exceedance predictor with the curve-implied spread: the secondary Brier result's model B.
+
+    `inner` is `ml.gbm_exceedance` built with the published regressors plus `FEATURE` (`published_exceedance_arm`).
+    Each call is one refit: the curve is fitted on the training rows (carried as `CurveFeatureFitter` carries it),
+    the feature is added to the training rows as of each row's decision and to each feature row, and the curves'
+    `features_read` report the curve's inputs in place of the feature, for the parent's declaration check.
+    """
+
+    def __init__(self, inner):
+        self.inner = inner
+        self.curves: List[RefitCurve] = []
+
+    def __call__(self, train_rows, feature_rows, taus, information=None, histories=None, uncalibrated=False):
+        import dataclasses
+
+        if information is None:
+            raise ValueError("the curve is read through the run's as-of rule; the fold loop must hand it over")
+        rule = curve_rule(information.registry, information.decision_time)
+        curve = _refit_curve(self.curves, train_rows, rule)
+        model = CurveFeatureModel(None, curve)
+        result = self.inner(with_training_feature(train_rows, rule, curve),
+                            [model.augment(row) for row in feature_rows], taus,
+                            information=information, histories=histories, uncalibrated=uncalibrated)
+        inner_reads = tuple(name for name in result.features_read if name != FEATURE)
+        return dataclasses.replace(
+            result, features_read=inner_reads + tuple(name for name in CURVE_READS if name not in inner_reads))
+
+
+def published_exceedance_command(panel_path: str = "PANEL.csv", report: str = "OUT/exceedance.json") -> List[str]:
+    """The `exceedance-backtest` command behind the parent's published exceedance record, as its declaration states.
+
+    `docs/runs/exceedance_gbm_conformal_pid_nested_funding.json` at the pin: the gbm with nested conformal PID, the
+    published nine features, minimum history 61, refit every 21, decision 16:00, to 2025-12-31, the declared stress
+    thresholds, and both pressure-probability benchmarks.
+    """
+    root = parent_root()
+    argv = ["exceedance-backtest", "--panel", panel_path, "--thresholds",
+            str(root / "metadata" / "stress_thresholds.json"), "--registry", str(root / "metadata" / "sources.json"),
+            "--decision-time", "16:00", "--minimum-history", str(MINIMUM_HISTORY), "--refit-every",
+            str(REFIT_EVERY), "--splits", str(root / "metadata" / "evaluation_splits.json"), "--end",
+            LAST_DAY.isoformat(), "--model", "gbm", "--calibration", "conformal_pid_nested",
+            "--benchmark", "calendar_climatology", "--benchmark", "persistence_logistic", "--report", report]
+    for name in PUBLISHED_FEATURES:
+        argv += ["--feature", name]
+    return argv
+
+
+def published_exceedance_arm(with_feature: bool = False):
+    """The published exceedance predictor and its online calibration factory, built by the parent's own code.
+
+    With `with_feature`, the same predictor built with `FEATURE` added to its regressors and wrapped in
+    `CurveFeatureExceedance`; every setting is resolved by the same parent resolvers.
+
+    Returns:
+        `(name, predictor, online_factory, benchmarks)`, where `benchmarks` is the parent's
+        `[(name, features, predictor)]` for the two pressure-probability benchmarks.
+    """
+    from repo_model import cli_eval
+    from repo_model.cli import build_parser
+
+    args = build_parser().parse_args(published_exceedance_command())
+    model_args, online = cli_eval._online_calibration(
+        args, cli_eval.MODEL_FACTORIES.get(args.model), splits=args.splits, refit_every=args.refit_every)
+    benchmarks = cli_eval._benchmarks(args)
+    if not with_feature:
+        name, predictor = cli_eval._select_model(model_args, settings_flags=True)
+        return name, predictor, online, benchmarks
+    choice = cli_eval.MODEL_FACTORIES["gbm"]
+    regressors, _regime = cli_eval._regressors_and_regime(model_args, "gbm", choice.needs_regime_variable)
+    settings: Dict[str, Any] = {}
+    settings.update(cli_eval._calibration(model_args, "gbm", choice.takes_calibration))
+    settings.update(cli_eval._spread_change_lags(model_args, "gbm", choice.takes_spread_change_lags))
+    settings.update(cli_eval._volatility_feature(model_args, "gbm", choice.takes_volatility_feature))
+    settings.update(cli_eval._arx_feature(model_args, "gbm", choice.takes_arx_feature))
+    settings.update(cli_eval._tail(model_args, "gbm", choice.takes_tail))
+    inner = choice.construct(regressors=tuple(regressors) + (FEATURE,), regime_variable=None,
+                             minimum_history=model_args.minimum_history, settings=settings)
+    return "gbm_curve_implied_spread", CurveFeatureExceedance(inner), online, benchmarks

@@ -260,7 +260,7 @@ class CarryForwardTests(unittest.TestCase):
     def test_a_carried_curve_from_a_later_cutoff_is_refused(self):
         """A carried curve must have been fitted at or before the refit's cutoff.
 
-        Recorded mutation (7 October 2026): in `CurveFeatureFitter.__call__`, the line
+        Recorded mutation (7 October 2026; re-run after the line moved to `_refit_curve`): the line
         `require_on_or_before([fitted[-1].cutoff], cutoff)` replaced by `pass`. This test failed with AssertionError
         (LookAheadError not raised).
         """
@@ -269,6 +269,54 @@ class CarryForwardTests(unittest.TestCase):
                                                       carried_from=None))
         with self.assertRaises(LookAheadError):
             self._fit(fitter, date(2018, 7, 27))
+
+
+class ExceedanceWrapperTests(unittest.TestCase):
+    """The secondary Brier result's model B: the published exceedance predictor with the feature."""
+
+    END = date(2018, 11, 30)
+
+    def _backtest(self, features):
+        from repo_model import baseline
+
+        rows = [row for row in _panel_rows() if row.date <= self.END]
+        with curve_feature.stage4_declaration():
+            _name, predictor, _online, _benchmarks = curve_feature.published_exceedance_arm(with_feature=True)
+            return predictor, baseline.rolling_exceedance_backtest(
+                rows, predictor=predictor, model_name="gbm_curve_implied_spread", features=features,
+                registry=curve_feature.registry(), decision_time=DECISION, taus=(5.0, 10.0),
+                minimum_history=61, refit_every=63, end=self.END)
+
+    def test_it_runs_inside_the_declaration_and_reports_the_curve_inputs(self):
+        predictor, report = self._backtest(curve_feature.DECLARED_FEATURES)
+        self.assertGreater(len(report.scored_dates), 0)
+        self.assertEqual(len({entry.cutoff for entry in predictor.curves}), len(predictor.curves))
+
+    def test_a_curve_input_left_out_of_the_declaration_is_refused(self):
+        """The parent's declaration check sees every column the exceedance wrapper's curve reads.
+
+        Recorded mutation (7 October 2026): in `CurveFeatureExceedance.__call__`, `features_read=inner_reads + ...`
+        replaced by `features_read=inner_reads`. This test failed with AssertionError (LookAheadError not raised).
+        """
+        without = tuple(name for name in curve_feature.DECLARED_FEATURES if name != "bank_total_assets")
+        with self.assertRaises(LookAheadError):
+            self._backtest(without)
+
+    def test_the_command_is_the_published_records(self):
+        import json
+
+        from repo_liquidity import parent_root
+
+        record = json.loads((parent_root() / curve_feature.PUBLISHED_EXCEEDANCE_RECORD).read_text(encoding="utf-8"))
+        declared = record["declaration"]
+        from repo_model.cli import build_parser
+
+        args = build_parser().parse_args(curve_feature.published_exceedance_command())
+        self.assertEqual(sorted(args.feature), declared["features"])
+        self.assertEqual((args.model, args.calibration, args.minimum_history, args.refit_every, args.end.isoformat()),
+                         (declared["model"], declared["calibration"], declared["minimum_history"],
+                          declared["refit_every"], declared["end"]))
+        self.assertEqual(sorted(args.benchmark), sorted(record["benchmarks"]))
 
 
 class DeclarationTests(unittest.TestCase):

@@ -238,6 +238,8 @@ On review of the plan (7 October 2026) she added:
 - Stage 5a logs both arms' forecasts each day.
 
 The amendment to `evaluation.md` that names the replacement for the latent state is drafted in the same pull request.
+**Stage 4's result (7 October 2026, in review): not shown.** Model A reproduced the published record exactly, and the curve-implied spread gave a mean CRPS gain of +0.0038 bp, 90% [−0.0070, +0.0146] (`docs/stages/stage-4.md`, Result). The freeze and Stage 5a follow Eleonora's review.
+
 Where the text below says "latent state", the plan and that amendment decide once merged. The text below is the
 original design, kept for the record.
 
