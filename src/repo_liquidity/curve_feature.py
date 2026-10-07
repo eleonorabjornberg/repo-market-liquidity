@@ -349,6 +349,15 @@ def published_fitter():
     return published_arm()[0]
 
 
+@dataclass(frozen=True)
+class RefitCurve:
+    """The curve a refit used: fitted at `cutoff`, or carried from the refit at `carried_from` when its own failed."""
+
+    cutoff: date
+    curve: Curve
+    carried_from: Optional[date]
+
+
 class CurveFeatureFitter:
     """Fits the curve on the fold's training frame, adds the feature, and calls the published fitter with it."""
 
@@ -360,15 +369,28 @@ class CurveFeatureFitter:
         self.func = base.func
         self.regressors = regressors + (FEATURE,)
         self.settings = MappingProxyType(keywords)
-        self.curves: List[Tuple[date, Curve]] = []
+        self.curves: List[RefitCurve] = []
 
     def __call__(self, train_frame, *, minimum_history: int, information=None):
+        """One refit. A failed curve carries the last fitted one (the curve-pass remedy, Eleonora, 7 October 2026).
+
+        Raises:
+            CurveFailure: if the curve fails and no earlier refit fitted one.
+            LookAheadError: if the carried curve was fitted after this refit's cutoff.
+        """
         if information is None:
             raise ValueError("the curve is read through the run's as-of rule; the fold loop must hand it over")
         rule = curve_rule(information.registry, information.decision_time)
         cutoff = train_frame[-1].date
-        curve = fit_curve(train_frame, rule, cutoff=cutoff)
-        self.curves.append((cutoff, curve))
+        try:
+            curve, carried_from = fit_curve(train_frame, rule, cutoff=cutoff), None
+        except CurveFailure:
+            fitted = [entry for entry in self.curves if entry.carried_from is None]
+            if not fitted:
+                raise
+            require_on_or_before([fitted[-1].cutoff], cutoff)
+            curve, carried_from = fitted[-1].curve, fitted[-1].cutoff
+        self.curves.append(RefitCurve(cutoff, curve, carried_from))
         frame = with_training_feature(train_frame, rule, curve)
         inner = self.func(frame, regressors=self.regressors, minimum_history=minimum_history,
                           information=information, **self.settings)

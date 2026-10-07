@@ -154,6 +154,57 @@ Each step is its own commit, with tests written first.
 5. The run script (`scripts/stage4_compare.py`), which first checks the reproduction in must-show 1, then scores.
 6. The record (`results/stage4/`, outside `docs/runs/`), with full provenance. It is not published until Eleonora says so.
 
+## Amendment: the curve pass's remedy (7 October 2026)
+
+**Status: a draft for Eleonora's review. It is in force only once she merges it.** Nothing is scored before then.
+
+**This amendment is written after the curve fits were seen, and before any comparison.** The plan's "The curve pass"
+allows a remedy only on those terms, and asks that it say so.
+
+**What the curve pass found** (`results/stage4/curve_pass.json`, from commit `ec7716a` with a clean tree):
+
+- 89 of 90 refits fit with a slope above 0.
+- **One fails:** the refit with cutoff 2018-07-27, which serves the 21 scored days from 2018-07-31.
+  - Its sample is 72 days, every one with the reserves ratio between 11.5% and 12.9%.
+  - The constrained fit lands on a slope of 0, at a bend of 11.5%. The unconstrained Stage 2 fit has slope −38.9, at
+    a bend of 11.75%.
+- **Why it fails:** in the window's first four months the ratio moves within 1.4 points. The corridor's moves there
+  are calendar spikes: 2018-06-29 (a quarter-end, position 1.85) and the first days of July. They are not a reserves
+  response. The 22 days below the would-be bend are calm July days, with a mean position of 0.87 against 0.885 above
+  it. Dropping month-ends and quarter-ends does not rescue the fit. The curve is not identified on this sample.
+- **Reported, not judged:**
+  - The first refit fits (cutoff 2018-06-27, 51 days, bend 12.3%), but on the same narrow sample.
+  - From the refit of June 2021 to that of October 2022, the bend sits at 17% to 19%, with the intercept near 0.
+  - In the refits of November and December 2021 the intercept is slightly below 0.
+
+**The remedy (Eleonora, 7 October 2026, choosing the recommended option): carry the last fitted curve.**
+
+- A refit whose curve fails (`CurveFailure`) uses the curve of the latest earlier refit whose own curve was fitted.
+  It is still as of that refit: the carried curve was fitted on days at or before an earlier cutoff, and a guard
+  refuses one fitted later (`LookAheadError`, with a recorded mutation).
+- Every published origin stays in the comparison, so must-show 1 and the pairing are unchanged.
+- **The run still stops if a refit fails with no earlier fitted curve to carry.** On today's panel that does not
+  happen: the first refit fits.
+- On today's panel the remedy touches one refit block (cutoff 2018-07-27), which uses the first refit's curve. The
+  record lists, for every refit, the curve it used and where a curve was carried from.
+
+**Two corrections the build exposed, also for Eleonora's review.** Neither changes what the feature means.
+
+1. **IORB in the conversion.** The plan says the conversion uses "the scheduled `iorb` and `on_rrp_rate` columns of the
+   Phase 3 panel". `on_rrp_rate` is scheduled, but the panel's `iorb` is not: it is the realized rate, a constituent
+   of the target, read at the anchor (two panel days before T). Around a rate change it would give the old rate. The
+   build therefore adds a scheduled column, `iorb_in_force`: the IORB in force on T, read at T's decision instant. It
+   comes from the parent's own table of implementation notes, keyed on the announcement, as `on_rrp_rate` is.
+   - It is declared in `metadata/sources_stage4.json` and checked by the parent's validators. It is added in memory,
+     so panel versions 1 to 3 and their manifests do not change.
+   - It equals the panel's realized `iorb` on every day of the window but 2020-03-16. That day's cut was announced on
+     Sunday 15 March, after Friday's 16:00 decision. A test records this.
+2. **The declared features.** The plan lists `sofr` and `iorb` among model B's added declared features. Both are
+   constituents of the target, `spread_bps`, which every model already declares and reads. The curve's labels are read
+   from them. Model B therefore declares the published nine plus `bank_total_assets`, `on_rrp_rate` and
+   `iorb_in_force`. Its `features_read` reports `spread_bps` for the labels, so the parent's
+   `_check_fitter_stayed_inside` covers everything the curve reads.
+
 ## Not in Stage 4
 
 - No change to the parent, its published model, its pre-registration, its live record or its records.

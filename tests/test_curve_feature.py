@@ -236,6 +236,41 @@ class WrapperTests(unittest.TestCase):
         self.assertIn(curve_feature.FEATURE, model.inner.features_read)
 
 
+class CarryForwardTests(unittest.TestCase):
+    """The curve-pass remedy (Eleonora, 7 October 2026): a refit whose curve fails uses the last fitted curve."""
+
+    def _fit(self, fitter, last_day):
+        rows = [row for row in _panel_rows() if row.date <= last_day]
+        with curve_feature.stage4_declaration():
+            rule = InformationRule(curve_feature.registry(), curve_feature.DECLARED_FEATURES, decision_time=DECISION)
+            return fitter(rows, minimum_history=61, information=rule)
+
+    def test_a_failed_refit_carries_the_last_fitted_curve(self):
+        fitter = curve_feature.CurveFeatureFitter(curve_feature.published_fitter())
+        first = self._fit(fitter, date(2018, 6, 27))
+        second = self._fit(fitter, date(2018, 7, 27))
+        self.assertEqual(second.curve, first.curve)
+        self.assertEqual([entry.carried_from for entry in fitter.curves], [None, date(2018, 6, 27)])
+
+    def test_a_first_refit_that_fails_stops_the_run(self):
+        fitter = curve_feature.CurveFeatureFitter(curve_feature.published_fitter())
+        with self.assertRaises(curve_feature.CurveFailure):
+            self._fit(fitter, date(2018, 7, 27))
+
+    def test_a_carried_curve_from_a_later_cutoff_is_refused(self):
+        """A carried curve must have been fitted at or before the refit's cutoff.
+
+        Recorded mutation (7 October 2026): in `CurveFeatureFitter.__call__`, the line
+        `require_on_or_before([fitted[-1].cutoff], cutoff)` replaced by `pass`. This test failed with AssertionError
+        (LookAheadError not raised).
+        """
+        fitter = curve_feature.CurveFeatureFitter(curve_feature.published_fitter())
+        fitter.curves.append(curve_feature.RefitCurve(cutoff=date(2018, 8, 31), curve=ConversionTests.CURVE,
+                                                      carried_from=None))
+        with self.assertRaises(LookAheadError):
+            self._fit(fitter, date(2018, 7, 27))
+
+
 class DeclarationTests(unittest.TestCase):
     def test_the_published_features_are_the_records(self):
         import json
