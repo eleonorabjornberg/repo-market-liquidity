@@ -262,6 +262,8 @@ Under [`docs/decisions/evaluation.md`](docs/decisions/evaluation.md):
 
 ### Stage 5: confirmatory log and monitoring
 
+- **Stage 5a's directive** is [`docs/stages/stage-5a.md`](docs/stages/stage-5a.md), and the freeze it starts from is
+  [`docs/decisions/stage-4-freeze.md`](docs/decisions/stage-4-freeze.md) (both drafted 7 October 2026, in review).
 - **The frozen daily log,** from the Stage 4 freeze (Stage 5a, its own directive): a GitHub Actions workflow here, after 4 pm New York time on each
   business day, appending to a protected branch, reusing the parent's live-record helpers (`scripts/live_record.py`:
   `extend_panel`, `require_reads_on_real_rows`, `is_decision_day`, `write_record`) with its own record schema. Scored
