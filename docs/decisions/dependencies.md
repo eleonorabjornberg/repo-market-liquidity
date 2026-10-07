@@ -43,3 +43,6 @@ Ruling (Eleonora, 7 October 2026; relayed by the orchestrating session), approvi
   pinned by the `state-space` extra (numpy, scipy), the two extras must pin the same version. CI installs the same
   pins. Those transitive pins are recorded here in the same pull request.
 - A figure that moves with these versions is a figure of record only on the pinned versions.
+- **Entered for Stage 4 (7 October 2026)** as the `ml` extra in `pyproject.toml`, pinned exactly with what the install
+  resolved on CPython 3.11: numpy 2.4.6, scikit-learn 1.9.1, scipy 1.17.1 (the same pins as `state-space`),
+  joblib 1.6.0, threadpoolctl 3.7.0, narwhals 2.26.0. CI installs the same pins.

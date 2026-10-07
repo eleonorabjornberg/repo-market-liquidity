@@ -29,6 +29,17 @@ state-space = [
   "six==1.17.0",
   "packaging==26.3",
 ]
+# Stage 4 (docs/decisions/dependencies.md, approved 7 October 2026): the parent's published gbm needs scikit-learn.
+# Pinned exactly at the lower bounds of the parent's `ml` extra, with what the install resolved on CPython 3.11.
+# numpy and scipy are pinned as in `state-space`.
+ml = [
+  "numpy==2.4.6",
+  "scikit-learn==1.9.1",
+  "scipy==1.17.1",
+  "joblib==1.6.0",
+  "threadpoolctl==3.7.0",
+  "narwhals==2.26.0",
+]
 
 [tool.setuptools.packages.find]
 where = ["src"]
