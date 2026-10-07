@@ -35,8 +35,10 @@ At each refit k, with training cutoff c_k (the parent's fold grid):
      `asof.InformationRule` under Phase 3's declaration, as `demand_curve.sample` reads it;
    - t's realized corridor position, built with the ON RRP rate in force on t (`demand_curve.corridor_position`).
 
-   The broken stick is `demand_curve.fit_broken_stick`, on Stage 2's grid, unchanged. It is pooled over every
-   training day, with no episodes and no regimes.
+   The broken stick has Stage 2's form and grid. It is pooled over every training day, with no episodes and no
+   regimes. **Its slope is constrained to b ≥ 0** (Eleonora, 7 October 2026): at each grid point a negative
+   least-squares slope is floored at 0 before that point's fit is compared. A new function does this.
+   `demand_curve.fit_broken_stick` is not changed, so Stage 2's record still reproduces.
 2. **Read it at the forecast day.** For each row the gbm sees, training or scored, take the reserves ratio known at
    that row's decision instant, r, and compute p̂ = a + b · max(k − r, 0).
 3. **Convert it to basis points of SOFR − IORB:** implied = 100 · (p̂ − 1) · (IORB − ON RRP rate). Both rates are
@@ -44,9 +46,21 @@ At each refit k, with training cutoff c_k (the parent's fold grid):
    `on_rrp_rate` columns of the Phase 3 panel, never `scheduled.rate_in_force`, which is for realized outcomes only.
    Converting puts the feature in the outcome's units, so a corridor whose width the Fed moved (25, 10 and 15 bp) is
    carried into the feature rather than left for the gbm to learn.
-4. **The fallback, fixed now.** If `fit_broken_stick` raises `ValueError` on a refit's training rows, that refit uses
-   the flat curve: p̂ is the training rows' mean corridor position. Each such refit is counted and listed. The slope is
-   not constrained: a refit with b ≤ 0 is used as fitted, and it is listed.
+4. **No silent fallback** (Eleonora, 7 October 2026: "diagnose and remedy"). A refit's curve fails if the fit raises
+   `ValueError`, or if the constrained fit lands on b = 0, a flat curve that carries no reserves signal. A failed
+   curve is never replaced by a default. It stops the run, as set out under "The curve pass".
+
+### The curve pass, before anything is scored
+
+Before any gbm is fitted, the curve alone is fitted at every refit cutoff of the fold grid. No gbm runs and no
+forecast is scored. The pass reports each refit's bend, intercept and slope.
+
+- **If every refit's curve is fitted with b > 0,** the run goes ahead.
+- **If any refit fails,** the run stops there. The pull request diagnoses each failure: which refit, its training
+  window, how many of its days were on the scarce side, and why the fit failed. It proposes a remedy, which goes to
+  Eleonora. The remedy is written into this plan as a labelled amendment, merged by her, **before anything is scored**.
+- This means a remedy, if one is needed, is chosen after the curve fits are seen but before any comparison is.
+  The amendment says so.
 
 The curve's parameters are fixed within a refit block, as the gbm's are. No row's feature uses a curve fitted on any
 day after that block's cutoff.
@@ -108,7 +122,7 @@ Fixed before anything is built. The pull request that reports the run says plain
 
 **Reported, not judged:**
 
-- the curve at every refit (bend, intercept, slope), with the refits that fell back or had b ≤ 0;
+- the curve at every refit (bend, intercept, slope), from the curve pass;
 - the bend's path across refits beside Stage 2's two episode bends;
 - the Brier result;
 - the as-of persistence comparisons.
@@ -116,11 +130,12 @@ Fixed before anything is built. The pull request that reports the run says plain
 ## After the run
 
 - **The freeze.** Once Eleonora has reviewed the run, the declaration is frozen by checksum, as the parent freezes its
-  final test, whatever the verdict. The declaration covers the wrapper, the curve's form, grid and fallback, the
+  final test, whatever the verdict. The declaration covers the wrapper, the curve's form, grid and slope constraint, any remedy from the curve pass, the
   published fitter's arguments, the panel version, the parent pin and the package pins.
 - **Stage 5a, Phase 3's own daily log,** is written as its own directive after the freeze, on GitHub Actions (the place
-  recommended earlier). One point is put to Eleonora in that directive, not settled here: whether the log records both
-  arms' forecasts each day, so that the confirmatory pairing does not lean on the parent's live record.
+  recommended earlier). **It logs both arms' forecasts each business day,** with and without the feature, both from the
+  frozen declaration (Eleonora, 7 October 2026). The confirmatory pairing then rests on Phase 3's own log, not on the
+  parent's live record.
 - **Scoring dates** are unchanged: 2027-04-01, then each 1 October. The confirmatory record counts only days logged
   after the freeze.
 
@@ -130,11 +145,14 @@ Each step is its own commit, with tests written first.
 
 1. The `ml` extra in `pyproject.toml`, pinned exactly with what the install resolves, and CI installing it. The
    transitive pins are recorded in `docs/decisions/dependencies.md`.
-2. The curve-implied feature (`src/repo_liquidity/curve_feature.py`): the fit on training rows, the read at the
-   forecast day, the conversion and the fallback. It gets the leakage tests with their mutations.
-3. The wrapper fitter and its declaration, and a test that the parent's guard refuses an undeclared read.
-4. The run script (`scripts/stage4_compare.py`), which first checks the reproduction in must-show 1, then scores.
-5. The record (`results/stage4/`, outside `docs/runs/`), with full provenance. It is not published until Eleonora says so.
+2. The curve-implied feature (`src/repo_liquidity/curve_feature.py`): the constrained fit on training rows, the read
+   at the forecast day and the conversion. A failed curve raises rather than falling back. It gets the leakage tests
+   with their mutations.
+3. The curve pass (`scripts/stage4_curve_pass.py`). It fits the curve at every refit cutoff and scores nothing. If any
+   refit fails, the work stops here for the diagnosis and Eleonora's remedy.
+4. The wrapper fitter and its declaration, and a test that the parent's guard refuses an undeclared read.
+5. The run script (`scripts/stage4_compare.py`), which first checks the reproduction in must-show 1, then scores.
+6. The record (`results/stage4/`, outside `docs/runs/`), with full provenance. It is not published until Eleonora says so.
 
 ## Not in Stage 4
 

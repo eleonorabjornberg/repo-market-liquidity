@@ -231,6 +231,12 @@ Stage 2's curve is the Stage 4 model. Eleonora ruled on 7 October 2026, taking t
 - one feature only, and the ml extra (numpy 2.4.6, scikit-learn 1.9.1) is approved;
 - the declaration is frozen and Stage 5a's log starts after the development run, whatever its verdict.
 
+On review of the plan (7 October 2026) she added:
+- the curve's slope is constrained to b ≥ 0;
+- a curve that fails at any refit stops the run for diagnosis and a remedy she rules on before anything is scored,
+  with no silent fallback;
+- Stage 5a logs both arms' forecasts each day.
+
 The amendment to `evaluation.md` that names the replacement for the latent state is drafted in the same pull request.
 Where the text below says "latent state", the plan and that amendment decide once merged. The text below is the
 original design, kept for the record.

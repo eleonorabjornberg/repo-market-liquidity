@@ -79,5 +79,8 @@ The record above says "with and without the latent state" and "once the Stage 3 
 - **The freeze.** "Once the Stage 3 model is frozen" reads "once the Stage 4 declaration is frozen". The declaration is
   frozen by checksum after the development walk-forward has been scored, **whatever its verdict**. Phase 3's own daily
   log starts from that freeze (Stage 5a), so that the confirmatory record is as long as it can be by 2027-04-01.
+- **Both arms are logged.** Phase 3's daily log records, each business day before the outcome, the forecasts with and
+  without the feature, both from the frozen declaration (Eleonora, 7 October 2026). The confirmatory pairing rests on
+  that log alone.
 - **One feature only.** The Stage 1b indicators, the MBS flow and the take-up events are not part of this comparison.
   Any of them is a separate comparison, written and frozen before it is scored.
