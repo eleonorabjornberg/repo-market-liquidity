@@ -11,7 +11,7 @@ default: the run stops for a diagnosis and Eleonora's remedy.
 
 The panel's `iorb` is the realized rate, a constituent of the target, read at the anchor. The rate a forecast for T may
 know is in force on T is a scheduled input, `iorb_in_force`, declared in `metadata/sources_stage4.json` and added in
-memory from the parent's own table of implementation notes (`scheduled.load_iorb_rates`). The published panels do not
+memory from this repository's table of implementation notes, seeded from the parent's (`scheduled.load_iorb_rates`). The published panels do not
 change.
 
 Standard library only; the gbm is the parent's (`repo_model.ml`, the `ml` extra).

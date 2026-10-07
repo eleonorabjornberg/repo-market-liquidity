@@ -12,7 +12,7 @@
     ],
     "frequency": "event",
     "identities": [],
-    "limitation": "Not a built panel column. repo_liquidity.scheduled adds it in memory for Stage 4 (docs/stages/stage-4.md) from the parent's own dated table of implementation notes (tests/fixtures/snapshots/fed-iorb-announcements/iorb_changes.csv at the pin, read by repo_model.announced_iorb.load_announcements against its manifest), reading only notes announced at or before that row's decision instant. The panel's iorb column is the realized rate, the target's constituent, read at the anchor; this column is the rate a forecast for T may know is in force on T. Used only to convert the curve's corridor position into SOFR - IORB.",
+    "limitation": "Not a built panel column. repo_liquidity.scheduled adds it in memory for Stage 4 (docs/stages/stage-4.md) from this repository's table of implementation notes (tests/fixtures/snapshots/fomc_notes/iorb_rate.csv, checked against its manifest). The table was seeded from the parent's own table at the pin and matches it row for row (a test checks it); it is extended after each FOMC by a reviewed pull request (Eleonora, 7 October 2026). Only notes announced at or before a row's decision instant are read. The panel's iorb column is the realized rate, the target's constituent, read at the anchor; this column is the rate a forecast for T may know is in force on T. Used only to convert the curve's corridor position into SOFR - IORB.",
     "provider": "Board of Governors of the Federal Reserve System",
     "release_lag": {
       "available_time": "23:59",

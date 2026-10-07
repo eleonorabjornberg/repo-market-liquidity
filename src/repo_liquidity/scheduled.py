@@ -22,6 +22,7 @@ NOTES = Path(__file__).resolve().parents[2] / "tests" / "fixtures" / "snapshots"
 SRF_TABLE = NOTES / "srf_rate.csv"
 CAPS_TABLE = NOTES / "runoff_caps.csv"
 ON_RRP_RATE_TABLE = NOTES / "on_rrp_rate.csv"
+IORB_RATE_TABLE = NOTES / "iorb_rate.csv"
 
 #: The facility's first operation (the FOMC established it on 28 July 2021): no rate before it.
 SRF_INCEPTION = date(2021, 7, 29)
@@ -123,14 +124,12 @@ IORB_COLUMN = "iorb_in_force"
 
 
 def load_iorb_rates() -> List[Publication]:
-    """The parent's own dated table of IORB (IOER) implementation notes, checked against its manifest."""
-    from repo_model import announced_iorb
+    """IORB (IOER before 2021-07-29) from this repository's table of implementation notes, checked against its manifest.
 
-    from repo_liquidity import parent_root
-
-    table = parent_root() / "tests" / "fixtures" / "snapshots" / "fed-iorb-announcements" / "iorb_changes.csv"
-    return [Publication(note.announced_at, note.effective, (note.rate_bps / 100.0,), (str(note.rate_bps),), "")
-            for note in announced_iorb.load_announcements(table)]
+    Seeded from the parent's table at the pin, which it matches row for row (a test checks it); extended after each
+    FOMC by a reviewed pull request (Eleonora, 7 October 2026).
+    """
+    return _publications(IORB_RATE_TABLE, ("rate_percent",))
 
 
 def iorb_in_force_values(dates: Sequence[date], *, decision_time: time, rows=None) -> List[Optional[float]]:
