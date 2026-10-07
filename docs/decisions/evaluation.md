@@ -84,3 +84,29 @@ The record above says "with and without the latent state" and "once the Stage 3 
   that log alone.
 - **One feature only.** The Stage 1b indicators, the MBS flow and the take-up events are not part of this comparison.
   Any of them is a separate comparison, written and frozen before it is scored.
+
+## Amendment: Phase 3 is judged by the parent's exit criterion (draft for Eleonora)
+
+**Status: a draft for Eleonora's review. It is in force only once she merges it.**
+
+Ruling (Eleonora, 7 October 2026), after Stage 4 (#15) showed that a curve-based input to the parent's forecast is,
+in substance, the parent's own model: "Let's use the parent exit criterion".
+
+- **Phase 3's verdict is the parent's exit criterion:** stable posterior intervals for aggregate deployable liquidity,
+  with a clear account of their sensitivity to how reserves are distributed across banks (parent `PLAN.md`, Phase 3).
+  Whether it is met is Eleonora's verdict, on the evidence `docs/stages/stage-6.md` fixes:
+  - which candidates are eligible;
+  - which one is chosen;
+  - the account of the distribution.
+- **The forecast comparison stays, reported only.** The CRPS comparison above (the published gbm with and without
+  Phase 3's addition), the frozen Stage 4 declaration and the Stage 5a log are unchanged. They are still scored on the
+  dates above, with the same pass rule and labels, but a "shown better" or "not shown" there no longer decides
+  Phase 3. Each Stage 6 candidate's forecast gain is reported beside its result, never deciding.
+- **The evidence rules are unchanged:**
+  - development is the as-of walk-forward to 2025-12-31;
+  - 2026 to date is not evidence;
+  - confirmatory evidence is only what Phase 3 logs before the outcome, from a frozen declaration.
+
+  For deployable liquidity, which has no outcome of its own, confirmatory evidence is the chosen model's frozen daily
+  estimate, logged before each day's spread and facility take-up are known, and judged against them on the scoring
+  dates above.

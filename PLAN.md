@@ -260,6 +260,12 @@ Under [`docs/decisions/evaluation.md`](docs/decisions/evaluation.md):
   declared features include every input the filter reads, so the parent's check that a fitter stays inside its
   declaration (`baseline._check_fitter_stayed_inside`) covers them.
 
+### Stage 6: a deployable-liquidity model (planned 7 October 2026)
+
+[`docs/stages/stage-6.md`](docs/stages/stage-6.md), in review: four candidates (the curve's bend, the latent buffer
+identified differently, bank groups, SLR headroom), judged by the parent's exit criterion, with the best chosen by a
+rule fixed before any fit. The evaluation amendment that makes the exit criterion Phase 3's verdict is drafted with it.
+
 ### Stage 5: confirmatory log and monitoring
 
 - **Stage 5a's directive** is [`docs/stages/stage-5a.md`](docs/stages/stage-5a.md), and the freeze it starts from is

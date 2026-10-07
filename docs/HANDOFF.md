@@ -19,6 +19,7 @@ directive, those win and this file is stale. Update it at the end of each sessio
 | 3c: Stage 3b's model, stability on the real-time buffer | Merged (#12): **not shown** (judged once). Stage 2's curve becomes the Stage 4 model | `docs/stages/stage-3c.md`, `scripts/stage3c_realtime.py`, `results/stage3c/realtime.json` |
 | 4: Stage 2's curve as one feature of the published gbm | Merged (#13 to #15): **not shown** (+0.0038 bp, 90% [−0.0070, +0.0146]). Freeze in review | `docs/stages/stage-4.md`, `results/stage4/` |
 | 5a: Phase 3's own daily log | **Built, in review; schedule off.** Replay held (every gap 0); guards built with mutations. Waits on: Eleonora's merge, the `live-log` ruleset, five dry runs she checks, then the one-line schedule PR. The 28 October FOMC needs a rate-table PR | `docs/stages/stage-5a.md`, `src/repo_liquidity/live.py`, `scripts/stage5a_log.py`, `.github/workflows/live-log.yml`, `results/stage5a/replay.json` |
+| 6: a deployable-liquidity model | **Plan in review** (rulings of 7 October 2026). A and B buildable now; C needs the H.8 group inputs; D waits on Nicholas's question 16 (issue #1) | `docs/stages/stage-6.md`, draft amendment in `docs/decisions/evaluation.md` |
 
 ## Stage 2, in one paragraph
 
