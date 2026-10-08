@@ -155,19 +155,29 @@ def _checkpoint_path():
 
 
 def _load_checkpoint(commit):
-    """Refits already fitted, from the checkpoint; refused if it was written by other code.
+    """Refits already fitted, from the checkpoint; refused if it was written by code that decides a figure differently.
+
+    The test is the publish rule's (`docs/decisions/publish-rule.md`): nothing under `src/`, `metadata/` or
+    `tests/fixtures/` changed between the commit that wrote an entry and `commit`.
 
     Raises:
-        ValueError: if the checkpoint names another commit.
+        ValueError: if such a path changed.
     """
+    import subprocess
+
     path = _checkpoint_path()
     if not path.exists():
         return {}
-    done = {}
+    done, checked = {}, set()
     for line in path.read_text(encoding="utf-8").splitlines():
         entry = json.loads(line)
-        if entry["commit"] != commit:
-            raise ValueError(f"{path} was written at {entry['commit']}, not {commit}; delete it to start again")
+        if entry["commit"] not in checked:
+            changed = subprocess.run(["git", "diff", "--name-only", entry["commit"], commit, "--", "src", "metadata",
+                                      "tests/fixtures"], cwd=ROOT, capture_output=True, text=True, check=True).stdout
+            if changed.strip():
+                raise ValueError(f"{path} was written at {entry['commit']}, and {changed.split()} changed since; "
+                                 f"delete it to start again")
+            checked.add(entry["commit"])
         done[entry["cutoff"]] = entry
     return done
 
