@@ -67,7 +67,7 @@ def _served(cutoffs, k, n):
 def _score(path, labels):
     """The deciding score, and the 2021-on split, on served days with a declared label."""
     def area(first):
-        pairs = [(entry["deployable"], int(labels[day])) for day, entry in path.items()
+        pairs = [(entry["deployable"], int(labels[date.fromisoformat(day)])) for day, entry in path.items()
                  if date.fromisoformat(day) >= first and labels.get(date.fromisoformat(day)) is not None]
         return {"auc": deployable.auc([p for p, _ in pairs], [y for _, y in pairs]),
                 "days": len(pairs), "events": sum(y for _, y in pairs)}
