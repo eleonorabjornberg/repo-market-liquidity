@@ -150,32 +150,81 @@ def run_a():
                          "upper": e.upper, "days": e.days, "scarce_days": e.scarce_days} for c, e in estimates]})
 
 
+def _checkpoint_path():
+    return RESULTS / "b_checkpoint.jsonl"
+
+
+def _load_checkpoint(commit):
+    """Refits already fitted, from the checkpoint; refused if it was written by other code.
+
+    Raises:
+        ValueError: if the checkpoint names another commit.
+    """
+    path = _checkpoint_path()
+    if not path.exists():
+        return {}
+    done = {}
+    for line in path.read_text(encoding="utf-8").splitlines():
+        entry = json.loads(line)
+        if entry["commit"] != commit:
+            raise ValueError(f"{path} was written at {entry['commit']}, not {commit}; delete it to start again")
+        done[entry["cutoff"]] = entry
+    return done
+
+
+def _fit_from(entry, key):
+    if entry[key] is None:
+        return None
+    raw = entry[key]
+    return deployable.FitB(tuple(raw["params"]), raw["loglike"], raw["converged"], date.fromisoformat(entry["cutoff"]),
+                           tuple(date.fromisoformat(d) for d in raw["jump_days"]))
+
+
+def _fit_to(fit):
+    return None if fit is None else {"params": list(fit.params), "loglike": fit.loglike, "converged": fit.converged,
+                                     "jump_days": [d.isoformat() for d in fit.jump_days]}
+
+
 def run_b(pool):
     setup = _setup()
-    _p, s3b, rows, _m, anchor, stage2_sha, observations, days, cutoffs, _labels = setup
+    pass_module, s3b, rows, manifest, anchor, stage2_sha, observations, days, cutoffs, _labels = setup
+    commit = pass_module.provenance(manifest)["commit"]
+    if pass_module.provenance(manifest)["tree_modified"]:
+        raise ValueError("B's checkpoint is written only from a clean tree")
+    done = _load_checkpoint(commit)
     reforms = latent.jump_days(observations, s3b.REFORMS)
     refits, path, gaps = [], {}, {}
     previous = {"reform": None, "break": None}
     for k, index in enumerate(cutoffs):
         cutoff = days[index]
-        seen = observations[: index + 1]
-        reform_days = [d for d in reforms if d <= cutoff]
-        fit_reform = deployable.fit_best_b(seen, anchor=anchor, jump_days=reform_days, cutoff=cutoff,
-                                           previous=previous["reform"], mapper=pool.map)
+        entry = done.get(cutoff.isoformat())
+        if entry is None:
+            seen = observations[: index + 1]
+            reform_days = [d for d in reforms if d <= cutoff]
+            fit_reform = deployable.fit_best_b(seen, anchor=anchor, jump_days=reform_days, cutoff=cutoff,
+                                               previous=previous["reform"], mapper=pool.map)
+            candidates = [(when, latent.jump_days(observations, [when])) for when in deployable.break_grid(cutoff)]
+            candidates = [(when, [d for d in jd if d <= cutoff]) for when, jd in candidates]
+            candidates = [(when, jd) for when, jd in candidates if jd]
+            fit_break, break_when = None, None
+            if candidates:
+                data_start = deployable.start_grid_b(seen, anchor)[:1]
+                jobs = [(list(seen), dict(anchor=anchor, jump_days=jd, cutoff=cutoff, start=data_start[0][1]))
+                        for _when, jd in candidates]
+                profile = list(pool.map(deployable._fit_b_job, jobs))
+                best = max(range(len(profile)), key=lambda i: profile[i].loglike)
+                break_when, break_days = candidates[best]
+                fit_break = deployable.fit_best_b(seen, anchor=anchor, jump_days=break_days, cutoff=cutoff,
+                                                  previous=previous["break"], mapper=pool.map)
+            entry = {"commit": commit, "cutoff": cutoff.isoformat(), "reform": _fit_to(fit_reform),
+                     "break": _fit_to(fit_break), "break_when": None if break_when is None else break_when.isoformat()}
+            RESULTS.mkdir(parents=True, exist_ok=True)
+            with _checkpoint_path().open("a", encoding="utf-8") as handle:
+                handle.write(json.dumps(entry) + "\n")
+        fit_reform, fit_break = _fit_from(entry, "reform"), _fit_from(entry, "break")
+        break_when = None if entry["break_when"] is None else date.fromisoformat(entry["break_when"])
         previous["reform"] = fit_reform.params
-        candidates = [(when, latent.jump_days(observations, [when])) for when in deployable.break_grid(cutoff)]
-        candidates = [(when, [d for d in jd if d <= cutoff]) for when, jd in candidates]
-        candidates = [(when, jd) for when, jd in candidates if jd]
-        fit_break, break_when = None, None
-        if candidates:
-            data_start = deployable.start_grid_b(seen, anchor)[:1]
-            jobs = [(list(seen), dict(anchor=anchor, jump_days=jd, cutoff=cutoff, start=data_start[0][1]))
-                    for _when, jd in candidates]
-            profile = list(pool.map(deployable._fit_b_job, jobs))
-            best = max(range(len(profile)), key=lambda i: profile[i].loglike)
-            break_when, break_days = candidates[best]
-            fit_break = deployable.fit_best_b(seen, anchor=anchor, jump_days=break_days, cutoff=cutoff,
-                                              previous=previous["break"], mapper=pool.map)
+        if fit_break is not None:
             previous["break"] = fit_break.params
         chosen = fit_reform if fit_break is None or fit_break.loglike <= fit_reform.loglike else fit_break
         kind = "reform dates" if chosen is fit_reform else f"one break at {break_when}"
@@ -183,10 +232,13 @@ def run_b(pool):
                        "loglike_reform": fit_reform.loglike,
                        "loglike_break": None if fit_break is None else fit_break.loglike,
                        "break_when": break_when, "converged": chosen.converged})
+        print(f"B refit {k + 1}/{len(cutoffs)} {cutoff} {kind} converged={chosen.converged}", flush=True)
+    for k, index in enumerate(cutoffs):
+        cutoff, chosen, kind = refits[k]["cutoff"], refits[k]["fit"], refits[k]["kind"]
         served = _served(cutoffs, k, len(observations))
         end = served[-1] if len(served) else index
         horizon = observations[: end + 1]
-        jumps_now = [d for d in chosen.jump_days] + [d for d in reforms if d > cutoff and kind == "reform dates"]
+        jumps_now = list(chosen.jump_days) + ([d for d in reforms if d > cutoff] if kind == "reform dates" else [])
         states = deployable.filter_path_b(horizon, chosen.params, anchor=anchor, jump_days=jumps_now)
         old = None
         if k > 0:
@@ -207,7 +259,6 @@ def run_b(pool):
                          "deployable_upper": x - lower_b}
             if old is not None:
                 gaps[day] = abs(state.mean - old[i - 2].mean)
-        print(f"B refit {k + 1}/{len(cutoffs)} {cutoff} {kind} converged={chosen.converged}", flush=True)
     _record("b", ("The latent buffer: Stage 3b's filter with drift held at 0, jumps only at the reform dates or at "
                   "one break (the better likelihood), and the gap TGCR - ON RRP rate as a third head."),
             {"reforms": [d.isoformat() for d in s3b.REFORMS],
