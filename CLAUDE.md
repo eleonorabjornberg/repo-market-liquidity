@@ -9,8 +9,7 @@ they disagree, the parent's `docs/decisions/` and this repository's `docs/decisi
 ## How work happens
 
 - One session, one branch, one pull request. Never push to `main`.
-- **Staged work (Eleonora, 5 October 2026).** One stage at a time, each written only after the previous stage was
-  reviewed. **Every stage's pull request is reviewed and merged by Eleonora.** Delegated review does not merge here.
+Queued pull requests here are reviewed and merged by the "Directive loop" routine (its review part), under "Delegated review" in repo-market-model's docs/decisions/workflow.md. Except: a stage verdict, a registration, a decision record, a published record and any change to this file are reviewed and merged by 
 - Each stage's pull request states what the stage had to show and whether it showed it.
 - Judgement calls (a threshold, a data meaning, a published figure, a package) are hers; data meaning is Nicholas
   Beroud's under the parent's `PLAN.md`. Do not settle them in code.
