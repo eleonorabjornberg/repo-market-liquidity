@@ -133,3 +133,46 @@ Every step is reviewed by Eleonora before the next starts.
 - No 2026 data.
 - No publishing.
 - No candidate fitted before this plan and the evaluation amendment are merged.
+
+## Results so far: A and B (8 October 2026)
+
+Built and scored under this plan, development evidence only, to 2025-12-31. Records: `results/stage6/a.json`,
+`results/stage6/b.json` (with `b_checkpoint.jsonl`, each refit's fits). Nothing is published.
+
+| | A, the curve's bend | B, the latent buffer re-identified |
+|---|---|---|
+| 1. Stable (every gap under 0.5 points) | **Held**: every gap 0 | **Failed**: 34 days at or over; worst 4.0 points, 2025-12-02 |
+| 2. Intervals (median width under 3 points) | **Held**: 2.7 points | **Held**: 1.8 points |
+| 3. Account of the distribution | Not computed: needs the H.8 group inputs | Not computed: needs the H.8 group inputs |
+| Eligible | **Pending** (rule 3) | **No** |
+| Score, ROC area from 2019-09-17 (99 events) | 0.631 | 0.635 |
+| Reported only: from 2021 (31 events) | 0.961 | 0.961 |
+
+**A: what happened.**
+- **The second episode never counts in real time.** 2025 has 77 days below 13% in all, most of them in the fourth
+  quarter, and fewer than 60 by the last refit (2025-12-02).
+- **So A's bend is the first episode's (9.2%) at every refit.** That makes it perfectly stable, with Stage 2's
+  interval width.
+- **The break is not identified,** as the record says: with only the two episodes' days, every date between them
+  splits the data the same way.
+- **A's real-time deployable liquidity is the reserves ratio minus a constant.** Its score is therefore exactly the
+  plain reserves ratio's: until its bend moves, A adds nothing to reserves.
+
+**B: what happened.**
+- **The fits:** 42 refits kept the reform dates and 27 chose one break. Only 8 of 69 refits reported convergence.
+- **The buffer sits near 8.8% until the last refit,** which learns the 2025 shift and moves it to 12.3%. That is the
+  same shift of about 3.5 to 4 points that Stage 2 and Stage 3b found. The jump is the 4.0-point failure.
+- **Its score is A's to within 0.004,** for the same reason: a near-constant buffer ranks days as reserves do.
+
+**What this says, for Eleonora's reading (no rule is changed here):**
+- **Any model that learns the 2025 shift in real time fails the stability bar** on the refit where it learns it. The
+  shift is about 4 points and the bar is 0.5. A avoids the failure only because, within the window, it never learns
+  the shift.
+- **The stress score cannot yet tell a buffer model from the reserves ratio itself.** Both candidates' buffers are
+  nearly flat through the events. The candidates that could differ are C and D, whose buffers move with observed data:
+  bank groups and leverage headroom.
+
+**Next, under the plan's order:**
+1. **The H.8 group inputs,** which A's eligibility (rule 3) and candidate C both need.
+2. **Candidate C.**
+3. **Candidate D,** after Nicholas answers question 16.
