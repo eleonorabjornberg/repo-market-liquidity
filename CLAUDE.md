@@ -13,6 +13,7 @@ Delegated review (Eleonora, 12 October 2026, repo-market-model#643, T2). Queued 
 - Each stage's pull request states what the stage had to show and whether it showed it.
 - Judgement calls (a threshold, a data meaning, a published figure, a package) are hers; data meaning is Nicholas
   Beroud's under the parent's `PLAN.md`. Do not settle them in code.
+  •	Step by step (Eleonora, 5 October 2026). One step of a hypothesis at a time, each written only after the previous one was reviewed.
 
 ## The science rules
 
