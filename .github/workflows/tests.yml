@@ -1,7 +1,9 @@
 name: tests
 
 on:
+  # `edited` re-runs only the research-log check when a pull request's body changes; the other jobs skip it.
   pull_request:
+    types: [opened, synchronize, reopened, edited]
   push:
     branches: [main]
 
@@ -10,6 +12,7 @@ permissions:
 
 jobs:
   unit:
+    if: github.event.action != 'edited'
     runs-on: ubuntu-latest
     steps:
       - name: Check out
@@ -34,11 +37,26 @@ jobs:
       - name: Test
         run: PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -B -m unittest discover -s tests -v
 
+  # L4 (#28; #20, second comment): a pull request that adds or changes results/, docs/stages/, a snapshot or a
+  # decision record carries one fenced research-log entry in its body. The body is read from the event payload; the
+  # changed paths are the merge commit against its first parent, so the checkout fetches two commits.
+  research-log:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        run: |
+          git init -q . && git remote add origin "https://github.com/${GITHUB_REPOSITORY}"
+          git fetch -q --depth 2 origin "${GITHUB_SHA}" && git checkout -q FETCH_HEAD
+      - name: Check the research-log entry
+        run: python3 -B scripts/check_log_entry.py --event "$GITHUB_EVENT_PATH" --repo "$GITHUB_REPOSITORY"
+
   # L0 (#21, option (a)): the development records of Stages 1 to 6 were made at an earlier parent pin, with modules
   # since deleted in favour of the parent's (docs/decisions/deleted-duplicates.md). They are verified at the commit
   # and pin they were made from: the record commit's own full suite, after checking its record files are the bytes
   # tracked here (src/repo_liquidity/records.py). The unit job checks only that those bytes are unchanged.
   records:
+    if: github.event.action != 'edited'
     runs-on: ubuntu-latest
     steps:
       - name: Check out
