@@ -1,0 +1,7 @@
+{
+  "series": "WRESBAL",
+  "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=WRESBAL&cosd=2017-01-01&coed=2025-12-31",
+  "retrieved_at": "2026-10-12T20:19:15Z",
+  "sha256": "793110897c84848b495f772499499b9ab3ce78e9c060d8d7fc216bf8a79dd967",
+  "note": "FRED latest vintage, cut at 2025-12-31 (pre-2026 only, per the lockbox). Descriptive and for scenario sizing; not point-in-time."
+}

@@ -1,0 +1,7 @@
+{
+  "series": "RRPONTSYD",
+  "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=RRPONTSYD&cosd=2017-01-01&coed=2025-12-31",
+  "retrieved_at": "2026-10-12T20:19:16Z",
+  "sha256": "7140218585fa7075bf0d200b7354d537875bd330c130076fbe57ef1ea0a735ab",
+  "note": "FRED latest vintage, cut at 2025-12-31 (pre-2026 only, per the lockbox). Descriptive and for scenario sizing; not point-in-time."
+}
