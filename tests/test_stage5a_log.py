@@ -1,6 +1,11 @@
 """Stage 5a: the daily log runner's refusals (`scripts/stage5a_log.py`, `docs/stages/stage-5a.md`).
 
 Every refusal is raised before anything is fetched or fitted, so these tests run in seconds.
+
+Stage 5a was retired on 12 October 2026 before it started (repo-market-model#643, S3). The Stage 4 freeze it forecasts
+with is a record of the parent pin it was made at, and hashes this repository's IORB table, deleted that day. So at
+head every run is refused at the checksum; the checks that the pinned checksum is the freeze's and that a dry run
+passes run at the record commit (`scripts/verify_records.py`, L0 #21, option (a)).
 """
 
 import argparse
@@ -33,9 +38,6 @@ class RunnerRefusalTests(unittest.TestCase):
                   "workflow_run": None}
         values.update(extra)
         return argparse.Namespace(**values)
-
-    def test_the_pinned_checksum_is_the_freeze_records(self):
-        self.assertEqual(self.log.pinned_checksum(), self.log._freeze().checksum())
 
     def test_saved_snapshots_are_for_dry_runs_only(self):
         with self.assertRaises(ValueError):
@@ -81,12 +83,14 @@ class RunnerRefusalTests(unittest.TestCase):
             self.log.refuse(date(2026, 10, 8) if date.today() != date(2026, 10, 8) else date(2026, 10, 9),
                             Path(tempfile.mkdtemp()), dry_run=False, module=self.parent)
 
-    def test_a_dry_run_passes_the_refusals(self):
+    def test_since_the_retirement_a_dry_run_is_refused_at_the_checksum(self):
         from repo_liquidity import curve_feature
+        from repo_liquidity.records import FREEZE_CHECKSUM
 
-        with curve_feature.stage4_declaration():
-            decision = self.log.refuse(date(2026, 10, 8), Path(tempfile.mkdtemp()), dry_run=True, module=self.parent)
-        self.assertEqual(decision.isoformat(), "2026-10-08T16:00:00")
+        self.assertEqual(self.log.pinned_checksum(), FREEZE_CHECKSUM)
+        with curve_feature.stage4_declaration(), self.assertRaises(ValueError) as caught:
+            self.log.refuse(date(2026, 10, 8), Path(tempfile.mkdtemp()), dry_run=True, module=self.parent)
+        self.assertIn("verify_records.py", str(caught.exception))
 
 
 if __name__ == "__main__":

@@ -1,5 +1,22 @@
 # Handoff: where Phase 3 stands
 
+## After the split (12 October 2026, L0, #21)
+
+Where this file disagrees with `docs/decisions/`, `CLAUDE.md` or `PLAN.md`, those win and this file is stale.
+
+- **The aim is new** (`PLAN.md`, "Aim from 12 October 2026"): H7's estimator and H10. Forecasts are scored only in
+  repo-market-model (#640 there); the research plan waits on Eleonora's decision (#20).
+- **The pin** is repo-market-model `490f23d4`. The parent's panel digest did not move.
+- **Deleted in favour of the parent:** `fed_repo.py` and its fixtures, and `scheduled.py`'s IORB part
+  (`docs/decisions/deleted-duplicates.md`). How the parent's Fed repo take-up differs from ours is a note for Eleonora
+  and Nicholas in `docs/decisions/data-meaning.md`. `h41.py` and `scheduled.py`'s rates and caps stay, owned here.
+- **Stage 5a is retired;** its workflow is gone, `live.py` and `scripts/stage5a_log.py` stay as the record.
+- **The Stage 1 to 6 records** are verified at the commit and parent pin they were made from
+  (`scripts/verify_records.py`, CI's `records` job); at head they are checked byte-unchanged. Panel versions 2 and 3
+  are no longer built here.
+
+Everything below is the handoff as it stood before the split.
+
 **Written 6 October 2026, at the end of the session that built Stages 1a to 3; updated 7 October 2026 with the Stage 4 plan.** This file is a working note for the
 next session, not a decision record. Where it disagrees with `docs/decisions/`, `CLAUDE.md`, `PLAN.md` or a stage
 directive, those win and this file is stale. Update it at the end of each session.

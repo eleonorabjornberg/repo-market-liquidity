@@ -1,4 +1,10 @@
-"""Stage 2's record regenerates exactly from tracked fixtures, and states the decided rule's verdict."""
+"""Stage 2's record states the decided rule's verdict.
+
+It regenerated exactly from tracked fixtures at the parent pin it was made at. Since L0 (#21, option (a)) that check
+runs at the record commit and its pin (`scripts/verify_records.py`): at the new pin the record's stamp, and its split
+digest (the parent's evaluation splits gained a 2027 regime in repo-market-model dee4d2f4), are no longer the day's.
+Here the record is checked byte-unchanged (`tests/test_records.py`) and its verdict is re-derived.
+"""
 
 import importlib.util
 import json
@@ -18,12 +24,7 @@ def _script():
 class Stage2RecordTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.script = _script()
-        cls.computed = cls.script.compute()
-        cls.tracked = json.loads(cls.script.RECORD.read_text(encoding="utf-8"))
-
-    def test_the_record_regenerates_exactly(self):
-        self.assertEqual(json.dumps(self.computed, sort_keys=True), json.dumps(self.tracked, sort_keys=True))
+        cls.tracked = json.loads(_script().RECORD.read_text(encoding="utf-8"))
 
     def test_the_window_ends_before_2026(self):
         self.assertLessEqual(self.tracked["settings"]["window"][1], "2025-12-31")

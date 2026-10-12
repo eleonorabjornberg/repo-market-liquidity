@@ -1,5 +1,7 @@
 # Decision: the Stage 4 freeze
 
+**Retired 12 Oct 2026 (repo-market-model#643, S3); never started.**
+
 **Status: a draft for Eleonora's review. It is in force once she merges it.** From then, Stage 4's declaration does not
 change, and Phase 3's daily log (Stage 5a) forecasts with it alone.
 
