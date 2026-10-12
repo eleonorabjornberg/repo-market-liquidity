@@ -1,0 +1,7 @@
+{
+  "series": "TLAACBW027SBOG",
+  "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=TLAACBW027SBOG&cosd=2017-01-01&coed=2025-12-31",
+  "retrieved_at": "2026-10-12T20:27:12Z",
+  "sha256": "878c0906ac17977dbf9631d72bdb0c3176320cef6a8bcabaae9a890dcd4459fd",
+  "note": "H.8 total assets, all commercial banks, via FRED latest vintage, cut at 2025-12-31 (pre-2026, per the lockbox). Used only for the reserves-to-assets yardstick; not point-in-time."
+}
