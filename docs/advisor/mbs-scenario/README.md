@@ -24,9 +24,10 @@ deployable-liquidity model.
 | File | Stage | Status |
 |---|---|---|
 | [`01-facts.md`](01-facts.md) | 1, facts note: policy timeline, holdings, caps against realized runoff and mortgage rates | Done, for review |
-| [`02-sizing.md`](02-sizing.md) | 2, sizing: reserve paths for S0–S3, the double hit, the hand-off to H7 | Draft, with two questions |
-| [`compute.py`](compute.py) | Generates both notes from tracked data; `--check` fails if either is stale | |
-| [`data/`](data) | Pre-2026 FRED snapshots (mortgage rate, reserves, ON RRP), each with a SHA-256 manifest | |
+| [`02-sizing.md`](02-sizing.md) | 2, sizing: S0–S3 against two yardsticks (reserves level and reserves-to-assets), with and without the Fed's reserve-management purchases; the double hit | Complete, for review; two proposals to confirm |
+| [`scenarios.csv`](scenarios.csv) | Hand-off to Stage 3 (H7): every scenario as a monthly path, under both RMP assumptions | Generated |
+| [`compute.py`](compute.py) | Generates both notes and `scenarios.csv` from tracked data; `--check` fails if any is stale | |
+| [`data/`](data) | Pre-2026 FRED snapshots (mortgage rate, reserves, ON RRP, bank assets), each with a SHA-256 manifest | |
 
 ## How to reproduce
 
