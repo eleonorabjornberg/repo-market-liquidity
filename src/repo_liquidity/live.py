@@ -54,8 +54,11 @@ def load_fomc_calendar() -> List[Statement]:
 
 
 def table_coverage() -> Mapping[str, datetime]:
-    """The last announcement each rate table carries."""
-    return {scheduled.IORB_RATE_TABLE.name: scheduled.load_iorb_rates()[-1].announced_at,
+    """The last announcement each rate table carries: the parent's IORB notes (`curve_feature.iorb_table`) and this
+    repository's ON RRP rates."""
+    from repo_liquidity import curve_feature
+
+    return {curve_feature.iorb_table().name: curve_feature.load_iorb_notes()[-1].announced_at,
             scheduled.ON_RRP_RATE_TABLE.name: scheduled.load_on_rrp_rates()[-1].announced_at}
 
 
@@ -295,8 +298,10 @@ def require_forecast_reads(rows, last_real: int, module=None) -> None:
 
 def rate_table_state() -> dict:
     """Each rate table's digest and last announcement, for the record."""
+    from repo_liquidity import curve_feature
+
     out = {}
-    for path, rows in ((scheduled.IORB_RATE_TABLE, scheduled.load_iorb_rates()),
+    for path, rows in ((curve_feature.iorb_table(), curve_feature.load_iorb_notes()),
                        (scheduled.ON_RRP_RATE_TABLE, scheduled.load_on_rrp_rates())):
         out[path.name] = {"sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
                           "last_announced_at": rows[-1].announced_at.isoformat(),

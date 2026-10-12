@@ -1,5 +1,33 @@
 # Plan: Phase 3, latent reserves and deployable liquidity
 
+## Aim from 12 October 2026
+
+Eleonora's decision on [repo-market-model#643](https://github.com/eleonorabjornberg/repo-market-model/issues/643)
+(12 October 2026) splits the work by aim. This repository owns:
+
+- **H7's estimator:** deployable liquidity and the reserve-scarcity state, estimated as a slow variable. Its
+  measurement claims (H7m) are governed by `docs/decisions/measurement-protocol.md` once Eleonora merges it;
+- **H10:** attributing pressure episodes to their drivers.
+
+**Forecast claims are scored only in repo-market-model,** under its
+[#640](https://github.com/eleonorabjornberg/repo-market-model/issues/640). This repository scores no forecast itself
+(`docs/decisions/evaluation.md`, amendment of 12 October 2026).
+
+**This repository ingests its own inputs and publishes its estimates as snapshots named by their digest.** Where a
+module duplicated the parent's, it is deleted in favour of the parent's, read at the pin
+(`docs/decisions/deleted-duplicates.md`): "the liquidity repo ingests its own data, and duplicates are deleted in
+favour of this repo" ([her comment](https://github.com/eleonorabjornberg/repo-market-model/issues/643#issuecomment-6130179990)).
+
+**Status: restarted 12 Oct 2026; research plan pending Eleonora's decision
+([#20](https://github.com/eleonorabjornberg/repo-market-liquidity/issues/20)).** Stage 5a's daily log was retired
+before it started (repo-market-model#643, S3).
+
+## The development record: the plan of 5 to 12 October 2026, Stages 1 to 6
+
+Everything below is kept as written, as the record of the work it planned. It is not rewritten; where it differs from
+the aim above, the aim wins. Its results are verified at the commit and parent pin they were made from
+(`scripts/verify_records.py`).
+
 Moved from [repo-market-model#233](https://github.com/eleonorabjornberg/repo-market-model/issues/233), where Eleonora's
 rulings of 5 October 2026 were made. The parent's `PLAN.md` (Phase 3) is the origin of the goal and the exit criterion.
 Every statement about the parent below names a file and symbol at the pinned commit (`PARENT_COMMIT`).

@@ -1,5 +1,7 @@
 # Stage 5a directive: Phase 3's own daily log
 
+**Retired 12 Oct 2026 (repo-market-model#643, S3); never started.**
+
 **Written 7 October 2026, after Stage 4 (#15) was merged and before anything in Stage 5a is built.** Nothing below is
 built until Eleonora has merged this directive and the Stage 4 freeze that comes with it
 (`docs/decisions/stage-4-freeze.md`).

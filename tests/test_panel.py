@@ -1,11 +1,16 @@
-"""The Phase 3 measurement panel rebuilds to its manifest from tracked fixtures alone."""
+"""The Phase 3 measurement panel rebuilds to its manifest from tracked fixtures alone.
+
+Since L0 (#21, option (a)) the manifests are records made at `records.RECORD_PIN`. The checks that rebuild each
+version to its manifest, stamp included, and versions 2 and 3 entire, run at the record commit
+(`scripts/verify_records.py`). Here version 1 is rebuilt at the new pin, and versions 2 and 3 are refused.
+"""
 
 import hashlib
 import pathlib
 import tempfile
 import unittest
 
-from repo_liquidity import declaration, indicators, panel, scheduled
+from repo_liquidity import PARENT_COMMIT, declaration, panel, records, scheduled
 
 
 class PanelTests(unittest.TestCase):
@@ -20,9 +25,20 @@ class PanelTests(unittest.TestCase):
     def tearDownClass(cls):
         cls.tmp.cleanup()
 
-    def test_the_panel_rebuilds_to_its_tracked_manifest(self):
-        self.assertEqual(self.built, self.tracked)
+    def test_the_panel_rebuilds_to_the_recorded_bytes_at_the_new_pin(self):
         self.assertEqual(hashlib.sha256(self.path.read_bytes()).hexdigest(), self.tracked["sha256"])
+        self.assertEqual(self.built["sha256"], self.tracked["sha256"])
+        self.assertEqual(self.built["parent_commit"], PARENT_COMMIT)
+        self.assertEqual(self.tracked["parent_commit"], records.RECORD_PIN)
+
+    def test_versions_2_and_3_are_records_only(self):
+        """Recorded mutation (12 October 2026): in `panel.build`, `if version in RECORD_VERSIONS:` changed to
+        `if False and version in RECORD_VERSIONS:`. This test failed with AssertionError (ValueError not raised)."""
+        for version in panel.RECORD_VERSIONS:
+            with self.assertRaises(ValueError) as caught:
+                panel.build(pathlib.Path(self.tmp.name) / f"v{version}.csv", version=version)
+            self.assertIn("verify_records.py", str(caught.exception))
+        self.assertEqual(panel.RECORD_VERSIONS, (2, 3))
 
     def test_the_published_columns_are_the_parent_panel(self):
         from repo_liquidity import PANEL_SHA256
@@ -57,156 +73,6 @@ class PanelTests(unittest.TestCase):
     def test_the_manifest_lists_every_phase3_column(self):
         self.assertEqual(self.built["phase3_columns"],
                          list(declaration.BUILT_COLUMNS) + list(declaration.SCHEDULED_COLUMNS))
-
-
-
-class PanelV2Tests(unittest.TestCase):
-    """The Stage 1a correction's panel (`docs/stages/stage-1a-correction.md`)."""
-
-    @classmethod
-    def setUpClass(cls):
-        cls.tmp = tempfile.TemporaryDirectory()
-        cls.path = pathlib.Path(cls.tmp.name) / "phase3_panel_v2.csv"
-        cls.built = panel.build(cls.path, version=2)
-        cls.tracked = panel.load_manifest(2)
-        lines = cls.path.read_text().splitlines()
-        header = lines[0].split(",")
-        cls.rows = [dict(zip(header, line.split(","))) for line in lines[1:]]
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.tmp.cleanup()
-
-    def test_the_panel_rebuilds_to_its_tracked_manifest(self):
-        self.assertEqual(self.built, self.tracked)
-        self.assertEqual(hashlib.sha256(self.path.read_bytes()).hexdigest(), self.tracked["sha256"])
-
-    def test_version_1_is_unchanged_inside_version_2(self):
-        v1 = panel.load_manifest(1)
-        self.assertEqual(self.built["v1_sha256"], v1["sha256"])
-        self.assertEqual(self.built["parent_panel_sha256"], v1["parent_panel_sha256"])
-        v1_path = pathlib.Path(self.tmp.name) / "phase3_panel_v1.csv"
-        panel.build(v1_path, version=1)
-        lines = v1_path.read_text().splitlines()
-        header = lines[0].split(",")
-        v1_rows = [dict(zip(header, line.split(","))) for line in lines[1:]]
-        self.assertEqual([{column: row[column] for column in header} for row in self.rows], v1_rows)
-
-    def test_no_column_is_refused(self):
-        self.assertEqual(self.built["refusals"], {})
-
-    def test_the_mbs_change_covers_the_panel(self):
-        self.assertEqual(self.built["coverage"]["soma_mbs_weekly_change"]["missing_rows"], 0)
-
-    def test_repo_take_up_is_zero_then_temporary_then_standing(self):
-        for row in self.rows:
-            day = row["date"]
-            if day < "2019-09-17":
-                self.assertEqual((row["fed_repo_take_up"], row["fed_repo_facility"]), ("0", "0"), day)
-            elif day < scheduled.SRF_INCEPTION.isoformat():
-                self.assertIn(row["fed_repo_facility"], ("1", ""), day)
-                if row["temp_repo_take_up"] == "":
-                    self.assertEqual(row["fed_repo_take_up"], "", day)
-                else:
-                    # Question 14: overnight plus the term repos outstanding that day.
-                    expected = float(row["temp_repo_take_up"]) + float(row["temp_repo_term_outstanding"] or 0)
-                    self.assertAlmostEqual(float(row["fed_repo_take_up"]), expected, places=6, msg=day)
-            else:
-                self.assertEqual(row["fed_repo_facility"], "2", day)
-                self.assertEqual(row["fed_repo_take_up"], row["srf_take_up"], day)
-
-    def test_the_temporary_operations_stay_inside_their_window(self):
-        for row in self.rows:
-            if row["temp_repo_take_up"] != "":
-                self.assertTrue("2019-09-17" <= row["date"] <= "2021-07-28", row["date"])
-
-    def test_term_repos_outstanding_cover_every_weekday_of_the_window_and_no_other(self):
-        for row in self.rows:
-            inside = "2019-09-17" <= row["date"] <= "2021-07-28"
-            self.assertEqual(row["temp_repo_term_outstanding"] != "", inside, row["date"])
-
-    def test_the_repo_material_use_event_counts_each_days_operations(self):
-        for row in self.rows:
-            day = row["date"]
-            if day < "2019-09-17":
-                self.assertEqual(row["fed_repo_material_use"], "0", day)
-            elif row["srf_take_up"] != "":
-                self.assertEqual(row["fed_repo_material_use"], row["srf_material_use"], day)
-            elif row["temp_repo_take_up"] != "" or row["temp_repo_term_take_up"] != "":
-                accepted = float(row["temp_repo_take_up"] or 0) + float(row["temp_repo_term_take_up"] or 0)
-                self.assertEqual(row["fed_repo_material_use"], "1" if accepted >= 1.0 else "0", day)
-
-    def test_material_use_is_take_up_of_at_least_one_billion(self):
-        for row in self.rows:
-            if row["srf_take_up"] == "":
-                self.assertEqual(row["srf_material_use"], "", row["date"])
-            else:
-                self.assertEqual(row["srf_material_use"], "1" if float(row["srf_take_up"]) >= 1.0 else "0", row["date"])
-
-    def test_the_manifest_lists_every_phase3_column(self):
-        self.assertEqual(self.built["phase3_columns"],
-                         list(declaration.BUILT_COLUMNS_V2) + list(declaration.SCHEDULED_COLUMNS)
-                         + list(declaration.DERIVED_COLUMNS_V2))
-
-
-
-class PanelV3Tests(unittest.TestCase):
-    """Stage 1b's panel (`docs/stages/stage-1b.md`)."""
-
-    @classmethod
-    def setUpClass(cls):
-        cls.tmp = tempfile.TemporaryDirectory()
-        cls.path = pathlib.Path(cls.tmp.name) / "phase3_panel_v3.csv"
-        cls.built = panel.build(cls.path, version=3)
-        cls.tracked = panel.load_manifest(3)
-        lines = cls.path.read_text().splitlines()
-        header = lines[0].split(",")
-        cls.rows = [dict(zip(header, line.split(","))) for line in lines[1:]]
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.tmp.cleanup()
-
-    def test_the_panel_rebuilds_to_its_tracked_manifest(self):
-        self.assertEqual(self.built, self.tracked)
-        self.assertEqual(hashlib.sha256(self.path.read_bytes()).hexdigest(), self.tracked["sha256"])
-
-    def test_version_2_is_unchanged_inside_version_3(self):
-        self.assertEqual(self.built["v2_sha256"], panel.load_manifest(2)["sha256"])
-        v2_path = pathlib.Path(self.tmp.name) / "phase3_panel_v2.csv"
-        panel.build(v2_path, version=2)
-        lines = v2_path.read_text().splitlines()
-        header = lines[0].split(",")
-        v2_rows = [dict(zip(header, line.split(","))) for line in lines[1:]]
-        self.assertEqual([{column: row[column] for column in header} for row in self.rows], v2_rows)
-
-    def test_no_column_is_refused(self):
-        self.assertEqual(self.built["refusals"], {})
-
-    def test_every_indicator_is_in_the_panel_and_declared(self):
-        for column in indicators.COLUMNS:
-            self.assertIn(column, self.built["phase3_columns"])
-            self.assertIn(column, declaration.FIELDS)
-
-    def test_the_repo_clearing_break_is_declared_for_every_sofr_distribution_column(self):
-        breaks = self.built["measurement_breaks"]["2027-06-30"]
-        for column in ("sofr_p25", "sofr_p75", "sofr_p1", "sofr_p99", "sofr_p75_p25_bp", "sofr_p99_p1_bp",
-                       "sofr_p1_minus_bgcr_bp", "sofr_volume"):
-            self.assertIn(column, breaks)
-
-    def test_the_ceiling_distance_is_missing_exactly_before_the_facility(self):
-        for row in self.rows:
-            before = row["date"] < scheduled.SRF_INCEPTION.isoformat()
-            self.assertEqual(row["sofr_minus_srf_bp"] == "", before, row["date"])
-
-    def test_spreads_agree_with_their_inputs(self):
-        for row in self.rows:
-            if row["sofr"] and row["iorb"]:
-                self.assertAlmostEqual(float(row["sofr_minus_iorb_bp"]),
-                                       100 * (float(row["sofr"]) - float(row["iorb"])), places=6)
-            if row["sofr"] and row["effr"]:
-                self.assertAlmostEqual(float(row["sofr_minus_effr_bp"]),
-                                       100 * (float(row["sofr"]) - float(row["effr"])), places=6)
 
 
 if __name__ == "__main__":

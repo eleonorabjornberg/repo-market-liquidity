@@ -61,3 +61,37 @@ and its scenarios are his. The realized MBS change (answer 1) is the input it bu
     2025-12-11, which he has not addressed directly;
   - mandatory repo clearing becomes a declared measurement break for the dispersion head in the live filter.
 - **Stage 3b is not changed by these answers.** It already leaves ON RRP and facility take-up out of the state.
+
+## Note for Eleonora and Nicholas: the deleted `fed_repo` against the parent's `fed_liquidity` (12 October 2026)
+
+**Status: a note, flagged for Eleonora and Nicholas. It decides nothing.** Written by L0 (#21), which deleted this
+repository's `fed_repo.py` in favour of repo-market-model's `repo_model.fed_liquidity`
+(`docs/decisions/deleted-duplicates.md`). Compared at repo-market-model `490f23d4`, over panel version 3's 2,104 dates
+(2018-04-03 to 2026-09-03), `fed_repo`'s columns against `fed_liquidity.assemble`'s on the same rows. The answers
+above are unchanged; where the parent's module does not carry one of them, the work that needs it must ask for it.
+
+- **Answer 5, the structural zero before 2019-09-17: not carried.** The parent reads every date with no operation as
+  zero take-up, with no facility marker, and it counts six small operations before 2019-09-17 as take-up: 2018-05-09,
+  2018-05-16, 2018-11-15, 2018-12-04, 2019-05-08 and 2019-05-13, $64m to $66m each. They are not marked as small-value
+  exercises in the Desk's notes. Answer 14 keeps "the two May 2019 tests" out; `fed_repo` kept everything before
+  2019-09-17 at zero. None of the six reaches $1bn, so the material-use event is not affected.
+- **Answer 5, the facility marker: not carried.** `fed_repo_facility` (none, temporary operations, standing facility)
+  has no counterpart.
+- **Answer 14, term repos outstanding: not carried.** The parent sums each operation's accepted amount on its operation
+  date, overnight and term alike (`repo_accepted`), and emits no settlement or maturity date, so the amount outstanding
+  cannot be derived from its fields. Take-up differs from `fed_repo_take_up` on 192 of the 466 dates from 2019-09-17
+  to 2021-07-28 (for example 2019-09-25: 105.0 outstanding against 75.0 accepted that day).
+- **Answer 14, the material-use event: the parent's amounts give the same events, but it has no event column.**
+  `repo_accepted` counts each operation on its operation date, overnight and term alike, as answer 14 asks, and
+  `fed_repo_accepted >= 1.0` gives `fed_repo_material_use` on every date through 2025-12-31: 190 events from 2019-09-17
+  to 2021-07-28, 31 from 2021-07-29 to 2025-12-31, none before.
+- **Days with no operation inside 2019-09-17 to 2021-07-28.** `fed_repo` left them missing (2020-04-09, 2020-07-02,
+  2021-04-01); the parent reads them as zero.
+- **Coverage.** The parent's snapshots end on 2025-12-31, and `fed_liquidity.assemble` reads any later row up to its
+  `end` as zero take-up. The panel's standing-facility take-up from the parent's `nyfed_srf` ran to 2026-09-03; on
+  2026-01-02, 2026-02-17, 2026-03-02 and 2026-04-15 it shows take-up of $9bn to $31bn that the parent's module, run
+  past its snapshots, reads as zero. A caller must stop `end` at the snapshots' last date.
+- **Smaller differences, not investigated:** two dates in 2021 to 2025 where the parent's amount and `nyfed_srf`'s
+  differ by less than $0.1bn (2023-03-08: 0.0 against 0.056; 2024-09-24: 0.002 against 0.059).
+- **Availability.** The parent reads a date at the later of 16:00 New York on the next business day and the Desk's
+  recorded write time; `fed_repo` read it at 16:00 on the next weekday. The parent's reading is never earlier.

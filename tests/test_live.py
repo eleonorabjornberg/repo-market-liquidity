@@ -6,7 +6,7 @@ import re
 import unittest
 from datetime import date, datetime
 
-from repo_liquidity import live, scheduled
+from repo_liquidity import curve_feature, live
 
 
 class FomcCalendarTests(unittest.TestCase):
@@ -39,18 +39,18 @@ class FomcGuardTests(unittest.TestCase):
         Recorded mutation (7 October 2026): in `live.require_tables_cover`, the filter `if last < statement.instant`
         changed to `if False`. This test failed with AssertionError (ValueError not raised).
         """
-        tables = {"iorb_rate.csv": datetime(2026, 9, 16, 14, 0), "on_rrp_rate.csv": datetime(2026, 9, 16, 14, 0)}
+        tables = {"iorb_changes.csv": datetime(2026, 9, 16, 14, 0), "on_rrp_rate.csv": datetime(2026, 9, 16, 14, 0)}
         with self.assertRaises(ValueError) as caught:
             live.require_tables_cover(datetime(2026, 10, 28, 16, 0), tables, statements=self.STATEMENTS)
         self.assertIn("October 27-28, 2026", str(caught.exception))
-        self.assertIn("iorb_rate.csv", str(caught.exception))
+        self.assertIn("iorb_changes.csv", str(caught.exception))
 
     def test_a_decision_before_the_statement_passes(self):
-        tables = {"iorb_rate.csv": datetime(2026, 9, 16, 14, 0), "on_rrp_rate.csv": datetime(2026, 9, 16, 14, 0)}
+        tables = {"iorb_changes.csv": datetime(2026, 9, 16, 14, 0), "on_rrp_rate.csv": datetime(2026, 9, 16, 14, 0)}
         live.require_tables_cover(datetime(2026, 10, 27, 16, 0), tables, statements=self.STATEMENTS)
 
     def test_one_table_behind_is_enough_to_refuse(self):
-        tables = {"iorb_rate.csv": datetime(2026, 10, 28, 14, 0), "on_rrp_rate.csv": datetime(2026, 9, 16, 14, 0)}
+        tables = {"iorb_changes.csv": datetime(2026, 10, 28, 14, 0), "on_rrp_rate.csv": datetime(2026, 9, 16, 14, 0)}
         with self.assertRaises(ValueError) as caught:
             live.require_tables_cover(datetime(2026, 10, 29, 16, 0), tables, statements=self.STATEMENTS)
         self.assertIn("on_rrp_rate.csv", str(caught.exception))
@@ -62,8 +62,8 @@ class FomcGuardTests(unittest.TestCase):
 
     def test_table_coverage_reads_both_tables(self):
         coverage = live.table_coverage()
-        self.assertEqual(set(coverage), {"iorb_rate.csv", "on_rrp_rate.csv"})
-        self.assertEqual(coverage["iorb_rate.csv"], scheduled.load_iorb_rates()[-1].announced_at)
+        self.assertEqual(set(coverage), {"iorb_changes.csv", "on_rrp_rate.csv"})
+        self.assertEqual(coverage["iorb_changes.csv"], curve_feature.load_iorb_notes()[-1].announced_at)
 
 
 class LoggableTests(unittest.TestCase):

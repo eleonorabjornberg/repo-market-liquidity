@@ -110,3 +110,19 @@ in substance, the parent's own model: "Let's use the parent exit criterion".
   For deployable liquidity, which has no outcome of its own, confirmatory evidence is the chosen model's frozen daily
   estimate, logged before each day's spread and facility take-up are known, and judged against them on the scoring
   dates above.
+
+## Amendment: repo-market-model's scoring protocol governs (Eleonora, 12 October 2026)
+
+**Status: a draft for Eleonora's review. It is in force once she merges it.**
+
+Ruling (Eleonora, 12 October 2026, on
+[repo-market-model#643](https://github.com/eleonorabjornberg/repo-market-model/issues/643#issuecomment-6127832946)):
+split the work by aim. This repository owns H7's estimator and H10; forecasts are scored in repo-market-model.
+
+- **[repo-market-model#640](https://github.com/eleonorabjornberg/repo-market-model/issues/640) governs every forecast
+  claim** made from this repository's work.
+- **This repository scores no forecast itself.**
+- **The sections above stand as the rule that Stages 2 to 6 were run under.** Their records are not re-scored, and are
+  verified at the commit and parent pin they were made from (`scripts/verify_records.py`).
+- **Measurement claims (H7m) are governed by `docs/decisions/measurement-protocol.md`** once Eleonora merges it
+  (drafted on [#20](https://github.com/eleonorabjornberg/repo-market-liquidity/issues/20)).

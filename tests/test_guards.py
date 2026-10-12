@@ -13,7 +13,7 @@ from datetime import time
 from repo_model.asof import InformationRule
 from repo_model.splits import LookAheadError, SplitError
 
-from repo_liquidity import declaration, fed_repo, h41, panel
+from repo_liquidity import declaration, h41, panel
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 EXTRACT = ROOT / "tests" / "fixtures" / "snapshots" / "h41" / "h41_treasury_first_print.csv"
@@ -57,50 +57,16 @@ class MbsDeclarationTests(unittest.TestCase):
         self.assertEqual(mbs, treasury)
 
 
-class TemporaryRepoDeclarationTests(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.tmp = tempfile.TemporaryDirectory()
-        path = pathlib.Path(cls.tmp.name) / "phase3_panel_v2.csv"
-        panel.build(path, version=2)
-        from repo_model.data import load_daily_panel
-
-        cls.dates = [row.date for row in load_daily_panel(path)]
-        operations, sha = fed_repo.load_snapshots()
-        cls.observations = [
-            obs for term, series in (("Overnight", fed_repo.SERIES), ("Term", fed_repo.TERM_SERIES))
-            for obs in fed_repo.observations(fed_repo.daily_take_up(operations, term=term), series=series,
-                                             source_sha=sha)]
-        cls.observations += fed_repo.observations(fed_repo.term_outstanding(operations),
-                                                  series=fed_repo.TERM_OUTSTANDING_SERIES, source_sha=sha)
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.tmp.cleanup()
-
-    def test_no_operation_is_public_before_its_declared_availability(self):
-        """Leakage guard: each day's results are read no earlier than the declaration allows.
-
-        Recorded mutation (6 October 2026): in `metadata/sources_phase3.json`, `nyfed_temp_repo.release_lag.days`
-        changed from 1 to 0. This test then fails with LookAheadError: temp_repo_take_up for 2019-09-17 is public at
-        2019-09-18 16:00, after its declared availability of 2019-09-17 16:00.
-        """
-        fed_repo.check_declared_lag(declaration.registry(), self.dates, self.observations)
-
-    def test_a_declaration_earlier_than_publication_is_refused(self):
-        registry = declaration.registry()
-        entry = dict(registry["nyfed_temp_repo"])
-        entry["release_lag"] = dict(entry["release_lag"], days=0)
-        with self.assertRaises(LookAheadError):
-            fed_repo.check_declared_lag({**registry, "nyfed_temp_repo": entry}, self.dates, self.observations)
-
-
 class EndToEndTests(unittest.TestCase):
+    """The guards read only the panel's dates and the declaration. The dates are the published panel's in every
+    version (`panel.build` refuses any other), so version 1 is built here: versions 2 and 3 are records since
+    12 October 2026, and this module ran on version 3 at the record commit (`scripts/verify_records.py`)."""
+
     @classmethod
     def setUpClass(cls):
         cls.tmp = tempfile.TemporaryDirectory()
-        cls.path = pathlib.Path(cls.tmp.name) / "phase3_panel_v3.csv"
-        cls.manifest = panel.build(cls.path, version=3)
+        cls.path = pathlib.Path(cls.tmp.name) / "phase3_panel.csv"
+        cls.manifest = panel.build(cls.path, version=1)
         from repo_model.data import load_daily_panel
 
         cls.rows = load_daily_panel(cls.path)

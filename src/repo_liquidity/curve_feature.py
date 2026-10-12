@@ -11,8 +11,9 @@ default: the run stops for a diagnosis and Eleonora's remedy.
 
 The panel's `iorb` is the realized rate, a constituent of the target, read at the anchor. The rate a forecast for T may
 know is in force on T is a scheduled input, `iorb_in_force`, declared in `metadata/sources_stage4.json` and added in
-memory from this repository's table of implementation notes, seeded from the parent's (`scheduled.load_iorb_rates`). The published panels do not
-change.
+memory from the parent's table of implementation notes (`repo_model.announced_iorb`), read at the pin. This repository's
+own copy of the table was deleted in favour of the parent's (Eleonora, 12 October 2026,
+`docs/decisions/deleted-duplicates.md`). The published panels do not change.
 
 Standard library only; the gbm is the parent's (`repo_model.ml`, the `ml` extra).
 """
@@ -46,7 +47,7 @@ PUBLISHED_FEATURES = ("reserve_balances", "sofr_p25", "sofr_p75", "sofr_volume",
                       "tbill_4w", "tga", "treasury_settlement")
 
 FEATURE = "curve_implied_spread_bp"
-IORB_COLUMN = scheduled.IORB_COLUMN
+IORB_COLUMN = "iorb_in_force"
 #: What the feature is computed from on a row: the reserves ratio's two parts and the corridor's two edges.
 CURVE_INPUTS = ("reserve_balances", "bank_total_assets", "on_rrp_rate", IORB_COLUMN)
 #: Everything the curve reads, for the parent's declaration check. The curve's labels are SOFR and IORB on training
@@ -108,8 +109,27 @@ def with_stage4_columns(observations):
     if clash:
         raise ValueError(f"{clash[0]} already carries {IORB_COLUMN}")
     dates = [row.date for row in observations]
-    values = scheduled.iorb_in_force_values(dates, decision_time=DECISION_TIME)
+    values = iorb_in_force_values(dates, decision_time=DECISION_TIME)
     return [DailyObservation(row.date, {**row.values, IORB_COLUMN: value}) for row, value in zip(observations, values)]
+
+
+def iorb_table() -> Path:
+    """The parent's table of IORB implementation notes, in the parent checkout at the pin."""
+    return parent_root() / "tests" / "fixtures" / "snapshots" / "fed-iorb-announcements" / "iorb_changes.csv"
+
+
+def load_iorb_notes():
+    """The parent's notes, checked against their manifest by `repo_model.announced_iorb`."""
+    from repo_model import announced_iorb
+
+    return announced_iorb.load_announcements(iorb_table())
+
+
+def iorb_in_force_values(dates: Sequence[date], *, decision_time: time, rows=None) -> List[Optional[float]]:
+    """The IORB in force on each row, in percent, read at its decision instant: the latest note announced by the
+    decision instant on the panel day before and effective on or before the row (`scheduled`'s rule)."""
+    rows = load_iorb_notes() if rows is None else rows
+    return [None if row is None else row.rate_bps / 100 for row in scheduled._values(dates, rows, decision_time)]
 
 
 def curve_rule(registry_: Optional[Mapping] = None, decision_time: time = DECISION_TIME):

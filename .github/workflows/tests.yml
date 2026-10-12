@@ -33,3 +33,19 @@ jobs:
           "$PY" -m venv .venv && .venv/bin/pip install -q -e ./parent && .venv/bin/pip install -q --no-deps -e . && .venv/bin/pip install -q "statsmodels==0.14.6" "numpy==2.4.6" "scipy==1.17.1" "pandas==3.0.6" "patsy==1.0.3" "python-dateutil==2.9.0.post0" "six==1.17.0" "packaging==26.3" "scikit-learn==1.9.1" "joblib==1.6.0" "threadpoolctl==3.7.0" "narwhals==2.26.0"
       - name: Test
         run: PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -B -m unittest discover -s tests -v
+
+  # L0 (#21, option (a)): the development records of Stages 1 to 6 were made at an earlier parent pin, with modules
+  # since deleted in favour of the parent's (docs/decisions/deleted-duplicates.md). They are verified at the commit
+  # and pin they were made from: the record commit's own full suite, after checking its record files are the bytes
+  # tracked here (src/repo_liquidity/records.py). The unit job checks only that those bytes are unchanged.
+  records:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        run: |
+          git init -q . && git remote add origin "https://github.com/${GITHUB_REPOSITORY}"
+          git fetch -q --depth 1 origin "${GITHUB_SHA}" && git checkout -q FETCH_HEAD
+      - name: Verify the records at their commit and pin (Python 3.11 from the runner's tool cache)
+        run: |
+          PY=$(ls -d /opt/hostedtoolcache/Python/3.11*/x64/bin | tail -1)/python3
+          "$PY" -B scripts/verify_records.py --workdir "$RUNNER_TEMP/records" --liquidity-url "https://github.com/${GITHUB_REPOSITORY}"

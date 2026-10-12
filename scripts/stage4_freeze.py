@@ -100,6 +100,10 @@ def rate_table_prefixes(repo: Path = REPO, rows: Dict[str, int] = None) -> Dict[
     rows = RATE_TABLE_ROWS if rows is None else rows
     out = {}
     for path in RATE_TABLES:
+        if not (repo / path).is_file():
+            raise ValueError(f"{path} was deleted on 12 October 2026 (docs/decisions/deleted-duplicates.md), so the "
+                             "Stage 4 declaration checksum cannot be computed here; the freeze is verified at the "
+                             "commit and parent pin it was made from (scripts/verify_records.py)")
         lines = (repo / path).read_text(encoding="utf-8").splitlines(keepends=True)
         count = rows[path]
         if count > len(lines) - 1:
