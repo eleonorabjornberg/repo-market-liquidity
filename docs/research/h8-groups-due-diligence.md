@@ -131,6 +131,17 @@ FFIEC 002 for foreign branches), with weekly H.8 moves interpolating between qua
   difference between reserves and an estimate of commercial banks' reserves that only the anchor supplies). Choosing
   one would be settling a data-meaning question in code. **It is queued with the anchor.**
 
+## 8. What a page digest is
+
+The `release_sha256` of each row is the SHA-256 of the bytes fetched, as the parent's `frb_h8` extract records it. It
+**identifies the fetch behind a row, not the release's content**, the finding of #40 for the H.4.1 pages: the archive
+injects per-request tokens. Two fetches of `releases/h8/20250103/` seconds apart are the same length (672,021 bytes) and
+differ in 25 bytes, the `data-injected="worker-…"` value on the stylesheet link and the challenge script at the end of
+the page. The values do not differ: the parser reads only the table cells, and every week's three total-assets lines
+sum to the parent's separately fetched first print within 0.1. The remedy for #40 (hash the page without the injected
+elements, or hash the extracted lines) is hers to choose and applies here and to the parent's H.8 extract alike; nothing
+was changed for it.
+
 ## What was not checked
 
 - **Report and line references against the current form instructions** (Nicholas's caveat). This pull request declares
