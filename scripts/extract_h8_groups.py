@@ -37,7 +37,7 @@ from pathlib import Path
 from repo_model import ingest
 from repo_model.ingest import SnapshotArtifact, load_snapshot_manifest
 
-from repo_liquidity import h8
+from repo_liquidity import declaration, h8
 
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "tests/fixtures/snapshots/h8_groups"
@@ -163,7 +163,7 @@ def main(argv=None):
     parser.add_argument("--end", type=date.fromisoformat, default=date(2026, 9, 30))
     parser.add_argument("--check", action="store_true")
     args = parser.parse_args(argv)
-    declared = h8.overlay()[h8.SOURCE_ID]["release_lag"]["days"]
+    declared = declaration.overlay()[h8.SOURCE_ID]["release_lag"]["days"]
     files, summary = cut(args.raw_root, args.start, args.end, int(declared))
     if args.check:
         stale = [name for name, payload in files.items()

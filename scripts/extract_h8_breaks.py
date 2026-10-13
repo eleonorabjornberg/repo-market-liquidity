@@ -7,7 +7,7 @@
     PYTHONPATH=src python3 scripts/extract_h8_breaks.py --check
 
 The page is saved gzipped under `tests/fixtures/h8_notes/` (its SHA-256 is of the unzipped bytes). Every note from the
-extract's first week to 2026-09-03 becomes one dated event in `inputs/h8_groups/breaks.json`, with its text verbatim.
+extract's first week to 2026-09-03 becomes one dated event in `docs/research/h8-group-breaks.json`, with its text verbatim.
 `--check` re-cuts from the saved page and compares with the tracked record, writing nothing.
 """
 

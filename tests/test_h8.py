@@ -18,7 +18,7 @@ from datetime import date, time
 from repo_model.asof import StaleReadError
 from repo_model.splits import LookAheadError
 
-from repo_liquidity import h8
+from repo_liquidity import declaration, h8
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 PAGES = ROOT / "tests" / "fixtures" / "h8_pages"
@@ -207,21 +207,21 @@ class DeclarationTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.prints = h8.load_extract(EXTRACT)
-        cls.entry = h8.registry()[h8.SOURCE_ID]
+        cls.entry = declaration.registry()[h8.SOURCE_ID]
 
     def test_the_overlay_passes_the_parents_validators(self):
-        self.assertEqual(h8.validate_overlay(), [])
+        self.assertEqual(declaration.validate(), [])
 
     def test_the_declared_fields_are_the_six_group_lines(self):
         self.assertEqual(tuple(self.entry["fields"]), h8.FIELDS)
         self.assertEqual(set(self.entry["field_frequencies"].values()), {"weekly"})
         for field in h8.FIELDS:
-            self.assertEqual(h8.H8_FIELDS[field], ((h8.SOURCE_ID, field),))
+            self.assertEqual(declaration.FIELDS[field], ((h8.SOURCE_ID, field),))
 
     def test_no_release_is_published_after_its_declared_availability(self):
         """Leakage guard: the declared lag covers every release in the extract.
 
-        Recorded mutation (13 October 2026): in `inputs/h8_groups/declaration.json`, `frb_h8_groups.release_lag.days`
+        Recorded mutation (13 October 2026): in `declarations/h8_groups.json`, `frb_h8_groups.release_lag.days`
         changed from 12 to 8. This test then fails with LookAheadError: the week ending 2017-12-27 was released
         2018-01-05 16:15:00, after its declared availability 2018-01-04 16:15:00.
         """
@@ -236,7 +236,7 @@ class DeclarationTests(unittest.TestCase):
     def test_a_lag_longer_than_the_slowest_release_is_stale(self):
         """Staleness guard: the declared lag is the measured maximum and not above it.
 
-        Recorded mutation (13 October 2026): in `inputs/h8_groups/declaration.json`, `frb_h8_groups.release_lag.days`
+        Recorded mutation (13 October 2026): in `declarations/h8_groups.json`, `frb_h8_groups.release_lag.days`
         changed from 12 to 20. `test_no_release_is_published_after_its_declared_availability` then fails with
         StaleReadError: the declared lag of 20 days is longer than the 12 days the slowest release in the extract took.
         """

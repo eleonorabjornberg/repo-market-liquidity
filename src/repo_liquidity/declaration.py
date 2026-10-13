@@ -17,6 +17,9 @@ from typing import Dict, List, Mapping
 from repo_liquidity import parent_root
 
 OVERLAY_PATH = Path(__file__).resolve().parents[2] / "metadata" / "sources_phase3.json"
+#: One file per input added after Stage 1b (L-series directives). `sources_phase3.json` is a record, byte-checked by
+#: `repo_liquidity.records`, and the panel manifests stamp its digest, so new sources are declared in `declarations/` (`metadata/` holds only records, `tests/test_records.py`).
+INPUT_OVERLAY_DIR = OVERLAY_PATH.parents[1] / "declarations"
 
 
 def _parent_contract():
@@ -39,6 +42,14 @@ def _fields():
         "runoff_cap_treasury_bn": (("fomc_runoff_caps", "runoff_cap_treasury_bn"),),
         "runoff_cap_mbs_bn": (("fomc_runoff_caps", "runoff_cap_mbs_bn"),),
         "soma_mbs_weekly_change": (("frb_h41_mbs", "soma_mbs_weekly_change"),),
+        # #30, answer 15 of `docs/decisions/data-meaning.md`. Not built columns of any panel; read through
+        # `snapshots/agency_securities/`. "Agency securities" is agency debt plus MBS from the same release.
+        "soma_agency_debt_weekly_change": (("frb_h41_agency", "soma_agency_debt_weekly_change"),),
+        "soma_agency_securities_weekly_change": (("frb_h41_agency", "soma_agency_debt_weekly_change"),
+                                                 ("frb_h41_mbs", "soma_mbs_weekly_change")),
+        # #26: the H.8 bank groups' cash and total assets, first prints (`repo_liquidity.h8`), read through
+        # `snapshots/h8_groups/`. Not built columns of any panel.
+        **{field: (("frb_h8_groups", field),) for field in _h8_fields()},
         "temp_repo_take_up": (("nyfed_temp_repo", "temp_repo_take_up"),),
         "temp_repo_term_take_up": (("nyfed_temp_repo", "temp_repo_term_take_up"),),
         "temp_repo_term_outstanding": (("nyfed_temp_repo", "temp_repo_term_outstanding"),),
@@ -54,6 +65,12 @@ def _fields():
         "sofr_p1": (("nyfed_sofr", "SOFR_p1"),),
         "sofr_p99": (("nyfed_sofr", "SOFR_p99"),),
     }
+
+
+def _h8_fields():
+    from repo_liquidity import h8
+
+    return h8.FIELDS
 
 
 def _indicator_fields(fields):
@@ -87,7 +104,15 @@ def parent_registry() -> Dict[str, Mapping]:
 
 
 def overlay() -> Dict[str, Mapping]:
-    return json.loads(OVERLAY_PATH.read_text(encoding="utf-8"))
+    """`sources_phase3.json` plus every file under `declarations/`, in name order.
+
+    Raises:
+        ValueError: if two files declare the same source id.
+    """
+    out: Dict[str, Mapping] = json.loads(OVERLAY_PATH.read_text(encoding="utf-8"))
+    for path in sorted(INPUT_OVERLAY_DIR.glob("*.json")):
+        out = merge(out, json.loads(path.read_text(encoding="utf-8")))
+    return out
 
 
 def merge(parent: Mapping[str, Mapping], extra: Mapping[str, Mapping]) -> Dict[str, Mapping]:

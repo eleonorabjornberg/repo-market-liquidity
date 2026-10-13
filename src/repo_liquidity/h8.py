@@ -20,24 +20,16 @@ import hashlib
 import io
 import json
 import re
-from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta
 from pathlib import Path
-from types import MappingProxyType
 from typing import Dict, Iterable, List, Mapping, Optional, Tuple
 from zoneinfo import ZoneInfo
 
 from repo_model import ingest
 from repo_model.ingest import FrbH8Release
 
-from repo_liquidity import declaration
-
 SOURCE_ID = "frb_h8_groups"
-#: The input's own directory. `metadata/` and `results/` hold the development records and nothing else
-#: (`tests/test_records.py`), so a new input is declared beside its other files, as Stage 4's is in `sources_stage4.json`.
-INPUT_DIR = Path(__file__).resolve().parents[2] / "inputs" / "h8_groups"
-OVERLAY_PATH = INPUT_DIR / "declaration.json"
 NEW_YORK = ZoneInfo("America/New_York")
 #: The declared release time (the parent's `frb_h8` declaration, `ingest.FRB_H8_RELEASE_TIME`).
 RELEASE_TIME = ingest.FRB_H8_RELEASE_TIME
@@ -56,8 +48,6 @@ UNIT = ingest._FRB_H8_UNIT
 #: The registry fields, in the order the extract carries them.
 FIELDS: Tuple[str, ...] = tuple(f"h8_{group}_{line}" for group in GROUPS for line in LINES)
 _WHERE = {f"h8_{group}_{line}": (group, line) for group in GROUPS for line in LINES}
-#: The columns the declaration reads, each from this source (the parent's feature map, switched on in memory).
-H8_FIELDS: Mapping[str, tuple] = MappingProxyType({field: ((SOURCE_ID, field),) for field in FIELDS})
 
 #: The blind tier starts the day after this (`repo-market-model docs/decisions/lockbox.md`): a release after it is not
 #: read. It is the panel's last date.
@@ -310,7 +300,7 @@ def observations(prints: Iterable[FirstPrint], field: str, *, source_sha: str):
 # Breaks: the H.8 "Notes on Data" archive (`docs/decisions/data-meaning.md`, answer 17(c))
 
 NOTES_URL = "https://www.federalreserve.gov/releases/h8/h8notes.htm"
-BREAKS_PATH = INPUT_DIR / "breaks.json"
+BREAKS_PATH = Path(__file__).resolve().parents[2] / "docs" / "research" / "h8-group-breaks.json"
 NOTES_PAGE = Path(__file__).resolve().parents[2] / "tests" / "fixtures" / "h8_notes" / "h8notes.htm.gz"
 
 #: The kind of a note, by the phrase that opens it. A note that matches none is refused, not guessed: it is read.
@@ -373,36 +363,3 @@ def parse_notes(payload: bytes, first: date = FIRST_WEEK, last: date = LAST_RELE
         raise ValueError(f"the H.8 notes page indexes {len(index)} notes and has {len(dates)} blocks, or in another order")
     return sorted(events, key=lambda event: event["as_of"])
 
-
-# ---------------------------------------------------------------------------------------------------------------
-# The declaration (`docs/decisions/input-declarations.md`, D1): an overlay checked by the parent's validators
-
-
-def overlay() -> Dict[str, Mapping]:
-    return json.loads(OVERLAY_PATH.read_text(encoding="utf-8"))
-
-
-def registry() -> Dict[str, Mapping]:
-    """Phase 3's registry plus `frb_h8_groups`."""
-    return declaration.merge(declaration.registry(), overlay())
-
-
-def validate_overlay():
-    return declaration.validate(overlay())
-
-
-@contextmanager
-def h8_declaration():
-    """Phase 3's declaration, plus the six group columns, for the duration of the block."""
-    from repo_model import contract
-
-    with declaration.phase3_declaration():
-        fields = MappingProxyType({**contract.FEATURE_FIELDS, **H8_FIELDS})
-        saved = contract.FEATURE_FIELDS, contract.FEATURE_SOURCES
-        contract.FEATURE_FIELDS = fields
-        contract.FEATURE_SOURCES = MappingProxyType(
-            {feature: tuple(sorted({source for source, _field in pairs})) for feature, pairs in fields.items()})
-        try:
-            yield
-        finally:
-            contract.FEATURE_FIELDS, contract.FEATURE_SOURCES = saved

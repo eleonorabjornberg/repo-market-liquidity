@@ -3,9 +3,12 @@
 
     PYTHONPATH=src python3 scripts/fetch_h41.py --first 2017-12-27 --last 2026-09-02
     PYTHONPATH=src python3 scripts/fetch_h41.py --first 2017-12-27 --last 2026-09-02 --row mbs
+    PYTHONPATH=src python3 scripts/fetch_h41.py --first 2017-12-27 --last 2026-09-02 --row agency
 
 `--row mbs` writes the MBS extract (`docs/stages/stage-1a-correction.md`, item 1) and checks every week's Treasury
 row on the same page against the tracked Treasury extract, so both extracts read the same first prints.
+`--row agency` writes the agency-debt extract (#30; answer 15 of `docs/decisions/data-meaning.md`) and checks every
+week's Treasury row and MBS row on the same page against the two tracked extracts.
 
 Needs network access to federalreserve.gov. Each week's release is found in the eight days after its Wednesday,
 parsed by `repo_liquidity.h41.parse_release`, and recorded with its URL and the page's sha256. A week whose
@@ -27,6 +30,11 @@ from repo_liquidity import h41
 ROOT = Path(__file__).resolve().parents[1]
 EXTRACT = ROOT / "tests/fixtures/snapshots/h41/h41_treasury_first_print.csv"
 MBS_EXTRACT = ROOT / "tests/fixtures/snapshots/h41/h41_mbs_first_print.csv"
+AGENCY_EXTRACT = ROOT / "tests/fixtures/snapshots/h41/h41_agency_first_print.csv"
+ROW_FOR = {"treasury": h41.TREASURY_ROW, "mbs": h41.MBS_ROW, "agency": h41.AGENCY_ROW}
+TARGET_FOR = {"treasury": EXTRACT, "mbs": MBS_EXTRACT, "agency": AGENCY_EXTRACT}
+#: The rows already tracked, each checked against the same page when another row is fetched.
+CHECKS_FOR = {"treasury": (), "mbs": ("treasury",), "agency": ("treasury", "mbs")}
 
 
 def fetch(url):
@@ -48,11 +56,10 @@ def main(argv=None):
     parser = argparse.ArgumentParser()
     parser.add_argument("--first", type=date.fromisoformat, required=True)
     parser.add_argument("--last", type=date.fromisoformat, required=True)
-    parser.add_argument("--row", choices=("treasury", "mbs"), default="treasury")
+    parser.add_argument("--row", choices=tuple(ROW_FOR), default="treasury")
     args = parser.parse_args(argv)
-    row = h41.MBS_ROW if args.row == "mbs" else h41.TREASURY_ROW
-    target = MBS_EXTRACT if args.row == "mbs" else EXTRACT
-    treasury = {r.week_ended: r for r in h41.load_extract(EXTRACT)} if args.row == "mbs" else {}
+    row, target = ROW_FOR[args.row], TARGET_FOR[args.row]
+    tracked = {name: {r.week_ended: r for r in h41.load_extract(TARGET_FOR[name])} for name in CHECKS_FOR[args.row]}
     if args.first.weekday() != 2 or args.last.weekday() != 2:
         parser.error("--first and --last must be Wednesdays")
     rows, gaps = [], []
@@ -67,10 +74,10 @@ def main(argv=None):
                 release = h41.parse_release(page, release_date=release_date, row=row)
                 if release.week_ended != week:
                     raise ValueError(f"page reports week ended {release.week_ended}")
-                if treasury:
-                    check = h41.parse_release(page, release_date=release_date)
-                    if check != treasury.get(week):
-                        raise ValueError(f"its Treasury row {check} is not the tracked extract's {treasury.get(week)}")
+                for name, extract in tracked.items():
+                    check = h41.parse_release(page, release_date=release_date, row=ROW_FOR[name])
+                    if check != extract.get(week):
+                        raise ValueError(f"its {name} row {check} is not the tracked extract's {extract.get(week)}")
                 rows.append((week.isoformat(), release_date.isoformat(), url,
                              hashlib.sha256(page.encode("utf-8")).hexdigest(), release.week_average,
                              release.change_from_prior_week, release.wednesday_level))

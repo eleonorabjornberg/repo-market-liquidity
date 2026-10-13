@@ -69,5 +69,55 @@ class MbsRowTests(unittest.TestCase):
             h41.parse_release(page("20250102.htm.gz"), release_date=date(2025, 1, 2), row="Gold certificate account")
 
 
+class AgencyRowTests(unittest.TestCase):
+    """Table 1's "Federal agency debt securities" row (#30; answer 15, Nicholas Beroud: include agency debt).
+
+    Its footnote mark is printed "(2)" in 2018 and a bare "2" in 2025; neither may be read as a number.
+    """
+
+    def test_old_format_2018(self):
+        row = h41.parse_release(page("20180405.htm.gz"), release_date=date(2018, 4, 5), row=h41.AGENCY_ROW)
+        self.assertEqual((row.week_ended, row.week_average, row.change_from_prior_week, row.wednesday_level),
+                         (date(2018, 4, 4), 4391, 0, 4391))
+
+    def test_new_format_2025(self):
+        row = h41.parse_release(page("20250102.htm.gz"), release_date=date(2025, 1, 2), row=h41.AGENCY_ROW)
+        self.assertEqual((row.week_ended, row.week_average, row.change_from_prior_week, row.wednesday_level),
+                         (date(2025, 1, 1), 2347, 0, 2347))
+
+    def test_the_prose_mention_of_the_row_name_is_not_read_as_the_row(self):
+        text = "Averages of daily figures Wednesday Jan 1, 2025 Federal agency debt securities, and mortgage-backed"
+        with self.assertRaises(ValueError):
+            h41.parse_release(text, release_date=date(2025, 1, 2), row=h41.AGENCY_ROW)
+
+
+class AgencySecuritiesTests(unittest.TestCase):
+    """The derived measure Nicholas asked for in answer 15: agency debt plus MBS, week by week, from the same release."""
+
+    def _release(self, name, release_date, row):
+        return h41.parse_release(page(name), release_date=release_date, row=row)
+
+    def test_the_change_is_agency_debt_plus_mbs_from_the_same_release(self):
+        agency = self._release("20180405.htm.gz", date(2018, 4, 5), h41.AGENCY_ROW)
+        mbs = self._release("20180405.htm.gz", date(2018, 4, 5), h41.MBS_ROW)
+        total = h41.agency_securities([agency], [mbs])
+        self.assertEqual(len(total), 1)
+        self.assertEqual((total[0].week_ended, total[0].release_date), (date(2018, 4, 4), date(2018, 4, 5)))
+        self.assertEqual(total[0].change_from_prior_week, 0 + -5030)
+        self.assertEqual(total[0].week_average, 4391 + 1754368)
+        self.assertEqual(total[0].wednesday_level, 4391 + 1754368)
+
+    def test_releases_of_different_weeks_are_not_added(self):
+        agency = self._release("20180405.htm.gz", date(2018, 4, 5), h41.AGENCY_ROW)
+        mbs = self._release("20250102.htm.gz", date(2025, 1, 2), h41.MBS_ROW)
+        with self.assertRaises(ValueError):
+            h41.agency_securities([agency], [mbs])
+
+    def test_extracts_of_different_lengths_are_not_added(self):
+        agency = self._release("20180405.htm.gz", date(2018, 4, 5), h41.AGENCY_ROW)
+        with self.assertRaises(ValueError):
+            h41.agency_securities([agency], [])
+
+
 if __name__ == "__main__":
     unittest.main()

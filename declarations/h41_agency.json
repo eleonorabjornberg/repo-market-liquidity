@@ -1,0 +1,34 @@
+{
+  "frb_h41_agency": {
+    "access": "public",
+    "availability_provenance": {
+      "note": "Recorded 13 October 2026 for #30. The same releases as frb_h41_treasury and frb_h41_mbs, so the same release dates and the same measured worst case, which tests/test_guards.py re-measures on the agency-debt extract. Recorded 6 October 2026 for Stage 1a. The H.4.1 About page (https://www.federalreserve.gov/releases/h41/about.htm, fetched 6 October 2026) says the release \"is typically published on Thursday afternoon around 4:30 p.m.\" Of the 454 weekly releases from the week ended 2017-12-27 to the week ended 2026-09-02, 439 were published one calendar day after the week's Wednesday, 13 two days after, and 2 five days after (the weeks ended 2020-12-23 and 2025-12-24). 16:30 is after the 16:00 decision instant, so a release is read from the next business day's decision.",
+      "publication": "Board of Governors, H.4.1 Factors Affecting Reserve Balances, archived release pages at https://www.federalreserve.gov/releases/h41/<YYYYMMDD>/; published Thursdays (later around holidays) at about 4:30 p.m. Eastern Time."
+    },
+    "coverage": [
+      "Federal agency debt securities held outright by the Federal Reserve: change from the previous week in the week average, as printed in each release (first print). Agency securities (agency debt plus mortgage-backed securities, docs/decisions/data-meaning.md answer 15) is the sum of this row and frb_h41_mbs's, from the same release"
+    ],
+    "field_frequencies": {
+      "soma_agency_debt_weekly_change": "weekly"
+    },
+    "fields": [
+      "soma_agency_debt_weekly_change"
+    ],
+    "frequency": "weekly",
+    "identities": [],
+    "limitation": "Table 1, row \"Federal agency debt securities\", column \"Change from week ended\" (the previous week), in USD billions (the release prints millions). Read from the same archived release pages as frb_h41_treasury and frb_h41_mbs, into tests/fixtures/snapshots/h41/h41_agency_first_print.csv by scripts/fetch_h41.py --row agency, which also checks every page's Treasury and MBS rows against the two tracked extracts. About $2.3bn of holdings, so most weeks print 0 (docs/decisions/data-meaning.md, answer 15, Nicholas Beroud). Not a column of any published panel; read through snapshots/agency_securities/.",
+    "provider": "Board of Governors of the Federal Reserve System",
+    "release_lag": {
+      "available_time": "16:30",
+      "basis": "record_date",
+      "days": 5,
+      "note": "The same releases as frb_h41_treasury, so the same measured worst case (five calendar days, twice). repo_liquidity.h41.check_declared_lag is tested against this declaration on the agency-debt extract.",
+      "timezone": "America/New_York",
+      "unit": "calendar_days"
+    },
+    "reviewed_note": "No structural zeros: a printed 0 is a week with no change.",
+    "structural_zeros": [],
+    "structural_zeros_reviewed": true,
+    "url": "https://www.federalreserve.gov/releases/h41/"
+  }
+}

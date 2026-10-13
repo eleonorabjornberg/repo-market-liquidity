@@ -90,7 +90,7 @@ reassessments his answer 17(c) names, and which of them are the replacements on 
 
 ## 5. Breaks
 
-`inputs/h8_groups/breaks.json` records every note of the Board's "Notes on Data" page (`h8notes.htm`, retrieved
+`docs/research/h8-group-breaks.json` records every note of the Board's "Notes on Data" page (`h8notes.htm`, retrieved
 13 October 2026, saved gzipped with its SHA-256) as an as-of Wednesday from 2018-02-07 to 2026-07-01, with its text
 verbatim: 43 events. By the opening of the note: 16 thrift conversions (10 alone, 6 with a nonbank acquisition), 7
 acquisitions of nonbank assets, 9 divestitures to nonbanks, 9 reporting reclassifications (5 of domestically chartered
