@@ -20,16 +20,23 @@ import re
 from pathlib import Path
 from typing import Dict, List, Optional
 
-from repo_liquidity import PANEL_SHA256, PARENT_COMMIT, scheduled
+from repo_liquidity import PANEL_SHA256, PARENT_COMMIT, h8, scheduled
 
 ROOT = Path(__file__).resolve().parents[2]
 SNAPSHOTS = ROOT / "snapshots"
+
+#: The weekly first-print series (#26): the tracked extract each is a copy of. Its manifest carries the weeks and
+#: releases it spans, and the SHA-256 of each archived release page behind it (the pages are not tracked).
+WEEKLY: Dict[str, Path] = {
+    "h8_groups": ROOT / "tests" / "fixtures" / "snapshots" / "h8_groups" / h8.EXTRACT_NAME,
+}
 
 #: The published series and the tracked table each is built from.
 SERIES: Dict[str, Path] = {
     "on_rrp_rate": scheduled.ON_RRP_RATE_TABLE,
     "srf_rate": scheduled.SRF_TABLE,
     "runoff_caps": scheduled.CAPS_TABLE,
+    **WEEKLY,
 }
 _HEX40 = re.compile(r"^[0-9a-f]{40}$")
 
@@ -63,6 +70,8 @@ def build(series: str, root: Path = ROOT, *, repo_commit: str) -> dict:
     table = _check_series(series)
     if not _HEX40.match(repo_commit):
         raise ValueError(f"repo_commit must be a full 40-character lowercase hash, got {repo_commit!r}")
+    if series in WEEKLY:
+        return _build_weekly(series, table, root, repo_commit)
     scheduled._verified_rows(table)
     data = table.read_bytes()
     digest = hashlib.sha256(data).hexdigest()
@@ -86,6 +95,45 @@ def build(series: str, root: Path = ROOT, *, repo_commit: str) -> dict:
         "first_announced": f"{rows[0]['announcement_date']}T{rows[0]['announcement_time']}",
         "last_announced": f"{rows[-1]['announcement_date']}T{rows[-1]['announcement_time']}",
         "last_effective": rows[-1]["effective_date"],
+        "source_table": str(table.relative_to(ROOT)),
+        "source_pages": pages,
+        "parent_commit": PARENT_COMMIT,
+        "parent_panel_sha256": PANEL_SHA256,
+        "repo_commit": repo_commit,
+    }
+    manifest_path(series, root).write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return manifest
+
+
+def _build_weekly(series: str, table: Path, root: Path, repo_commit: str) -> dict:
+    """The snapshot of a weekly first-print extract: the extract's bytes, and the releases it was cut from.
+
+    The extract is read through `h8.load_extract`, which refuses one that does not match its own manifest. Each row
+    names the SHA-256 of the release page that first printed it; the manifest lists them under `source_pages`, keyed by
+    release date, and the build refuses an extract whose rows name a page the releases record does not list.
+    """
+    prints = h8.load_extract(table)
+    data = table.read_bytes()
+    digest = hashlib.sha256(data).hexdigest()
+    releases = json.loads(table.with_name(h8.RELEASES_NAME).read_text(encoding="utf-8"))
+    pages = {record["release_date"]: record["sha256"] for record in releases["releases"]}
+    for item in prints:
+        if pages.get(item.release_date.isoformat()) != item.release_sha256:
+            raise ValueError(f"{table.name}: the week ending {item.week_ending} names a page for the release of "
+                             f"{item.release_date} that the releases record does not list")
+    directory = root / "snapshots" / series
+    directory.mkdir(parents=True, exist_ok=True)
+    relative = f"snapshots/{series}/{digest}.csv"
+    (root / relative).write_bytes(data)
+    manifest = {
+        "series": series,
+        "path": relative,
+        "sha256": digest,
+        "columns": list(h8.EXTRACT_COLUMNS),
+        "rows": len(prints),
+        "first_week": prints[0].week_ending.isoformat(),
+        "last_week": prints[-1].week_ending.isoformat(),
+        "last_release": prints[-1].release_date.isoformat(),
         "source_table": str(table.relative_to(ROOT)),
         "source_pages": pages,
         "parent_commit": PARENT_COMMIT,

@@ -13,7 +13,7 @@ from datetime import date, time
 from repo_model.asof import KIND_SCHEDULED, InformationRule
 from repo_model.splits import LookAheadError, SplitError
 
-from repo_liquidity import declaration, h41, panel
+from repo_liquidity import declaration, h41, h8, panel
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 EXTRACT = ROOT / "tests" / "fixtures" / "snapshots" / "h41" / "h41_treasury_first_print.csv"
@@ -121,6 +121,52 @@ class EndToEndTests(unittest.TestCase):
             rule = InformationRule(declaration.registry(), ["on_rrp"], decision_time=time(16, 0))
             info = rule.information_set(dates, 1500)
             moved = info._replace(reads=tuple(r._replace(row=r.row - 1) if r.feature == "on_rrp" else r
+                                              for r in info.reads))
+            with self.assertRaises(StaleReadError):
+                rule.check(dates, moved)
+
+    def test_every_h8_group_column_passes_the_parent_guards_on_every_row(self):
+        """#26: the six group lines, read at every row of the panel under `frb_h8_groups`'s declaration."""
+        dates = [row.date for row in self.rows]
+        with h8.h8_declaration():
+            rule = InformationRule(h8.registry(), list(h8.FIELDS), decision_time=time(16, 0))
+            skipped = []
+            for index in range(len(dates)):
+                try:
+                    info = rule.information_set(dates, index)
+                except SplitError:
+                    skipped.append(index)
+                    continue
+                self.assertLessEqual(set(h8.FIELDS), {r.feature for r in info.reads})
+                rule.check(dates, info)
+        # Only the panel's first rows, before the first print of the extract's first week is public, have none.
+        self.assertEqual(skipped, list(range(len(skipped))))
+        self.assertLess(len(skipped), 15)
+
+    def test_an_h8_group_read_moved_one_row_later_is_leakage(self):
+        """The parent's guard on the H.8 group lines (#26): all six read one declaration, `frb_h8_groups`. A first print
+        read at the row after the one the declaration allows is not yet public at the decision instant."""
+        dates = [row.date for row in self.rows]
+        feature = "h8_small_domestic_cash_assets"
+        with h8.h8_declaration():
+            rule = InformationRule(h8.registry(), [feature], decision_time=time(16, 0))
+            info = rule.information_set(dates, 1500)
+            reads = [r for r in info.reads if r.feature == feature]
+            self.assertEqual(len(reads), 1)
+            moved = info._replace(reads=tuple(r._replace(row=r.row + 1) if r.feature == feature else r
+                                              for r in info.reads))
+            with self.assertRaises(LookAheadError):
+                rule.check(dates, moved)
+
+    def test_an_h8_group_read_moved_one_row_earlier_is_stale(self):
+        from repo_model.asof import StaleReadError
+
+        dates = [row.date for row in self.rows]
+        feature = "h8_foreign_related_total_assets"
+        with h8.h8_declaration():
+            rule = InformationRule(h8.registry(), [feature], decision_time=time(16, 0))
+            info = rule.information_set(dates, 1500)
+            moved = info._replace(reads=tuple(r._replace(row=r.row - 1) if r.feature == feature else r
                                               for r in info.reads))
             with self.assertRaises(StaleReadError):
                 rule.check(dates, moved)

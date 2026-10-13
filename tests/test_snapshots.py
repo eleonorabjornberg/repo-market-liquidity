@@ -75,6 +75,22 @@ class TrackedSnapshotTests(unittest.TestCase):
         self.assertEqual(len(manifest["source_pages"]), manifest["rows"])
 
 
+    def test_the_h8_groups_manifest_describes_the_weekly_series(self):
+        """#26: the H.8 group first prints are published like the rate tables, as a copy of the tracked extract.
+
+        Recorded mutation (13 October 2026): in `tests/fixtures/snapshots/h8_groups/h8_group_first_print.releases.json`,
+        the `sha256` of the release of 2018-01-12 changed to another digest. This test then fails with ValueError:
+        h8_group_first_print.csv: the week ending 2018-01-03 names a page for the
+        release of 2018-01-12 that the releases record does not list.
+        """
+        manifest = snapshots.load_manifest("h8_groups")
+        self.assertEqual((manifest["rows"], manifest["first_week"], manifest["last_week"], manifest["last_release"]),
+                         (452, "2017-12-27", "2026-08-19", "2026-08-28"))
+        self.assertEqual(len(manifest["source_pages"]), 452)
+        self.assertEqual(manifest["source_table"], "tests/fixtures/snapshots/h8_groups/h8_group_first_print.csv")
+        with tempfile.TemporaryDirectory() as tmp:
+            self.assertEqual(snapshots.build("h8_groups", pathlib.Path(tmp), repo_commit=manifest["repo_commit"]), manifest)
+
 class ReadTests(unittest.TestCase):
     def test_reading_by_digest_returns_the_rows(self):
         manifest = snapshots.load_manifest("srf_rate")

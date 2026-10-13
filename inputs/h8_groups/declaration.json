@@ -1,0 +1,44 @@
+{
+  "frb_h8_groups": {
+    "access": "public",
+    "availability_provenance": {
+      "note": "Recorded 13 October 2026 for #26. The same releases as the parent's frb_h8 declaration, which carries the Board's statement that the data \"are released each Friday, generally at 4:15 p.m., unless Friday is a federal holiday, in which case the data will be released on Thursday, generally at 4:15 p.m.\" (the release-date page, fetched 2 October 2026, repo-market-model #115). Of the 456 archived releases fetched 13 October 2026 for 5 January 2018 to 25 September 2026, the 452 on or before 3 September 2026 were read. Each states its release date; 51 of them, from 25 September 2020 to 2 July 2026, also state \"For release at 4:15 p.m. Eastern Time\" and the rest state no time. The page archived as 20201221/ states Friday 18 December 2020 (the later date is taken); the index lists 2022-11-11 (Veterans Day) and the archive serves that release as 20221110/. 16:15 is after the 16:00 decision instant, so a week printed on a Friday is read from the next business day's decision. scripts/extract_h8_groups.py refuses a page that states any other time.",
+      "publication": "Board of Governors, H.8 Assets and Liabilities of Commercial Banks in the United States, archived release pages at https://www.federalreserve.gov/releases/h8/<YYYYMMDD>/ and the release-date list releaseDates.json; released Fridays (Thursdays before a Friday holiday) at 4:15 p.m. Eastern Time."
+    },
+    "coverage": [
+      "cash assets and total assets of large domestically chartered commercial banks, small domestically chartered commercial banks and foreign-related institutions, weekly, first print"
+    ],
+    "field_frequencies": {
+      "h8_large_domestic_cash_assets": "weekly",
+      "h8_large_domestic_total_assets": "weekly",
+      "h8_small_domestic_cash_assets": "weekly",
+      "h8_small_domestic_total_assets": "weekly",
+      "h8_foreign_related_cash_assets": "weekly",
+      "h8_foreign_related_total_assets": "weekly"
+    },
+    "fields": [
+      "h8_large_domestic_cash_assets",
+      "h8_large_domestic_total_assets",
+      "h8_small_domestic_cash_assets",
+      "h8_small_domestic_total_assets",
+      "h8_foreign_related_cash_assets",
+      "h8_foreign_related_total_assets"
+    ],
+    "frequency": "weekly",
+    "identities": [],
+    "limitation": "Not seasonally adjusted, billions of dollars, week ending Wednesday: the lines \"Cash assets\" and \"Total assets\" of the tables titled \"Assets and Liabilities of Large Domestically Chartered Commercial Banks in the United States\" (table 7), \"... Small Domestically Chartered ...\" (table 9) and \"... of Foreign-Related Institutions in the United States\" (table 11). Before the 2020s layout a table runs over two pages and the lines sit on either; the parser reads each by its label from the tables that carry the title and refuses a page with other than exactly one of each. The H.8 restates every week, and the Fed restates past large and small levels for mergers and panel shifts (data-meaning answer 17(c)): only the FIRST PRINT is tracked, each week's value in the earliest release that carries it, in tests/fixtures/snapshots/h8_groups/h8_group_first_print.csv, cut by scripts/extract_h8_groups.py from the unmodified archive pages that repo_model.ingest.fetch_frb_h8_archive saves, with each page's SHA-256 in the extract and its .releases.json. For every week the three groups' total assets sum to the parent's all-banks first print within 0.1 (rounding), from the same release. A release is dated by the later of its archive date and the date the page states, as the parent dates it. Cash assets are not reserves (data-meaning answer 17(a)): they include vault cash, cash items in process of collection and balances due from other depository institutions. They stand in for reserves for large domestic banks and foreign-related institutions, and overstate small domestic banks' reserves; the groups must not be summed naively, because balances due from other depository institutions double-count. Any series derived as reserves by group names this caveat. Dated breaks are in inputs/h8_groups/breaks.json. Coverage ends with the release of 28 August 2026 (the week ending 19 August); releases after 3 September 2026 are not read (the lockbox's blind tier). Phase 3 only; not in the published declaration.",
+    "provider": "Board of Governors of the Federal Reserve System",
+    "release_lag": {
+      "available_time": "16:15",
+      "basis": "record_date",
+      "days": 12,
+      "note": "Declared 13 October 2026 for #26, at the measured maximum and not above it, as the parent's frb_h8 is. The first print of a week ending Wednesday is released the second Friday after it, 16:15 New York time: nine calendar days for 439 of the 452 weeks from 2017-12-27 to 2026-08-19, eight for nine weeks released on a Thursday before a Friday holiday, and twelve for four: the weeks ending 2020-12-09 (released Monday 2020-12-21), 2020-12-16 (Monday 2020-12-28), 2021-06-09 (Monday 2021-06-21) and 2025-12-17 (Monday 2025-12-29). Twelve is that worst case, so every value is declared public no earlier than it was; an ordinary week is read three days later than it could have been, which is staleness on the safe side, not leakage. The extract script refuses a week first printed later than this declaration.",
+      "timezone": "America/New_York",
+      "unit": "calendar_days"
+    },
+    "reviewed_note": "Structural-zero semantics are not applicable to a balance-sheet line; the empty declaration is not a finding.",
+    "structural_zeros": [],
+    "structural_zeros_reviewed": false,
+    "url": "https://www.federalreserve.gov/releases/h8/"
+  }
+}
