@@ -88,6 +88,36 @@ class TableTests(unittest.TestCase):
                                    rf"{re.escape(row.raw_values[0])} percent", row.page)
             self.assertIn(f"Effective {row.effective:%B} {row.effective.day}, {row.effective.year}", text)
 
+    def test_every_saved_note_that_sets_a_rate_has_its_row(self):
+        """Both rate tables carry every saved implementation note that moves the policy rate (#25: brought up to date,
+        one row per note). A note is taken to move the rate when it says the Board voted to raise or lower the
+        interest rate paid on reserve balances, which holds for every note from March 2022 on (the notes of
+        earlier years use other wording and are checked by `test_every_on_rrp_rate_is_in_its_page`). A note saved
+        without its row, or a row whose rate differs from its note, fails."""
+        patterns = (
+            (scheduled.load_srf_rates, r"repurchase agreement operations (?:with|at) (?:a minimum bid rate of|a rate "
+                                       r"of) ([0-9.]+) percent"),
+            (scheduled.load_on_rrp_rates, r"reverse repurchase (?:agreement )?operations[^.]*?at an offering rate of "
+                                          r"([0-9.]+) percent"),
+        )
+        for loader, pattern in patterns:
+            rows = {row.page: row for row in loader()}
+            for page in sorted(path.name for path in (NOTES / "pages").glob("*.gz")):
+                text = page_text(page)
+                found = re.search(pattern, text)
+                if found is None or not re.search(r"voted unanimously to (?:raise|lower) the interest rate paid on "
+                                                  r"reserve balances", text):
+                    continue
+                self.assertIn(page, rows, (loader.__name__, page))
+                self.assertEqual(float(found.group(1)), rows[page].values[0], (loader.__name__, page))
+
+    def test_rows_are_appended_in_order(self):
+        for loader in (scheduled.load_srf_rates, scheduled.load_on_rrp_rates, scheduled.load_runoff_caps):
+            rows = loader()
+            keys = [(row.announced_at, row.effective) for row in rows]
+            self.assertEqual(keys, sorted(keys), loader.__name__)
+            self.assertEqual(len(set(keys)), len(keys), loader.__name__)
+
     def test_on_rrp_rates_match_the_parent_operation_snapshots(self):
         self.assertGreater(scheduled.cross_check_on_rrp_operations(), 0)
 
@@ -156,6 +186,31 @@ class ReadTests(unittest.TestCase):
                 shifted = early + [row._replace(effective=dates[index]) for row in late]
                 self.assertEqual(reader(dates[index - 1 : index + 1], decision_time=DECISION, rows=shifted)[1],
                                  baseline[index], (dates[index], loader.__name__))
+
+    def test_a_value_is_never_older_than_the_latest_admissible_publication(self):
+        """Staleness guard for the three FOMC series (#25): on every weekday the value read is that of the newest
+        publication that was public at the decision instant and is in force, never an older one.
+
+        Recorded mutation (13 October 2026): in `scheduled._in_force`, `return max(known, key=lambda row:
+        (row.effective, row.announced_at))` changed to `return known[0]`. This test then fails with AssertionError:
+        0.25 != 0.5 for ('load_srf_rates', 2022-03-17) (the oldest admissible row read in place of the latest).
+        """
+        dates = weekdays(date(2017, 12, 1), date(2026, 10, 9))
+        for loader, reader in ((scheduled.load_srf_rates, scheduled.srf_rate_values),
+                               (scheduled.load_on_rrp_rates, scheduled.on_rrp_rate_values),
+                               (scheduled.load_runoff_caps, scheduled.runoff_cap_values)):
+            rows = loader()
+            values = reader(dates, decision_time=DECISION, rows=rows)
+            for index in range(1, len(dates)):
+                instant = datetime.combine(dates[index - 1], DECISION)
+                admissible = sorted((row for row in rows if row.announced_at <= instant and row.effective <= dates[index]),
+                                    key=lambda row: (row.effective, row.announced_at), reverse=True)
+                if loader is scheduled.load_srf_rates and dates[index] < scheduled.SRF_INCEPTION:
+                    continue
+                expected = None
+                if admissible:
+                    expected = admissible[0].values if loader is scheduled.load_runoff_caps else admissible[0].values[0]
+                self.assertEqual(values[index], expected, (loader.__name__, dates[index]))
 
     def test_columns_already_on_a_row_are_refused(self):
         from repo_model.data import DailyObservation
