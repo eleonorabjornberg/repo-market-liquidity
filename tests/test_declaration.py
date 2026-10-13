@@ -33,6 +33,27 @@ class OverlayTests(unittest.TestCase):
         del overlay["frb_h41_treasury"]["availability_provenance"]
         self.assertTrue(declaration.validate(overlay))
 
+    def test_input_overlays_join_the_phase3_overlay_without_changing_it(self):
+        """#30: new sources are declared under `declarations/`; `sources_phase3.json` is a record and stays as it is."""
+        phase3 = json.loads((ROOT / "metadata" / "sources_phase3.json").read_text())
+        merged = declaration.overlay()
+        self.assertIn("frb_h41_agency", merged)
+        self.assertNotIn("frb_h41_agency", phase3)
+        for source_id, entry in phase3.items():
+            self.assertEqual(merged[source_id], entry)
+
+    def test_two_input_files_declaring_one_source_are_refused(self):
+        import tempfile
+        from unittest import mock
+
+        with tempfile.TemporaryDirectory() as tmp:
+            directory = pathlib.Path(tmp)
+            for name in ("a.json", "b.json"):
+                (directory / name).write_text(json.dumps({"frb_h41_agency": {}}))
+            with mock.patch.object(declaration, "INPUT_OVERLAY_DIR", directory):
+                with self.assertRaises(ValueError):
+                    declaration.overlay()
+
     def test_every_phase3_feature_names_a_declared_field(self):
         registry = declaration.registry()
         for feature, pairs in declaration.FIELDS.items():

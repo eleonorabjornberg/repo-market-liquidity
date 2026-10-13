@@ -18,6 +18,7 @@ from repo_liquidity import declaration, h41, panel
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 EXTRACT = ROOT / "tests" / "fixtures" / "snapshots" / "h41" / "h41_treasury_first_print.csv"
 MBS_EXTRACT = ROOT / "tests" / "fixtures" / "snapshots" / "h41" / "h41_mbs_first_print.csv"
+AGENCY_EXTRACT = ROOT / "tests" / "fixtures" / "snapshots" / "h41" / "h41_agency_first_print.csv"
 
 
 class H41DeclarationTests(unittest.TestCase):
@@ -55,6 +56,42 @@ class MbsDeclarationTests(unittest.TestCase):
         treasury = [(r.week_ended, r.release_date) for r in h41.load_extract(EXTRACT)]
         mbs = [(r.week_ended, r.release_date) for r in h41.load_extract(MBS_EXTRACT)]
         self.assertEqual(mbs, treasury)
+
+
+class AgencyDeclarationTests(unittest.TestCase):
+    """The agency-securities inputs (#30; `frb_h41_agency`, `docs/decisions/data-meaning.md`, answer 15)."""
+
+    def test_no_agency_release_is_published_after_its_declared_availability(self):
+        """Leakage guard: the declared lag covers every release in the agency-debt extract.
+
+        Recorded mutation (13 October 2026): in `declarations/h41_agency.json`, `release_lag.days` changed from 5 to
+        1. This test then fails with LookAheadError: the week ended 2018-11-21 was released 2018-11-23 16:30:00,
+        after its declared availability 2018-11-22 16:30:00.
+        """
+        h41.check_declared_lag(declaration.registry()["frb_h41_agency"], h41.load_extract(AGENCY_EXTRACT))
+
+    def test_a_release_later_than_declared_is_refused(self):
+        entry = dict(declaration.registry()["frb_h41_agency"])
+        entry["release_lag"] = dict(entry["release_lag"], days=1)
+        with self.assertRaises(LookAheadError):
+            h41.check_declared_lag(entry, h41.load_extract(AGENCY_EXTRACT))
+
+    def test_the_agency_extract_reads_the_same_releases_as_the_mbs_extract(self):
+        agency = [(r.week_ended, r.release_date) for r in h41.load_extract(AGENCY_EXTRACT)]
+        mbs = [(r.week_ended, r.release_date) for r in h41.load_extract(MBS_EXTRACT)]
+        self.assertEqual(agency, mbs)
+
+    def test_the_derived_measure_is_read_under_both_sources_declarations(self):
+        self.assertEqual(
+            {source for source, _field in declaration.FIELDS["soma_agency_securities_weekly_change"]},
+            {"frb_h41_agency", "frb_h41_mbs"},
+        )
+
+    def test_the_agency_source_declares_its_own_lag_not_the_mbs_ones(self):
+        """The release lag is declared on the source the series is read from, so it cannot be inherited by accident."""
+        registry = declaration.registry()
+        self.assertIn("release_lag", registry["frb_h41_agency"])
+        self.assertIn("soma_agency_debt_weekly_change", registry["frb_h41_agency"]["fields"])
 
 
 class EndToEndTests(unittest.TestCase):
@@ -124,6 +161,56 @@ class EndToEndTests(unittest.TestCase):
                                               for r in info.reads))
             with self.assertRaises(StaleReadError):
                 rule.check(dates, moved)
+
+    AGENCY_FEATURES = ("soma_agency_debt_weekly_change", "soma_agency_securities_weekly_change")
+
+    def _agency_read(self, feature, offset):
+        """The information set for `feature` at a row in 2024, and the same with its read moved by `offset` rows.
+
+        The unmoved read must be the row the MBS series is read at: both are the same weekly release, with the same
+        declared lag, so the agency series is never read earlier or later than the MBS one it is added to.
+        """
+        dates = [row.date for row in self.rows]
+        with declaration.phase3_declaration():
+            rule = InformationRule(declaration.registry(), [feature, "soma_mbs_weekly_change"],
+                                   decision_time=time(16, 0))
+            info = rule.information_set(dates, 1500)
+            rule.check(dates, info)
+            rows = {r.feature: r.row for r in info.reads}
+            self.assertEqual(rows[feature], rows["soma_mbs_weekly_change"], feature)
+            moved = info._replace(reads=tuple(r._replace(row=r.row + offset) if r.feature == feature else r
+                                              for r in info.reads))
+            return rule, dates, moved
+
+    def test_an_agency_read_moved_one_row_later_is_leakage(self):
+        """Leakage guard for the agency inputs (#30): a weekly value is read at the row after its release, and a read
+        one row later is refused.
+
+        Recorded mutation (13 October 2026): in `declarations/h41_agency.json`, `release_lag.days` changed from 5 to
+        1. This test then fails with AssertionError: 1497 != 1496 : soma_agency_debt_weekly_change (the agency series
+        read one row later than the MBS series, which keeps the 5-day lag).
+        """
+        for feature in self.AGENCY_FEATURES:
+            with self.subTest(feature=feature):
+                rule, dates, moved = self._agency_read(feature, +1)
+                with self.assertRaises(LookAheadError):
+                    rule.check(dates, moved)
+
+    def test_an_agency_read_moved_one_row_earlier_is_stale(self):
+        """Staleness guard for the agency inputs (#30): a read one row earlier than the latest public value is
+        refused as stale.
+
+        Recorded mutation (13 October 2026): in `declarations/h41_agency.json`, `release_lag.days` changed from 5 to
+        1. This test then fails with AssertionError: 1497 != 1496 : soma_agency_debt_weekly_change (the agency series
+        read one row later than the MBS series, which keeps the 5-day lag).
+        """
+        from repo_model.asof import StaleReadError
+
+        for feature in self.AGENCY_FEATURES:
+            with self.subTest(feature=feature):
+                rule, dates, moved = self._agency_read(feature, -1)
+                with self.assertRaises(StaleReadError):
+                    rule.check(dates, moved)
 
     SCHEDULED_FEATURES = ("srf_rate", "on_rrp_rate", "runoff_cap_treasury_bn", "runoff_cap_mbs_bn")
 
