@@ -18,9 +18,11 @@ module duplicated the parent's, it is deleted in favour of the parent's, read at
 (`docs/decisions/deleted-duplicates.md`): "the liquidity repo ingests its own data, and duplicates are deleted in
 favour of this repo" ([her comment](https://github.com/eleonorabjornberg/repo-market-model/issues/643#issuecomment-6130179990)).
 
-**Status: restarted 12 Oct 2026; research plan pending Eleonora's decision
-([#20](https://github.com/eleonorabjornberg/repo-market-liquidity/issues/20)).** Stage 5a's daily log was retired
-before it started (repo-market-model#643, S3).
+**Status: restarted 12 Oct 2026; research plan decided by Eleonora on 12 Oct 2026
+([#20](https://github.com/eleonorabjornberg/repo-market-liquidity/issues/20#issuecomment-6131178133)) and kept in
+[`docs/research/plan.md`](docs/research/plan.md):** H7m, H7f's interface and H10, each with its goalposts, kill
+criterion, milestones and current step, and the shared research-log format. Stage 5a's daily log was retired before it
+started (repo-market-model#643, S3).
 
 ## The development record: the plan of 5 to 12 October 2026, Stages 1 to 6
 
