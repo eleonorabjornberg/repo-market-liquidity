@@ -8,9 +8,9 @@ row of the measurement panel.
 import pathlib
 import tempfile
 import unittest
-from datetime import time
+from datetime import date, time
 
-from repo_model.asof import InformationRule
+from repo_model.asof import KIND_SCHEDULED, InformationRule
 from repo_model.splits import LookAheadError, SplitError
 
 from repo_liquidity import declaration, h41, panel
@@ -124,6 +124,57 @@ class EndToEndTests(unittest.TestCase):
                                               for r in info.reads))
             with self.assertRaises(StaleReadError):
                 rule.check(dates, moved)
+
+    SCHEDULED_FEATURES = ("srf_rate", "on_rrp_rate", "runoff_cap_treasury_bn", "runoff_cap_mbs_bn")
+
+    def _moved(self, feature, offset):
+        """The information set for `feature` on a row after the facility began, and the same with its read moved by
+        `offset` rows. The parent reads a scheduled value at the scored row, dated by the announcement one business
+        day before at 16:00; the unmoved read is checked to be that."""
+        dates = [row.date for row in self.rows]
+        index = next(i for i, day in enumerate(dates) if day >= date(2024, 1, 2))
+        with declaration.phase3_declaration():
+            rule = InformationRule(declaration.registry(), [feature], decision_time=time(16, 0))
+            info = rule.information_set(dates, index)
+            reads = [r for r in info.reads if r.feature == feature]
+            self.assertEqual([(r.kind, r.row) for r in reads], [(KIND_SCHEDULED, index)], feature)
+            moved = info._replace(reads=tuple(r._replace(row=r.row + offset) if r.feature == feature else r
+                                              for r in info.reads))
+            return rule, dates, info, moved
+
+    def test_a_scheduled_rate_or_cap_read_moved_one_row_later_is_leakage(self):
+        """Leakage guard for the three FOMC series (#25): each is read at the row of the previous business day's
+        decision instant, and a read one row later is refused.
+
+        Recorded mutation (13 October 2026): in `metadata/sources_phase3.json`, `scheduled_availability.available_time`
+        of `fed_srf_rate`, `fed_on_rrp_rate` and `fomc_runoff_caps` changed from "16:00" to "17:00" (an
+        announcement counted as public only after the decision instant). This test then fails with LookAheadError
+        from `rule.check` on the unmoved read: "first observable at ... 17:00, after the ... 16:00 decision", for
+        every feature in turn.
+        """
+        for feature in self.SCHEDULED_FEATURES:
+            with self.subTest(feature=feature):
+                rule, dates, info, moved = self._moved(feature, +1)
+                rule.check(dates, info)
+                with self.assertRaises(LookAheadError):
+                    rule.check(dates, moved)
+
+    def test_a_scheduled_rate_or_cap_read_moved_one_row_earlier_is_stale(self):
+        """Staleness guard for the three FOMC series (#25): a value is read at the row it became public, and a read
+        one row earlier is refused as stale.
+
+        Recorded mutation (13 October 2026): in `metadata/sources_phase3.json`, the `scheduled_availability` block of
+        `fed_srf_rate`, `fed_on_rrp_rate` and `fomc_runoff_caps` deleted (the series read as an observed one). This
+        test then fails with AssertionError: the read is no longer of kind "scheduled" at the scored row, for every
+        feature in turn.
+        """
+        from repo_model.asof import StaleReadError
+
+        for feature in self.SCHEDULED_FEATURES:
+            with self.subTest(feature=feature):
+                rule, dates, info, moved = self._moved(feature, -1)
+                with self.assertRaises(StaleReadError):
+                    rule.check(dates, moved)
 
 
 if __name__ == "__main__":
