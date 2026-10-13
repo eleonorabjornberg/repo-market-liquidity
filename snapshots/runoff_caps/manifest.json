@@ -1,0 +1,36 @@
+{
+  "columns": [
+    "announcement_date",
+    "announcement_time",
+    "timezone",
+    "effective_date",
+    "treasury_cap_bn",
+    "mbs_cap_bn",
+    "source_url",
+    "page"
+  ],
+  "first_announced": "2017-09-20T14:00",
+  "last_announced": "2025-10-29T14:00",
+  "last_effective": "2025-12-01",
+  "parent_commit": "490f23d4f29c85eb1778f647fa2111855a48bc2b",
+  "parent_panel_sha256": "4ddc3882cd6d406b11e1088f8ff6195e16dde175a0ad6818abe40dd5bdac8999",
+  "path": "snapshots/runoff_caps/ff413b061516e5c3a8eb25add442bd695a36cd4647f76afc8856512859430d8d.csv",
+  "repo_commit": "2e535d0bd46e8a31290fb35385074deb144d34cf",
+  "rows": 12,
+  "series": "runoff_caps",
+  "sha256": "ff413b061516e5c3a8eb25add442bd695a36cd4647f76afc8856512859430d8d",
+  "source_pages": {
+    "monetary20170920a1.htm.gz": "b8952f27e96a03107f97e82e325dda2fe0823426b0e7c17bd45298b1504b9a02",
+    "monetary20171213a1.htm.gz": "9226eeb18b2570f108ba4ca40964ab669b1d2aa24706807670808d724a680b57",
+    "monetary20180321a1.htm.gz": "c2d6e86183526ac559d202f4517ee09b3b93ece0eac652fc0ac931a13365efe2",
+    "monetary20180613a1.htm.gz": "c7f7e856eac5caaf9b89666922d61ec304eeea0ca8ce186797caaf2972c9ecda",
+    "monetary20180926a1.htm.gz": "5c7302872e633d4200aeb448656267476d466096b2f330c291f46f794014bb58",
+    "monetary20190320c.htm.gz": "6f6fca6f433de674fff571e7cbd747b5a51b4d0b161e2dd4aea233dfa61d570b",
+    "monetary20190731a1.htm.gz": "9eb50b15c6a7140b1b02695fbece37160c34f691ae142f45e3b92fcdc35f63a0",
+    "monetary20220504b.htm.gz": "f0e87ba12156edb5bd9c88d35822a6f6c100dde06a75b391e4ac9b2682c7d857",
+    "monetary20240501a1.htm.gz": "12dc4525b786291c043e56a1bb3b2237781f106ee7ee93aa002896c303c01288",
+    "monetary20250319a1.htm.gz": "18c0c4b62a197809598a7736121e4375ee64ad9de6d529343fbfb170390abd7a",
+    "monetary20251029a1.htm.gz": "5a9f46da653ca1a6f3ee2dbb132c6e81dd3b6c6a0eb9084eaf097e2c44ce7d24"
+  },
+  "source_table": "tests/fixtures/snapshots/fomc_notes/runoff_caps.csv"
+}
