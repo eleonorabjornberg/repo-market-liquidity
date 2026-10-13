@@ -20,16 +20,26 @@ import re
 from pathlib import Path
 from typing import Dict, List, Optional
 
-from repo_liquidity import PANEL_SHA256, PARENT_COMMIT, scheduled
+from repo_liquidity import PANEL_SHA256, PARENT_COMMIT, h41, scheduled
 
 ROOT = Path(__file__).resolve().parents[2]
 SNAPSHOTS = ROOT / "snapshots"
 
-#: The published series and the tracked table each is built from.
+H41_DIR = ROOT / "tests" / "fixtures" / "snapshots" / "h41"
+H41_AGENCY_EXTRACT = H41_DIR / "h41_agency_first_print.csv"
+H41_MBS_EXTRACT = H41_DIR / "h41_mbs_first_print.csv"
+#: The columns of the agency-securities snapshot (#30). The change columns are the releases' weekly changes in the
+#: week average as printed, in millions of dollars; `agency_securities_change_musd` is their sum (answer 15).
+AGENCY_SECURITIES_COLUMNS = ("week_ended", "release_date", "agency_debt_change_musd", "mbs_change_musd",
+                             "agency_securities_change_musd", "url", "page_sha256")
+
+#: The published series and the tracked table each is built from. The three FOMC series are copies of their tables;
+#: `agency_securities` is computed from two H.4.1 first-print extracts (see `build`).
 SERIES: Dict[str, Path] = {
     "on_rrp_rate": scheduled.ON_RRP_RATE_TABLE,
     "srf_rate": scheduled.SRF_TABLE,
     "runoff_caps": scheduled.CAPS_TABLE,
+    "agency_securities": H41_AGENCY_EXTRACT,
 }
 _HEX40 = re.compile(r"^[0-9a-f]{40}$")
 
@@ -50,19 +60,83 @@ def load_manifest(series: str, root: Path = ROOT) -> dict:
     return json.loads(manifest_path(series, root).read_text(encoding="utf-8"))
 
 
-def build(series: str, root: Path = ROOT, *, repo_commit: str) -> dict:
+def _relative(path: Path) -> str:
+    return str(path.relative_to(ROOT)) if path.is_relative_to(ROOT) else str(path)
+
+
+def _agency_securities_bytes(agency_extract: Path, mbs_extract: Path):
+    """The agency-securities snapshot's bytes, and the page each row was read from.
+
+    Both extracts are read through `h41.load_extract`, which refuses one that does not match its own manifest. A row is
+    the agency-debt change plus the MBS change of the same release, so both extracts must name the same release page
+    (its URL). The `page_sha256` is the agency extract's: the archive injects per-request tokens into every page, so
+    each fetch of one page has its own digest, and the MBS extract's differs from it. What ties the rows to one
+    release is `scripts/fetch_h41.py --row agency`, which checked every week's Treasury and MBS rows on the page it
+    fetched against the tracked extracts.
+    """
+    agency, mbs = h41.load_extract(agency_extract), h41.load_extract(mbs_extract)
+    total = h41.agency_securities(agency, mbs)
+
+    def raw(path: Path):
+        with path.open(encoding="utf-8") as handle:
+            return list(csv.DictReader(handle))
+
+    lines = [",".join(AGENCY_SECURITIES_COLUMNS)]
+    pages = {}
+    for debt, backed, both, a, m in zip(agency, mbs, total, raw(agency_extract), raw(mbs_extract)):
+        if a["url"] != m["url"]:
+            raise ValueError(f"the week ended {debt.week_ended}: the agency-debt and MBS rows were read from "
+                             f"different releases ({a['url']} and {m['url']})")
+        lines.append(",".join((debt.week_ended.isoformat(), debt.release_date.isoformat(),
+                               str(debt.change_from_prior_week), str(backed.change_from_prior_week),
+                               str(both.change_from_prior_week), a["url"], a["page_sha256"])))
+        pages[a["url"]] = a["page_sha256"]
+    return ("\n".join(lines) + "\n").encode("utf-8"), pages, total
+
+
+def _build_agency_securities(root: Path, repo_commit: str, agency_extract: Path, mbs_extract: Path) -> dict:
+    data, pages, total = _agency_securities_bytes(agency_extract, mbs_extract)
+    digest = hashlib.sha256(data).hexdigest()
+    (root / "snapshots" / "agency_securities").mkdir(parents=True, exist_ok=True)
+    relative = f"snapshots/agency_securities/{digest}.csv"
+    (root / relative).write_bytes(data)
+    manifest = {
+        "series": "agency_securities",
+        "path": relative,
+        "sha256": digest,
+        "columns": list(AGENCY_SECURITIES_COLUMNS),
+        "rows": len(total),
+        "first_announced": f"{total[0].release_date.isoformat()}T{h41.RELEASE_TIME.strftime('%H:%M')}",
+        "last_announced": f"{total[-1].release_date.isoformat()}T{h41.RELEASE_TIME.strftime('%H:%M')}",
+        "last_effective": total[-1].week_ended.isoformat(),
+        "source_table": _relative(agency_extract),
+        "source_tables": [_relative(agency_extract), _relative(mbs_extract)],
+        "source_pages": pages,
+        "parent_commit": PARENT_COMMIT,
+        "parent_panel_sha256": PANEL_SHA256,
+        "repo_commit": repo_commit,
+    }
+    manifest_path("agency_securities", root).write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n",
+                                                        encoding="utf-8")
+    return manifest
+
+
+def build(series: str, root: Path = ROOT, *, repo_commit: str, agency_extract: Optional[Path] = None) -> dict:
     """Write the series' snapshot and manifest under `root/snapshots/<series>/`, and return the manifest.
 
     The table is read through `scheduled` (which refuses one that does not match its own manifest), so a snapshot is
-    always of a verified table.
+    always of a verified table. `agency_securities` is read the same way through `h41.load_extract`; `agency_extract`
+    names another agency-debt extract for it (tests).
 
     Raises:
-        ValueError: if `series` is not published, `repo_commit` is not a full 40-character hash, or a saved page
-            behind a row is missing.
+        ValueError: if `series` is not published, `repo_commit` is not a full 40-character hash, a saved page
+            behind a row is missing, or an H.4.1 extract does not match its manifest.
     """
     table = _check_series(series)
     if not _HEX40.match(repo_commit):
         raise ValueError(f"repo_commit must be a full 40-character lowercase hash, got {repo_commit!r}")
+    if series == "agency_securities":
+        return _build_agency_securities(root, repo_commit, agency_extract or table, H41_MBS_EXTRACT)
     scheduled._verified_rows(table)
     data = table.read_bytes()
     digest = hashlib.sha256(data).hexdigest()

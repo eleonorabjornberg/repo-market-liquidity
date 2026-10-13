@@ -1,4 +1,4 @@
-# Decision: data meaning for Phase 3, questions 1 to 14
+# Decision: data meaning for Phase 3, questions 1 to 15
 
 **Status: decided by Nicholas Beroud, 6 October 2026, on issue #1** ([his answer](https://github.com/eleonorabjornberg/repo-market-liquidity/issues/1#issuecomment-6020655371)).
 In force once this record merges. Under the parent's `PLAN.md` the choice of data and its meaning are his. Where he
@@ -23,6 +23,7 @@ as she asked. This record summarizes him. His comment on issue #1 is the authori
 | 12 | ON RRP take-up | **Use the rate gap, not the level: TGCR minus the ON RRP rate.** Near zero, cash is abundant and parked at the Fed; well above, money funds lend in the market and the buffer is gone. Take-up stays only as the "buffer present or gone" flag (parent #232). |
 | 13 | Facility take-up | **Material use at $1bn or more, fixed in advance, as an event the model should explain.** Small take-ups are operational test trades. The amount is not modelled. The continuous input stays the distance from SOFR to the facility's rate. |
 | 14 | 2019–21 term repos (asked 6 October 2026; [his answer](https://github.com/eleonorabjornberg/repo-market-liquidity/issues/1#issuecomment-6021810713)) | **Option (c), with one addition.** Take-up counts each term repo as an amount outstanding from settlement to maturity, because its cash stays in the system for its term. The material-use event ($1bn or more) counts each operation on its operation date, overnight and term alike, because that is when the demand showed. **Caveat:** in 2019–20 the Fed set the term offering sizes, partly to cover year-end, so take-up reflects the Fed's design as well as market demand. The two May 2019 tests stay out. |
+| 15 | Agency debt (answered 7 October 2026, recorded 13 October 2026 for #30; [his answer](https://github.com/eleonorabjornberg/repo-market-liquidity/issues/1#issuecomment-6040855434), reaffirmed in [his reply of 12 October](https://github.com/eleonorabjornberg/repo-market-liquidity/issues/1#issuecomment-6131896290)) | **Include it, and call the measure "agency securities".** In his words: "The Fed's caps and its reinvestment into bills apply to agency debt and agency MBS together, so the realized change should match that definition. Agency debt is about $2.3bn on the latest H.4.1, so it won't move any result, and it reads from the same table." The measure is the H.4.1 table 1 weekly change in "Federal agency debt securities" plus that in "Mortgage-backed securities", from the same release (`repo_liquidity.h41.agency_securities`; `snapshots/agency_securities/`). The existing MBS and Treasury series are unchanged. |
 
 ## Ownership: the MBS scenario (Eleonora, 6 October 2026)
 

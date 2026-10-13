@@ -34,10 +34,17 @@ SERIES = "soma_treasury_weekly_change"
 #: The same for the MBS row (`docs/stages/stage-1a-correction.md`, item 1).
 MBS_SERIES = "soma_mbs_weekly_change"
 
+#: The same for the "Federal agency debt securities" row (#30; answer 15 of `docs/decisions/data-meaning.md`).
+AGENCY_SERIES = "soma_agency_debt_weekly_change"
+#: Agency debt plus MBS, week by week from the same release: Nicholas Beroud's "agency securities" (answer 15), the
+#: definition the Fed's caps and its reinvestment into bills use.
+AGENCY_SECURITIES_SERIES = "soma_agency_securities_weekly_change"
+
 #: Table 1 rows the parser reads.
 TREASURY_ROW = "U.S. Treasury securities"
 MBS_ROW = "Mortgage-backed securities"
-ROWS = {TREASURY_ROW: SERIES, MBS_ROW: MBS_SERIES}
+AGENCY_ROW = "Federal agency debt securities"
+ROWS = {TREASURY_ROW: SERIES, MBS_ROW: MBS_SERIES, AGENCY_ROW: AGENCY_SERIES}
 
 _NUMBERS = (
     # An optional footnote mark, printed "(4)" in older releases and a bare "4" in newer ones, then the four values.
@@ -110,6 +117,30 @@ def parse_release(page: str, *, release_date: date, row: str = TREASURY_ROW) -> 
         change_from_prior_week=_signed(match["week"]),
         wednesday_level=_signed(match["wednesday"]),
     )
+
+
+def agency_securities(agency: Iterable[Release], mbs: Iterable[Release]) -> List[Release]:
+    """Agency securities (answer 15): the agency-debt row plus the MBS row, each week, from the same release.
+
+    Raises:
+        ValueError: if the two extracts do not cover the same weeks of the same releases, in the same order.
+    """
+    agency, mbs = list(agency), list(mbs)
+    if len(agency) != len(mbs):
+        raise ValueError(f"{len(agency)} agency-debt weeks against {len(mbs)} MBS weeks")
+    out = []
+    for debt, backed in zip(agency, mbs):
+        if (debt.week_ended, debt.release_date) != (backed.week_ended, backed.release_date):
+            raise ValueError(f"agency debt is of the release of {debt.release_date} (week ended {debt.week_ended}), "
+                             f"MBS of {backed.release_date} (week ended {backed.week_ended})")
+        out.append(Release(
+            week_ended=debt.week_ended,
+            release_date=debt.release_date,
+            week_average=debt.week_average + backed.week_average,
+            change_from_prior_week=debt.change_from_prior_week + backed.change_from_prior_week,
+            wednesday_level=debt.wednesday_level + backed.wednesday_level,
+        ))
+    return out
 
 
 def available_at(release_date: date) -> datetime:

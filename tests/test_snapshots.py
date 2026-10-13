@@ -75,6 +75,45 @@ class TrackedSnapshotTests(unittest.TestCase):
         self.assertEqual(len(manifest["source_pages"]), manifest["rows"])
 
 
+class AgencySecuritiesSnapshotTests(unittest.TestCase):
+    """The H.4.1 agency-securities series (#30): built from the two tracked first-print extracts, not a rate table."""
+
+    def test_the_series_is_published_and_describes_itself(self):
+        manifest = snapshots.load_manifest("agency_securities")
+        self.assertEqual(manifest["series"], "agency_securities")
+        self.assertEqual(manifest["columns"], list(snapshots.AGENCY_SECURITIES_COLUMNS))
+        self.assertEqual(len(manifest["source_pages"]), manifest["rows"])
+        self.assertEqual(manifest["source_tables"], [
+            "tests/fixtures/snapshots/h41/h41_agency_first_print.csv",
+            "tests/fixtures/snapshots/h41/h41_mbs_first_print.csv",
+        ])
+
+    def test_each_row_is_agency_debt_plus_mbs_from_the_same_release(self):
+        for row in snapshots.read("agency_securities"):
+            self.assertEqual(int(row["agency_securities_change_musd"]),
+                             int(row["agency_debt_change_musd"]) + int(row["mbs_change_musd"]), row["week_ended"])
+
+    def test_the_mbs_column_is_the_tracked_mbs_extract_unchanged(self):
+        """The existing MBS series is not changed (#30, item 4): the snapshot only reads it."""
+        from repo_liquidity import h41
+
+        mbs = {r.week_ended.isoformat(): r.change_from_prior_week for r in h41.load_extract(snapshots.H41_MBS_EXTRACT)}
+        for row in snapshots.read("agency_securities"):
+            self.assertEqual(int(row["mbs_change_musd"]), mbs[row["week_ended"]])
+
+    def test_an_edited_extract_is_refused_by_the_build(self):
+        import shutil
+
+        with tempfile.TemporaryDirectory() as tmp:
+            copy = pathlib.Path(tmp) / "agency.csv"
+            shutil.copy(snapshots.H41_AGENCY_EXTRACT, copy)
+            shutil.copy(str(snapshots.H41_AGENCY_EXTRACT) + ".manifest.json", str(copy) + ".manifest.json")
+            copy.write_bytes(copy.read_bytes().replace(b"2017-12-27", b"2017-12-20", 1))
+            with self.assertRaisesRegex(ValueError, "does not match its manifest"):
+                snapshots.build("agency_securities", pathlib.Path(tmp) / "out", repo_commit="a" * 40,
+                                agency_extract=copy)
+
+
 class ReadTests(unittest.TestCase):
     def test_reading_by_digest_returns_the_rows(self):
         manifest = snapshots.load_manifest("srf_rate")
