@@ -1,0 +1,315 @@
+{
+  "development_end": "2026-09-03",
+  "format": "Tab Delimited",
+  "product": "Call Reports -- Single Period",
+  "url": "https://cdr.ffiec.gov/public/PWS/DownloadBulkData.aspx",
+  "vintage": "latest_filed",
+  "zips": [
+    {
+      "as_of": "2025-06-15T04:30:03",
+      "download_name": "FFIEC CDR Call Bulk All Schedules 03312018.zip",
+      "file": "2018-03-31-a9be30d444f7a2dd4d43db96d2a8bc56eb8deac28387617b7bcb46482742f87c.zip",
+      "quarter_end": "2018-03-31",
+      "retrieved_utc": "2026-10-14T19:16:15Z",
+      "sha256": "a9be30d444f7a2dd4d43db96d2a8bc56eb8deac28387617b7bcb46482742f87c",
+      "size": 7723363
+    },
+    {
+      "as_of": "2026-08-15T04:30:04",
+      "download_name": "FFIEC CDR Call Bulk All Schedules 06302018.zip",
+      "file": "2018-06-30-02247ea0634389ce1dde627766083fedbb4065036695399f32e477e8e6c2aef9.zip",
+      "quarter_end": "2018-06-30",
+      "retrieved_utc": "2026-10-14T19:16:15Z",
+      "sha256": "02247ea0634389ce1dde627766083fedbb4065036695399f32e477e8e6c2aef9",
+      "size": 7769831
+    },
+    {
+      "as_of": "2025-06-15T04:30:03",
+      "download_name": "FFIEC CDR Call Bulk All Schedules 09302018.zip",
+      "file": "2018-09-30-7633cd6d77b305c9893e846c478a5f373581d6ea8b78711798932a0f1436d5ea.zip",
+      "quarter_end": "2018-09-30",
+      "retrieved_utc": "2026-10-14T19:16:15Z",
+      "sha256": "7633cd6d77b305c9893e846c478a5f373581d6ea8b78711798932a0f1436d5ea",
+      "size": 7579959
+    },
+    {
+      "as_of": "2025-06-15T04:30:03",
+      "download_name": "FFIEC CDR Call Bulk All Schedules 12312018.zip",
+      "file": "2018-12-31-9af3e38c41cbf383699b3eb449a58611cd78ec35cfb04a44dc5d968323fb2ab3.zip",
+      "quarter_end": "2018-12-31",
+      "retrieved_utc": "2026-10-14T19:16:15Z",
+      "sha256": "9af3e38c41cbf383699b3eb449a58611cd78ec35cfb04a44dc5d968323fb2ab3",
+      "size": 7915522
+    },
+    {
+      "as_of": "2025-05-15T04:30:03",
+      "download_name": "FFIEC CDR Call Bulk All Schedules 03312019.zip",
+      "file": "2019-03-31-644e558a2cb9798e8f5d0b463c40a9cdcea7d982713ec835c378de0a66fd6a76.zip",
+      "quarter_end": "2019-03-31",
+      "retrieved_utc": "2026-10-14T19:16:15Z",
+      "sha256": "644e558a2cb9798e8f5d0b463c40a9cdcea7d982713ec835c378de0a66fd6a76",
+      "size": 7340120
+    },
+    {
+      "as_of": "2025-05-15T04:30:03",
+      "download_name": "FFIEC CDR Call Bulk All Schedules 06302019.zip",
+      "file": "2019-06-30-a94bcb5a036428bdc4a85563481c905c8b61ede006de937174c4e7962cbd148d.zip",
+      "quarter_end": "2019-06-30",
+      "retrieved_utc": "2026-10-14T19:16:15Z",
+      "sha256": "a94bcb5a036428bdc4a85563481c905c8b61ede006de937174c4e7962cbd148d",
+      "size": 7523107
+    },
+    {
+      "as_of": "2024-05-15T04:30:03",
+      "download_name": "FFIEC CDR Call Bulk All Schedules 09302019.zip",
+      "file": "2019-09-30-0117dc4acd70b1c97f7082ff0daf85b5386a41bd5cb578786dad6de5a601afcf.zip",
+      "quarter_end": "2019-09-30",
+      "retrieved_utc": "2026-10-14T19:16:15Z",
+      "sha256": "0117dc4acd70b1c97f7082ff0daf85b5386a41bd5cb578786dad6de5a601afcf",
+      "size": 6715923
+    },
+    {
+      "as_of": "2024-04-15T04:30:03",
+      "download_name": "FFIEC CDR Call Bulk All Schedules 12312019.zip",
+      "file": "2019-12-31-76759cc9ecd6570e9cdc11abaa1982af1a982b215e4674256a920cf426bef433.zip",
+      "quarter_end": "2019-12-31",
+      "retrieved_utc": "2026-10-14T19:16:15Z",
+      "sha256": "76759cc9ecd6570e9cdc11abaa1982af1a982b215e4674256a920cf426bef433",
+      "size": 7651046
+    },
+    {
+      "as_of": "2024-05-15T04:30:03",
+      "download_name": "FFIEC CDR Call Bulk All Schedules 03312020.zip",
+      "file": "2020-03-31-8adeb627e825855250f7f0299e39301feec3a60f38eb1fbc8a74c7b3aede10dc.zip",
+      "quarter_end": "2020-03-31",
+      "retrieved_utc": "2026-10-14T19:16:15Z",
+      "sha256": "8adeb627e825855250f7f0299e39301feec3a60f38eb1fbc8a74c7b3aede10dc",
+      "size": 6358272
+    },
+    {
+      "as_of": "2024-04-15T04:30:03",
+      "download_name": "FFIEC CDR Call Bulk All Schedules 06302020.zip",
+      "file": "2020-06-30-89ad4acaddea1385590c0fd4c6cba8bcda25383d455782518bb5dc547e91f218.zip",
+      "quarter_end": "2020-06-30",
+      "retrieved_utc": "2026-10-14T19:16:15Z",
+      "sha256": "89ad4acaddea1385590c0fd4c6cba8bcda25383d455782518bb5dc547e91f218",
+      "size": 7011260
+    },
+    {
+      "as_of": "2024-08-15T04:30:02",
+      "download_name": "FFIEC CDR Call Bulk All Schedules 09302020.zip",
+      "file": "2020-09-30-357474e433fb8cd672e09312b850beeaa041da11ed64809eddb56c878456d659.zip",
+      "quarter_end": "2020-09-30",
+      "retrieved_utc": "2026-10-14T19:16:15Z",
+      "sha256": "357474e433fb8cd672e09312b850beeaa041da11ed64809eddb56c878456d659",
+      "size": 6410868
+    },
+    {
+      "as_of": "2024-11-15T04:30:04",
+      "download_name": "FFIEC CDR Call Bulk All Schedules 12312020.zip",
+      "file": "2020-12-31-4b4228ca49d1a6e92210cbbc2d6eab43ff447a7201726c1a905967072096e061.zip",
+      "quarter_end": "2020-12-31",
+      "retrieved_utc": "2026-10-14T19:16:15Z",
+      "sha256": "4b4228ca49d1a6e92210cbbc2d6eab43ff447a7201726c1a905967072096e061",
+      "size": 7200596
+    },
+    {
+      "as_of": "2026-01-15T04:30:03",
+      "download_name": "FFIEC CDR Call Bulk All Schedules 03312021.zip",
+      "file": "2021-03-31-92bc2920c195dfb1ad0f3e6014d7aca9c82c01184fa1da83b69643dabd150ce1.zip",
+      "quarter_end": "2021-03-31",
+      "retrieved_utc": "2026-10-14T19:16:15Z",
+      "sha256": "92bc2920c195dfb1ad0f3e6014d7aca9c82c01184fa1da83b69643dabd150ce1",
+      "size": 6226567
+    },
+    {
+      "as_of": "2026-09-15T04:30:03",
+      "download_name": "FFIEC CDR Call Bulk All Schedules 06302021.zip",
+      "file": "2021-06-30-a478eb6d4b29c7d56e473be846377727768e675c0db06e92dedb03ae5fe37c15.zip",
+      "quarter_end": "2021-06-30",
+      "retrieved_utc": "2026-10-14T19:16:15Z",
+      "sha256": "a478eb6d4b29c7d56e473be846377727768e675c0db06e92dedb03ae5fe37c15",
+      "size": 6825605
+    },
+    {
+      "as_of": "2026-09-15T04:30:03",
+      "download_name": "FFIEC CDR Call Bulk All Schedules 09302021.zip",
+      "file": "2021-09-30-eca457a07e04a655a63a4791ff913ff7567f1249507eb30f95fa811e99e248d3.zip",
+      "quarter_end": "2021-09-30",
+      "retrieved_utc": "2026-10-14T19:16:15Z",
+      "sha256": "eca457a07e04a655a63a4791ff913ff7567f1249507eb30f95fa811e99e248d3",
+      "size": 6258847
+    },
+    {
+      "as_of": "2026-09-15T04:30:03",
+      "download_name": "FFIEC CDR Call Bulk All Schedules 12312021.zip",
+      "file": "2021-12-31-70b9137a40ad4d4c70185d46e71c42312c639a4ea28daf58e71a65cef6104d95.zip",
+      "quarter_end": "2021-12-31",
+      "retrieved_utc": "2026-10-14T19:16:15Z",
+      "sha256": "70b9137a40ad4d4c70185d46e71c42312c639a4ea28daf58e71a65cef6104d95",
+      "size": 6997860
+    },
+    {
+      "as_of": "2026-09-15T04:30:03",
+      "download_name": "FFIEC CDR Call Bulk All Schedules 03312022.zip",
+      "file": "2022-03-31-bbbb7896d79bde0b8f7dfecd078b9624f762b31d89cbfc62bc25c895172e71ca.zip",
+      "quarter_end": "2022-03-31",
+      "retrieved_utc": "2026-10-14T19:16:15Z",
+      "sha256": "bbbb7896d79bde0b8f7dfecd078b9624f762b31d89cbfc62bc25c895172e71ca",
+      "size": 6032974
+    },
+    {
+      "as_of": "2026-09-15T04:30:03",
+      "download_name": "FFIEC CDR Call Bulk All Schedules 06302022.zip",
+      "file": "2022-06-30-0e5d3a438c7b5b2c1516bf405fc365797ceb2bce9ea59c96828c77609ed2cbd9.zip",
+      "quarter_end": "2022-06-30",
+      "retrieved_utc": "2026-10-14T19:16:15Z",
+      "sha256": "0e5d3a438c7b5b2c1516bf405fc365797ceb2bce9ea59c96828c77609ed2cbd9",
+      "size": 6653616
+    },
+    {
+      "as_of": "2026-09-15T04:30:03",
+      "download_name": "FFIEC CDR Call Bulk All Schedules 09302022.zip",
+      "file": "2022-09-30-11a8c85f2d8706b8aa33faa065f6058964cbe5218ef60e2f0365133cd9f641c1.zip",
+      "quarter_end": "2022-09-30",
+      "retrieved_utc": "2026-10-14T19:16:15Z",
+      "sha256": "11a8c85f2d8706b8aa33faa065f6058964cbe5218ef60e2f0365133cd9f641c1",
+      "size": 6090342
+    },
+    {
+      "as_of": "2026-09-15T04:30:03",
+      "download_name": "FFIEC CDR Call Bulk All Schedules 12312022.zip",
+      "file": "2022-12-31-08e151307917e7baaa656d6eb17d6fe167688a7473ad577723c9a7d983b52247.zip",
+      "quarter_end": "2022-12-31",
+      "retrieved_utc": "2026-10-14T19:16:15Z",
+      "sha256": "08e151307917e7baaa656d6eb17d6fe167688a7473ad577723c9a7d983b52247",
+      "size": 6902765
+    },
+    {
+      "as_of": "2026-09-15T04:30:03",
+      "download_name": "FFIEC CDR Call Bulk All Schedules 03312023.zip",
+      "file": "2023-03-31-6e9e2ca2243544721932b2670d204fc4b94ccdd13b73d6d8369237c7a0ebde16.zip",
+      "quarter_end": "2023-03-31",
+      "retrieved_utc": "2026-10-14T19:16:15Z",
+      "sha256": "6e9e2ca2243544721932b2670d204fc4b94ccdd13b73d6d8369237c7a0ebde16",
+      "size": 5975877
+    },
+    {
+      "as_of": "2026-09-15T04:30:03",
+      "download_name": "FFIEC CDR Call Bulk All Schedules 06302023.zip",
+      "file": "2023-06-30-49c6c8e6f5a7df28f102b25d8ca4e61616fb89eefba595e98c179b5cbd5800f0.zip",
+      "quarter_end": "2023-06-30",
+      "retrieved_utc": "2026-10-14T19:16:15Z",
+      "sha256": "49c6c8e6f5a7df28f102b25d8ca4e61616fb89eefba595e98c179b5cbd5800f0",
+      "size": 6584947
+    },
+    {
+      "as_of": "2026-09-15T04:30:03",
+      "download_name": "FFIEC CDR Call Bulk All Schedules 09302023.zip",
+      "file": "2023-09-30-7197313cf8ff95d1479f88e4b861cc842f5ac370e04b5673e913b2722085ddc2.zip",
+      "quarter_end": "2023-09-30",
+      "retrieved_utc": "2026-10-14T19:16:15Z",
+      "sha256": "7197313cf8ff95d1479f88e4b861cc842f5ac370e04b5673e913b2722085ddc2",
+      "size": 6016863
+    },
+    {
+      "as_of": "2026-09-15T04:30:03",
+      "download_name": "FFIEC CDR Call Bulk All Schedules 12312023.zip",
+      "file": "2023-12-31-c71a4070c62ff0616bd5e617298a2f916061c18443481934c1c00c598588468d.zip",
+      "quarter_end": "2023-12-31",
+      "retrieved_utc": "2026-10-14T19:16:15Z",
+      "sha256": "c71a4070c62ff0616bd5e617298a2f916061c18443481934c1c00c598588468d",
+      "size": 6823498
+    },
+    {
+      "as_of": "2026-09-15T04:30:03",
+      "download_name": "FFIEC CDR Call Bulk All Schedules 03312024.zip",
+      "file": "2024-03-31-c9d1128d9419f5aace6da52a3ec20ce5861909b91df4cdd828b3210fe4e81e40.zip",
+      "quarter_end": "2024-03-31",
+      "retrieved_utc": "2026-10-14T19:16:15Z",
+      "sha256": "c9d1128d9419f5aace6da52a3ec20ce5861909b91df4cdd828b3210fe4e81e40",
+      "size": 5772891
+    },
+    {
+      "as_of": "2026-09-15T04:30:03",
+      "download_name": "FFIEC CDR Call Bulk All Schedules 06302024.zip",
+      "file": "2024-06-30-9b025134b1b0128fa3ad70286e5969603290feed8bda7d2993a959f5aea49a13.zip",
+      "quarter_end": "2024-06-30",
+      "retrieved_utc": "2026-10-14T19:16:15Z",
+      "sha256": "9b025134b1b0128fa3ad70286e5969603290feed8bda7d2993a959f5aea49a13",
+      "size": 6365071
+    },
+    {
+      "as_of": "2026-09-15T04:30:03",
+      "download_name": "FFIEC CDR Call Bulk All Schedules 09302024.zip",
+      "file": "2024-09-30-2a43f0693528f4f266f9ffffd2a05e308f4a382ced857226aec2e5ad2bdaeea0.zip",
+      "quarter_end": "2024-09-30",
+      "retrieved_utc": "2026-10-14T19:16:15Z",
+      "sha256": "2a43f0693528f4f266f9ffffd2a05e308f4a382ced857226aec2e5ad2bdaeea0",
+      "size": 5840513
+    },
+    {
+      "as_of": "2026-09-15T04:30:03",
+      "download_name": "FFIEC CDR Call Bulk All Schedules 12312024.zip",
+      "file": "2024-12-31-d549a01fc35514372ce8b9da46783e5bddb75385869a636e2d0c5739795b0878.zip",
+      "quarter_end": "2024-12-31",
+      "retrieved_utc": "2026-10-14T19:16:15Z",
+      "sha256": "d549a01fc35514372ce8b9da46783e5bddb75385869a636e2d0c5739795b0878",
+      "size": 6605577
+    },
+    {
+      "as_of": "2026-09-15T04:30:03",
+      "download_name": "FFIEC CDR Call Bulk All Schedules 03312025.zip",
+      "file": "2025-03-31-5221fb0beb61b2076a9e60fb8569caeb531c7f4fcfa2dc6b443381d1045a7961.zip",
+      "quarter_end": "2025-03-31",
+      "retrieved_utc": "2026-10-14T19:16:15Z",
+      "sha256": "5221fb0beb61b2076a9e60fb8569caeb531c7f4fcfa2dc6b443381d1045a7961",
+      "size": 5705152
+    },
+    {
+      "as_of": "2026-09-15T04:30:03",
+      "download_name": "FFIEC CDR Call Bulk All Schedules 06302025.zip",
+      "file": "2025-06-30-99ab95739eb89f0c0468cd79005e6d822fb4d37ba6a628dcec4f369d614e0494.zip",
+      "quarter_end": "2025-06-30",
+      "retrieved_utc": "2026-10-14T19:16:15Z",
+      "sha256": "99ab95739eb89f0c0468cd79005e6d822fb4d37ba6a628dcec4f369d614e0494",
+      "size": 6231374
+    },
+    {
+      "as_of": "2026-09-15T04:30:03",
+      "download_name": "FFIEC CDR Call Bulk All Schedules 09302025.zip",
+      "file": "2025-09-30-ed25c77ee6e6b312345347a65fd15ebe62a9ca9b84126dd50a39ccbb59840149.zip",
+      "quarter_end": "2025-09-30",
+      "retrieved_utc": "2026-10-14T19:16:15Z",
+      "sha256": "ed25c77ee6e6b312345347a65fd15ebe62a9ca9b84126dd50a39ccbb59840149",
+      "size": 5687801
+    },
+    {
+      "as_of": "2026-09-15T04:30:03",
+      "download_name": "FFIEC CDR Call Bulk All Schedules 12312025.zip",
+      "file": "2025-12-31-66d9881a82c4e7391acfe7b75fa2ada5c6fcbd8fb8325a71025b50fd62db6097.zip",
+      "quarter_end": "2025-12-31",
+      "retrieved_utc": "2026-10-14T19:16:15Z",
+      "sha256": "66d9881a82c4e7391acfe7b75fa2ada5c6fcbd8fb8325a71025b50fd62db6097",
+      "size": 6408428
+    },
+    {
+      "as_of": "2026-09-15T04:30:03",
+      "download_name": "FFIEC CDR Call Bulk All Schedules 03312026.zip",
+      "file": "2026-03-31-e19452450909399dc104d51cddcea0db17d71d872b20f67234fedf56340c1e69.zip",
+      "quarter_end": "2026-03-31",
+      "retrieved_utc": "2026-10-14T19:16:15Z",
+      "sha256": "e19452450909399dc104d51cddcea0db17d71d872b20f67234fedf56340c1e69",
+      "size": 5483032
+    },
+    {
+      "as_of": "2026-09-15T04:30:03",
+      "download_name": "FFIEC CDR Call Bulk All Schedules 06302026.zip",
+      "file": "2026-06-30-0a2d59ce16b5a5b756765e00364d525855019ac657e0398c96323aebfa1679fe.zip",
+      "quarter_end": "2026-06-30",
+      "retrieved_utc": "2026-10-14T19:16:15Z",
+      "sha256": "0a2d59ce16b5a5b756765e00364d525855019ac657e0398c96323aebfa1679fe",
+      "size": 5980988
+    }
+  ]
+}

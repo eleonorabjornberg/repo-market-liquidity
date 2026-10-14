@@ -1,9 +1,13 @@
 # Group reserves (#43): due diligence on the quarterly anchor
 
-**Status: step 1 of #43, written first. It finds that the anchor Nicholas's answer 17(b) asks for can be read for
-domestic banks from the CDR bulk files, but cannot be read for foreign-related institutions from any source this
-environment reaches, and that the domestic items cover about 54% to 67% of H.4.1 reserve balances. The anchor overlay
-and the weekly series are not built.** Hypothesis and step: H7m, groundwork G4 (candidate C). No score.
+**Status (updated 14 October 2026 by the fix run on Eleonora's rulings; the sections below are the first run's text, kept as
+written, and section 7 says what changed).** Step 1 found that the anchor Nicholas's answer 17(b) asks for can be read for
+domestic banks from the CDR bulk files, that the FFIEC 002 for foreign-related institutions cannot be read from any source
+this environment reaches, and that the domestic items cover about 54% to 67% of H.4.1 reserve balances. Eleonora has since
+ruled (section 7): the foreign group's weekly level is the H.8 foreign-related cash assets, labelled an approximation, and no
+FFIEC 002 is read. The anchor overlay and the weekly series are now built (`repo_liquidity.rca`,
+`repo_liquidity.group_reserves`); section 7 reports what they show. Hypothesis and step: H7m, groundwork G4 (candidate C).
+No score.
 
 Answer 17 is recorded in `docs/decisions/data-meaning.md`; answer 16(d) as amended by Eleonora's ruling of 13 October
 2026 (PR #44) sets how a Call Report figure is dated. Read with both.
@@ -127,3 +131,45 @@ in one directory, then:
 python3 -I scripts/diagnostics/ffiec_rca_diligence.py DIRECTORY --reserves \
   <parent>/tests/fixtures/snapshots/alfred-wresbal/WRESBAL_2026-09-12.csv
 ```
+
+## 7. Update, 14 October 2026: the rulings and what the build shows
+
+**Rulings** (recorded as row 18 of `docs/decisions/data-meaning.md`, drafted for her to merge):
+
+- Q1 (16:12 UTC): www.ffiec.gov allowed. The fix run found it moot: www.ffiec.gov passes the proxy but FFIEC itself answers
+  `curl -sS https://www.ffiec.gov/npw/FinancialReport/DataDownload` with HTTP 403 and a page titled "CAPTCHA Error | FFIEC" (a bot
+  block on their side; nothing was worked around). The current form instructions therefore remain unchecked.
+- Q2: no domestic-only series. Q3: top 25 by domestic assets, labelled an approximation, the Board's list where found.
+- 19:13 UTC, option (a): the H.8 foreign-related institutions' cash assets (weekly first prints) are the foreign group's level,
+  labelled an approximation; no FFIEC 002 for now (a hand-downloaded one may come later as a sensitivity check).
+
+**What was built.** `repo_liquidity.rca` reads RC-A item 0090 from the 34 stored quarters (2018-03-31 to 2026-06-30) into
+two groups (the 25 filers with the largest total assets; every other carrying filer), each a latest-filed sum available from
+the day after its slowest member's latest update (`declarations/ffiec_call_rca.json`, snapshot `snapshots/rca_anchor/`).
+`repo_liquidity.group_reserves` moves each anchor with the H.8 group cash assets, takes the foreign group from the H.8, and
+leaves the residual "other depository institutions" against H.4.1 reserves.
+
+**What it shows (generated tables: `docs/research/rca-anchor-coverage.md`, `docs/research/group-reserves-coverage.md`).**
+
+1. **The anchor is very stale in real time.** Under the amended answer 16(d) a figure is available only from its latest-update
+   time, and a group's sum from its slowest member's. For the large group the extract's figures became available 189 to 1,714
+   days after quarter-end (the quarters not withheld; 1,358 days for 2018Q1, 1,714 for 2018Q2); for the small group 972 to
+   1,596. The share of the large group's balance whose own latest update fell within 45 days of quarter-end is 2% to 39% for
+   the quarters to 2024 (36% to 79% for the small group), so a partial-sum reading would have undercounted badly (the
+   diagnostic table in the coverage record; no model reads it).
+2. **Twelve of 68 group-quarters are withheld**, because a member was last updated after the parent's development end
+   (2026-09-10 and 2026-09-11, a batch of resubmissions): the small group for 2024Q1 to 2026Q2 (ten quarters) and the large
+   group for 2026Q1 and 2026Q2.
+3. **No week has a row.** Of 452 H.8 weeks, 241 have no anchor public for both domestic groups (the first pair is public on
+   2022-08-13), and the other 211 stand on an anchor whose week lies before an H.8 break week, so the move is refused
+   (`h8.difference`'s rule).
+4. **The approximations are coherent where they can be computed.** With the break refusal switched off (a diagnostic, never a
+   series) the 211 weeks from 2022-08-10 give a residual "other depository institutions" of about 150 to 480 billion dollars with
+   one negative week, so the three groups do not overshoot reserves.
+
+**Why this is a question for her, not a code choice.** Three readings are open and each changes what is available: (i) how a
+group's sum becomes public (slowest member, as built; a completeness threshold; or filer-by-filer carry-forward);
+(ii) how a weekly move is split when the anchor and the H.8 disagree in sign, and whether a ratio across a break may be
+adjusted; (iii) whether the anchor may be a labelled retrospective input outside the information set for the measurement claim
+H7m. They are asked in PR #50. Until she rules, the weekly series is published as its builder, its tests and its coverage
+record, with no row, and no snapshot of it is published.
