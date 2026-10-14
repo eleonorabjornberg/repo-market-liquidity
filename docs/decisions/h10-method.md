@@ -1,9 +1,10 @@
-# Decision (DRAFT for Eleonora): H10's attribution method, v1
+# Decision: H10's attribution method, v1
 
-**Status: a draft for Eleonora to merge (H10 step 1, repo-market-liquidity#23; values set by her ruling, directive #45).
-It is in force only once she merges it. The six values below are decided, by her ruling on
+**Status: in force. Merged by Eleonora (H10 step 1, repo-market-liquidity#23: PR #33 on 13 October 2026 and PR #48 on
+14 October 2026; the amendment of section 9: PR #66 on 14 October 2026). The six values of sections 1 to 5 were decided by her ruling on
 [#37](https://github.com/eleonorabjornberg/repo-market-liquidity/issues/37#issuecomment-6159864877) (13 October 2026):
-"i agree with your recommendations". Nothing is applied to a real episode before this record is merged (H10 step 2).**
+"i agree with your recommendations". The six answers of section 9d were decided by her on 14 October 2026 and are recorded
+in section 9f (H10 step 2, #70). The method is applied to the development onsets in `docs/stages/h10-step2.md`.**
 
 H10 asks, for each pressure episode, what share of the rise in SOFR − IORB is accounted for by Treasury settlement, the
 TGA, reserves, quarter-end and a residual (plan, H10). This record declares the method before it is applied. It is
@@ -142,8 +143,9 @@ two additions below say so.
 
 ## 9. Amendment (Eleonora, 14 October 2026; finding #52): a selection-aware null and ON RRP as a driver
 
-**Status: DRAFT for Eleonora (directive #62). Every value in this section is PROPOSED and is hers to set. Nothing here is
-in force until she merges it, and sections 1 to 8 stand except where this section changes them.** Her ruling
+**Status: in force, merged by Eleonora on 14 October 2026 (PR #66). Her answers to the six questions of 9d are recorded in
+9f and are decided; the text of 9a to 9e below is the draft as she merged it, with its recommendations, and where 9f
+differs from a recommendation 9f decides.** Sections 1 to 8 stand except where this section changes them. Her ruling
 ([on #52](https://github.com/eleonorabjornberg/repo-market-liquidity/issues/52)): amend this record before H10 step 2, to
 add a null that allows for how episodes are selected, and to add ON RRP as a driver. This section applies no method to a
 real episode, scores nothing, and publishes no figure.
@@ -221,3 +223,25 @@ coefficients; the ON RRP driver recovers a planted coefficient and a driver with
 
 It attributes no real episode, runs no null on real data, scores nothing and registers nothing; `results/`, `metadata/` and
 `snapshots/` are unchanged. H10 step 2 waits for this record to be merged.
+
+### 9f. Decided (Eleonora, 14 October 2026)
+
+Her answers to the six questions of 9d, from [her comment on #69](https://github.com/eleonorabjornberg/repo-market-liquidity/issues/69#issuecomment-6175564687)
+(posted by her, not through an app; the SLR answers in the same comment belong to directive #71):
+
+> **H10 §9d: (1) N1; (2) explained share; (3) 95th percentile; (4) a second condition; (5) ON RRP take-up as a window change,
+> with the interaction reported later as a sensitivity; (6) 1,000 draws.**
+
+| 9d | Question | Answer | Status |
+|---|---|---|---|
+| 1 | Construction of the null | **N1**, as recommended | decided |
+| 2 | Statistic | **the explained share**, as recommended | decided |
+| 3 | Bar | **the 95th percentile** of the null (`NULL_QUANTILE` = 0.95), as recommended | decided |
+| 4 | Second condition or replacement of the 50% bar | **a second condition**: an episode counts as attributed only if it is under the residual bar of section 5 and also beats the null (`outcome_with_null`), as recommended | decided |
+| 5 | ON RRP | **ON RRP take-up as a window change** (`DRIVERS_WITH_ON_RRP`, five drivers, 32 refits per share), as recommended, **with the interaction reported later as a sensitivity**; the interaction is not built in step 2 | decided |
+| 6 | Draws | **1,000** (`NULL_DRAWS`), as recommended | decided |
+
+What follows from these answers for H10 step 2 (`docs/stages/h10-step2.md`): the drivers applied to the real onsets are the
+five of `DRIVERS_WITH_ON_RRP`; the benchmark of section 4 (reserves alone) and the shares of section 2 are unchanged; the
+outcome counts are reported three ways (under the residual bar, beating the null, and both), and the second condition is
+the one the outcome rule reads. The text of sections 0 to 8 is unchanged.
