@@ -205,14 +205,18 @@ class InformationTest:
 
 def information_test(estimate: Sequence[Optional[float]], ratio: Sequence[float], state: Sequence[float],
                      event: Sequence[int], *, look: int, seed: int, draws: Optional[int] = None,
-                     futility_level: Optional[float] = None) -> InformationTest:
+                     futility_level: Optional[float] = None,
+                     indices: Optional[Sequence[Sequence[int]]] = None) -> InformationTest:
     """§6: the §5 statistic with its one-sided lower bound at look `look`'s nominal level (and an upper bound, if asked).
+
+    `indices` are resamples already drawn (by `stationary_bootstrap_indices` from `seed`), so that several estimates
+    over the same days can share them; `draws` is then their number.
 
     Raises:
         scoring_protocol.UnresolvedLevel: if `draws` cannot resolve the level (a bound needs a draw beyond it).
         ValueError: if the columns differ in length.
     """
-    draws = draws_for(look) if draws is None else draws
+    draws = (draws_for(look) if indices is None else len(indices)) if draws is None else draws
     level = nominal_level(look)
     for what, value in (("lower", level), ("upper", futility_level)):
         if value is not None and min(value, 1.0 - value) * draws < 1.0:
@@ -220,8 +224,9 @@ def information_test(estimate: Sequence[Optional[float]], ratio: Sequence[float]
                 f"the {what} bound at level {value:.6g} needs a draw beyond it; {draws} draws resolve no level "
                 f"below {1.0 / draws:.6g}")
     point = stratified_gain(estimate, ratio, state, event)
-    rng = random.Random(seed)
-    indices = (stationary_bootstrap_indices(len(ratio), BLOCK_LENGTH, rng) for _ in range(draws))
+    if indices is None:
+        rng = random.Random(seed)
+        indices = (stationary_bootstrap_indices(len(ratio), BLOCK_LENGTH, rng) for _ in range(draws))
     gains = bootstrap_gains(estimate, ratio, state, event, indices)
     lower = float(np.quantile(gains, level))
     upper = None if futility_level is None else float(np.quantile(gains, 1.0 - futility_level))

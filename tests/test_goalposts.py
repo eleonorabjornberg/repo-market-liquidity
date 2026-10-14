@@ -193,6 +193,16 @@ class BootstrapTests(unittest.TestCase):
         self.assertEqual((a.point, a.lower), (b.point, b.lower))
 
 
+    def test_shared_indices_give_the_same_bound_as_the_seed_that_drew_them(self):
+        ratio, state, event, hidden = _world(n=200)
+        informed = [r + 0.012 * h for r, h in zip(ratio, hidden)]
+        rng = random.Random(5)
+        indices = [stationary_bootstrap_indices(len(ratio), gp.BLOCK_LENGTH, rng) for _ in range(2000)]
+        a = gp.information_test(informed, ratio, state, event, look=1, draws=2000, seed=5)
+        b = gp.information_test(informed, ratio, state, event, look=1, seed=0, indices=indices)
+        self.assertEqual((a.point, a.lower, a.draws), (b.point, b.lower, b.draws))
+
+
 class VerdictTests(unittest.TestCase):
     def _test(self, point, lower, upper=0.2, events=20):
         return gp.InformationTest(point=point, lower=lower, upper=upper, level=0.05, draws=10000, events=events,
