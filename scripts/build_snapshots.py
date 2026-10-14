@@ -24,11 +24,14 @@ def _git(*args: str) -> str:
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--check", action="store_true", help="rebuild and compare with the tracked manifests")
+    parser.add_argument("--series", action="append", choices=sorted(snapshots.SERIES),
+                        help="build only this series (repeatable); a build of a series rewrites its manifest at this commit")
     args = parser.parse_args(argv)
+    chosen = args.series or list(snapshots.SERIES)
     if args.check:
         bad = []
         with tempfile.TemporaryDirectory() as tmp:
-            for series in snapshots.SERIES:
+            for series in chosen:
                 tracked = snapshots.load_manifest(series)
                 rebuilt = snapshots.build(series, Path(tmp), repo_commit=tracked["repo_commit"])
                 if rebuilt != tracked:
@@ -40,9 +43,10 @@ def main(argv=None) -> int:
         print("refusing to build from a tree with uncommitted changes:\n" + "\n".join(dirty), file=sys.stderr)
         return 1
     commit = _git("rev-parse", "HEAD").strip()
-    for series in snapshots.SERIES:
+    for series in chosen:
         manifest = snapshots.build(series, repo_commit=commit)
-        print(f"{series}: {manifest['sha256']} ({manifest['rows']} rows, last announced {manifest['last_announced']})")
+        last = manifest.get("last_announced") or f"last week {manifest['last_week']}"
+        print(f"{series}: {manifest['sha256']} ({manifest['rows']} rows, {last})")
     return 0
 
 
