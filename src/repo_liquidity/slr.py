@@ -9,9 +9,10 @@ figures, so each (bank, quarter) value is a labelled, amended figure (`vintage =
   thousands, from the consolidated column (`RCFA`), else the domestic-offices column (`RCOA`); the reported
   supplementary leverage ratio (item H036) is kept beside the ratio computed from the two and checked against it.
 - **The measure.** `slr_pct = 100 * tier 1 capital / total leverage exposure`; `headroom_pp = slr_pct - requirement_pct`.
-  Row 16(b) sets the requirement only for the period before 2026-04-01 (6%, the enhanced ratio at G-SIB subsidiaries).
-  What applies from 2026-04-01 on is not set there, so those quarters carry the ratio and **no headroom**: it is a
-  question for Eleonora, not a value picked in code.
+  The requirement is read from `REQUIREMENT_TABLE` (`docs/decisions/slr-requirement.md`, a draft for Eleonora): 6% for
+  quarter-ends from 2018-01-01 to 2026-03-31 (the enhanced ratio at G-SIB subsidiaries) and, from 2026-04-01, a value the
+  rule leaves to each bank, so those quarters carry the ratio and **no headroom**; before 2018 the table has no entry. State
+  Street is outside the main measure and a labelled sensitivity (`measure`, Eleonora's decision on #69).
 - **No aggregate.** Row 16 names no way to combine the nine banks; the extract is one row per bank and quarter.
 - **Availability.** A row is public from the start of the day after its latest-update date, in New York. The update
   time carries no time zone and the posting lag is not recorded, so the whole day is skipped, which is later than the
@@ -63,9 +64,64 @@ BANKS: Mapping[int, str] = {
 TIER1_ITEM, EXPOSURE_ITEM, REPORTED_RATIO_ITEM = "8274", "H015", "H036"
 COLUMN_FORMS = ("RCFA", "RCOA")
 
-#: Row 16(b): the enhanced ratio at G-SIB subsidiaries, which was the stricter constraint before 2026-04-01.
-REQUIREMENT_PCT = 6.0
-REQUIREMENT_ENDS = date(2026, 4, 1)
+
+
+@dataclass(frozen=True)
+class RequirementPeriod:
+    """One period of the requirement table (`docs/decisions/slr-requirement.md`, a draft for Eleonora).
+
+    `start` is the first quarter-end date the period covers; `end` is the first date it does not (None: open-ended).
+    `requirement_pct` is None where the rule leaves the value to each bank, so the headroom is left blank.
+    """
+
+    start: date
+    end: Optional[date]
+    requirement_pct: Optional[float]
+    citation: str
+
+
+#: The requirement in force on a quarter-end (#71, Q1; row 16(b)). Quarter-ends before 2018-01-01 have no entry, and the
+#: headroom of a quarter with no entry is blank. Each row is quoted in `docs/decisions/slr-requirement.md`, which is
+#: DRAFT until Eleonora merges it; `RequirementTableTests` checks that the two agree.
+REQUIREMENT_TABLE: Tuple[RequirementPeriod, ...] = (
+    RequirementPeriod(date(2018, 1, 1), date(2026, 4, 1), 6.0, "12 CFR 6.4(c)(1)(iv)(B), as added at 79 FR 24539 (May 1, 2014)"),
+    RequirementPeriod(date(2026, 4, 1), None, None, "12 CFR 3.10(a)(1)(v) and 3.11(c)(2)(v), as amended at 90 FR 55287 and 55288 (Dec. 1, 2025)"),
+)
+
+
+def _checked(table: Sequence[RequirementPeriod]) -> Sequence[RequirementPeriod]:
+    previous: Optional[RequirementPeriod] = None
+    for period in table:
+        if period.end is not None and period.end <= period.start:
+            raise ValueError(f"requirement period {period.start} to {period.end} ends before it starts")
+        if previous is not None and (previous.end is None or previous.end > period.start):
+            raise ValueError(f"requirement periods overlap or are out of order at {period.start}")
+        previous = period
+    return table
+
+
+def requirement_for(quarter_end: date, table: Optional[Sequence[RequirementPeriod]] = None) -> Optional[float]:
+    """The requirement, in percent, that the table puts in force on `quarter_end`, or None (no period, or no value).
+
+    Raises:
+        ValueError: if the table's periods overlap, are out of order, or end before they start.
+    """
+    for period in _checked(REQUIREMENT_TABLE if table is None else table):
+        if quarter_end >= period.start and (period.end is None or quarter_end < period.end):
+            return period.requirement_pct
+    return None
+
+
+def headroom_for(slr_pct: float, quarter_end: date, table: Optional[Sequence[RequirementPeriod]] = None) -> Optional[float]:
+    """The ratio minus the requirement in force on `quarter_end`, or None where the table has no requirement."""
+    required = requirement_for(quarter_end, table)
+    return None if required is None else round(slr_pct - required, 4)
+
+
+#: Eleonora's decision on #69, Q2 (14 October 2026): State Street is outside the main measure and kept as a labelled
+#: sensitivity. Its figures stay as filed.
+MAIN, SENSITIVITY = "main", "sensitivity_state_street"
+SENSITIVITY_BANKS: Tuple[int, ...] = (93619,)
 #: Row 16(e): the temporary exclusion of reserves and Treasuries ran from April 2020 to March 2021 (automatic for holding
 #: companies, elected by subsidiaries). The quarter-ends inside it, whose election status is flagged unknown.
 EXCLUSION_QUARTERS = (date(2020, 6, 30), date(2020, 9, 30), date(2020, 12, 31), date(2021, 3, 31))
@@ -76,7 +132,7 @@ FIELDS: Tuple[str, ...] = ("slr_tier1_capital", "slr_total_leverage_exposure", "
 EXTRACT_COLUMNS: Tuple[str, ...] = (
     "quarter_end", "idrssd", "institution", "vintage", "latest_update", "available_from", "column_form",
     "tier1_capital_kusd", "total_leverage_exposure_kusd", "reported_slr_pct", "slr_pct", "requirement_pct",
-    "headroom_pp", "exclusion_status", "source_zip_sha256")
+    "headroom_pp", "exclusion_status", "measure", "source_zip_sha256")
 EXTRACT_NAME = "slr_latest_filed.csv"
 SOURCES_NAME = "slr_latest_filed.sources.json"
 COVERAGE_NAME = "slr_latest_filed.coverage.json"
@@ -106,13 +162,17 @@ class Row:
 
     @property
     def requirement_pct(self) -> Optional[float]:
-        """The requirement row 16(b) sets, or None for a quarter it does not cover (from 2026-04-01 on)."""
-        return REQUIREMENT_PCT if self.quarter_end < REQUIREMENT_ENDS else None
+        """The requirement the table puts in force on the quarter-end, or None (see `REQUIREMENT_TABLE`)."""
+        return requirement_for(self.quarter_end)
 
     @property
     def headroom_pp(self) -> Optional[float]:
-        required = self.requirement_pct
-        return None if required is None else round(self.slr_pct - required, 4)
+        return headroom_for(self.slr_pct, self.quarter_end)
+
+    @property
+    def measure(self) -> str:
+        """`main`, or the labelled State Street sensitivity (#71, Q2)."""
+        return SENSITIVITY if self.idrssd in SENSITIVITY_BANKS else MAIN
 
     @property
     def exclusion_status(self) -> str:
@@ -248,7 +308,7 @@ def notes(rows: Iterable[Row]) -> List[dict]:
                 "row_kept": True}
         if row.requirement_pct is None:
             out.append({**base, "reason": "requirement_not_set",
-                        "detail": "data-meaning row 16(b) sets the requirement only before 2026-04-01; headroom is blank"})
+                        "detail": "the requirement table (docs/decisions/slr-requirement.md) has no value for this quarter; headroom is blank"})
         if row.exclusion_status:
             out.append({**base, "reason": "exclusion_status_unknown",
                         "detail": "inside the April 2020 to March 2021 exclusion window (row 16(e)); the subsidiary's "
@@ -277,7 +337,7 @@ def write_extract(rows: Iterable[Row]) -> bytes:
                          row.latest_update.isoformat(), row.available_from.isoformat(), row.column_form,
                          row.tier1_capital_kusd, row.total_leverage_exposure_kusd, _fmt(row.reported_slr_pct),
                          _fmt(row.slr_pct), _fmt(row.requirement_pct), _fmt(row.headroom_pp), row.exclusion_status,
-                         row.source_zip_sha256))
+                         row.measure, row.source_zip_sha256))
     return buffer.getvalue().encode("utf-8")
 
 
@@ -318,7 +378,7 @@ def load_extract(path: Path) -> List[Row]:
             raise ValueError(f"{path.name}: {row.institution} {row.quarter_end} is labelled {item['vintage']!r}, not {VINTAGE!r}")
         for column, expected in (("slr_pct", _fmt(row.slr_pct)), ("requirement_pct", _fmt(row.requirement_pct)),
                                  ("headroom_pp", _fmt(row.headroom_pp)), ("exclusion_status", row.exclusion_status),
-                                 ("available_from", row.available_from.isoformat())):
+                                 ("measure", row.measure), ("available_from", row.available_from.isoformat())):
             if item[column] != expected:
                 raise ValueError(f"{path.name}: {row.institution} {row.quarter_end} stores {column} {item[column]!r}, "
                                  f"the figures give {expected!r}")
@@ -411,8 +471,17 @@ def observations(rows: Iterable[Row], field: str, *, source_sha: str):
     """One field of the extract as the parent's point-in-time rows, one series per bank (`<field>:<idrssd>`).
 
     Each row is dated the quarter-end and public from its latest-update time. The headroom of a quarter with no
-    requirement is not an observation.
+    requirement is not an observation. The main measure only: State Street is read by `sensitivity_observations`.
     """
+    return _observations([row for row in rows if row.measure == MAIN], field, source_sha, prefix="")
+
+
+def sensitivity_observations(rows: Iterable[Row], field: str, *, source_sha: str):
+    """The labelled State Street sensitivity as point-in-time rows, one series per field (`sensitivity_<field>:<idrssd>`)."""
+    return _observations([row for row in rows if row.measure == SENSITIVITY], field, source_sha, prefix="sensitivity_")
+
+
+def _observations(rows: Iterable[Row], field: str, source_sha: str, *, prefix: str):
     from repo_model.data import PointInTimeObservation
 
     if field not in FIELDS:
@@ -425,7 +494,7 @@ def observations(rows: Iterable[Row], field: str, *, source_sha: str):
         value = pick(row)
         if value is None:
             continue
-        out.append(PointInTimeObservation(series_id=f"{field}:{row.idrssd}", ref_date=row.quarter_end,
+        out.append(PointInTimeObservation(series_id=f"{prefix}{field}:{row.idrssd}", ref_date=row.quarter_end,
                                           available_at=row.available_from, value=value,
                                           vintage_id=f"{VINTAGE}-{row.latest_update.isoformat()}", source_sha=source_sha))
     return out
