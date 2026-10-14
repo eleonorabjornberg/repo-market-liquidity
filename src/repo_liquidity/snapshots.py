@@ -244,6 +244,13 @@ def _build_slr(table: Path, root: Path, repo_commit: str) -> dict:
         "vintage_note": ("Latest-filed Call Report figures, amended since their first filing, not first prints: each "
                          "(bank, quarter) value is available only from the day after its latest-update time. "
                          "docs/decisions/data-meaning.md row 16 (ruling of 13 October 2026, reading 2)."),
+        "measure_note": ("The `measure` column is `main` for eight banks and `sensitivity_state_street` for State Street Bank "
+                         "and Trust Company, N.A. (IDRSSD 93619): outside the main measure and a labelled sensitivity, its "
+                         "figures as filed in the extract (Eleonora's decision on repo-market-liquidity#69, 14 October 2026, "
+                         "Q2; recorded for #71). A reader of the main measure must filter on `measure == main`."),
+        "requirement_note": ("`requirement_pct` and `headroom_pp` follow the requirement table of "
+                             "docs/decisions/slr-requirement.md (a draft until Eleonora merges it): 6.0% for quarter-ends "
+                             "2018-01-01 to 2026-03-31, and no value from 2026-04-01, where the rule is bank-specific."),
         "first_quarter": min(row.quarter_end for row in rows).isoformat(),
         "last_quarter": max(row.quarter_end for row in rows).isoformat(),
         "last_update": max(row.latest_update for row in rows).isoformat(),
