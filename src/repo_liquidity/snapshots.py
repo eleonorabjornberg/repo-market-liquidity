@@ -22,7 +22,7 @@ from datetime import date
 from pathlib import Path
 from typing import Dict, List, Optional
 
-from repo_liquidity import PANEL_SHA256, PARENT_COMMIT, development, h41, h8, scheduled
+from repo_liquidity import PANEL_SHA256, PARENT_COMMIT, development, h41, h8, scheduled, slr
 
 ROOT = Path(__file__).resolve().parents[2]
 SNAPSHOTS = ROOT / "snapshots"
@@ -42,6 +42,11 @@ WEEKLY: Dict[str, Path] = {
     "h8_groups": ROOT / "tests" / "fixtures" / "snapshots" / "h8_groups" / h8.EXTRACT_NAME,
 }
 
+#: The SLR headroom of the nine G-SIB depository subsidiaries (#63): the tracked latest-filed extract, published as it
+#: stands (every row labelled `vintage = latest_filed`; row 16 of `docs/decisions/data-meaning.md`).
+SLR_DIR = ROOT / "tests" / "fixtures" / "snapshots" / "slr_headroom"
+SLR_EXTRACT = SLR_DIR / slr.EXTRACT_NAME
+
 #: The published series and the tracked table each is built from. The three FOMC series are copies of their tables;
 #: `agency_securities` is computed from two H.4.1 first-print extracts (see `build`); the weekly series are copies of
 #: their extracts.
@@ -51,6 +56,7 @@ SERIES: Dict[str, Path] = {
     "runoff_caps": scheduled.CAPS_TABLE,
     "agency_securities": H41_AGENCY_EXTRACT,
     **WEEKLY,
+    "slr_headroom": SLR_EXTRACT,
 }
 _HEX40 = re.compile(r"^[0-9a-f]{40}$")
 
@@ -168,6 +174,8 @@ def build(series: str, root: Path = ROOT, *, repo_commit: str, agency_extract: O
         raise ValueError(f"repo_commit must be a full 40-character lowercase hash, got {repo_commit!r}")
     if series in WEEKLY:
         return _build_weekly(series, table, root, repo_commit)
+    if series == "slr_headroom":
+        return _build_slr(table, root, repo_commit)
     if series == "agency_securities":
         return _build_agency_securities(root, repo_commit, agency_extract or table, H41_MBS_EXTRACT)
     scheduled._verified_rows(table)
@@ -202,6 +210,52 @@ def build(series: str, root: Path = ROOT, *, repo_commit: str, agency_extract: O
         "repo_commit": repo_commit,
     }
     manifest_path(series, root).write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return manifest
+
+
+def _build_slr(table: Path, root: Path, repo_commit: str) -> dict:
+    """The snapshot of the SLR-headroom extract: its bytes, labelled as amended (latest-filed) figures.
+
+    The extract is read through `slr.load_extract`, which refuses one that does not match its manifest, is not labelled
+    `latest_filed`, or holds a figure updated on a day the parent's lockbox holds. The manifest says in words that the
+    figures are not first prints, names the stored zips by digest, and points at the coverage record.
+    """
+    rows = slr.load_extract(table)
+    data = table.read_bytes()
+    digest = hashlib.sha256(data).hexdigest()
+    sources = json.loads(table.with_name(slr.SOURCES_NAME).read_text(encoding="utf-8"))
+    coverage = table.with_name(slr.COVERAGE_NAME)
+    used = {row.source_zip_sha256 for row in rows}
+    pages = {item["quarter_end"]: item["sha256"] for item in sources["zips"]}
+    unknown = sorted(used - set(pages.values()))
+    if unknown:
+        raise ValueError(f"{table.name}: a row names the zip {unknown[0]}, which the sources record does not list")
+    directory = root / "snapshots" / "slr_headroom"
+    directory.mkdir(parents=True, exist_ok=True)
+    relative = f"snapshots/slr_headroom/{digest}.csv"
+    (root / relative).write_bytes(data)
+    manifest = {
+        "series": "slr_headroom",
+        "path": relative,
+        "sha256": digest,
+        "columns": list(slr.EXTRACT_COLUMNS),
+        "rows": len(rows),
+        "vintage": slr.VINTAGE,
+        "vintage_note": ("Latest-filed Call Report figures, amended since their first filing, not first prints: each "
+                         "(bank, quarter) value is available only from the day after its latest-update time. "
+                         "docs/decisions/data-meaning.md row 16 (ruling of 13 October 2026, reading 2)."),
+        "first_quarter": min(row.quarter_end for row in rows).isoformat(),
+        "last_quarter": max(row.quarter_end for row in rows).isoformat(),
+        "last_update": max(row.latest_update for row in rows).isoformat(),
+        "source_table": str(table.relative_to(ROOT)),
+        "source_zips": pages,
+        "source_zips_record": str(table.with_name(slr.SOURCES_NAME).relative_to(ROOT)),
+        "coverage": {"path": str(coverage.relative_to(ROOT)), "sha256": hashlib.sha256(coverage.read_bytes()).hexdigest()},
+        "parent_commit": PARENT_COMMIT,
+        "parent_panel_sha256": PANEL_SHA256,
+        "repo_commit": repo_commit,
+    }
+    manifest_path("slr_headroom", root).write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return manifest
 
 

@@ -1,0 +1,40 @@
+{
+  "ffiec_call_slr": {
+    "access": "public",
+    "availability_provenance": {
+      "note": "Recorded 14 October 2026 for #63. The Call Bulk POR file of each quarter's bulk zip carries, per filer, the column \"Last Date/Time Submission Updated On\": the time of the LATEST submission for that quarter, with no time zone. Each (bank, quarter) value in the bulk file is the latest-filed one (docs/research/slr-headroom-due-diligence.md; data-meaning row 16, ruling 1 of 13 October 2026, reading 2), so it cannot have been public before that time. The extract reads a figure from the start of the next New York calendar day, which skips the unrecorded posting lag and covers the unstated time zone. Of the 34 quarter-ends 2018-03-31 to 2026-06-30 fetched 14 October 2026 (the zips' own Readme stamps are 2024-04-15 to 2026-09-15), the nine G-SIB depository subsidiaries' figures were last updated between 28 and 1713 days after quarter-end; the declared lag is the measured maximum (scripts/extract_slr.py refuses any other). Figures last updated after the parent's development end are withheld, not read.",
+      "publication": "FFIEC Central Data Repository, public bulk download \"Call Reports -- Single Period\" (Tab Delimited), https://cdr.ffiec.gov/public/PWS/DownloadBulkData.aspx; one zip per quarter-end, rebuilt from the repository's current content, so only the latest-filed figures are served."
+    },
+    "coverage": [
+      "tier 1 capital, total leverage exposure, the supplementary leverage ratio and its headroom over the requirement, for the nine G-SIB depository subsidiaries, quarterly, latest-filed vintage"
+    ],
+    "field_frequencies": {
+      "slr_headroom": "quarterly",
+      "slr_ratio": "quarterly",
+      "slr_tier1_capital": "quarterly",
+      "slr_total_leverage_exposure": "quarterly"
+    },
+    "fields": [
+      "slr_tier1_capital",
+      "slr_total_leverage_exposure",
+      "slr_ratio",
+      "slr_headroom"
+    ],
+    "frequency": "quarterly",
+    "identities": [],
+    "limitation": "LATEST-FILED figures, not first prints (data-meaning row 16, amended 13 October 2026): each (bank, quarter) value is available only from its latest-update time and the extract labels every row vintage = latest_filed. FFIEC 031 Schedule RC-R Part I, USD thousands: tier 1 capital (item 8274), total leverage exposure (item H015), from the consolidated column RCFA, else the domestic-offices column RCOA; the reported ratio (H036) is kept beside the ratio computed from the two. One series per bank, named <field>:<IDRSSD>; the nine banks are the G-SIB depository subsidiaries of PR #44's note. The ratio is in percent and the headroom is in percentage points over the 6% enhanced ratio that data-meaning row 16(b) sets for the period before 2026-04-01; from that date no requirement is set there, so the headroom is blank (a question for Eleonora). The quarters ending 2020-06-30 to 2021-03-31 are flagged exclusion_status = unknown (row 16(e)). Item numbers are not checked against the current FFIEC 031 instructions. No aggregate across banks. The declared lag is read per panel row by the parent's rule at the measured worst case, which reads a quarter years after the fact; repo_liquidity.slr.read is the exact, row-by-row reader. Figures last updated after the parent's development end are withheld. Phase 3 only; not in the published declaration.",
+    "provider": "Federal Financial Institutions Examination Council, Central Data Repository",
+    "release_lag": {
+      "available_time": "00:00",
+      "basis": "record_date",
+      "days": 1714,
+      "note": "Declared 14 October 2026 for #63 at the measured maximum and not above it: the longest gap from a quarter-end to the start of the day after a figure's latest update in the extract (scripts/extract_slr.py refuses any other value). An ordinary quarter is read years later than the exact reader would allow, which is staleness on the safe side, not leakage.",
+      "timezone": "America/New_York",
+      "unit": "calendar_days"
+    },
+    "reviewed_note": "Structural-zero semantics are not applicable to a regulatory capital ratio; the empty declaration is not a finding.",
+    "structural_zeros": [],
+    "structural_zeros_reviewed": false,
+    "url": "https://cdr.ffiec.gov/public/PWS/DownloadBulkData.aspx"
+  }
+}

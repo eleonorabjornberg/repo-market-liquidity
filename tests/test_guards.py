@@ -8,16 +8,17 @@ row of the measurement panel.
 import pathlib
 import tempfile
 import unittest
-from datetime import date, time
+from datetime import date, datetime, time, timedelta
 
 from repo_model.asof import KIND_SCHEDULED, InformationRule
 from repo_model.splits import LookAheadError, SplitError
 
-from repo_liquidity import declaration, h41, h8, panel
+from repo_liquidity import declaration, h41, h8, panel, slr
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 EXTRACT = ROOT / "tests" / "fixtures" / "snapshots" / "h41" / "h41_treasury_first_print.csv"
 MBS_EXTRACT = ROOT / "tests" / "fixtures" / "snapshots" / "h41" / "h41_mbs_first_print.csv"
+SLR_EXTRACT = ROOT / "tests" / "fixtures" / "snapshots" / "slr_headroom" / slr.EXTRACT_NAME
 AGENCY_EXTRACT = ROOT / "tests" / "fixtures" / "snapshots" / "h41" / "h41_agency_first_print.csv"
 
 
@@ -114,7 +115,9 @@ class EndToEndTests(unittest.TestCase):
 
     def test_every_phase3_column_passes_the_parent_guards_on_every_row(self):
         dates = [row.date for row in self.rows]
-        features = list(declaration.FIELDS)
+        # The SLR fields (#63) are declared at a worst-case lag of years, so the panel's first rows have none; their own
+        # test below holds them to the same guards.
+        features = [name for name in declaration.FIELDS if name not in slr.FIELDS]
         with declaration.phase3_declaration():
             rule = InformationRule(declaration.registry(), features, decision_time=time(16, 0))
             skipped = []
@@ -257,6 +260,68 @@ class EndToEndTests(unittest.TestCase):
                                               for r in info.reads))
             with self.assertRaises(StaleReadError):
                 rule.check(dates, moved)
+
+    def _slr_read(self, feature, offset, index=1500):
+        """The information set for an SLR field at a row in 2024, and the same with its read moved by `offset` rows.
+
+        The unmoved read must be the latest row whose quarter-end plus the extract's own measured worst-case lag (not
+        the declaration's number) is at or before the decision instant, so the declared lag cannot drift from the data.
+        """
+        dates = [row.date for row in self.rows]
+        worst = slr.worst_case_lag_days(slr.load_extract(SLR_EXTRACT))
+        with declaration.phase3_declaration():
+            rule = InformationRule(declaration.registry(), [feature], decision_time=time(16, 0))
+            info = rule.information_set(dates, index)
+            rule.check(dates, info)
+            reads = [r for r in info.reads if r.feature == feature]
+            self.assertEqual(len(reads), 1)
+            deadline = rule.decision_instant(dates, index)
+            expected = max(p for p in range(index) if datetime.combine(dates[p] + timedelta(days=worst), time.min) <= deadline)
+            self.assertEqual(reads[0].row, expected, feature)
+            moved = info._replace(reads=tuple(r._replace(row=r.row + offset) if r.feature == feature else r
+                                              for r in info.reads))
+            return rule, dates, moved
+
+    def test_every_slr_column_passes_the_parent_guards_on_every_row(self):
+        """#63: the four SLR fields, read at every row of the panel under `ffiec_call_slr`'s declaration."""
+        dates = [row.date for row in self.rows]
+        with declaration.phase3_declaration():
+            rule = InformationRule(declaration.registry(), list(slr.FIELDS), decision_time=time(16, 0))
+            skipped = []
+            for index in range(len(dates)):
+                try:
+                    info = rule.information_set(dates, index)
+                except SplitError:
+                    skipped.append(index)
+                    continue
+                self.assertLessEqual(set(slr.FIELDS), {r.feature for r in info.reads})
+                rule.check(dates, info)
+        # The worst-case lag is years: the rows before the first figure is declared public have none.
+        self.assertEqual(skipped, list(range(len(skipped))))
+        self.assertLess(len(skipped), len(dates))
+
+    def test_an_slr_read_moved_one_row_later_is_leakage(self):
+        """Leakage guard for the SLR fields (#63): a figure is read at the row its declared lag allows, and a read one
+        row later is refused.
+
+        Recorded mutation (14 October 2026): in `declarations/ffiec_call_slr.json`, `release_lag.days` changed from 1714
+        to 1700. This test then fails with AssertionError: 338 != 328 : slr_tier1_capital (the unmoved read is ten rows
+        later than the extract's own worst-case lag puts it, for each field in turn).
+        """
+        for feature in slr.FIELDS:
+            with self.subTest(feature=feature):
+                rule, dates, moved = self._slr_read(feature, +1)
+                with self.assertRaises(LookAheadError):
+                    rule.check(dates, moved)
+
+    def test_an_slr_read_moved_one_row_earlier_is_stale(self):
+        from repo_model.asof import StaleReadError
+
+        for feature in slr.FIELDS:
+            with self.subTest(feature=feature):
+                rule, dates, moved = self._slr_read(feature, -1)
+                with self.assertRaises(StaleReadError):
+                    rule.check(dates, moved)
 
     SCHEDULED_FEATURES = ("srf_rate", "on_rrp_rate", "runoff_cap_treasury_bn", "runoff_cap_mbs_bn")
 
