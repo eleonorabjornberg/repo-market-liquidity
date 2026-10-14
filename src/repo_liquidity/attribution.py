@@ -28,6 +28,10 @@ from repo_model.splits import LookAheadError
 #: account, reserves is the level the banks hold, and quarter-end is the calendar column. Each is a column of the
 #: parent's panel (`repo_model.contract.FEATURE_FIELDS`).
 DRIVERS: Tuple[str, ...] = ("treasury_settlement", "tga", "reserve_balances", "quarter_end")
+#: PROPOSED (amendment of 14 October 2026, finding #52; hers to set): ON RRP take-up added as a fifth driver, entering as
+#: the window change like the others. `DRIVERS` stays the decided set until she merges the amendment.
+ON_RRP = "on_rrp"
+DRIVERS_WITH_ON_RRP: Tuple[str, ...] = DRIVERS + (ON_RRP,)
 #: The benchmark's single driver (the record, section 4).
 RESERVES_ONLY: Tuple[str, ...] = ("reserve_balances",)
 #: The target series name, `DailyObservation.spread_bps`.
@@ -51,6 +55,11 @@ RESIDUAL_BAR = 0.5
 MAJORITY = 0.5
 #: At most this share of bootstrap draws may be unusable (a singular design) before the interval is refused.
 MAX_UNUSABLE_DRAWS = 0.05
+
+#: PROPOSED (amendment of 14 October 2026): the selection-aware null. Surrogate spreads per null, and the quantile of the
+#: null's explained shares an episode must exceed.
+NULL_DRAWS = 1000
+NULL_QUANTILE = 0.95
 
 Series = Mapping[str, Sequence[Optional[float]]]
 
@@ -81,10 +90,10 @@ class Attribution:
 # --------------------------------------------------------------------------- the episode source (the model repo's)
 
 
-def series_from_rows(rows) -> Dict[str, List[Optional[float]]]:
+def series_from_rows(rows, drivers: Sequence[str] = DRIVERS) -> Dict[str, List[Optional[float]]]:
     """The spread and the drivers, as columns, from the parent's `DailyObservation` rows."""
     columns: Dict[str, List[Optional[float]]] = {SPREAD: [float(row.spread_bps) for row in rows]}
-    for name in DRIVERS:
+    for name in drivers:
         columns[name] = [None if row.values.get(name) is None else float(row.values[name]) for row in rows]
     return columns
 
@@ -295,6 +304,41 @@ def _percentile(sorted_values: Sequence[float], q: float) -> float:
 # --------------------------------------------------------------------------- one episode
 
 
+def _point_fit(series: Series, start: int, drivers: Sequence[str], last_start: Optional[int]):
+    """The point attribution of one window: an `Attribution` ("not attributable") or the fit's pieces."""
+    target = _changes(series, drivers, start)
+    if target is None:
+        return Attribution(start, "not attributable", "an input of the window is missing or the window is incomplete")
+    rise, d = target
+    if not rise > 0:
+        return Attribution(start, "not attributable", "the window shows no rise in the spread", rise_bp=rise)
+    xs, ys = fitting_rows(series, drivers, start, last_start)
+    if len(ys) <= len(drivers):
+        return Attribution(start, "not attributable", "too few fitting rows", rise_bp=rise)
+    try:
+        xtx, xty = _normal_equations(xs, ys, range(len(ys)))
+        shares, residual, explained = _shares(xtx, xty, d, rise)
+        fixed = _fixed_shares(xtx, xty, d, rise)
+    except ValueError as error:
+        return Attribution(start, "not attributable", str(error), rise_bp=rise)
+    return rise, d, xs, ys, shares, residual, explained, fixed
+
+
+def point_attribution(
+    series: Series, start: int, *, drivers: Sequence[str] = DRIVERS, last_start: Optional[int] = None
+) -> Attribution:
+    """`attribute` without the bootstrap interval: the shares and the residual of one window, nothing else."""
+    drivers = tuple(drivers)
+    fit = _point_fit(series, start, drivers, last_start)
+    if isinstance(fit, Attribution):
+        return fit
+    rise, _, _, _, shares, residual, explained, fixed = fit
+    return Attribution(
+        start, "attributed", rise_bp=rise, shares=dict(zip(drivers, shares)), fixed_shares=dict(zip(drivers, fixed)),
+        residual_share=residual, explained_share=explained,
+    )
+
+
 def attribute(
     series: Series,
     start: int,
@@ -335,22 +379,11 @@ def attribute(
     if rule is not None:
         check_window_public(rule, dates, start, report_index)
     drivers = tuple(drivers)
-    target = _changes(series, drivers, start)
-    if target is None:
-        return Attribution(start, "not attributable", "an input of the window is missing or the window is incomplete")
-    rise, d = target
-    if not rise > 0:
-        return Attribution(start, "not attributable", "the window shows no rise in the spread", rise_bp=rise)
-    xs, ys = fitting_rows(series, drivers, start, last_start)
+    fit = _point_fit(series, start, drivers, last_start)
+    if isinstance(fit, Attribution):
+        return fit
+    rise, d, xs, ys, shares, residual, explained, fixed = fit
     p = len(drivers)
-    if len(ys) <= p:
-        return Attribution(start, "not attributable", "too few fitting rows", rise_bp=rise)
-    try:
-        xtx, xty = _normal_equations(xs, ys, range(len(ys)))
-        shares, residual, explained = _shares(xtx, xty, d, rise)
-        fixed = _fixed_shares(xtx, xty, d, rise)
-    except ValueError as error:
-        return Attribution(start, "not attributable", str(error), rise_bp=rise)
 
     rng = random.Random(seed * 1_000_003 + start)
     columns: List[List[float]] = [[] for _ in range(p)]
@@ -440,6 +473,132 @@ def outcome(attributions: Sequence[Attribution]) -> dict:
     return {
         "episodes": total,
         "under_bar": under,
+        "not_attributable": sum(1 for a in attributions if a.status != "attributed"),
+        "fraction": fraction,
+        "outcome": "drivers named" if total and fraction > MAJORITY else "residual dominates",
+    }
+
+
+# --------------------------------------------------------------------------- the selection-aware null (amendment, PROPOSED)
+
+
+@dataclass(frozen=True)
+class SelectionNull:
+    """The explained shares of episodes the onset rule picks from a spread with no driver effect. `bar` is its
+    `quantile`; an episode beats the null when its explained share is above it."""
+
+    bar: float
+    quantile: float
+    draws: int
+    episodes: int
+    explained: Tuple[float, ...]
+
+
+def coefficients(series: Series, drivers: Sequence[str] = DRIVERS) -> Dict[str, float]:
+    """The full model's coefficients, fitted on every complete window of the sample (no episode left out)."""
+    drivers = tuple(drivers)
+    xs, ys = fitting_rows(series, drivers, None)
+    xtx, xty = _normal_equations(xs, ys, range(len(ys)))
+    return dict(zip(drivers, _solve(xtx, xty)))
+
+
+def rule_onsets(spread: Sequence[float]) -> List[int]:
+    """Row positions the model repo's onset rule (`repo_model.onset.onset_flags`) picks from a spread series."""
+    from types import SimpleNamespace
+
+    from repo_model.onset import onset_flags
+
+    return [i for i, flag in enumerate(onset_flags([SimpleNamespace(spread_bps=v) for v in spread])) if flag]
+
+
+def driver_free_spread(series: Series, drivers: Sequence[str] = DRIVERS) -> List[float]:
+    """The spread less the drivers' fitted effect, at its original level: a series that carries no driver effect.
+
+    The effect is `sum_j beta_j x_j` on each day with every driver present, with beta from `coefficients`; the mean of
+    that effect is added back so the level the onset rule thresholds is kept. A day with a driver missing is unchanged."""
+    drivers = tuple(drivers)
+    beta = coefficients(series, drivers)
+    effect: List[Optional[float]] = []
+    for t in range(len(series[SPREAD])):
+        values = [series[name][t] for name in drivers]
+        effect.append(None if any(v is None for v in values) else sum(beta[name] * v for name, v in zip(drivers, values)))
+    present = [e for e in effect if e is not None]
+    centre = sum(present) / len(present)
+    return [y if e is None else y - e + centre for y, e in zip(series[SPREAD], effect)]
+
+
+def selection_null(
+    series: Series,
+    drivers: Sequence[str] = DRIVERS,
+    *,
+    draws: int = NULL_DRAWS,
+    seed: int = SEED,
+    block_length: float = BLOCK_LENGTH,
+    quantile: float = NULL_QUANTILE,
+) -> SelectionNull:
+    """The null for how episodes are selected (the amendment, section 9).
+
+    Each draw takes the driver-free spread (`driver_free_spread`), resamples it by the stationary bootstrap (so its
+    persistence is kept and its link to the real drivers is cut), picks onsets from the resample with the model repo's
+    rule, and attributes each pick against the real drivers: one fit on every complete window of that resample, then the
+    shares of the pick (`_shares`). The fit does not leave the pick out, which only raises the null's explained share, so
+    the bar is conservative. The bar is `quantile` of the explained shares pooled over the draws.
+
+    Raises:
+        ValueError: the rule picks no attributable episode from any draw (nothing to set a bar on).
+    """
+    from repo_model.metrics import stationary_bootstrap_indices
+
+    drivers = tuple(drivers)
+    n = len(series[SPREAD])
+    base = driver_free_spread(series, drivers)
+    dx = {}
+    for t in range(BASELINE_DAYS, n - WINDOW_DAYS + 1):
+        moved = [change(series[name], t) for name in drivers]
+        if all(v is not None for v in moved):
+            dx[t] = tuple(moved)
+    rng = random.Random(seed)
+    explained: List[float] = []
+    for _ in range(draws):
+        spread = [base[i] for i in stationary_bootstrap_indices(n, block_length, rng)]
+        picks = [t for t in rule_onsets(spread) if t in dx]
+        if not picks:
+            continue
+        xs = list(dx.values())
+        ys = [change(spread, t) for t in dx]
+        try:
+            xtx, xty = _normal_equations(xs, ys, range(len(ys)))
+            _solve([row[:] for row in xtx], list(xty))
+        except ValueError:
+            continue
+        for t in picks:
+            rise = ys[list(dx).index(t)]
+            if not rise > 0:
+                continue
+            explained.append(_shares(xtx, xty, dx[t], rise)[2])
+    if not explained:
+        raise ValueError("the onset rule picks no attributable episode from a spread with no driver effect")
+    ranked = sorted(explained)
+    return SelectionNull(_percentile(ranked, quantile), quantile, draws, len(ranked), tuple(ranked))
+
+
+def beats_null(attribution_: Attribution, null: SelectionNull) -> bool:
+    """The amendment's test of one episode: attributed, and its explained share is above the null's bar."""
+    return attribution_.status == "attributed" and attribution_.explained_share > null.bar
+
+
+def outcome_with_null(attributions: Sequence[Attribution], null: SelectionNull) -> dict:
+    """The plan's rule, with an episode counted only if it is under the residual bar and beats the null.
+
+    Every episode is in the denominator, a not-attributable one as a miss."""
+    total = len(attributions)
+    counted = sum(1 for a in attributions if a.residual_under_bar and beats_null(a, null))
+    fraction = counted / total if total else 0.0
+    return {
+        "episodes": total,
+        "under_bar": sum(1 for a in attributions if a.residual_under_bar),
+        "beats_null": sum(1 for a in attributions if beats_null(a, null)),
+        "counted": counted,
         "not_attributable": sum(1 for a in attributions if a.status != "attributed"),
         "fraction": fraction,
         "outcome": "drivers named" if total and fraction > MAJORITY else "residual dominates",
