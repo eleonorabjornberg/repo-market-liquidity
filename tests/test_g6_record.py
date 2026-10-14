@@ -1,4 +1,4 @@
-"""H7m, groundwork G6: the power study's record (`results/g6/power_study.json`, `docs/research/h7m-power-study.md`).
+"""H7m, groundwork G6: the power study's record (`docs/research/h7m-power-study.json`, `docs/research/h7m-power-study.md`).
 
 The record is output of `scripts/g6_power_study.py`, never hand-edited. These tests check what can be checked without a
 rerun: it was made at this tree's pins; it holds what `docs/stages/h7-g6.md` declared; it reads no day after the
@@ -14,7 +14,7 @@ from pathlib import Path
 from repo_liquidity import PANEL_SHA256, PARENT_COMMIT, goalposts
 
 ROOT = Path(__file__).resolve().parents[1]
-RECORD = ROOT / "results" / "g6" / "power_study.json"
+RECORD = ROOT / "docs" / "research" / "h7m-power-study.json"
 DOC = ROOT / "docs" / "research" / "h7m-power-study.md"
 DECLARATION = ROOT / "docs" / "stages" / "h7-g6.md"
 

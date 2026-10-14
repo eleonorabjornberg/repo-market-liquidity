@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """H7m, groundwork G6: the power study for goalpost 3 (`docs/stages/h7-g6.md`, declared before any number).
 
-    PYTHONPATH=src python3 scripts/g6_power_study.py            # writes results/g6/power_study.json
+    PYTHONPATH=src python3 scripts/g6_power_study.py            # writes docs/research/h7m-power-study.json
     PYTHONPATH=src python3 scripts/g6_power_study.py --smoke    # three windows per length, 2,000 draws, prints only
 
 The estimate is R plus a planted signal. No candidate (A, B, step 1's estimator, C) is scored. Development evidence only.
@@ -21,7 +21,7 @@ from pathlib import Path
 from statistics import median
 
 ROOT = Path(__file__).resolve().parents[1]
-RESULTS = ROOT / "results" / "g6"
+RESULTS = ROOT / "docs" / "research"
 
 from repo_model import fed_liquidity, measurement_fields, scarcity  # noqa: E402
 from repo_model.asof import InformationRule  # noqa: E402
@@ -250,7 +250,7 @@ def main(argv=None):
     parser.add_argument("--tables", action="store_true", help="print the markdown tables of the recorded study")
     args = parser.parse_args(argv)
     if args.tables:
-        print(tables(json.loads((RESULTS / "power_study.json").read_text(encoding="utf-8"))))
+        print(tables(json.loads((RESULTS / "h7m-power-study.json").read_text(encoding="utf-8"))))
         return 0
     record = run(args.smoke)
     if args.smoke:
@@ -258,7 +258,7 @@ def main(argv=None):
                                                   "seconds")}, indent=1, default=str))
         return 0
     RESULTS.mkdir(parents=True, exist_ok=True)
-    out = RESULTS / "power_study.json"
+    out = RESULTS / "h7m-power-study.json"
     out.write_text(json.dumps(record, indent=1, default=str) + "\n", encoding="utf-8")
     print(out, hashlib.sha256(out.read_bytes()).hexdigest())
     return 0

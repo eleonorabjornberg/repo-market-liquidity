@@ -2,7 +2,7 @@
 
 **Development evidence, never a verdict. No candidate is scored** (not A, not B, not step 1's estimator, not C): the
 estimate is R plus a planted signal. The declaration (`docs/stages/h7-g6.md`) was committed before any number
-(`68e35fa`). `docs/decisions/measurement-protocol.md` is unchanged. The record is `results/g6/power_study.json`
+(`68e35fa`). `docs/decisions/measurement-protocol.md` is unchanged. The record is `docs/research/h7m-power-study.json`
 (`PYTHONPATH=src python3 scripts/g6_power_study.py`, about four minutes on four cores); the tables below are printed from
 it by `--tables` and not recomputed. Pins: model 53e61af, panel (version 1) digest `acb77874…`; the parent's published
 panel digest is `4ddc3882…`.
