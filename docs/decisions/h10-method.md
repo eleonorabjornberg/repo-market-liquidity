@@ -139,3 +139,85 @@ two additions below say so.
 4. The placebo (section 4): the day type as proposed; **20 windows per episode** instead of 5.
 5. An episode counts as attributed only if `|residual share| < 0.5`; a negative residual is a miss (section 5).
 6. The source of the episode list: as decided on #20 (section 0).
+
+## 9. Amendment (Eleonora, 14 October 2026; finding #52): a selection-aware null and ON RRP as a driver
+
+**Status: DRAFT for Eleonora (directive #62). Every value in this section is PROPOSED and is hers to set. Nothing here is
+in force until she merges it, and sections 1 to 8 stand except where this section changes them.** Her ruling
+([on #52](https://github.com/eleonorabjornberg/repo-market-liquidity/issues/52)): amend this record before H10 step 2, to
+add a null that allows for how episodes are selected, and to add ON RRP as a driver. This section applies no method to a
+real episode, scores nothing, and publishes no figure.
+
+**Why.** Episodes are picked by `onset.onset_flags` on the spread itself, so each episode's residual is large by
+construction (finding #52: in its simulation at R² 0.49, 39% of rule-picked onsets pass the 50% residual bar, against 78%
+when windows are picked on the drivers). And one pooled fit spans both ON RRP regimes, while only 2 of the 31 onsets fall in
+the abundant regime, which covers half the days (finding #52; not re-derived here).
+
+### 9a. The selection-aware null (constructions laid out; one recommended)
+
+The test of an episode in section 5 asks only whether its residual share is under 50%. The null asks how much of a rise the
+drivers would "explain" in an episode that the same rule picked from a spread they did not drive.
+
+| | Construction | For | Against |
+|---|---|---|---|
+| **N1 (recommended)** | Remove the drivers' fitted effect from the daily spread, keep its level (`driver_free_spread`). Resample that series with the stationary bootstrap (block 10, as section 2). Pick onsets from each resample with the model repo's own rule (`repo_model.onset.onset_flags`). Attribute each pick against the real drivers with the method of section 2 (`selection_null`). | It is the same rule on a series with no driver effect, so the null has the selection built in. It keeps persistence, so clusters of high days survive. It reuses the model repo's rule and the section 2 shares. | The fit for a null pick does not leave that pick out, which raises the null's explained share a little: the bar is conservative. The coefficients are estimated on the same sample, so the removal is not perfect (a test shows the refitted coefficients are zero to six places on a synthetic series). |
+| N2 | Apply the onset rule to the residual series of a fit on non-episode days (the directive's first example). | One deterministic series, no resampling. | One draw is not a distribution: its tail needs a resampling step anyway, and then it is N1 with a different surrogate. |
+| N3 | Choose placebo windows by the drivers (the finding's 78% figure) rather than by the rule. | Shows the size of the selection effect. | It answers a different question: windows that are not episodes. It sets no bar for episodes. |
+
+**Proposed statistic and bar (hers to set).**
+
+- **Statistic:** the episode's **explained share** (the full model's prediction over the rise, `Attribution.explained_share`,
+  which is one minus the residual share). It is the quantity that selection depresses.
+- **Bar:** the **95th percentile** of the explained shares of the null's picks, pooled over draws (`NULL_QUANTILE`, 0.95).
+  Alternatives: 90th (looser) or 99th (stricter). An episode **beats the null** when its explained share is above the bar.
+- **Draws:** **1,000** resamples (`NULL_DRAWS`), seed **20261013** (`SEED`, as section 2). The synthetic tests use fewer.
+- **Refusal:** a null in which the rule picks no attributable episode from any draw has no bar and raises `ValueError`.
+
+**Proposed use in the outcome rule.** An episode counts as attributed only if it is **under the residual bar of section 5
+and also beats the null** (`outcome_with_null`). The denominator is unchanged (every episode, a not-attributable one as a
+miss), and so are the "more than half" majority and the two outcomes. The code reports the count under the bar, the count
+beating the null, and the count that satisfies both, so the null's effect is visible and not folded in.
+
+**Question for Eleonora.** Is the null a second condition on each episode (recommended), or does it replace the 50% residual
+bar? Replacing it changes the plan's outcome rule (section 5 says the plan's rule is not changed here), so it is hers.
+
+### 9b. ON RRP as a driver
+
+- **The series (recommended):** the model repo's **ON RRP take-up**, the column `on_rrp` (the New York Fed's operation results,
+  `reverse_repo_total_accepted`, which the panel's `declaration.phase3_declaration()` switches on, USD bn). It is a quantity;
+  this repo's ON RRP offering rate (#25) is an administrative price that changes a few times a year, so it cannot carry an
+  episode's rise, and it is not a driver here.
+- **Availability:** read through the parent's `InformationRule` like the other drivers (`attribution.check_window_public`
+  checks every group the rule names). On the registry's declarations the spread is published later than ON RRP, so the spread
+  is the input that binds and ON RRP's own check never does; the test of ON RRP's check therefore uses a stub rule.
+- **How it enters (recommended):** as the **window change**, like every other driver (section 1: window mean minus baseline
+  mean), added last: `DRIVERS_WITH_ON_RRP = DRIVERS + ("on_rrp",)`. The Shapley shares then run over 2^5 = 32 refits. The
+  decided `DRIVERS` is unchanged until she merges this.
+- **Alternatives, not built:** (i) the **level** of ON RRP at the window; it mixes the regime into the coefficient and does not
+  move with an episode. (ii) An **interaction with the regime**: `on_rrp × 1(on_rrp < ON_RRP_DEPLETION_BREAK_BN)`, with the
+  parent's break at USD 100 bn (`repo_model.contract`), which gives each regime its own coefficient. It is the direct answer to
+  the finding's "one fit across both regimes", but only 2 of 31 onsets are in the abundant regime, so its coefficient there
+  would rest on very few episodes. Recommended only after the change has been tried. Hers to choose.
+- **The pooled fit stays one fit across regimes** under the recommendation; the finding's regime point is answered by the
+  driver, and the interaction is the stronger answer if she wants one.
+
+### 9c. What the tests show, on synthetic episodes only
+
+`tests/test_attribution.py` (classes `SelectionNullTests`, `OnRrpDriverTests`): the null rejects episodes planted with a real
+driver effect; of the onsets the rule picks from a spread with no driver effect, at most 20% beat it (nominal 5%; the ratio on
+the seeded series is recorded in the PR); a null with nothing selected is refused; the surrogate spread has zero refitted
+coefficients; the ON RRP driver recovers a planted coefficient and a driver with no effect gets one near zero.
+
+### 9d. Questions, each with a recommendation
+
+1. Construction: N1 (recommended), N2 or N3?
+2. Statistic: explained share (recommended)?
+3. Bar: the 95th percentile of the null (recommended), the 90th or the 99th?
+4. Second condition or replacement of the 50% bar? Second condition (recommended).
+5. ON RRP: take-up, as a window change (recommended), a level, or a regime interaction?
+6. Draws: 1,000 (recommended)?
+
+### 9e. What this amendment does not do
+
+It attributes no real episode, runs no null on real data, scores nothing and registers nothing; `results/`, `metadata/` and
+`snapshots/` are unchanged. H10 step 2 waits for this record to be merged.

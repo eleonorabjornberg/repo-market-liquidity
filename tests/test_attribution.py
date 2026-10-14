@@ -352,5 +352,159 @@ class PanelTests(unittest.TestCase):
                 attribution.attribute(series, onset, draws=10, **partial)
 
 
+# ---------------------------------------------------------------------------------------------------------------
+# Amendment (Eleonora, 14 October 2026; finding #52): a selection-aware null, and ON RRP as a driver. Synthetic only.
+
+SLOPE = {"treasury_settlement": 0.04, "tga": 0.02, "reserve_balances": -0.01, "quarter_end": 3.0, "on_rrp": -0.015}
+SPREAD_NOISE_BP = 1.6
+
+
+def episodic(episodes, *, n=1500, seed=3, planted=True, drivers=DRIVERS, noise=SPREAD_NOISE_BP):
+    """Stationary drivers and a spread (bp) of `noise` plus, when `planted`, the drivers' effect through SLOPE.
+    At each episode start every driver jumps for the five window days, so the planted spread rises by about 16 bp (20 with ON RRP).
+    With `planted=False` the spread is pure noise and carries no driver effect at all."""
+    rng = random.Random(seed)
+    spread_sd = {"treasury_settlement": 30.0, "tga": 20.0, "reserve_balances": 40.0, "on_rrp": 40.0}
+    jump = {"treasury_settlement": 250.0, "tga": 150.0, "reserve_balances": -300.0, "on_rrp": -250.0}
+    series = {name: [rng.gauss(0, spread_sd[name]) for _ in range(n)] for name in drivers if name != "quarter_end"}
+    series["quarter_end"] = [1.0 if t % 70 == 40 else 0.0 for t in range(n)]
+    for start in episodes:
+        for t in range(start, start + WINDOW_DAYS):
+            for name in series:
+                if name in jump:
+                    series[name][t] += jump[name]
+    series = {name: series[name] for name in drivers}
+    spread = [rng.gauss(0, noise) for _ in range(n)]
+    if planted:
+        for t in range(n):
+            spread[t] += sum(SLOPE[name] * series[name][t] for name in drivers)
+    series[SPREAD] = spread
+    return series
+
+
+class SelectionNullTests(unittest.TestCase):
+    """H10 method, amendment (a): the placebo windows are picked by the same onset rule from a spread that carries no
+    driver effect; an episode counts as attributed only if its explained share beats that null."""
+
+    EPISODES = [150, 400, 650, 900, 1150, 1400]
+
+    def test_the_null_rejects_an_episode_planted_with_a_real_driver_effect(self):
+        series = episodic(self.EPISODES)
+        null = attribution.selection_null(series, draws=40)
+        self.assertGreater(null.episodes, 20)
+        for start in self.EPISODES:
+            self.assertIn(start, attribution.rule_onsets(series[SPREAD]))
+            result = attribution.attribute(series, start, draws=10)
+            self.assertTrue(attribution.beats_null(result, null), (start, result.explained_share, null.bar))
+
+    def test_the_null_does_not_reject_episodes_the_rule_picked_from_pure_noise(self):
+        """The finding's selection effect: onsets chosen on the spread itself. Of the onsets the rule picks from a spread
+        with no driver effect, only about the null's tail (5%) may beat it."""
+        series = episodic([], planted=False, n=2400, noise=2.5)
+        starts = attribution.rule_onsets(series[SPREAD])
+        self.assertGreater(len(starts), 20)
+        null = attribution.selection_null(series, draws=60)
+        results = [attribution.point_attribution(series, s) for s in starts]
+        beats = sum(attribution.beats_null(r, null) for r in results if r.status == "attributed")
+        attributed = sum(r.status == "attributed" for r in results)
+        self.assertLessEqual(beats / attributed, 0.20)
+
+    def test_the_bar_is_the_decided_quantile_of_the_null_and_is_reproducible(self):
+        series = episodic(self.EPISODES)
+        a = attribution.selection_null(series, draws=20, seed=11)
+        b = attribution.selection_null(series, draws=20, seed=11)
+        self.assertEqual(a, b)
+        self.assertEqual(attribution.NULL_QUANTILE, 0.95)
+        ranked = sorted(a.explained)
+        self.assertAlmostEqual(a.bar, attribution._percentile(ranked, attribution.NULL_QUANTILE))
+
+    def test_a_null_that_selects_no_episode_is_refused(self):
+        """A spread fully carried by the drivers has nothing for the rule to pick once their effect is removed."""
+        series = episodic(self.EPISODES, noise=0.05)
+        with self.assertRaises(ValueError):
+            attribution.selection_null(series, draws=5)
+
+    def test_an_episode_that_is_not_attributable_never_beats_the_null(self):
+        null = attribution.SelectionNull(bar=0.1, quantile=0.95, draws=1, episodes=1, explained=(0.1,))
+        self.assertFalse(attribution.beats_null(attribution.Attribution(0, "not attributable", "x"), null))
+
+    def test_the_outcome_counts_an_episode_only_if_it_is_under_the_bar_and_beats_the_null(self):
+        null = attribution.SelectionNull(bar=0.5, quantile=0.95, draws=1, episodes=1, explained=(0.5,))
+        under = attribution.Attribution(0, "attributed", residual_share=0.3, explained_share=0.7)
+        weak = attribution.Attribution(1, "attributed", residual_share=0.45, explained_share=0.4)
+        summary = attribution.outcome_with_null([under, weak], null)
+        self.assertEqual((summary["under_bar"], summary["beats_null"], summary["counted"]), (2, 1, 1))
+        self.assertEqual(summary["outcome"], "residual dominates")
+
+    def test_the_surrogate_spread_carries_no_driver_effect(self):
+        series = episodic(self.EPISODES)
+        removed = attribution.driver_free_spread(series, DRIVERS)
+        beta = attribution.coefficients({**series, SPREAD: removed}, DRIVERS)
+        for name, value in beta.items():
+            self.assertAlmostEqual(value, 0.0, places=6, msg=name)
+
+
+class OnRrpDriverTests(unittest.TestCase):
+    """H10 method, amendment (b): ON RRP as a driver, entering as the window change like every other driver."""
+
+    def test_the_proposed_driver_set_adds_on_rrp_last_and_leaves_the_decided_set_alone(self):
+        self.assertEqual(attribution.DRIVERS, ("treasury_settlement", "tga", "reserve_balances", "quarter_end"))
+        self.assertEqual(attribution.DRIVERS_WITH_ON_RRP, attribution.DRIVERS + ("on_rrp",))
+
+    def test_the_on_rrp_driver_recovers_a_planted_coefficient(self):
+        drivers = attribution.DRIVERS_WITH_ON_RRP
+        series = episodic([150, 400, 650, 900, 1150], noise=0.3, drivers=drivers)
+        beta = attribution.coefficients(series, drivers)
+        self.assertAlmostEqual(beta["on_rrp"], SLOPE["on_rrp"], delta=0.002)
+        result = attribution.attribute(series, 400, drivers=drivers, draws=30)
+        self.assertEqual(result.status, "attributed")
+        self.assertIn("on_rrp", result.shares)
+        planted_share = SLOPE["on_rrp"] * attribution.change(series["on_rrp"], 400) / result.rise_bp
+        self.assertAlmostEqual(result.fixed_shares["on_rrp"], planted_share, delta=0.05)
+        self.assertGreater(result.fixed_shares["on_rrp"], 0.1)
+
+    def test_a_driver_with_no_effect_gets_a_coefficient_near_zero(self):
+        drivers = attribution.DRIVERS_WITH_ON_RRP
+        series = episodic([150, 400, 650, 900, 1150], noise=0.3, drivers=drivers)
+        rng = random.Random(9)
+        series["on_rrp"] = [rng.gauss(0, 40) for _ in series[SPREAD]]
+        self.assertLess(abs(attribution.coefficients(series, drivers)["on_rrp"]), 0.01)
+
+    def test_series_from_rows_reads_the_driver_it_is_given(self):
+        from types import SimpleNamespace
+
+        rows = [SimpleNamespace(spread_bps=1.0, values={"on_rrp": 2.5, "treasury_settlement": 1.0, "tga": 1.0,
+                                                        "reserve_balances": 1.0, "quarter_end": 0.0})]
+        series = attribution.series_from_rows(rows, attribution.DRIVERS_WITH_ON_RRP)
+        self.assertEqual(series["on_rrp"], [2.5])
+        self.assertNotIn("on_rrp", attribution.series_from_rows(rows))
+
+    def test_an_on_rrp_input_not_public_at_the_report_is_leakage(self):
+        """Leakage guard: ON RRP is checked on its own declaration, not only the spread's. The stub rule publishes the
+        spread early and ON RRP after the report instant (on the registry's real declarations the spread is the later
+        input, so only a stub can make ON RRP the binding one).
+
+        Recorded mutation (14 October 2026): in `attribution.check_window_public`, `for group in rule.groups:` changed
+        to `for group in rule.groups[:1]:`. This test then fails with AssertionError: LookAheadError not raised.
+        """
+        from datetime import datetime
+        from types import SimpleNamespace
+
+        dates = [date(2026, 1, 1 + i) for i in range(30)]
+        deadline = datetime(2026, 1, 25, 16, 0)
+        late = datetime(2026, 1, 26, 9, 0)
+        groups = [SimpleNamespace(feature=SPREAD, kind="data", fields=("s",)),
+                  SimpleNamespace(feature="on_rrp", kind="data", fields=("r",))]
+        rule = SimpleNamespace(
+            groups=groups,
+            decision_instant=lambda d, i: deadline,
+            availability=lambda d, fields, i: late if fields == ("r",) else datetime(2026, 1, 1),
+        )
+        with self.assertRaises(LookAheadError):
+            attribution.check_window_public(rule, dates, 12, 20)
+        rule.availability = lambda d, fields, i: datetime(2026, 1, 1)
+        attribution.check_window_public(rule, dates, 12, 20)
+
+
 if __name__ == "__main__":
     unittest.main()
