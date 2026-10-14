@@ -17,7 +17,7 @@
   "parent_commit": "53e61af9b4175e854c196908d3c76b228c039667",
   "parent_panel_sha256": "4ddc3882cd6d406b11e1088f8ff6195e16dde175a0ad6818abe40dd5bdac8999",
   "path": "snapshots/srf_rate/a1182d32530038de4dbeb40fed3b8e733e012bf1cb4e52f430e08a0ae0bfa252.csv",
-  "repo_commit": "56f69e7258867fc71f6b007e90edfff64befe330",
+  "repo_commit": "a2ca0e6f22fcabe8e3ae72b6aa392f50afb982f1",
   "rows": 18,
   "series": "srf_rate",
   "sha256": "a1182d32530038de4dbeb40fed3b8e733e012bf1cb4e52f430e08a0ae0bfa252",
