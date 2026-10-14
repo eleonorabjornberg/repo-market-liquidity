@@ -1,0 +1,63 @@
+name: cdr-archive
+
+# #46 (groundwork G5 for H7m): archive the FFIEC CDR "Call Reports -- Single Period" bulk files on a schedule, because
+# the portal rebuilds each quarter from its current content and a first-filed figure is not recoverable later.
+#
+# Never pushes to main. New zips go to the release `cdr-archive` as assets (they do not expire, unlike Actions
+# artifacts), and the manifest of what was retrieved, and when, is committed to the branch `cdr-archive`.
+# `contents: write` is requested for this workflow only; if the repository's settings refuse it, the upload step
+# fails and the run is red (the archive then stops visibly, not silently).
+
+on:
+  schedule:
+    - cron: "17 6 * * 1-5"  # weekdays, 06:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: cdr-archive
+  cancel-in-progress: false
+
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out main (the script)
+        run: |
+          git init -q . && git remote add origin "https://github.com/${GITHUB_REPOSITORY}"
+          git -c http.extraheader="Authorization: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)" fetch -q --depth 1 origin main
+          git checkout -q FETCH_HEAD
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - name: Take the manifest from the archive branch, if it exists
+        run: |
+          if git -c http.extraheader="Authorization: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)" fetch -q --depth 1 origin cdr-archive; then
+            git show FETCH_HEAD:archive/cdr/manifest.json > archive/cdr/manifest.json
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - name: Download
+        run: python3 -I scripts/archive_cdr.py --zips "$RUNNER_TEMP/zips" | tee "$RUNNER_TEMP/out.txt"
+      - name: Upload new zips to the release and commit the manifest to the archive branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          AUTH="Authorization: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+          if grep -q '^new: ' "$RUNNER_TEMP/out.txt"; then
+            gh release view cdr-archive >/dev/null 2>&1 || gh release create cdr-archive --title "CDR bulk-file archive" \
+              --notes "Zips named <quarter-end>-<sha256>.zip, as listed in archive/cdr/manifest.json on the cdr-archive branch (#46)."
+            for sha in $(sed -n 's/^new: [0-9-]* \([0-9a-f]\{64\}\) .*/\1/p' "$RUNNER_TEMP/out.txt"); do
+              gh release upload cdr-archive "$RUNNER_TEMP"/zips/*-"$sha".zip
+            done
+          fi
+          cp archive/cdr/manifest.json "$RUNNER_TEMP/manifest.json"
+          git config user.name "cdr-archive"; git config user.email "actions@users.noreply.github.com"
+          # The branch starts from main the first time and is only ever added to after that.
+          if git -c http.extraheader="$AUTH" fetch -q --depth 1 origin cdr-archive; then git checkout -q -f -B cdr-archive FETCH_HEAD; else git checkout -q -f -B cdr-archive; fi
+          cp "$RUNNER_TEMP/manifest.json" archive/cdr/manifest.json
+          git add archive/cdr/manifest.json
+          git diff --cached --quiet && { echo "manifest unchanged"; exit 0; }
+          git commit -q -m "Archive: CDR bulk-file manifest, $(date -u +%Y-%m-%dT%H:%MZ)"
+          git -c http.extraheader="$AUTH" push -q origin cdr-archive

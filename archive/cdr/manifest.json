@@ -1,0 +1,27 @@
+{
+  "source": "https://cdr.ffiec.gov/public/PWS/DownloadBulkData.aspx",
+  "product": "Call Reports -- Single Period",
+  "format": "Tab Delimited",
+  "entries": [
+    {
+      "quarter": "2026-03-31",
+      "url": "https://cdr.ffiec.gov/public/PWS/DownloadBulkData.aspx",
+      "file": "2026-03-31-e19452450909399dc104d51cddcea0db17d71d872b20f67234fedf56340c1e69.zip",
+      "download_name": "FFIEC CDR Call Bulk All Schedules 03312026.zip",
+      "sha256": "e19452450909399dc104d51cddcea0db17d71d872b20f67234fedf56340c1e69",
+      "size": 5483032,
+      "first_retrieved_utc": "2026-10-14T04:20:06Z",
+      "last_checked_utc": "2026-10-14T04:20:06Z"
+    },
+    {
+      "quarter": "2026-06-30",
+      "url": "https://cdr.ffiec.gov/public/PWS/DownloadBulkData.aspx",
+      "file": "2026-06-30-0a2d59ce16b5a5b756765e00364d525855019ac657e0398c96323aebfa1679fe.zip",
+      "download_name": "FFIEC CDR Call Bulk All Schedules 06302026.zip",
+      "sha256": "0a2d59ce16b5a5b756765e00364d525855019ac657e0398c96323aebfa1679fe",
+      "size": 5980988,
+      "first_retrieved_utc": "2026-10-14T04:20:06Z",
+      "last_checked_utc": "2026-10-14T04:20:06Z"
+    }
+  ]
+}
