@@ -47,6 +47,9 @@ def _fields():
         "soma_agency_debt_weekly_change": (("frb_h41_agency", "soma_agency_debt_weekly_change"),),
         "soma_agency_securities_weekly_change": (("frb_h41_agency", "soma_agency_debt_weekly_change"),
                                                  ("frb_h41_mbs", "soma_mbs_weekly_change")),
+        # #26: the H.8 bank groups' cash and total assets, first prints (`repo_liquidity.h8`), read through
+        # `snapshots/h8_groups/`. Not built columns of any panel.
+        **{field: (("frb_h8_groups", field),) for field in _h8_fields()},
         "temp_repo_take_up": (("nyfed_temp_repo", "temp_repo_take_up"),),
         "temp_repo_term_take_up": (("nyfed_temp_repo", "temp_repo_term_take_up"),),
         "temp_repo_term_outstanding": (("nyfed_temp_repo", "temp_repo_term_outstanding"),),
@@ -62,6 +65,12 @@ def _fields():
         "sofr_p1": (("nyfed_sofr", "SOFR_p1"),),
         "sofr_p99": (("nyfed_sofr", "SOFR_p99"),),
     }
+
+
+def _h8_fields():
+    from repo_liquidity import h8
+
+    return h8.FIELDS
 
 
 def _indicator_fields(fields):
