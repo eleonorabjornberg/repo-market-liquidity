@@ -108,6 +108,19 @@ recorded.
   Bank, Signature Bank or First Republic, or a group, and none is dated for First Republic. They are recorded as stated.
   **Question for Nicholas:** which weeks are the three institutions' moves between groups, and from what source?
 
+### 5a. The moves between the large and small groups, read against the notes (#47)
+
+`docs/research/h8-group-moves.json` records the 13 releases of section 3 and the 2023 failures. Each release's archived
+page and its predecessor's were read on 14 October 2026, with the notes of the Notes on Data page: **none of the 13 moves
+has a cause stated by a note, so all 13 are `unexplained`; none of the four 2023 items (Silicon Valley Bank, Signature
+Bank, their acquisitions, First Republic) is named by a note or dated to a week, so all four are `unexplained`.** Each
+move is a structural break in the group input, flagged in the `h8_groups` snapshot (column `break_ids`) at the week its
+release first printed: the first week of the first-print series on the new basis. Two corrections to section 3 follow
+from the reading: the release of 2023-03-24 moves two weeks (2023-02-22 and 2023-03-01) by -50.1 on the large group and
++72.5 and +80.6 on the small, which is not "nearly the same amount"; and the dating of a restatement by the first
+print is the latest the basis can have changed, not the week it did. `h8.difference` refuses a difference that spans a
+flagged week.
+
 ## 6. Cash assets are not reserves
 
 Recorded from Nicholas's answer 17 (`docs/decisions/data-meaning.md`): H.8 cash assets include vault cash, cash items in

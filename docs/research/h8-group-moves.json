@@ -1,0 +1,564 @@
+{
+  "source": {
+    "notes_url": "https://www.federalreserve.gov/releases/h8/h8notes.htm",
+    "notes_page_sha256": "738926b18ffa6e391d53792e36b8285becc89f86406c93ec0d035ba287f0c364",
+    "release_url_pattern": "https://www.federalreserve.gov/releases/h8/YYYYMMDD/",
+    "read_on": "2026-10-14"
+  },
+  "method": [
+    "The 13 releases are the ones the due diligence (docs/research/h8-groups-due-diligence.md, section 3) found restating an earlier week of large and small domestic total assets by at least $50bn each, in opposite directions. Each release's archived page and the page of the release before it were fetched on 2026-10-14 and parsed with `repo_liquidity.h8.parse_group_lines`. `restated_weeks` lists the weeks of the four-week window whose large and small totals both moved by at least $50bn between the two pages.",
+    "`release_sha256` is the digest of the page the tracked extract was cut from (releases record). `fetched_sha256` is the digest of the bytes fetched on 2026-10-14 for this record: the two differ for every page, because a saved page's digest identifies the fetch and not the release (issue #40). The group lines parsed from the fetched page equal the first-print values in the extract for every one of the 13 releases.",
+    "`break_week` is the week first printed in that release: the first week of the first-print series on the new basis (the week before it was first printed in the release before, on the old one). The restated weeks show that the new basis reaches back at least to the first of them; no note dates it.",
+    "A cause is `cited` only where a note of the H.8 'Notes on Data' page or a note on the archived release page states it, quoted verbatim with its as-of date. No move is labelled from memory. The archived release pages carry one general footnote on the large and small groups being adjusted for 'mergers and panel shifts between these two bank groups' and name no event; it is not a cause of any move."
+  ],
+  "moves": [
+    {
+      "id": "move-01",
+      "release_date": "2019-05-31",
+      "url": "https://www.federalreserve.gov/releases/h8/20190531/",
+      "release_sha256": "d62c7752a44f859876e8c210b066e5fe99ca4bb4a131533e6091f996740e0e72",
+      "fetched_sha256": "128bb68d7d369e2d9009e2c2c04ee26ee0c1194e603bcf26c3a2152842796e86",
+      "compared_with": {
+        "release_date": "2019-05-24",
+        "url": "https://www.federalreserve.gov/releases/h8/20190524/",
+        "release_sha256": "739e4f13153f0694326a93be01af3ff2b069e2745ef7e07a376af69987c953b8",
+        "fetched_sha256": "0d03531445ee7d76d34cef330cecfc023e09d40ce000e3a63c2f4751cd87f3f3"
+      },
+      "restated_weeks": [
+        {
+          "week_ending": "2019-05-01",
+          "large_total_assets_change_billion": 119.9,
+          "small_total_assets_change_billion": -119.8
+        },
+        {
+          "week_ending": "2019-05-08",
+          "large_total_assets_change_billion": 119.0,
+          "small_total_assets_change_billion": -119.1
+        },
+        {
+          "week_ending": "2019-05-15",
+          "large_total_assets_change_billion": 119.5,
+          "small_total_assets_change_billion": -120.4
+        }
+      ],
+      "break_week": "2019-05-22",
+      "cause": {
+        "status": "unexplained",
+        "note_as_of": null,
+        "quote": null
+      },
+      "notes_dated_near_the_window": [
+        "2019-05-01"
+      ]
+    },
+    {
+      "id": "move-02",
+      "release_date": "2019-12-20",
+      "url": "https://www.federalreserve.gov/releases/h8/20191220/",
+      "release_sha256": "4fabb50702ca345fb7c09f26cb47ed33fc717ec7f20aa34b0fe0719932eb1717",
+      "fetched_sha256": "2638449c9857b7ef6d2bb7179f3a3495d8c3f94c09d1a5b73705573569019e37",
+      "compared_with": {
+        "release_date": "2019-12-13",
+        "url": "https://www.federalreserve.gov/releases/h8/20191213/",
+        "release_sha256": "0fff853d503c44e85f70368e6e2e544cefa8bffe55ac06744a8faf8ae9aaa839",
+        "fetched_sha256": "5276fb25cac540b2b04c2ebb6e3118d8a35f3e027d0d134d783151e23229e42b"
+      },
+      "restated_weeks": [
+        {
+          "week_ending": "2019-11-20",
+          "large_total_assets_change_billion": 110.9,
+          "small_total_assets_change_billion": -103.7
+        },
+        {
+          "week_ending": "2019-11-27",
+          "large_total_assets_change_billion": 111.3,
+          "small_total_assets_change_billion": -104.3
+        },
+        {
+          "week_ending": "2019-12-04",
+          "large_total_assets_change_billion": 111.4,
+          "small_total_assets_change_billion": -105.4
+        }
+      ],
+      "break_week": "2019-12-11",
+      "cause": {
+        "status": "unexplained",
+        "note_as_of": null,
+        "quote": null
+      },
+      "notes_dated_near_the_window": [
+        "2019-11-06",
+        "2019-12-11"
+      ]
+    },
+    {
+      "id": "move-03",
+      "release_date": "2021-10-01",
+      "url": "https://www.federalreserve.gov/releases/h8/20211001/",
+      "release_sha256": "f44c5025af3113809a4e1f34024e77841d32d503ebb74bbc568357127f328efe",
+      "fetched_sha256": "805fb2599fff22a8c1e0a4154bd0c9520aa2d5f8364c3be0019358e97014df8c",
+      "compared_with": {
+        "release_date": "2021-09-24",
+        "url": "https://www.federalreserve.gov/releases/h8/20210924/",
+        "release_sha256": "a7ce17113c6cb9ca0019f5e6ba0069dacdeab12e96de56b2c2a73d29ebd0a9b2",
+        "fetched_sha256": "1f8cb03bc55242d860520f317885f8ff6037ad8bf91840950715c60ceebafa47"
+      },
+      "restated_weeks": [
+        {
+          "week_ending": "2021-09-01",
+          "large_total_assets_change_billion": 58.3,
+          "small_total_assets_change_billion": -55.4
+        },
+        {
+          "week_ending": "2021-09-08",
+          "large_total_assets_change_billion": 58.8,
+          "small_total_assets_change_billion": -57.6
+        },
+        {
+          "week_ending": "2021-09-15",
+          "large_total_assets_change_billion": 58.4,
+          "small_total_assets_change_billion": -57.8
+        }
+      ],
+      "break_week": "2021-09-22",
+      "cause": {
+        "status": "unexplained",
+        "note_as_of": null,
+        "quote": null
+      },
+      "notes_dated_near_the_window": []
+    },
+    {
+      "id": "move-04",
+      "release_date": "2021-10-22",
+      "url": "https://www.federalreserve.gov/releases/h8/20211022/",
+      "release_sha256": "36bc35270cadcb1d3f171fb6ecbf7c72c856bb6e53015c6736bcbab3b3768d13",
+      "fetched_sha256": "23574a7ca6e046da0103da6362df57fb78f9e0763fc8b693bd2c38a6eda40d19",
+      "compared_with": {
+        "release_date": "2021-10-15",
+        "url": "https://www.federalreserve.gov/releases/h8/20211015/",
+        "release_sha256": "42e3f751cc34d4eb6485e7f3df38af66f11f67a558ec3ea6b6ad07ee04d87322",
+        "fetched_sha256": "9140760cd3b1486d0b886e7154fb86bb7cfb18bf38a63b0ca5a683b31dbb2d31"
+      },
+      "restated_weeks": [
+        {
+          "week_ending": "2021-09-22",
+          "large_total_assets_change_billion": 86.5,
+          "small_total_assets_change_billion": -86.5
+        },
+        {
+          "week_ending": "2021-09-29",
+          "large_total_assets_change_billion": 86.7,
+          "small_total_assets_change_billion": -86.9
+        },
+        {
+          "week_ending": "2021-10-06",
+          "large_total_assets_change_billion": 86.7,
+          "small_total_assets_change_billion": -86.9
+        }
+      ],
+      "break_week": "2021-10-13",
+      "cause": {
+        "status": "unexplained",
+        "note_as_of": null,
+        "quote": null
+      },
+      "notes_dated_near_the_window": []
+    },
+    {
+      "id": "move-05",
+      "release_date": "2022-04-15",
+      "url": "https://www.federalreserve.gov/releases/h8/20220415/",
+      "release_sha256": "bbc08e19f2fb21efabb5beb955b8ca98d38d615116f9f2556d1ff69b3cd85522",
+      "fetched_sha256": "1ab5152a1798074e3f7ae54d1cd0a869c7938e8b060725fa380e544148f11f39",
+      "compared_with": {
+        "release_date": "2022-04-08",
+        "url": "https://www.federalreserve.gov/releases/h8/20220408/",
+        "release_sha256": "e0ad55091085773df953256f60e19bb745ec75acb47b6a564967c1227821062e",
+        "fetched_sha256": "1f1a4a4899140384ab3d59af6b17146a178380e32e2404b204089b0f4c91e585"
+      },
+      "restated_weeks": [
+        {
+          "week_ending": "2022-03-16",
+          "large_total_assets_change_billion": 62.6,
+          "small_total_assets_change_billion": -62.7
+        },
+        {
+          "week_ending": "2022-03-23",
+          "large_total_assets_change_billion": 62.5,
+          "small_total_assets_change_billion": -62.4
+        },
+        {
+          "week_ending": "2022-03-30",
+          "large_total_assets_change_billion": 62.9,
+          "small_total_assets_change_billion": -63.7
+        }
+      ],
+      "break_week": "2022-04-06",
+      "cause": {
+        "status": "unexplained",
+        "note_as_of": null,
+        "quote": null
+      },
+      "notes_dated_near_the_window": [
+        "2022-03-02"
+      ]
+    },
+    {
+      "id": "move-06",
+      "release_date": "2022-10-14",
+      "url": "https://www.federalreserve.gov/releases/h8/20221014/",
+      "release_sha256": "220b44b4368dc4d3f003a5e030a5df8121c089205a327842e353ace48d649c24",
+      "fetched_sha256": "3716f3f3519151de47ca67bb0a5d5613ceb4b5c8a727bc2b915c0c8120f2590a",
+      "compared_with": {
+        "release_date": "2022-10-07",
+        "url": "https://www.federalreserve.gov/releases/h8/20221007/",
+        "release_sha256": "ce384e24b96545c025052b5324677b06a8cc108eec5059be8a4e7252039a5742",
+        "fetched_sha256": "ecf57be2dc3f76504e43011173c12f07d416550b2d13adc341689c1db00652be"
+      },
+      "restated_weeks": [
+        {
+          "week_ending": "2022-09-14",
+          "large_total_assets_change_billion": 129.2,
+          "small_total_assets_change_billion": -128.9
+        },
+        {
+          "week_ending": "2022-09-21",
+          "large_total_assets_change_billion": 129.0,
+          "small_total_assets_change_billion": -128.7
+        },
+        {
+          "week_ending": "2022-09-28",
+          "large_total_assets_change_billion": 130.7,
+          "small_total_assets_change_billion": -130.3
+        }
+      ],
+      "break_week": "2022-10-05",
+      "cause": {
+        "status": "unexplained",
+        "note_as_of": null,
+        "quote": null
+      },
+      "notes_dated_near_the_window": [
+        "2022-10-05"
+      ]
+    },
+    {
+      "id": "move-07",
+      "release_date": "2023-02-17",
+      "url": "https://www.federalreserve.gov/releases/h8/20230217/",
+      "release_sha256": "a1d33ae61e9438d769862e442c1775b9041e3f0a815133ac9ca1202e90f285c8",
+      "fetched_sha256": "2ca52fe8ab92cb63c7fd353f5218d7b451dff209d46e2bc6094b86aa4f5046b0",
+      "compared_with": {
+        "release_date": "2023-02-10",
+        "url": "https://www.federalreserve.gov/releases/h8/20230210/",
+        "release_sha256": "c795f5420f6c65039251c58782cb76dfa5bc25408b416d5183581cac36314b0f",
+        "fetched_sha256": "2fea819762b4302f51cb7a9236cd8791e8fc218dbdaa8a36647255b15433f4cb"
+      },
+      "restated_weeks": [
+        {
+          "week_ending": "2023-01-18",
+          "large_total_assets_change_billion": 92.1,
+          "small_total_assets_change_billion": -89.0
+        },
+        {
+          "week_ending": "2023-01-25",
+          "large_total_assets_change_billion": 91.6,
+          "small_total_assets_change_billion": -87.7
+        },
+        {
+          "week_ending": "2023-02-01",
+          "large_total_assets_change_billion": 93.0,
+          "small_total_assets_change_billion": -94.0
+        }
+      ],
+      "break_week": "2023-02-08",
+      "cause": {
+        "status": "unexplained",
+        "note_as_of": null,
+        "quote": null
+      },
+      "notes_dated_near_the_window": [
+        "2023-01-04"
+      ]
+    },
+    {
+      "id": "move-08",
+      "release_date": "2023-03-24",
+      "url": "https://www.federalreserve.gov/releases/h8/20230324/",
+      "release_sha256": "ccc1a6d776268fe005c8fe8251638845002768d85c4be7971b5274a3582d47f9",
+      "fetched_sha256": "9c660ce3f6b9d5412f691e4f4d7dd89024be1dd17722e92f83e09baccb0691c0",
+      "compared_with": {
+        "release_date": "2023-03-17",
+        "url": "https://www.federalreserve.gov/releases/h8/20230317/",
+        "release_sha256": "8211fcc118cbb2a4ca84974c4e9a1cdea6902a58758d2b790dddf3f061d8728d",
+        "fetched_sha256": "b154bc87db7cdeaeac43073731d743d01cd9d910fb35c0888551bf865e52949e"
+      },
+      "restated_weeks": [
+        {
+          "week_ending": "2023-02-22",
+          "large_total_assets_change_billion": -50.1,
+          "small_total_assets_change_billion": 72.5
+        },
+        {
+          "week_ending": "2023-03-01",
+          "large_total_assets_change_billion": -50.1,
+          "small_total_assets_change_billion": 80.6
+        }
+      ],
+      "break_week": "2023-03-15",
+      "cause": {
+        "status": "unexplained",
+        "note_as_of": null,
+        "quote": null
+      },
+      "notes_dated_near_the_window": [
+        "2023-03-01",
+        "2023-03-22",
+        "2023-03-29"
+      ]
+    },
+    {
+      "id": "move-09",
+      "release_date": "2023-05-12",
+      "url": "https://www.federalreserve.gov/releases/h8/20230512/",
+      "release_sha256": "8cb98a1c480b24fb324c234dbf5705b9736f75192e8366bf51fa54611ae1a32f",
+      "fetched_sha256": "b671af206d809878de58720c69e87d495877edef95ddf1c438b5704a055928d4",
+      "compared_with": {
+        "release_date": "2023-05-05",
+        "url": "https://www.federalreserve.gov/releases/h8/20230505/",
+        "release_sha256": "bd1ffae2a10ebde715a9db69a151ff7362fa49653c1a7bfbcac9f6fdc50b84b8",
+        "fetched_sha256": "03cbc420703ee4c6661f340e73601a938ec7e14ccdd03ecf05f1b8aa0bb64a44"
+      },
+      "restated_weeks": [
+        {
+          "week_ending": "2023-04-12",
+          "large_total_assets_change_billion": 140.6,
+          "small_total_assets_change_billion": -131.1
+        },
+        {
+          "week_ending": "2023-04-19",
+          "large_total_assets_change_billion": 162.3,
+          "small_total_assets_change_billion": -131.8
+        },
+        {
+          "week_ending": "2023-04-26",
+          "large_total_assets_change_billion": 165.0,
+          "small_total_assets_change_billion": -137.8
+        }
+      ],
+      "break_week": "2023-05-03",
+      "cause": {
+        "status": "unexplained",
+        "note_as_of": null,
+        "quote": null
+      },
+      "notes_dated_near_the_window": [
+        "2023-03-29"
+      ]
+    },
+    {
+      "id": "move-10",
+      "release_date": "2023-06-09",
+      "url": "https://www.federalreserve.gov/releases/h8/20230609/",
+      "release_sha256": "3dd6e3446fd4bc5233d579f7b4514588db6e8000705dbc8736130062eb8f40de",
+      "fetched_sha256": "4da5e10f460f0a11392d17518e803feed5a930cbe4811e8503aef714d2cd03aa",
+      "compared_with": {
+        "release_date": "2023-06-02",
+        "url": "https://www.federalreserve.gov/releases/h8/20230602/",
+        "release_sha256": "26ad9522b1238948016848bfb3e006d43322b721ff10b2501ab4a6a2916a9509",
+        "fetched_sha256": "f6b51e75963566c36ae40a90cebdc86e9d9ac97d711b5faf9d7041b384884cc9"
+      },
+      "restated_weeks": [
+        {
+          "week_ending": "2023-05-10",
+          "large_total_assets_change_billion": 92.6,
+          "small_total_assets_change_billion": -92.6
+        },
+        {
+          "week_ending": "2023-05-17",
+          "large_total_assets_change_billion": 92.4,
+          "small_total_assets_change_billion": -92.2
+        },
+        {
+          "week_ending": "2023-05-24",
+          "large_total_assets_change_billion": 92.1,
+          "small_total_assets_change_billion": -95.3
+        }
+      ],
+      "break_week": "2023-05-31",
+      "cause": {
+        "status": "unexplained",
+        "note_as_of": null,
+        "quote": null
+      },
+      "notes_dated_near_the_window": []
+    },
+    {
+      "id": "move-11",
+      "release_date": "2023-06-30",
+      "url": "https://www.federalreserve.gov/releases/h8/20230630/",
+      "release_sha256": "48b5cce0e21fbfc24c312517cfaeb8e5bcec4c3a1253f67647c9b2bb5145399f",
+      "fetched_sha256": "31133f0d17469704bca31558be9b29a92e3ce13494f9f2d8510deb224550bec7",
+      "compared_with": {
+        "release_date": "2023-06-23",
+        "url": "https://www.federalreserve.gov/releases/h8/20230623/",
+        "release_sha256": "d9b4ab9b50b176e4fd70ac273edff9f164e3a8aa147582f98d879458db51b036",
+        "fetched_sha256": "11c3b2882369c5929f9653ca5b8849f5d46d84927d272b8dadc6439a71c315bd"
+      },
+      "restated_weeks": [
+        {
+          "week_ending": "2023-05-31",
+          "large_total_assets_change_billion": 75.1,
+          "small_total_assets_change_billion": -76.5
+        },
+        {
+          "week_ending": "2023-06-07",
+          "large_total_assets_change_billion": 76.4,
+          "small_total_assets_change_billion": -80.4
+        },
+        {
+          "week_ending": "2023-06-14",
+          "large_total_assets_change_billion": 76.5,
+          "small_total_assets_change_billion": -79.7
+        }
+      ],
+      "break_week": "2023-06-21",
+      "cause": {
+        "status": "unexplained",
+        "note_as_of": null,
+        "quote": null
+      },
+      "notes_dated_near_the_window": [
+        "2023-07-05"
+      ]
+    },
+    {
+      "id": "move-12",
+      "release_date": "2025-05-30",
+      "url": "https://www.federalreserve.gov/releases/h8/20250530/",
+      "release_sha256": "4ce495283c1f2f4a2aeecec2a47417c84f8915774ade74726995622ec3231e32",
+      "fetched_sha256": "ec1f12785a0be7aff9d15fa30772161fc734d2bc7ea38e076f9aa611378ac0d7",
+      "compared_with": {
+        "release_date": "2025-05-23",
+        "url": "https://www.federalreserve.gov/releases/h8/20250523/",
+        "release_sha256": "98dcbed2251c9b1037fe25db39e9b10604c6b8551a77da748cbfa9432a15af39",
+        "fetched_sha256": "fb00109d53f0625ade5b822c7c00c9c4a0ad70fbd481826b1079f92ec259c0f5"
+      },
+      "restated_weeks": [
+        {
+          "week_ending": "2025-04-30",
+          "large_total_assets_change_billion": 143.5,
+          "small_total_assets_change_billion": -143.7
+        },
+        {
+          "week_ending": "2025-05-07",
+          "large_total_assets_change_billion": 142.2,
+          "small_total_assets_change_billion": -142.9
+        },
+        {
+          "week_ending": "2025-05-14",
+          "large_total_assets_change_billion": 142.9,
+          "small_total_assets_change_billion": -143.0
+        }
+      ],
+      "break_week": "2025-05-21",
+      "cause": {
+        "status": "unexplained",
+        "note_as_of": null,
+        "quote": null
+      },
+      "notes_dated_near_the_window": []
+    },
+    {
+      "id": "move-13",
+      "release_date": "2026-02-13",
+      "url": "https://www.federalreserve.gov/releases/h8/20260213/",
+      "release_sha256": "6a96ddab9e0e05917effa355193a7331907b364f8482fad04bceea3346d07537",
+      "fetched_sha256": "dc86e4f6a89a5df517e115f94c728a2ebcca3822f3cfcf8a32f6131f8e2809d0",
+      "compared_with": {
+        "release_date": "2026-02-06",
+        "url": "https://www.federalreserve.gov/releases/h8/20260206/",
+        "release_sha256": "f29dbc29a239dbb06732386f738fac7b2b8a595a37934edd6416f59f258bc877",
+        "fetched_sha256": "29f48cd90f74adb5b1e4bf843a3fcfb4eaad74f79e29c91d0e5b6f990528a562"
+      },
+      "restated_weeks": [
+        {
+          "week_ending": "2026-01-14",
+          "large_total_assets_change_billion": 132.5,
+          "small_total_assets_change_billion": -131.9
+        },
+        {
+          "week_ending": "2026-01-21",
+          "large_total_assets_change_billion": 134.4,
+          "small_total_assets_change_billion": -132.1
+        },
+        {
+          "week_ending": "2026-01-28",
+          "large_total_assets_change_billion": 132.3,
+          "small_total_assets_change_billion": -132.6
+        }
+      ],
+      "break_week": "2026-02-04",
+      "cause": {
+        "status": "unexplained",
+        "note_as_of": null,
+        "quote": null
+      },
+      "notes_dated_near_the_window": [
+        "2025-12-31",
+        "2026-01-07"
+      ]
+    }
+  ],
+  "failures_2023": [
+    {
+      "id": "failure-1",
+      "institution": "Silicon Valley Bank",
+      "date_from_the_directive": "closed 10 March 2023",
+      "week": null,
+      "cause": {
+        "status": "unexplained",
+        "note_as_of": null,
+        "quote": null
+      },
+      "reading": "All eight notes of 2023 on the Notes on Data page (as of 2023-01-04, 03-01, 03-22, 03-29, 07-05, 08-02, 10-04 and 12-20) and the archived release pages of 2023-02-10, 02-17, 03-17, 03-24, 05-05, 05-12, 06-02, 06-09, 06-23 and 06-30 were read; none names this institution, or a move between the large and small groups."
+    },
+    {
+      "id": "failure-2",
+      "institution": "Signature Bank",
+      "date_from_the_directive": "closed 12 March 2023",
+      "week": null,
+      "cause": {
+        "status": "unexplained",
+        "note_as_of": null,
+        "quote": null
+      },
+      "reading": "All eight notes of 2023 on the Notes on Data page (as of 2023-01-04, 03-01, 03-22, 03-29, 07-05, 08-02, 10-04 and 12-20) and the archived release pages of 2023-02-10, 02-17, 03-17, 03-24, 05-05, 05-12, 06-02, 06-09, 06-23 and 06-30 were read; none names this institution, or a move between the large and small groups."
+    },
+    {
+      "id": "failure-3",
+      "institution": "The acquisitions of Silicon Valley Bank and Signature Bank",
+      "date_from_the_directive": "late March 2023",
+      "week": null,
+      "cause": {
+        "status": "unexplained",
+        "note_as_of": null,
+        "quote": null
+      },
+      "reading": "All eight notes of 2023 on the Notes on Data page (as of 2023-01-04, 03-01, 03-22, 03-29, 07-05, 08-02, 10-04 and 12-20) and the archived release pages of 2023-02-10, 02-17, 03-17, 03-24, 05-05, 05-12, 06-02, 06-09, 06-23 and 06-30 were read; none names this institution, or a move between the large and small groups."
+    },
+    {
+      "id": "failure-4",
+      "institution": "First Republic Bank",
+      "date_from_the_directive": "closed 1 May 2023",
+      "week": null,
+      "cause": {
+        "status": "unexplained",
+        "note_as_of": null,
+        "quote": null
+      },
+      "reading": "All eight notes of 2023 on the Notes on Data page (as of 2023-01-04, 03-01, 03-22, 03-29, 07-05, 08-02, 10-04 and 12-20) and the archived release pages of 2023-02-10, 02-17, 03-17, 03-24, 05-05, 05-12, 06-02, 06-09, 06-23 and 06-30 were read; none names this institution, or a move between the large and small groups."
+    }
+  ]
+}
