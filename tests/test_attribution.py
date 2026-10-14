@@ -219,7 +219,7 @@ class DevelopmentGuardTests(unittest.TestCase):
 
         Recorded mutation (14 October 2026): in `attribution.check_development`, the parent's call replaced by
         `late = [d for d in dates if d > date(2026, 9, 3)]` raising `LookAheadError` for any such date. This test then
-        fails with AssertionError: LookAheadError raised for 2026-09-10, whose tier the patched lockbox leaves open.
+        errors with LookAheadError: late, raised for 2026-09-10, whose tier the patched lockbox leaves open.
         """
         with moved_lockbox(date(2026, 12, 1)):
             attribution.check_development([date(2026, 9, 10)])

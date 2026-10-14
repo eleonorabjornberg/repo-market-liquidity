@@ -93,9 +93,11 @@ class LockedTierTests(unittest.TestCase):
         """Leakage guard: a snapshot never publishes a row from a day the parent's lockbox holds.
 
         Recorded mutation (14 October 2026): in `snapshots._unlocked`, the condition
-        `development.is_locked(date.fromisoformat(row["announcement_date"]))` changed to `False`, so that the
-        2026-09-16 FOMC row is kept (snapshots rebuilt). This test then fails with AssertionError: True is not false :
-        '2026-09-16' is dated in a locked tier, in `on_rrp_rate`.
+        `development.is_locked(date.fromisoformat(row["announcement_date"]))` changed to `False`. The tracked files are
+        not rebuilt by this test, so the rebuild test kills it: `test_a_snapshot_rebuilds_to_its_tracked_digest` fails
+        with AssertionError: 'fa35581f...' != '30e9296a...' for `on_rrp_rate`. This test fails once the snapshots are
+        rebuilt under the mutation, with AssertionError: True is not false : '2026-09-16' is dated in a locked tier,
+        in `on_rrp_rate`.
         """
         for series, column in PUBLICATION_COLUMN.items():
             for row in snapshots.read(series):
