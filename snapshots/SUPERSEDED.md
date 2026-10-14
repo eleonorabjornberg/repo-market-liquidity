@@ -18,3 +18,18 @@ already refuse that tier. The snapshots are now cut from the tracked rate tables
 A reader that pinned a superseded digest still finds its bytes. They should move to the current digest: the old file
 carries a blind-tier row and must not be used in a comparison. The other series' digests did not move; their manifests
 gained `source_table_sha256` and `locked_rows_omitted` (empty) and were rebuilt at the commit of this change.
+
+## 14 October 2026: the `slr_headroom` snapshot re-cut with a `measure` column (#71)
+
+Eleonora's decision on #69 (14 October 2026, Q2) puts State Street Bank and Trust Company outside the main measure, as a
+labelled sensitivity in the same snapshot. The extract gained a `measure` column (`main`, or `sensitivity_state_street`) and
+the headroom now reads the requirement table of `docs/decisions/slr-requirement.md` (a draft until she merges it). No figure
+moved: the 277 rows, their ratios, requirements and headroom are those of the file they replace; only the new column and the
+two manifest notes are added.
+
+| Series | Superseded digest (file kept) | Current digest | Rows |
+|---|---|---|---|
+| `slr_headroom` | `998c5aa153689d76520e9901f82e7813eeffc1709ab4030735d4855cc9ea31f0` | `09c138ad385424b8ba9d705e258ac254cd0ab6ee5e93e7ba199276440ba4de27` | 277 to 277 |
+
+A reader that pinned the superseded digest still finds its bytes. A reader of the main measure moves to the current digest
+and filters on `measure == main`; the old file has no such column and holds State Street in the main series.
