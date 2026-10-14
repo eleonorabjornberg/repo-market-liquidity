@@ -1,8 +1,9 @@
 # Decision (DRAFT for Eleonora): H10's attribution method, v1
 
-**Status: a draft, written by the directive loop for Eleonora to review (H10 step 1, repo-market-liquidity#23). It is
-in force only once she merges it. Every value marked "proposed" is hers to set, and nothing is applied to a real episode
-before she does.**
+**Status: a draft for Eleonora to merge (H10 step 1, repo-market-liquidity#23; values set by her ruling, directive #45).
+It is in force only once she merges it. The six values below are decided, by her ruling on
+[#37](https://github.com/eleonorabjornberg/repo-market-liquidity/issues/37#issuecomment-6159864877) (13 October 2026):
+"i agree with your recommendations". Nothing is applied to a real episode before this record is merged (H10 step 2).**
 
 H10 asks, for each pressure episode, what share of the rise in SOFR − IORB is accounted for by Treasury settlement, the
 TGA, reserves, quarter-end and a residual (plan, H10). This record declares the method before it is applied. It is
@@ -20,20 +21,20 @@ descriptive: no verdict in the sense of eleonorabjornberg/repo-market-model#640 
 - **Both sources are cited at the pin**, `PARENT_COMMIT` in `src/repo_liquidity/__init__.py`, not at the commit the issue
   text cites; the issue's line numbers (`6c09789`) should be re-read at the pin when the record is reviewed.
 
-## 1. The window (proposed)
+## 1. The window (decided)
 
-| | Proposed | Why |
+| | Decided | Why |
 |---|---|---|
 | **Baseline** | the mean of the **5** panel days before the onset | the onset group's own calm days (`ONSET_CALM_DAYS` = 5): all at or below +5 bp by construction |
 | **Length** | the onset day and the **4** days after it, **5** panel days in all | long enough to average out the onset day's own noise, short enough that a second episode is rarely inside it |
 | **Change** | the window mean minus the baseline mean, for the spread and for each driver | a level shift relative to the calm before |
 
-Constants: `BASELINE_DAYS`, `WINDOW_DAYS`. **Question for Eleonora (Q6 says H10 declares the window unless she rules
-otherwise):** these two numbers.
+Constants: `BASELINE_DAYS`, `WINDOW_DAYS`. **Decided (13 October 2026): 5 baseline days plus the onset day and 4 more,
+as proposed.**
 
-## 2. The decomposition (proposed: regression with Shapley shares; the alternative is written out)
+## 2. The decomposition (decided: regression with Shapley shares; the alternative is written out)
 
-**Proposed (plan, Q7).** A leave-episode-out regression of the spread change on the driver changes, with Shapley shares
+**Decided (plan, Q7; ruling of 13 October 2026).** A leave-episode-out regression of the spread change on the driver changes, with Shapley shares
 and a stationary-bootstrap interval.
 
 - **Drivers:** Treasury settlement (`treasury_settlement`, USD bn), TGA (`tga`), reserves (`reserve_balances`) and
@@ -49,8 +50,8 @@ and a stationary-bootstrap interval.
   prediction, divided by the rise. Shares and residual sum to 1; a share may be negative (a driver that worked against
   the rise).
 - **Interval:** the stationary bootstrap over the fitting rows (the parent's `metrics.stationary_bootstrap_indices`),
-  mean block **10** panel days, **10,000** draws, seed **20261013**, each draw refitted, 90% percentile interval. Proposed
-  values; the seed is fixed here and per episode as `seed × 1,000,003 + start`. A draw with a singular design is skipped; more than
+  mean block **10** panel days, **10,000** draws, seed **20261013**, each draw refitted, 90% percentile interval. The
+  seed is fixed here and per episode as `seed × 1,000,003 + start`. A draw with a singular design is skipped; more than
   5% skipped refuses the interval.
 - **What the synthetic tests show** (`tests/test_attribution.py`, planted shares, no real data): with no noise and no
   planted residual the residual is zero; a planted residual is recovered and does not leak into the drivers; the 90%
@@ -63,14 +64,19 @@ and a stationary-bootstrap interval.
   holds to its nominal coverage. With the drivers' coefficients held fixed (the alternative below) a share is exactly
   `β_j Δx_j / rise` and has no such shift, but then it is not a Shapley value of anything.
 
-**Alternative (written out, not proposed).** Flow accounting through the Stage 2 demand curve: reserves' contribution is
+- **Fixed-coefficient shares (added by the ruling).** Beside each Shapley share the output reports
+  `β_j · Δx_j / rise`, with β from the full model fitted on the whole fitting sample (`Attribution.fixed_shares`).
+  They are reported only: they are not the method, they have no interval of their own, and no outcome rule reads them.
+  Intervals lead every table; a point share is shown after its interval.
+
+**Alternative (written out, not chosen).** Flow accounting through the Stage 2 demand curve: reserves' contribution is
 the curve's slope at the baseline times the reserves change, and the other drivers enter through their effect on reserves
 and on the funding need. It needs the curve's parameters, which are estimated on the same days; it is cheaper to
 interpret and harder to bootstrap. It is not built.
 
-**The choice is hers.** If she picks the alternative, the code in this PR is the benchmark's machinery only.
+**Decided:** the regression with Shapley shares; the alternative is not built.
 
-## 3. The fitting sample (proposed)
+## 3. The fitting sample (decided, as proposed)
 
 - **Rows:** every development window, not only the episodes' (about the whole development sample, rather than the few
   dozen onsets): the window starting at each panel day `t` with a complete baseline and window, its spread change and its
@@ -87,9 +93,10 @@ interpret and harder to bootstrap. It is not built.
 - **Benchmark:** the same method with reserves as the only driver (`RESERVES_ONLY`). Reported beside every episode:
   the drivers' explained share above reserves alone (`explained_above_reserves`).
 - **Placebo:** the same decomposition on windows of the same length and day type that touch no episode
-  (`placebo_starts`). **Day type (proposed):** the start day's quarter-end flag and whether Treasury settlement is
-  positive. Five windows per episode, drawn with a fixed seed. It tells whether the drivers explain episodes more than
-  ordinary weeks. **Question for Eleonora:** the day-type definition and the five.
+  (`placebo_starts`). **Day type (decided):** the start day's quarter-end flag and whether Treasury settlement is
+  positive. **20 windows per episode** (`PLACEBO_WINDOWS`; first proposed as five), drawn with a fixed seed. It tells
+  whether the drivers explain episodes more than ordinary weeks. **Decided (13 October 2026):** the day type as
+  proposed, and the count changed from 5 to 20.
 
 ## 5. The outcome rule (copied from the plan; not changed here)
 
@@ -97,7 +104,8 @@ interpret and harder to bootstrap. It is not built.
 - **"Residual dominates":** otherwise. That is the kill in eleonorabjornberg/repo-market-model#46; H5–H9 then get no
   driver list from H10.
 - **The test of an episode** is `|residual share| < 0.5` (the absolute value, so an over-explained rise counts as a miss
-  too; **proposed**: the plan does not say how a negative residual is read).
+  too; **decided** (13 October 2026): the plan does not say how a negative residual is read, and Eleonora rules that it
+  is a miss).
 - **Prospective episodes:** reported against the same rule, labelled prospective.
 
 ## 6. Missing data and the information set
@@ -118,12 +126,16 @@ interpret and harder to bootstrap. It is not built.
 - It does not register anything; registration of the frozen method is her attested action (plan, H10).
 - It does not change the plan's outcome rule, the episode list, or the model repo.
 
-## 8. Questions for Eleonora
+## 8. Decided (13 October 2026)
 
-1. The window: 5 baseline days, 5 window days (section 1).
-2. Regression with Shapley shares (proposed), or flow accounting through the Stage 2 curve (section 2), given the
-   property noted there.
-3. The fitting sample: all development windows with the episode's neighbourhood left out (section 3).
-4. The placebo's day type and the number of placebo windows per episode (section 4).
-5. Whether a negative residual counts as a miss (section 5).
-6. The source of the episode list under Q6 (section 0).
+Eleonora's ruling on [#37](https://github.com/eleonorabjornberg/repo-market-liquidity/issues/37#issuecomment-6159864877)
+accepted every recommendation. The text of the record outside this section is unchanged except where the values and the
+two additions below say so.
+
+1. The window: 5 baseline days, 5 window days (section 1). As proposed.
+2. Regression with Shapley shares (section 2). As proposed, **with fixed-coefficient shares `β_j · Δx_j / rise` reported
+   beside each Shapley share**; they are reported only; intervals lead every table.
+3. The fitting sample: all development windows with the episode's neighbourhood left out (section 3). As proposed.
+4. The placebo (section 4): the day type as proposed; **20 windows per episode** instead of 5.
+5. An episode counts as attributed only if `|residual share| < 0.5`; a negative residual is a miss (section 5).
+6. The source of the episode list: as decided on #20 (section 0).
