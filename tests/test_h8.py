@@ -18,7 +18,8 @@ from datetime import date, time, timedelta
 from repo_model.asof import StaleReadError
 from repo_model.splits import LookAheadError
 
-from repo_liquidity import declaration, h8
+from lockbox_helper import moved_lockbox
+from repo_liquidity import declaration, development, h8
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 PAGES = ROOT / "tests" / "fixtures" / "h8_pages"
@@ -116,7 +117,7 @@ class ExtractTests(unittest.TestCase):
     def test_the_extract_is_consecutive_weeks_from_the_first_release_to_the_last_before_the_blind_tier(self):
         self.assertEqual(self.prints[0].week_ending, date(2017, 12, 27))
         self.assertEqual(self.prints[0].release_date, date(2018, 1, 5))
-        self.assertLessEqual(self.prints[-1].release_date, h8.LAST_RELEASE)
+        self.assertLessEqual(self.prints[-1].release_date, development.development_end())
         self.assertEqual(self.prints[-1].week_ending, date(2026, 8, 19))
         self.assertEqual(self.prints[-1].release_date, date(2026, 8, 28))
 
@@ -271,7 +272,7 @@ class BreaksTests(unittest.TestCase):
         dates = [date.fromisoformat(event["as_of"]) for event in self.record["events"]]
         self.assertEqual(dates, sorted(dates))
         self.assertEqual(len(dates), len(set(dates)))
-        self.assertTrue(all(day.weekday() == 2 and h8.FIRST_WEEK <= day <= h8.LAST_RELEASE for day in dates))
+        self.assertTrue(all(day.weekday() == 2 and h8.FIRST_WEEK <= day <= development.development_end() for day in dates))
         self.assertEqual(dates[0], date(2018, 2, 7))
 
     def test_the_march_2023_divestitures_are_declared_as_stated(self):
@@ -298,16 +299,37 @@ class BreaksTests(unittest.TestCase):
             h8.parse_notes(text)
 
     def test_the_notes_after_the_blind_tier_starts_are_not_read(self):
-        """Availability guard: a note as of a day after the panel's last (3 September 2026) is not recorded.
+        """Availability guard: a note as of a day after the development tier's end is not recorded.
 
-        The saved page carries a note as of 2026-09-30, published after the lockbox's blind tier began. Recorded
-        mutation (13 October 2026): in `src/repo_liquidity/h8.py`, `LAST_RELEASE` changed from `date(2026, 9, 3)` to
-        `date(2026, 12, 31)`. This test then fails with AssertionError: '2026-09-30' unexpectedly found in the parsed
-        events' dates.
+        The saved page carries a note as of 2026-09-30, published after the lockbox's blind tier began. The end is
+        the parent's lockbox, not a constant here (`development.development_end`). Recorded mutation (14 October
+        2026): in `src/repo_liquidity/development.py`, `development_end` returns `date(2026, 12, 31)` instead of the
+        day before the first locked tier. This test then fails with AssertionError: '2026-09-30' unexpectedly found
+        in the parsed events' dates.
         """
         self.assertIn(b"September 30, 2026", self.page)
         self.assertNotIn("2026-09-30", [event["as_of"] for event in h8.parse_notes(self.page)])
         self.assertNotIn("2026-09-30", [event["as_of"] for event in self.record["events"]])
+
+    def test_a_read_past_the_development_tier_is_refused(self):
+        """Leakage guard: asking `parse_notes` for a note after the lockbox's development end raises the parent's error.
+
+        Recorded mutation (14 October 2026): in `h8.parse_notes`, the call
+        `lockbox.require_unlocked([last], where="h8.parse_notes")` replaced by `pass`. This test then fails with
+        AssertionError: LookAheadError not raised.
+        """
+        with self.assertRaises(LookAheadError):
+            h8.parse_notes(self.page, last=date(2026, 12, 31))
+
+    def test_the_end_follows_the_parents_lockbox_not_a_copy(self):
+        """Availability guard: with the parent's blind tier moved to 2026-12-01 the 2026-09-30 note is read.
+
+        Recorded mutation (14 October 2026): in `h8.parse_notes`, the default `last` replaced by `date(2026, 9, 3)`.
+        This test then fails with AssertionError: '2026-09-30' not found in the parsed events' dates.
+        """
+        with moved_lockbox(date(2026, 12, 1)):
+            self.assertIn("2026-09-30", [event["as_of"] for event in h8.parse_notes(self.page)])
+        self.assertFalse(hasattr(h8, "LAST_RELEASE"))
 
 
 if __name__ == "__main__":

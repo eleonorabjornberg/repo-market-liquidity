@@ -11,8 +11,10 @@ import json
 import pathlib
 import tempfile
 import unittest
+from datetime import date
 
-from repo_liquidity import PANEL_SHA256, PARENT_COMMIT, snapshots
+from lockbox_helper import moved_lockbox
+from repo_liquidity import PANEL_SHA256, PARENT_COMMIT, development, snapshots
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 
@@ -69,10 +71,67 @@ class TrackedSnapshotTests(unittest.TestCase):
 
     def test_the_manifest_describes_the_series(self):
         manifest = snapshots.load_manifest("on_rrp_rate")
-        self.assertEqual(manifest["rows"], 32)
-        self.assertEqual(manifest["last_announced"], "2026-09-16T14:00")
-        self.assertEqual(manifest["last_effective"], "2026-09-17")
+        self.assertEqual(manifest["rows"], 31)
+        self.assertEqual(manifest["last_announced"], "2025-12-10T14:00")
+        self.assertEqual(manifest["last_effective"], "2025-12-11")
         self.assertEqual(len(manifest["source_pages"]), manifest["rows"])
+
+
+#: The column that dates a row in each published series: when the row became public.
+PUBLICATION_COLUMN = {"on_rrp_rate": "announcement_date", "srf_rate": "announcement_date",
+                      "runoff_caps": "announcement_date", "agency_securities": "release_date",
+                      "h8_groups": "release_date"}
+
+
+class LockedTierTests(unittest.TestCase):
+    """One lockbox, the model repo's (#59, finding #55): no published row is dated in a tier it holds."""
+
+    def test_every_series_is_dated(self):
+        self.assertEqual(set(PUBLICATION_COLUMN), set(snapshots.SERIES))
+
+    def test_no_published_row_is_dated_in_a_locked_tier(self):
+        """Leakage guard: a snapshot never publishes a row from a day the parent's lockbox holds.
+
+        Recorded mutation (14 October 2026): in `snapshots._unlocked`, the condition
+        `development.is_locked(date.fromisoformat(row["announcement_date"]))` changed to `False`. The tracked files are
+        not rebuilt by this test, so the rebuild test kills it: `test_a_snapshot_rebuilds_to_its_tracked_digest` fails
+        with AssertionError: 'fa35581f...' != '30e9296a...' for `on_rrp_rate`. This test fails once the snapshots are
+        rebuilt under the mutation, with AssertionError: True is not false : '2026-09-16' is dated in a locked tier,
+        in `on_rrp_rate`.
+        """
+        for series, column in PUBLICATION_COLUMN.items():
+            for row in snapshots.read(series):
+                day = date.fromisoformat(row[column])
+                self.assertFalse(development.is_locked(day), f"{row[column]!r} is dated in a locked tier, in `{series}`")
+
+    def test_the_rebuild_follows_the_parents_lockbox(self):
+        """With the parent's blind tier moved past 2026-09-16 the FOMC row is published again, so the filter reads the
+        lockbox rather than a date here. Recorded mutation (14 October 2026): in `snapshots._unlocked`, the lockbox
+        call replaced by `date.fromisoformat(row["announcement_date"]) > date(2026, 9, 3)`. This test then fails with
+        AssertionError: 31 != 32."""
+        with moved_lockbox(date(2026, 12, 1)), tempfile.TemporaryDirectory() as tmp:
+            manifest = snapshots.build("on_rrp_rate", pathlib.Path(tmp), repo_commit="a" * 40)
+        self.assertEqual(manifest["rows"], 32)
+        self.assertEqual(manifest["locked_rows_omitted"], [])
+
+    def test_the_omitted_row_is_named_in_the_manifest(self):
+        for series in ("on_rrp_rate", "srf_rate"):
+            manifest = snapshots.load_manifest(series)
+            self.assertEqual(manifest["locked_rows_omitted"], ["2026-09-16"], series)
+            table = ROOT / manifest["source_table"]
+            self.assertEqual(manifest["source_table_sha256"], hashlib.sha256(table.read_bytes()).hexdigest())
+            self.assertNotEqual(manifest["source_table_sha256"], manifest["sha256"])
+
+    def test_the_superseded_digests_stay_published_with_a_note(self):
+        """A published file is never edited or deleted (`docs/decisions/snapshots.md`): the old bytes stay under their
+        own name, and the note says what replaced them and why."""
+        note = (ROOT / "snapshots" / "SUPERSEDED.md").read_text(encoding="utf-8")
+        for series, old in {"on_rrp_rate": "fa35581f43d90ccf1318d78d3b7583bb5541a6fa0f7e52dbb5cf503b49c9686a",
+                            "srf_rate": "d4ded3b02729838430e50ca4034e21e93e8338958e0f808a5dcd87ccf9455606"}.items():
+            path = ROOT / "snapshots" / series / f"{old}.csv"
+            self.assertEqual(hashlib.sha256(path.read_bytes()).hexdigest(), old)
+            self.assertIn(old, note)
+            self.assertIn(snapshots.load_manifest(series)["sha256"], note)
 
 
 class AgencySecuritiesSnapshotTests(unittest.TestCase):

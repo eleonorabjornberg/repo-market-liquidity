@@ -18,10 +18,11 @@ import hashlib
 import io
 import json
 import re
+from datetime import date
 from pathlib import Path
 from typing import Dict, List, Optional
 
-from repo_liquidity import PANEL_SHA256, PARENT_COMMIT, h41, h8, scheduled
+from repo_liquidity import PANEL_SHA256, PARENT_COMMIT, development, h41, h8, scheduled
 
 ROOT = Path(__file__).resolve().parents[2]
 SNAPSHOTS = ROOT / "snapshots"
@@ -131,6 +132,26 @@ def _build_agency_securities(root: Path, repo_commit: str, agency_extract: Path,
     return manifest
 
 
+def _unlocked(source: bytes):
+    """The rate table's bytes without the rows the model repo's lockbox holds (#59, finding #55).
+
+    A row is dated by its announcement (the day it became public). The tracked table keeps every row, because the
+    Stage 4 freeze and the records read it there; the snapshot is the part of it a reader may see. Returns the bytes,
+    the kept rows and the announcement dates left out.
+    """
+    lines = source.decode("utf-8").splitlines()
+    rows: List[dict] = list(csv.DictReader(lines))
+    kept, omitted = [lines[0]], []
+    kept_rows: List[dict] = []
+    for line, row in zip(lines[1:], rows):
+        if development.is_locked(date.fromisoformat(row["announcement_date"])):
+            omitted.append(row["announcement_date"])
+        else:
+            kept.append(line)
+            kept_rows.append(row)
+    return ("\n".join(kept) + "\n").encode("utf-8"), kept_rows, omitted
+
+
 def build(series: str, root: Path = ROOT, *, repo_commit: str, agency_extract: Optional[Path] = None) -> dict:
     """Write the series' snapshot and manifest under `root/snapshots/<series>/`, and return the manifest.
 
@@ -150,9 +171,9 @@ def build(series: str, root: Path = ROOT, *, repo_commit: str, agency_extract: O
     if series == "agency_securities":
         return _build_agency_securities(root, repo_commit, agency_extract or table, H41_MBS_EXTRACT)
     scheduled._verified_rows(table)
-    data = table.read_bytes()
+    source = table.read_bytes()
+    data, rows, omitted = _unlocked(source)
     digest = hashlib.sha256(data).hexdigest()
-    rows: List[dict] = list(csv.DictReader(data.decode("utf-8").splitlines()))
     pages = {}
     for row in rows:
         page = scheduled.NOTES / "pages" / row["page"]
@@ -173,6 +194,8 @@ def build(series: str, root: Path = ROOT, *, repo_commit: str, agency_extract: O
         "last_announced": f"{rows[-1]['announcement_date']}T{rows[-1]['announcement_time']}",
         "last_effective": rows[-1]["effective_date"],
         "source_table": str(table.relative_to(ROOT)),
+        "source_table_sha256": hashlib.sha256(source).hexdigest(),
+        "locked_rows_omitted": omitted,
         "source_pages": pages,
         "parent_commit": PARENT_COMMIT,
         "parent_panel_sha256": PANEL_SHA256,
