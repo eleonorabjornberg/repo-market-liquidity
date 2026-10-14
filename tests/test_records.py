@@ -51,7 +51,15 @@ class RecordBytesTests(unittest.TestCase):
     def test_every_file_under_results_and_metadata_is_a_listed_record(self):
         tracked = subprocess.run(["git", "-C", str(ROOT), "ls-files", "results", "metadata"], check=True,
                                  capture_output=True, text=True).stdout.split()
-        self.assertEqual(sorted(tracked), sorted(records.RECORD_FILES))
+        self.assertEqual(sorted(tracked), sorted({**records.RECORD_FILES, **records.OWN_CHECK}))
+
+    def test_a_record_made_after_l0_names_the_test_that_checks_it(self):
+        """A record made after L0 is not byte-pinned here (its stage may be re-run only as a new record); it is listed with
+        the test file that checks it, and that file exists."""
+        for path, test in records.OWN_CHECK.items():
+            self.assertTrue((ROOT / path).is_file(), path)
+            self.assertTrue((ROOT / test).is_file(), test)
+            self.assertNotIn(path, records.RECORD_FILES)
 
     def test_every_record_names_the_pin_it_was_made_at(self):
         found = 0
