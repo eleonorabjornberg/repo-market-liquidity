@@ -80,7 +80,7 @@ class TrackedSnapshotTests(unittest.TestCase):
 #: The column that dates a row in each published series: when the row became public.
 PUBLICATION_COLUMN = {"on_rrp_rate": "announcement_date", "srf_rate": "announcement_date",
                       "runoff_caps": "announcement_date", "agency_securities": "release_date",
-                      "h8_groups": "release_date"}
+                      "h8_groups": "release_date", "slr_headroom": "latest_update"}
 
 
 class LockedTierTests(unittest.TestCase):
@@ -101,7 +101,7 @@ class LockedTierTests(unittest.TestCase):
         """
         for series, column in PUBLICATION_COLUMN.items():
             for row in snapshots.read(series):
-                day = date.fromisoformat(row[column])
+                day = date.fromisoformat(row[column][:10])
                 self.assertFalse(development.is_locked(day), f"{row[column]!r} is dated in a locked tier, in `{series}`")
 
     def test_the_rebuild_follows_the_parents_lockbox(self):
@@ -225,6 +225,29 @@ class ManifestFormatTests(unittest.TestCase):
             text = (ROOT / "snapshots" / series / "manifest.json").read_text(encoding="utf-8")
             manifest = json.loads(text)
             self.assertEqual(text, json.dumps(manifest, indent=2, sort_keys=True) + "\n")
+
+
+class SlrHeadroomSnapshotTests(unittest.TestCase):
+    """#63: the SLR-headroom snapshot says what the figures are, and what it was built from."""
+
+    def test_the_manifest_labels_the_figures_as_amended_not_first_prints(self):
+        manifest = snapshots.load_manifest("slr_headroom")
+        self.assertEqual(manifest["vintage"], "latest_filed")
+        self.assertIn("not first prints", manifest["vintage_note"])
+        self.assertIn("row 16", manifest["vintage_note"])
+        self.assertEqual({row["vintage"] for row in snapshots.read("slr_headroom")}, {"latest_filed"})
+
+    def test_the_manifest_names_the_zips_and_the_coverage_record_by_digest(self):
+        manifest = snapshots.load_manifest("slr_headroom")
+        self.assertEqual(len(manifest["source_zips"]), 34)
+        coverage = ROOT / manifest["coverage"]["path"]
+        self.assertEqual(hashlib.sha256(coverage.read_bytes()).hexdigest(), manifest["coverage"]["sha256"])
+        self.assertEqual(manifest["first_quarter"], "2018-03-31")
+        self.assertEqual(manifest["last_quarter"], "2026-06-30")
+
+    def test_the_snapshot_holds_no_figure_updated_in_a_locked_tier(self):
+        manifest = snapshots.load_manifest("slr_headroom")
+        self.assertFalse(development.is_locked(date.fromisoformat(manifest["last_update"][:10])))
 
 
 if __name__ == "__main__":
