@@ -32,11 +32,14 @@ RESERVES_ONLY: Tuple[str, ...] = ("reserve_balances",)
 #: The target series name, `DailyObservation.spread_bps`.
 SPREAD = "spread_bps"
 
-#: **Proposed values** (`docs/decisions/h10-method.md`); they become the method only when Eleonora merges the record.
+#: The values `docs/decisions/h10-method.md` sets (Eleonora's ruling on #37, 13 October 2026); they become the method only
+#: when she merges the record.
 #: The baseline is the mean of the panel days before the onset (the onset group's own calm days,
 #: `repo_model.onset.ONSET_CALM_DAYS`), the window the onset day and the days after it.
 BASELINE_DAYS = 5
 WINDOW_DAYS = 5
+#: Placebo windows per episode (the record, section 4: 20, changed from the 5 first proposed).
+PLACEBO_WINDOWS = 20
 #: The stationary bootstrap, as in the measurement protocol (section 6) and the parent's scoring protocol.
 BLOCK_LENGTH = 10.0
 DRAWS = 10_000
@@ -62,6 +65,8 @@ class Attribution:
     reason: Optional[str] = None
     rise_bp: Optional[float] = None
     shares: Optional[Mapping[str, float]] = None
+    #: beta_j * dx_j / rise from the full model's coefficients, reported beside the Shapley shares (the record, section 2).
+    fixed_shares: Optional[Mapping[str, float]] = None
     residual_share: Optional[float] = None
     explained_share: Optional[float] = None
     intervals: Optional[Mapping[str, Tuple[float, float]]] = None
@@ -269,6 +274,12 @@ def _predictions(xtx, xty, change_vector: Sequence[float]) -> Dict[Tuple[int, ..
     return values
 
 
+def _fixed_shares(xtx, xty, change_vector: Sequence[float], rise: float) -> List[float]:
+    """beta_j * dx_j / rise, with beta from the full model's fit. Reported only; the Shapley shares are the method."""
+    beta = _solve([row[:] for row in xtx], list(xty))
+    return [bj * dj / rise for bj, dj in zip(beta, change_vector)]
+
+
 def _shares(xtx, xty, change_vector: Sequence[float], rise: float) -> Tuple[List[float], float, float]:
     values = _predictions(xtx, xty, change_vector)
     phi = shapley(values, len(change_vector))
@@ -323,6 +334,7 @@ def attribute(
     try:
         xtx, xty = _normal_equations(xs, ys, range(len(ys)))
         shares, residual, explained = _shares(xtx, xty, d, rise)
+        fixed = _fixed_shares(xtx, xty, d, rise)
     except ValueError as error:
         return Attribution(start, "not attributable", str(error), rise_bp=rise)
 
@@ -353,6 +365,7 @@ def attribute(
         "attributed",
         rise_bp=rise,
         shares=dict(zip(drivers, shares)),
+        fixed_shares=dict(zip(drivers, fixed)),
         residual_share=residual,
         explained_share=explained,
         intervals=intervals,
@@ -380,7 +393,7 @@ def _day_type(series: Series, t: int) -> Tuple[bool, bool]:
     return (bool(quarter_end), bool(settlement and settlement > 0))
 
 
-def placebo_starts(series: Series, onsets: Sequence[int], per_episode: int = 5, seed: int = SEED) -> Dict[int, List[int]]:
+def placebo_starts(series: Series, onsets: Sequence[int], per_episode: int = PLACEBO_WINDOWS, seed: int = SEED) -> Dict[int, List[int]]:
     """For each episode, windows of the same length and day type that touch no episode.
 
     The day type is the start day's quarter-end flag and whether Treasury settlement is positive. A candidate is a
