@@ -21,6 +21,7 @@ from dataclasses import dataclass
 from datetime import date
 from typing import Dict, List, Mapping, Optional, Sequence, Tuple
 
+from repo_model import lockbox
 from repo_model.splits import LookAheadError
 
 #: The drivers, in the order the record names them. Treasury settlement and TGA are flows through the Treasury's
@@ -45,8 +46,6 @@ LEVEL = 0.90
 #: "Drivers named": the residual share is under this in more than `MAJORITY` of the development episodes (the plan, H10).
 RESIDUAL_BAR = 0.5
 MAJORITY = 0.5
-#: Development ends here (the plan, Q5). Nothing after it is read, whatever the caller passes.
-DEVELOPMENT_END = date(2026, 9, 3)
 #: At most this share of bootstrap draws may be unusable (a singular design) before the interval is refused.
 MAX_UNUSABLE_DRAWS = 0.05
 
@@ -111,21 +110,20 @@ def cross_check_onsets(rows) -> List[int]:
 
 
 def check_development(dates) -> None:
-    """Refuse any day after the development tier's end (the plan, Q5: one lockbox, the model repo's).
+    """Refuse any day the model repo's lockbox holds (the plan, Q5: one lockbox, the parent's, read here).
 
     Raises:
-        LookAheadError: a date is after `DEVELOPMENT_END`.
+        LookAheadError: a date is in a tier of the parent's lockbox that has not been opened.
     """
-    late = [d for d in dates if d > DEVELOPMENT_END]
-    if late:
-        raise LookAheadError(f"{late[0]} is after the development tier's end {DEVELOPMENT_END}")
+    lockbox.require_unlocked(dates, where="attribution")
 
 
 def check_window_public(rule, dates: Sequence[date], start: int, report_index: int) -> None:
     """Every input of the window starting at `start` was public at the decision instant of `report_index`.
 
     The window is the baseline and the days after the onset. Each non-calendar input is read on its own declaration
-    through the parent's `InformationRule.availability`; a calendar input is known in advance.
+    through the parent's `InformationRule.availability`; a calendar input is known in advance. The rule's first group
+    is the spread itself (the outcome, SOFR - IORB), so the spread's publication time is checked with the drivers'.
 
     Raises:
         LookAheadError: an input of some window day is observable only after the report instant.
@@ -296,6 +294,9 @@ def attribute(
     block_length: float = BLOCK_LENGTH,
     level: float = LEVEL,
     last_start: Optional[int] = None,
+    rule=None,
+    dates: Optional[Sequence[date]] = None,
+    report_index: Optional[int] = None,
 ) -> Attribution:
     """The shares of the rise in the window starting at `start`, fitted with that window's neighbourhood left out.
 
@@ -306,9 +307,22 @@ def attribute(
     The point shares come from the regression on the whole fitting sample. The interval is the percentile interval of
     the shares over `draws` stationary-bootstrap resamples of the fitting rows (the parent's
     `metrics.stationary_bootstrap_indices`), each refitted.
+
+    A real episode is attributed with `rule`, `dates` and `report_index` all given: the window's spread and drivers must
+    have been public at the report's decision instant (`check_window_public`). They are given together or not at all;
+    the synthetic series of the method's tests carry no dates and pass none.
+
+    Raises:
+        LookAheadError: an input of the window was not public at the report instant.
+        ValueError: only some of `rule`, `dates` and `report_index` are given.
     """
     from repo_model.metrics import stationary_bootstrap_indices
 
+    given = [name for name, value in (("rule", rule), ("dates", dates), ("report_index", report_index)) if value is not None]
+    if given and len(given) != 3:
+        raise ValueError(f"rule, dates and report_index are given together; only {', '.join(given)} was")
+    if rule is not None:
+        check_window_public(rule, dates, start, report_index)
     drivers = tuple(drivers)
     target = _changes(series, drivers, start)
     if target is None:

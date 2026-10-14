@@ -26,8 +26,10 @@ from pathlib import Path
 from typing import Dict, Iterable, List, Mapping, Optional, Tuple
 from zoneinfo import ZoneInfo
 
-from repo_model import ingest
+from repo_model import ingest, lockbox
 from repo_model.ingest import FrbH8Release
+
+from repo_liquidity import development
 
 SOURCE_ID = "frb_h8_groups"
 NEW_YORK = ZoneInfo("America/New_York")
@@ -49,9 +51,8 @@ UNIT = ingest._FRB_H8_UNIT
 FIELDS: Tuple[str, ...] = tuple(f"h8_{group}_{line}" for group in GROUPS for line in LINES)
 _WHERE = {f"h8_{group}_{line}": (group, line) for group in GROUPS for line in LINES}
 
-#: The blind tier starts the day after this (`repo-market-model docs/decisions/lockbox.md`): a release after it is not
-#: read. It is the panel's last date.
-LAST_RELEASE = date(2026, 9, 3)
+# The last release read is the day before the model repo's first locked tier (`repo-market-model
+# docs/decisions/lockbox.md`), read from its lockbox by `development.development_end`; there is no copy of it here.
 #: The first week of the extract: the newest week of the earliest release in range (5 January 2018).
 FIRST_WEEK = date(2017, 12, 27)
 
@@ -325,16 +326,22 @@ def _scope(text: str) -> str:
     return "commercial_banks"
 
 
-def parse_notes(payload: bytes, first: date = FIRST_WEEK, last: date = LAST_RELEASE) -> List[dict]:
+def parse_notes(payload: bytes, first: date = FIRST_WEEK, last: Optional[date] = None) -> List[dict]:
     """The dated events of the H.8 notes archive page, oldest first, from `first` to `last` (both as-of dates).
+    `last` defaults to the development tier's end, the day before the model repo's first locked tier.
 
     Each `datanote` block is one note: its heading is the as-of date, its paragraphs the text. The block's headings are
     checked against the page's own index of notes, so a block the split missed is an error, not a gap.
 
     Raises:
+        LookAheadError: if `last` is given and is a day the model repo's lockbox holds.
         ValueError: if a note's date is not a Wednesday, the blocks do not match the index, or a note's opening matches
             none of `_KINDS` (a new kind of break is for a reader to classify).
     """
+    if last is None:
+        last = development.development_end() or date.max
+    else:
+        lockbox.require_unlocked([last], where="h8.parse_notes")
     page = payload.decode("utf-8", errors="strict")
     index = re.findall(r'<a href="#notes_(\d{8})">', page)
     blocks = page.split('<div class="datanote">')[1:]

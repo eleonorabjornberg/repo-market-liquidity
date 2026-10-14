@@ -13,7 +13,8 @@ from datetime import date, time
 from repo_model.asof import InformationRule
 from repo_model.splits import LookAheadError
 
-from repo_liquidity import attribution, declaration, panel
+from lockbox_helper import moved_lockbox
+from repo_liquidity import attribution, declaration, development, panel
 from repo_liquidity.attribution import BASELINE_DAYS, DRIVERS, SPREAD, WINDOW_DAYS
 
 BETA = {"treasury_settlement": 0.04, "tga": 0.02, "reserve_balances": -0.01, "quarter_end": 8.0}
@@ -202,15 +203,31 @@ class PlaceboTests(unittest.TestCase):
 
 class DevelopmentGuardTests(unittest.TestCase):
     def test_a_date_after_the_development_tier_is_refused(self):
-        """Leakage guard: the development tier ends 2026-09-03 (plan, Q5); the model repo's lockbox holds the rest.
+        """Leakage guard: the development tier ends where the model repo's lockbox says (one lockbox, plan Q5).
 
-        Recorded mutation (13 October 2026): in `attribution.check_development`, `d > DEVELOPMENT_END` changed to
-        `d > date(2100, 1, 1)`. `test_a_date_after_the_development_tier_is_refused` then fails with AssertionError:
-        LookAheadError not raised.
+        `check_development` calls the parent's `lockbox.require_unlocked`; this module holds no copy of the end date.
+        Recorded mutation (14 October 2026): in `attribution.check_development`, the call
+        `lockbox.require_unlocked(dates, where="attribution")` replaced by `pass`.
+        `test_a_date_after_the_development_tier_is_refused` then fails with AssertionError: LookAheadError not raised.
         """
         attribution.check_development([date(2026, 9, 3)])
         with self.assertRaises(LookAheadError):
             attribution.check_development([date(2026, 9, 3), date(2026, 9, 4)])
+
+    def test_the_end_follows_the_parents_lockbox_not_a_copy(self):
+        """Leakage guard: moving the parent's locked tier moves the end here (no second lockbox to drift).
+
+        Recorded mutation (14 October 2026): in `attribution.check_development`, the parent's call replaced by
+        `late = [d for d in dates if d > date(2026, 9, 3)]` raising `LookAheadError` for any such date. This test then
+        fails with AssertionError: LookAheadError raised for 2026-09-10, whose tier the patched lockbox leaves open.
+        """
+        with moved_lockbox(date(2026, 12, 1)):
+            attribution.check_development([date(2026, 9, 10)])
+            with self.assertRaises(LookAheadError):
+                attribution.check_development([date(2026, 12, 1)])
+
+    def test_there_is_no_copy_of_the_end_date(self):
+        self.assertFalse(hasattr(attribution, "DEVELOPMENT_END"))
 
 
 class PanelTests(unittest.TestCase):
@@ -223,7 +240,7 @@ class PanelTests(unittest.TestCase):
         panel.build(path, version=1)
         from repo_model.data import load_daily_panel
 
-        cls.rows = [r for r in load_daily_panel(path) if r.date <= attribution.DEVELOPMENT_END]
+        cls.rows = [r for r in load_daily_panel(path) if r.date <= development.development_end()]
         cls.dates = [r.date for r in cls.rows]
 
     @classmethod
@@ -265,6 +282,43 @@ class PanelTests(unittest.TestCase):
         rule = self._rule()
         with self.assertRaises(LookAheadError):
             attribution.check_window_public(rule, self.dates, onset, onset + 1)
+
+    def test_the_spread_alone_must_be_public_at_the_report(self):
+        """Leakage guard: the outcome's own publication time is checked, not only the drivers'.
+
+        The rule's first group is the spread (SOFR - IORB). With only the calendar driver declared, the spread is the
+        one input the check can fail on. Recorded mutation (14 October 2026): in `attribution.check_window_public`,
+        `for group in rule.groups:` changed to `for group in rule.groups[1:]:`. This test then fails with
+        AssertionError: LookAheadError not raised.
+        """
+        onset = attribution.episode_onsets(self.rows)[3]
+        rule = InformationRule(declaration.registry(), ["quarter_end"], decision_time=time(16, 0))
+        self.assertEqual([group.feature for group in rule.groups], [SPREAD, "quarter_end"])
+        attribution.check_window_public(rule, self.dates, onset, onset + WINDOW_DAYS + 10)
+        with self.assertRaises(LookAheadError):
+            attribution.check_window_public(rule, self.dates, onset, onset + 1)
+
+    def test_attribute_refuses_a_window_whose_spread_was_not_public(self):
+        """Leakage guard: `attribute` runs `check_window_public` when it is given the rule, dates and report index.
+
+        Recorded mutation (14 October 2026): in `attribution.attribute`, the call `check_window_public(rule, dates,
+        start, report_index)` replaced by `pass`. This test then fails with AssertionError: LookAheadError not raised.
+        """
+        series = attribution.series_from_rows(self.rows)
+        onset = attribution.episode_onsets(self.rows)[3]
+        rule = self._rule()
+        kwargs = dict(rule=rule, dates=self.dates, draws=10)
+        with self.assertRaises(LookAheadError):
+            attribution.attribute(series, onset, report_index=onset + 1, **kwargs)
+        result = attribution.attribute(series, onset, report_index=onset + WINDOW_DAYS + 10, **kwargs)
+        self.assertIn(result.status, ("attributed", "not attributable"))
+
+    def test_the_public_check_needs_all_three_arguments(self):
+        series = attribution.series_from_rows(self.rows)
+        onset = attribution.episode_onsets(self.rows)[3]
+        for partial in ({"rule": self._rule()}, {"dates": self.dates}, {"report_index": onset + 20}):
+            with self.assertRaises(ValueError):
+                attribution.attribute(series, onset, draws=10, **partial)
 
 
 if __name__ == "__main__":

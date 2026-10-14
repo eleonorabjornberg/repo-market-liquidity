@@ -18,7 +18,7 @@ import json
 import sys
 from pathlib import Path
 
-from repo_liquidity import h8
+from repo_liquidity import development, h8
 
 #: What the notes archive does not carry, so what this record does not declare (answer 17(c) names them).
 NOT_IN_THE_NOTES = (
@@ -37,7 +37,7 @@ def build(page: bytes, retrieved_at: str) -> dict:
         "source": {"url": h8.NOTES_URL, "retrieved_at": retrieved_at, "sha256": hashlib.sha256(page).hexdigest(),
                    "saved_as": str(h8.NOTES_PAGE.relative_to(h8.NOTES_PAGE.parents[3]))},
         "first_as_of": h8.FIRST_WEEK.isoformat(),
-        "last_as_of": h8.LAST_RELEASE.isoformat(),
+        "last_as_of": development.development_end().isoformat(),
         "events": h8.parse_notes(page),
         "not_in_the_notes": list(NOT_IN_THE_NOTES),
     }
