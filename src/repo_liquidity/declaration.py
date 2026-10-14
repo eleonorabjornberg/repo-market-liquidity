@@ -50,6 +50,9 @@ def _fields():
         # #26: the H.8 bank groups' cash and total assets, first prints (`repo_liquidity.h8`), read through
         # `snapshots/h8_groups/`. Not built columns of any panel.
         **{field: (("frb_h8_groups", field),) for field in _h8_fields()},
+        # #63: the SLR headroom of the nine G-SIB depository subsidiaries, latest-filed Call Report figures
+        # (`repo_liquidity.slr`), read through `snapshots/slr_headroom/`. Not built columns of any panel.
+        **{field: (("ffiec_call_slr", field),) for field in _slr_fields()},
         "temp_repo_take_up": (("nyfed_temp_repo", "temp_repo_take_up"),),
         "temp_repo_term_take_up": (("nyfed_temp_repo", "temp_repo_term_take_up"),),
         "temp_repo_term_outstanding": (("nyfed_temp_repo", "temp_repo_term_outstanding"),),
@@ -71,6 +74,12 @@ def _h8_fields():
     from repo_liquidity import h8
 
     return h8.FIELDS
+
+
+def _slr_fields():
+    from repo_liquidity import slr
+
+    return slr.FIELDS
 
 
 def _indicator_fields(fields):
