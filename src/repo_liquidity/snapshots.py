@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import csv
 import hashlib
+import io
 import json
 import re
 from pathlib import Path
@@ -33,7 +34,8 @@ H41_MBS_EXTRACT = H41_DIR / "h41_mbs_first_print.csv"
 AGENCY_SECURITIES_COLUMNS = ("week_ended", "release_date", "agency_debt_change_musd", "mbs_change_musd",
                              "agency_securities_change_musd", "url", "page_sha256")
 
-#: The weekly first-print series (#26): the tracked extract each is a copy of. Its manifest carries the weeks and
+#: The weekly first-print series (#26): the tracked extract each is a copy of, plus the `break_ids` column of the breaks
+#: record (#47). Its manifest carries the weeks and
 #: releases it spans, and the SHA-256 of each archived release page behind it (the pages are not tracked).
 WEEKLY: Dict[str, Path] = {
     "h8_groups": ROOT / "tests" / "fixtures" / "snapshots" / "h8_groups" / h8.EXTRACT_NAME,
@@ -188,7 +190,20 @@ def _build_weekly(series: str, table: Path, root: Path, repo_commit: str) -> dic
     release date, and the build refuses an extract whose rows name a page the releases record does not list.
     """
     prints = h8.load_extract(table)
-    data = table.read_bytes()
+    record = h8.load_moves()
+    flags = h8.break_flags(record)
+    unknown = sorted(week for week in flags if week not in {item.week_ending for item in prints})
+    if unknown:
+        raise ValueError(f"{table.name}: the breaks record flags the week ending {unknown[0]}, which is not in the extract")
+    # The snapshot is the extract's rows with one more column: the id of the break that starts at the week, if any.
+    with table.open(encoding="utf-8", newline="") as handle:
+        rows = list(csv.DictReader(handle))
+    buffer = io.StringIO(newline="")
+    writer = csv.writer(buffer, lineterminator="\n")
+    writer.writerow(h8.SNAPSHOT_COLUMNS)
+    for row, item in zip(rows, prints):
+        writer.writerow([row[column] for column in h8.EXTRACT_COLUMNS] + [flags.get(item.week_ending, "")])
+    data = buffer.getvalue().encode("utf-8")
     digest = hashlib.sha256(data).hexdigest()
     releases = json.loads(table.with_name(h8.RELEASES_NAME).read_text(encoding="utf-8"))
     pages = {record["release_date"]: record["sha256"] for record in releases["releases"]}
@@ -204,7 +219,10 @@ def _build_weekly(series: str, table: Path, root: Path, repo_commit: str) -> dic
         "series": series,
         "path": relative,
         "sha256": digest,
-        "columns": list(h8.EXTRACT_COLUMNS),
+        "columns": list(h8.SNAPSHOT_COLUMNS),
+        "breaks": {"source": str(h8.MOVES_PATH.relative_to(ROOT)),
+                   "sha256": hashlib.sha256(h8.MOVES_PATH.read_bytes()).hexdigest(),
+                   "weeks": {week.isoformat(): move for week, move in sorted(flags.items())}},
         "rows": len(prints),
         "first_week": prints[0].week_ending.isoformat(),
         "last_week": prints[-1].week_ending.isoformat(),

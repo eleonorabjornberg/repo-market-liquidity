@@ -170,3 +170,28 @@ class ManifestFormatTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class H8BreakFlagTests(unittest.TestCase):
+    """#47: the h8_groups snapshot flags each break week, and its manifest says where the breaks are recorded."""
+
+    def test_the_snapshot_flags_the_13_break_weeks(self):
+        from repo_liquidity import h8
+
+        record = h8.load_moves()
+        rows = snapshots.read("h8_groups")
+        flagged = {row["week_ending"]: row["break_ids"] for row in rows if row["break_ids"]}
+        self.assertEqual(flagged, {week.isoformat(): ids for week, ids in h8.break_flags(record).items()})
+        self.assertEqual(len(flagged), 13)
+        self.assertEqual(list(rows[0]), list(h8.SNAPSHOT_COLUMNS))
+
+    def test_the_manifest_names_the_breaks_record_by_digest(self):
+        import hashlib
+
+        from repo_liquidity import h8
+
+        manifest = snapshots.load_manifest("h8_groups")
+        self.assertEqual(manifest["breaks"]["source"], "docs/research/h8-group-moves.json")
+        self.assertEqual(manifest["breaks"]["sha256"], hashlib.sha256(h8.MOVES_PATH.read_bytes()).hexdigest())
+        self.assertEqual(len(manifest["breaks"]["weeks"]), 13)
+        self.assertEqual(manifest["columns"], list(h8.SNAPSHOT_COLUMNS))
