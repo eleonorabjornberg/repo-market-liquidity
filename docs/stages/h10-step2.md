@@ -29,7 +29,8 @@ eleonorabjornberg/repo-market-model#640): it confirms nothing, registers nothing
 - **The outcome rule** counts an episode only if it is under the residual bar *and* beats the null (9f, answer 4). Every episode is in the
   denominator; a negative residual is a miss.
 - **The panel** is version 1 (digest `acb77874e0ca2c9eeee1c33a229f5e12745e65bb1224088d52c391dbf54be2ab`, 2104 rows, 2018-04-03 to 2026-09-03), rebuilt
-  from the tracked fixtures to its manifest. The parent is pinned at `09640f5bb4063da150e09a285d242cd28db1c136`; its published panel digest is `4ddc3882cd6d406b11e1088f8ff6195e16dde175a0ad6818abe40dd5bdac8999`.
+  from the tracked fixtures to its manifest. The parent is pinned at `53e61af9b4175e854c196908d3c76b228c039667`; its published panel digest is `4ddc3882cd6d406b11e1088f8ff6195e16dde175a0ad6818abe40dd5bdac8999`.
+- **The pin moved during this step** (PR #68, to the commit above). The application was run first at `09640f5` and again at the new pin; the two records are identical apart from the stamped pin, so the `fit_level` tie fix changes nothing here.
 - **Information set.** Each episode goes through `attribution.attribute`, which asks the parent's `InformationRule` (Phase 3's declaration, 16:00
   decision instant) whether the spread and all five drivers of the window were public at the **report day**: 10 panel days after the
   onset (plan, Q7). No episode raised `LookAheadError`. `attribute`'s `rule`, `dates` and `report_index` are required (PR #61's ruling); the
