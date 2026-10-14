@@ -12,10 +12,11 @@
   "first_announced": "2017-09-20T14:00",
   "last_announced": "2025-10-29T14:00",
   "last_effective": "2025-12-01",
+  "locked_rows_omitted": [],
   "parent_commit": "09640f5bb4063da150e09a285d242cd28db1c136",
   "parent_panel_sha256": "4ddc3882cd6d406b11e1088f8ff6195e16dde175a0ad6818abe40dd5bdac8999",
   "path": "snapshots/runoff_caps/ff413b061516e5c3a8eb25add442bd695a36cd4647f76afc8856512859430d8d.csv",
-  "repo_commit": "0ebd5f34740addeee4fa1538afffbf14877f12a5",
+  "repo_commit": "da6d0ba39826332ca5ebd728d32bc7238f27fcdb",
   "rows": 12,
   "series": "runoff_caps",
   "sha256": "ff413b061516e5c3a8eb25add442bd695a36cd4647f76afc8856512859430d8d",
@@ -32,5 +33,6 @@
     "monetary20250319a1.htm.gz": "18c0c4b62a197809598a7736121e4375ee64ad9de6d529343fbfb170390abd7a",
     "monetary20251029a1.htm.gz": "5a9f46da653ca1a6f3ee2dbb132c6e81dd3b6c6a0eb9084eaf097e2c44ce7d24"
   },
-  "source_table": "tests/fixtures/snapshots/fomc_notes/runoff_caps.csv"
+  "source_table": "tests/fixtures/snapshots/fomc_notes/runoff_caps.csv",
+  "source_table_sha256": "ff413b061516e5c3a8eb25add442bd695a36cd4647f76afc8856512859430d8d"
 }

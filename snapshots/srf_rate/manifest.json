@@ -9,15 +9,18 @@
     "page"
   ],
   "first_announced": "2021-07-28T14:00",
-  "last_announced": "2026-09-16T14:00",
-  "last_effective": "2026-09-17",
+  "last_announced": "2025-12-10T14:00",
+  "last_effective": "2025-12-11",
+  "locked_rows_omitted": [
+    "2026-09-16"
+  ],
   "parent_commit": "09640f5bb4063da150e09a285d242cd28db1c136",
   "parent_panel_sha256": "4ddc3882cd6d406b11e1088f8ff6195e16dde175a0ad6818abe40dd5bdac8999",
-  "path": "snapshots/srf_rate/d4ded3b02729838430e50ca4034e21e93e8338958e0f808a5dcd87ccf9455606.csv",
-  "repo_commit": "0ebd5f34740addeee4fa1538afffbf14877f12a5",
-  "rows": 19,
+  "path": "snapshots/srf_rate/a1182d32530038de4dbeb40fed3b8e733e012bf1cb4e52f430e08a0ae0bfa252.csv",
+  "repo_commit": "da6d0ba39826332ca5ebd728d32bc7238f27fcdb",
+  "rows": 18,
   "series": "srf_rate",
-  "sha256": "d4ded3b02729838430e50ca4034e21e93e8338958e0f808a5dcd87ccf9455606",
+  "sha256": "a1182d32530038de4dbeb40fed3b8e733e012bf1cb4e52f430e08a0ae0bfa252",
   "source_pages": {
     "monetary20210728a1.htm.gz": "4c14aaa3244db72c35fdea243bb15d956132b67f27efe5e6a8b9e1ea0de20271",
     "monetary20220316a1.htm.gz": "34277ad68d3406fe496706d8438fa6f368af4aaf9b05bb63b906b27f76ddc33c",
@@ -36,8 +39,8 @@
     "monetary20241218a1.htm.gz": "1b44755add3e9f067ca566908aed6019f7345a64cccf5fb3a4ec36a022d471af",
     "monetary20250917a1.htm.gz": "e3c004ea0450b7b929b6ee50821ef936dc1599b22673f348bf79c6c45e2c6c12",
     "monetary20251029a1.htm.gz": "5a9f46da653ca1a6f3ee2dbb132c6e81dd3b6c6a0eb9084eaf097e2c44ce7d24",
-    "monetary20251210a1.htm.gz": "391f05684dcd29d16f00ad28e3d7680519f314267827d49484cf08cbcd7eea44",
-    "monetary20260916a1.htm.gz": "c955e67c49a5aae87456a9366e33a083254949c29bfcb86b5a11353c8859bac8"
+    "monetary20251210a1.htm.gz": "391f05684dcd29d16f00ad28e3d7680519f314267827d49484cf08cbcd7eea44"
   },
-  "source_table": "tests/fixtures/snapshots/fomc_notes/srf_rate.csv"
+  "source_table": "tests/fixtures/snapshots/fomc_notes/srf_rate.csv",
+  "source_table_sha256": "d4ded3b02729838430e50ca4034e21e93e8338958e0f808a5dcd87ccf9455606"
 }
