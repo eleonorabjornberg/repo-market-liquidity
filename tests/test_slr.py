@@ -81,6 +81,7 @@ class ParseTests(unittest.TestCase):
         self.assertEqual(make(date(2026, 3, 31)).headroom_pp, 1.0)
         self.assertIsNone(make(date(2026, 6, 30)).headroom_pp)
         self.assertEqual(make(date(2026, 6, 30)).slr_pct, 7.0)
+        self.assertIsNone(make(date(2017, 12, 31)).headroom_pp)
 
     def test_the_exclusion_window_quarters_are_flagged_unknown(self):
         make = lambda q: slr.Row(q, JPM, "bank", datetime(2021, 5, 1), "RCFA", 70, 1000, None, "0" * 64)
@@ -147,9 +148,9 @@ class ExtractTests(unittest.TestCase):
 
     def test_the_headroom_is_blank_from_the_quarter_the_requirement_is_not_set(self):
         for row in self.rows:
-            self.assertEqual(row.headroom_pp is None, row.quarter_end >= slr.REQUIREMENT_ENDS, (row.quarter_end, row.idrssd))
+            self.assertEqual(row.headroom_pp is None, row.quarter_end >= date(2026, 4, 1), (row.quarter_end, row.idrssd))
         self.assertEqual(sum(1 for h in self.coverage["holes"] if h["reason"] == "requirement_not_set"),
-                         sum(1 for r in self.rows if r.quarter_end >= slr.REQUIREMENT_ENDS))
+                         sum(1 for r in self.rows if r.quarter_end >= date(2026, 4, 1)))
 
     def test_every_row_in_the_exclusion_window_is_flagged_and_listed(self):
         flagged = [r for r in self.rows if r.exclusion_status]
@@ -341,7 +342,7 @@ class ReadGuardTests(unittest.TestCase):
 
     def test_the_observations_are_public_from_the_update_not_before(self):
         observations = slr.observations(self.rows, "slr_ratio", source_sha="0" * 64)
-        self.assertEqual(len(observations), len(self.rows))
+        self.assertEqual(len(observations), sum(1 for r in self.rows if r.measure == slr.MAIN))
         by_key = {(o.series_id, o.ref_date): o for o in observations}
         item = by_key[(f"slr_ratio:{JPM}", self.first.quarter_end)]
         self.assertEqual(item.available_at, self.first.available_from)
@@ -349,11 +350,133 @@ class ReadGuardTests(unittest.TestCase):
 
     def test_a_headroom_observation_is_not_made_for_a_quarter_with_no_requirement(self):
         observations = slr.observations(self.rows, "slr_headroom", source_sha="0" * 64)
-        self.assertEqual(len(observations), sum(1 for r in self.rows if r.headroom_pp is not None))
+        self.assertEqual(len(observations), sum(1 for r in self.rows if r.headroom_pp is not None and r.measure == slr.MAIN))
 
     def test_an_unknown_field_is_refused(self):
         with self.assertRaises(ValueError):
             slr.observations(self.rows, "h8_large_domestic_cash_assets", source_sha="0" * 64)
+
+
+def synthetic_table():
+    """A requirement table that is not the real one: 5.0 in 2019, nothing in 2020, 4.0 from 2021 on."""
+    return (slr.RequirementPeriod(date(2019, 1, 1), date(2020, 1, 1), 5.0, "synthetic A"),
+            slr.RequirementPeriod(date(2020, 1, 1), date(2021, 1, 1), None, "synthetic: bank-specific"),
+            slr.RequirementPeriod(date(2021, 1, 1), None, 4.0, "synthetic B"))
+
+
+class RequirementTableTests(unittest.TestCase):
+    """The headroom reads the requirement in force on the quarter-end from a table (#71, Q1).
+
+    Recorded mutation (the table is read, not a constant): in `slr.requirement_for`, replace the lookup loop's
+    `return period.requirement_pct` with `return 6.0`; `test_the_requirement_follows_the_periods_of_the_table` fails
+    with AssertionError (5.0 != 6.0).
+    """
+
+    def test_the_requirement_follows_the_periods_of_the_table(self):
+        table = synthetic_table()
+        self.assertEqual(slr.requirement_for(date(2019, 6, 30), table), 5.0)
+        self.assertEqual(slr.requirement_for(date(2021, 3, 31), table), 4.0)
+        self.assertEqual(slr.requirement_for(date(2030, 12, 31), table), 4.0)
+
+    def test_a_period_with_no_value_and_a_date_with_no_period_stay_blank(self):
+        table = synthetic_table()
+        self.assertIsNone(slr.requirement_for(date(2020, 6, 30), table))
+        self.assertIsNone(slr.requirement_for(date(2018, 12, 31), table))
+        self.assertIsNone(slr.headroom_for(7.0, date(2020, 6, 30), table))
+        self.assertEqual(slr.headroom_for(7.0, date(2019, 6, 30), table), 2.0)
+
+    def test_the_period_starts_on_its_first_day_and_ends_before_its_end_day(self):
+        table = synthetic_table()
+        self.assertIsNone(slr.requirement_for(date(2018, 12, 31), table))
+        self.assertEqual(slr.requirement_for(date(2019, 1, 1), table), 5.0)
+        self.assertIsNone(slr.requirement_for(date(2020, 1, 1), table))
+        self.assertEqual(slr.requirement_for(date(2021, 1, 1), table), 4.0)
+
+    def test_a_row_reads_the_table_in_force(self):
+        row = slr.Row(date(2019, 6, 30), JPM, "bank", datetime(2019, 8, 1), "RCFA", 70, 1000, None, "0" * 64)
+        self.assertEqual(row.headroom_pp, 1.0)
+        original = slr.REQUIREMENT_TABLE
+        slr.REQUIREMENT_TABLE = synthetic_table()
+        try:
+            self.assertEqual(row.requirement_pct, 5.0)
+            self.assertEqual(row.headroom_pp, 2.0)
+        finally:
+            slr.REQUIREMENT_TABLE = original
+
+    def test_overlapping_or_unordered_periods_are_refused(self):
+        a = slr.RequirementPeriod(date(2019, 1, 1), date(2021, 1, 1), 5.0, "a")
+        b = slr.RequirementPeriod(date(2020, 1, 1), None, 4.0, "b")
+        with self.assertRaises(ValueError):
+            slr.requirement_for(date(2020, 6, 30), (a, b))
+        with self.assertRaises(ValueError):
+            slr.requirement_for(date(2020, 6, 30), (b, a))
+
+    def test_the_real_table_is_the_draft_record_and_nothing_else(self):
+        text = (ROOT / "docs" / "decisions" / "slr-requirement.md").read_text(encoding="utf-8")
+        self.assertIn("DRAFT", text)
+        self.assertEqual([(p.start.isoformat(), p.end.isoformat() if p.end else None, p.requirement_pct)
+                          for p in slr.REQUIREMENT_TABLE],
+                         [("2018-01-01", "2026-04-01", 6.0), ("2026-04-01", None, None)])
+        for period in slr.REQUIREMENT_TABLE:
+            self.assertIn(period.start.isoformat(), text)
+            self.assertIn(period.citation, text)
+
+
+class StateStreetSensitivityTests(unittest.TestCase):
+    """State Street is outside the main measure and a labelled sensitivity (#71, Q2; her decision on #69).
+
+    Recorded mutations. (1) In `slr.observations`, pass every row instead of `[row for row in rows if row.measure == MAIN]`:
+    `test_the_main_measure_never_contains_state_street` fails with AssertionError (State Street's series is in the main
+    observations). (2) In `slr.Row.measure`, return `MAIN` for every bank: `setUpClass` fails with ValueError from
+    `load_extract` (the stored `measure` `sensitivity_state_street` is not what the figures give).
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        cls.rows = slr.load_extract(EXTRACT)
+
+    def test_the_main_measure_never_contains_state_street(self):
+        main = [r for r in self.rows if r.measure == slr.MAIN]
+        self.assertTrue(main)
+        self.assertNotIn(STATE_STREET, {r.idrssd for r in main})
+        for field in slr.FIELDS:
+            series = {o.series_id for o in slr.observations(self.rows, field, source_sha="0" * 64)}
+            self.assertNotIn(f"{field}:{STATE_STREET}", series, field)
+
+    def test_the_sensitivity_series_is_state_street_and_labelled(self):
+        sensitivity = [r for r in self.rows if r.measure == slr.SENSITIVITY]
+        self.assertTrue(sensitivity)
+        self.assertEqual({r.idrssd for r in sensitivity}, {STATE_STREET})
+        for field in slr.FIELDS:
+            observations = slr.sensitivity_observations(self.rows, field, source_sha="0" * 64)
+            self.assertTrue(observations or field == "slr_headroom")
+            self.assertTrue(all(o.series_id == f"sensitivity_{field}:{STATE_STREET}" for o in observations))
+
+    def test_its_figures_stay_as_filed(self):
+        with EXTRACT.open(encoding="utf-8", newline="") as handle:
+            filed = [r for r in csv.DictReader(handle) if int(r["idrssd"]) == STATE_STREET]
+        self.assertEqual(len(filed), len([r for r in self.rows if r.idrssd == STATE_STREET]))
+        self.assertEqual({r["measure"] for r in filed}, {slr.SENSITIVITY})
+        for item, row in zip(filed, [r for r in self.rows if r.idrssd == STATE_STREET]):
+            self.assertEqual(int(item["tier1_capital_kusd"]), row.tier1_capital_kusd)
+            self.assertEqual(int(item["total_leverage_exposure_kusd"]), row.total_leverage_exposure_kusd)
+
+    def test_a_row_labelled_main_for_state_street_is_refused(self):
+        path = pathlib.Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, path)
+        for name in (slr.EXTRACT_NAME, slr.EXTRACT_NAME + ".manifest.json"):
+            shutil.copy(DIRECTORY / name, path / name)
+        target = path / slr.EXTRACT_NAME
+        data = target.read_bytes().replace(b",sensitivity_state_street,", b",main,", 1)
+        self.assertNotEqual(data, target.read_bytes())
+        target.write_bytes(data)
+        import hashlib
+        manifest = path / (slr.EXTRACT_NAME + ".manifest.json")
+        record = json.loads(manifest.read_text(encoding="utf-8"))
+        record["sha256"] = hashlib.sha256(data).hexdigest()
+        manifest.write_text(json.dumps(record), encoding="utf-8")
+        with self.assertRaises(ValueError):
+            slr.load_extract(target)
 
 
 if __name__ == "__main__":
