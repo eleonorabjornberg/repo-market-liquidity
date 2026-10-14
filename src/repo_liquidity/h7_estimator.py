@@ -22,6 +22,9 @@ from datetime import date, time
 from typing import Dict, List, NamedTuple, Optional, Sequence
 
 from repo_model import lockbox, scarcity, satiation
+# The parent's date extension (business days appended to the dates handed to the rule, so a lag at the last real row is
+# dated the same whatever follows it). Private in the parent, imported at the pin rather than copied (directive #58).
+from repo_model.satiation import _EXTRA_DATES, _extended  # noqa: F401
 from repo_model.asof import InformationRule
 from repo_model.data import DailyObservation, next_business_day
 from repo_model.metrics import stationary_bootstrap_indices
@@ -29,9 +32,6 @@ from repo_model.splits import LookAheadError, SplitError
 
 #: A refit serves from this many business days after its cutoff (Stage 3c's lag, `docs/stages/stage-3c.md:28`).
 SERVING_LAG = 2
-#: Business days appended to the dates handed to the rule, so a lag at the last real row is dated the same whatever
-#: follows it (the parent's `satiation` does the same).
-_EXTRA_DATES = 15
 DECISION_TIME = time(16, 0)
 #: The interval's conventions are the parent's (`scarcity.BOOTSTRAP_*`).
 BLOCK_LENGTH = scarcity.BOOTSTRAP_BLOCK_LENGTH
@@ -89,15 +89,6 @@ def dollars(share: float, bank_assets_bn: float) -> float:
 # -- the as-of days ---------------------------------------------------------------------------------------------------
 
 
-def _extended(dates: Sequence[date], i: int) -> List[date]:
-    out = list(dates[: i + 1])
-    day = out[-1]
-    for _ in range(_EXTRA_DATES):
-        day = next_business_day(day, 1)
-        out.append(day)
-    return out
-
-
 def asof_days(rows: Sequence[DailyObservation], rule: InformationRule) -> List[Day]:
     """The scored days with what was public at their decision instants: row `i + 1` is scored from the reads at row `i`.
 
@@ -106,17 +97,20 @@ def asof_days(rows: Sequence[DailyObservation], rule: InformationRule) -> List[D
 
     Raises:
         LookAheadError: if a scored day is in a locked tier of the parent's lockbox, or the rule refuses a read.
+        StaleReadError: if a read is older than the latest value public at the decision instant.
     """
     dates = [row.date for row in rows]
     out: List[Day] = []
     for i in range(len(rows) - 1):
         scored = rows[i + 1]
         spread = _spread(scored)
+        extended = _extended(dates, i)
         try:
-            info = rule.information_set(_extended(dates, i), i + 1)
+            info = rule.information_set(extended, i + 1)
         except SplitError:
             out.append(Day(scored.date, None, spread, None))
             continue
+        rule.check(extended, info)
         read = {r.feature: r.row for r in info.reads}
         if any(leg not in read for leg in scarcity.LEGS):
             out.append(Day(scored.date, None, spread, None))

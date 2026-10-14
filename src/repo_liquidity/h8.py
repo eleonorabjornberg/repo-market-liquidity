@@ -16,6 +16,7 @@ first and the last. Standard library only (the parent's `repo_model.data` is imp
 from __future__ import annotations
 
 import csv
+import gzip
 import hashlib
 import io
 import json
@@ -26,8 +27,10 @@ from pathlib import Path
 from typing import Dict, Iterable, List, Mapping, Optional, Tuple
 from zoneinfo import ZoneInfo
 
-from repo_model import ingest
+from repo_model import ingest, lockbox
 from repo_model.ingest import FrbH8Release
+
+from repo_liquidity import development
 
 SOURCE_ID = "frb_h8_groups"
 NEW_YORK = ZoneInfo("America/New_York")
@@ -49,9 +52,8 @@ UNIT = ingest._FRB_H8_UNIT
 FIELDS: Tuple[str, ...] = tuple(f"h8_{group}_{line}" for group in GROUPS for line in LINES)
 _WHERE = {f"h8_{group}_{line}": (group, line) for group in GROUPS for line in LINES}
 
-#: The blind tier starts the day after this (`repo-market-model docs/decisions/lockbox.md`): a release after it is not
-#: read. It is the panel's last date.
-LAST_RELEASE = date(2026, 9, 3)
+# The last release read is the day before the model repo's first locked tier (`repo-market-model
+# docs/decisions/lockbox.md`), read from its lockbox by `development.development_end`; there is no copy of it here.
 #: The first week of the extract: the newest week of the earliest release in range (5 January 2018).
 FIRST_WEEK = date(2017, 12, 27)
 
@@ -325,16 +327,22 @@ def _scope(text: str) -> str:
     return "commercial_banks"
 
 
-def parse_notes(payload: bytes, first: date = FIRST_WEEK, last: date = LAST_RELEASE) -> List[dict]:
+def parse_notes(payload: bytes, first: date = FIRST_WEEK, last: Optional[date] = None) -> List[dict]:
     """The dated events of the H.8 notes archive page, oldest first, from `first` to `last` (both as-of dates).
+    `last` defaults to the development tier's end, the day before the model repo's first locked tier.
 
     Each `datanote` block is one note: its heading is the as-of date, its paragraphs the text. The block's headings are
     checked against the page's own index of notes, so a block the split missed is an error, not a gap.
 
     Raises:
+        LookAheadError: if `last` is given and is a day the model repo's lockbox holds.
         ValueError: if a note's date is not a Wednesday, the blocks do not match the index, or a note's opening matches
             none of `_KINDS` (a new kind of break is for a reader to classify).
     """
+    if last is None:
+        last = development.development_end() or date.max
+    else:
+        lockbox.require_unlocked([last], where="h8.parse_notes")
     page = payload.decode("utf-8", errors="strict")
     index = re.findall(r'<a href="#notes_(\d{8})">', page)
     blocks = page.split('<div class="datanote">')[1:]
@@ -363,3 +371,82 @@ def parse_notes(payload: bytes, first: date = FIRST_WEEK, last: date = LAST_RELE
         raise ValueError(f"the H.8 notes page indexes {len(index)} notes and has {len(dates)} blocks, or in another order")
     return sorted(events, key=lambda event: event["as_of"])
 
+
+
+# ---------------------------------------------------------------------------------------------------------------
+# Moves between the large and small groups: structural breaks in the group input (#47; answer 17(c), her Q18 ruling)
+
+MOVES_PATH = Path(__file__).resolve().parents[2] / "docs" / "research" / "h8-group-moves.json"
+#: A move is labelled by a note that states its cause, or it is `unexplained`; nothing is labelled from memory.
+CAUSE_STATUSES = ("cited", "unexplained")
+#: The columns of the published `h8_groups` snapshot: the extract's, and the ids of the breaks that start at the week.
+SNAPSHOT_COLUMNS: Tuple[str, ...] = EXTRACT_COLUMNS + ("break_ids",)
+
+
+def check_moves(record: Mapping, notes_page: str) -> None:
+    """Refuse a moves record that labels a move other than by a cited note or `unexplained`.
+
+    A `cited` cause names the note's as-of date and quotes it; the quote must be in the saved notes page, verbatim.
+
+    Raises:
+        ValueError: naming the first move or failure whose cause is neither, or whose quote is not in the page.
+    """
+    text = ingest._frb_h8_text(notes_page)
+    for item in list(record["moves"]) + list(record["failures_2023"]):
+        cause = item["cause"]
+        if cause.get("status") not in CAUSE_STATUSES:
+            raise ValueError(f"{item['id']}: a cause is {' or '.join(CAUSE_STATUSES)}, not {cause.get('status')!r}")
+        if cause["status"] == "cited" and (not cause.get("note_as_of") or not cause.get("quote")
+                                           or cause["quote"] not in text):
+            raise ValueError(f"{item['id']}: a cited cause names the note's date and quotes the saved notes page")
+
+
+def load_moves(path: Path = MOVES_PATH, notes_path: Path = NOTES_PAGE) -> dict:
+    """The tracked moves record, checked against the saved notes page.
+
+    Raises:
+        ValueError: as `check_moves`.
+    """
+    record = json.loads(path.read_text(encoding="utf-8"))
+    check_moves(record, gzip.decompress(notes_path.read_bytes()).decode("utf-8"))
+    return record
+
+
+def break_flags(record: Mapping) -> Dict[date, str]:
+    """The break weeks of a moves record: each week to the id of the move that starts at it.
+
+    Raises:
+        ValueError: if two moves start at one week.
+    """
+    flags: Dict[date, str] = {}
+    for move in record["moves"]:
+        week = date.fromisoformat(move["break_week"])
+        if week in flags:
+            raise ValueError(f"{flags[week]} and {move['id']} both start at the week ending {week}")
+        flags[week] = move["id"]
+    return flags
+
+
+def difference(prints: Iterable[FirstPrint], field: str, start: date, end: date, record: Mapping) -> float:
+    """`field` at week `end` less `field` at week `start`, refused when the weeks lie on two sides of a break.
+
+    A level restated between the large and small groups moves them in opposite directions by the same amount: across a
+    break week the difference is a change of basis, not a flow, and there is no adjustment here.
+
+    Raises:
+        ValueError: if either week is not in the extract, `end` is not after `start`, or a break week `w` has
+            `start < w <= end`.
+    """
+    if field not in _WHERE:
+        raise ValueError(f"{field!r} is not an H.8 group field; they are {list(FIELDS)}")
+    by_week = {item.week_ending: item.values[field] for item in prints}
+    for week in (start, end):
+        if week not in by_week:
+            raise ValueError(f"the week ending {week} is not in the extract")
+    if end <= start:
+        raise ValueError(f"the difference runs from {start} to a later week, not {end}")
+    for week, move in sorted(break_flags(record).items()):
+        if start < week <= end:
+            raise ValueError(f"the difference from {start} to {end} spans the break at the week ending {week} ({move}): "
+                             f"a change of basis between the large and small groups, not a flow")
+    return by_week[end] - by_week[start]

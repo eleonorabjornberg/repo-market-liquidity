@@ -21,7 +21,7 @@ Written under `tests/fixtures/snapshots/h8_groups/`:
 Refuses, before writing: a release the index lists in range that has no snapshot, or two snapshots of one release with
 different bytes; a page that does not parse to the six lines; a page that states a release time other than the declared
 16:15; a week missing between the first and the last; and a week first printed later than `frb_h8_groups.release_lag`
-declares. A release after 2026-09-03 (`h8.LAST_RELEASE`, the day the blind tier starts after) is not read. Never falls
+declares. A release after 2026-09-03 (after `development.development_end()`, the day before the model repo's first locked tier) is not read. Never falls
 back to a later vintage. `--check` re-cuts and compares with the committed files, writing nothing.
 """
 
@@ -37,7 +37,7 @@ from pathlib import Path
 from repo_model import ingest
 from repo_model.ingest import SnapshotArtifact, load_snapshot_manifest
 
-from repo_liquidity import declaration, h8
+from repo_liquidity import declaration, development, h8
 
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "tests/fixtures/snapshots/h8_groups"
@@ -110,7 +110,7 @@ def cut(raw_root: Path, start: date, end: date, declared_days: int):
     # The earliest release in range also carries three older weeks, whose first prints were in releases before the
     # range; only its newest week is a first print here.
     earliest = max(next(iter(parsed[0][0].lines.values())).weeks)
-    prints = [item for item in prints if item.week_ending >= earliest and item.release_date <= h8.LAST_RELEASE]
+    prints = [item for item in prints if item.week_ending >= earliest and item.release_date <= development.development_end()]
     for before, after in zip(prints, prints[1:]):
         if (after.week_ending - before.week_ending).days != 7:
             raise ValueError(f"H.8 first prints skip from {before.week_ending} to {after.week_ending}")
@@ -119,7 +119,7 @@ def cut(raw_root: Path, start: date, end: date, declared_days: int):
         if lag > declared_days:
             raise ValueError(f"the week ending {item.week_ending} was first printed on {item.release_date}, {lag} days "
                              f"on, later than the {declared_days} days frb_h8_groups.release_lag declares")
-    records = [record for record in records if record["public_on"] <= h8.LAST_RELEASE.isoformat()]
+    records = [record for record in records if record["public_on"] <= development.development_end().isoformat()]
     printed = {}
     for item in prints:
         printed.setdefault(item.release_date.isoformat(), []).append(item.week_ending.isoformat())
@@ -137,7 +137,7 @@ def cut(raw_root: Path, start: date, end: date, declared_days: int):
     releases = {
         "index": {"url": index.url, "sha256": index.sha256, "retrieved_at": index.retrieved_at},
         "start": start.isoformat(),
-        "end": h8.LAST_RELEASE.isoformat(),
+        "end": development.development_end().isoformat(),
         "releases": records,
     }
     summary = {

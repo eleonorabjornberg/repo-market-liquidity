@@ -13,12 +13,13 @@ import json
 import pathlib
 import tempfile
 import unittest
-from datetime import date, time
+from datetime import date, time, timedelta
 
 from repo_model.asof import StaleReadError
 from repo_model.splits import LookAheadError
 
-from repo_liquidity import declaration, h8
+from lockbox_helper import moved_lockbox
+from repo_liquidity import declaration, development, h8
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 PAGES = ROOT / "tests" / "fixtures" / "h8_pages"
@@ -116,7 +117,7 @@ class ExtractTests(unittest.TestCase):
     def test_the_extract_is_consecutive_weeks_from_the_first_release_to_the_last_before_the_blind_tier(self):
         self.assertEqual(self.prints[0].week_ending, date(2017, 12, 27))
         self.assertEqual(self.prints[0].release_date, date(2018, 1, 5))
-        self.assertLessEqual(self.prints[-1].release_date, h8.LAST_RELEASE)
+        self.assertLessEqual(self.prints[-1].release_date, development.development_end())
         self.assertEqual(self.prints[-1].week_ending, date(2026, 8, 19))
         self.assertEqual(self.prints[-1].release_date, date(2026, 8, 28))
 
@@ -271,7 +272,7 @@ class BreaksTests(unittest.TestCase):
         dates = [date.fromisoformat(event["as_of"]) for event in self.record["events"]]
         self.assertEqual(dates, sorted(dates))
         self.assertEqual(len(dates), len(set(dates)))
-        self.assertTrue(all(day.weekday() == 2 and h8.FIRST_WEEK <= day <= h8.LAST_RELEASE for day in dates))
+        self.assertTrue(all(day.weekday() == 2 and h8.FIRST_WEEK <= day <= development.development_end() for day in dates))
         self.assertEqual(dates[0], date(2018, 2, 7))
 
     def test_the_march_2023_divestitures_are_declared_as_stated(self):
@@ -298,17 +299,134 @@ class BreaksTests(unittest.TestCase):
             h8.parse_notes(text)
 
     def test_the_notes_after_the_blind_tier_starts_are_not_read(self):
-        """Availability guard: a note as of a day after the panel's last (3 September 2026) is not recorded.
+        """Availability guard: a note as of a day after the development tier's end is not recorded.
 
-        The saved page carries a note as of 2026-09-30, published after the lockbox's blind tier began. Recorded
-        mutation (13 October 2026): in `src/repo_liquidity/h8.py`, `LAST_RELEASE` changed from `date(2026, 9, 3)` to
-        `date(2026, 12, 31)`. This test then fails with AssertionError: '2026-09-30' unexpectedly found in the parsed
-        events' dates.
+        The saved page carries a note as of 2026-09-30, published after the lockbox's blind tier began. The end is
+        the parent's lockbox, not a constant here (`development.development_end`). Recorded mutation (14 October
+        2026): in `src/repo_liquidity/development.py`, `development_end` returns `date(2026, 12, 31)` instead of the
+        day before the first locked tier. This test then fails with AssertionError: '2026-09-30' unexpectedly found
+        in the parsed events' dates.
         """
         self.assertIn(b"September 30, 2026", self.page)
         self.assertNotIn("2026-09-30", [event["as_of"] for event in h8.parse_notes(self.page)])
         self.assertNotIn("2026-09-30", [event["as_of"] for event in self.record["events"]])
 
+    def test_a_read_past_the_development_tier_is_refused(self):
+        """Leakage guard: asking `parse_notes` for a note after the lockbox's development end raises the parent's error.
+
+        Recorded mutation (14 October 2026): in `h8.parse_notes`, the call
+        `lockbox.require_unlocked([last], where="h8.parse_notes")` replaced by `pass`. This test then fails with
+        AssertionError: LookAheadError not raised.
+        """
+        with self.assertRaises(LookAheadError):
+            h8.parse_notes(self.page, last=date(2026, 12, 31))
+
+    def test_the_end_follows_the_parents_lockbox_not_a_copy(self):
+        """Availability guard: with the parent's blind tier moved to 2026-12-01 the 2026-09-30 note is read.
+
+        Recorded mutation (14 October 2026): in `h8.parse_notes`, the default `last` replaced by `date(2026, 9, 3)`.
+        This test then fails with AssertionError: '2026-09-30' not found in the parsed events' dates.
+        """
+        with moved_lockbox(date(2026, 12, 1)):
+            self.assertIn("2026-09-30", [event["as_of"] for event in h8.parse_notes(self.page)])
+        self.assertFalse(hasattr(h8, "LAST_RELEASE"))
+
 
 if __name__ == "__main__":
     unittest.main()
+
+
+#: The 13 releases that restate an earlier week between the large and small groups by at least $50bn each
+#: (`docs/research/h8-groups-due-diligence.md`, section 3).
+RESTATING_RELEASES = ("2019-05-31", "2019-12-20", "2021-10-01", "2021-10-22", "2022-04-15", "2022-10-14", "2023-02-17",
+                      "2023-03-24", "2023-05-12", "2023-06-09", "2023-06-30", "2025-05-30", "2026-02-13")
+
+
+class MovesTests(unittest.TestCase):
+    """#47: every move between the large and small groups is a structural break, labelled from the notes or `unexplained`."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.record = h8.load_moves()
+        cls.prints = h8.load_extract(EXTRACT)
+        cls.releases = json.loads((EXTRACT_DIR / h8.RELEASES_NAME).read_text(encoding="utf-8"))
+        cls.notes = gzip.decompress(h8.NOTES_PAGE.read_bytes()).decode("utf-8")
+
+    def test_every_restating_release_carries_a_cited_cause_or_unexplained(self):
+        by_release = {move["release_date"]: move for move in self.record["moves"]}
+        self.assertEqual(tuple(sorted(by_release)), RESTATING_RELEASES)
+        for move in by_release.values():
+            self.assertIn(move["cause"]["status"], ("cited", "unexplained"), move["id"])
+            if move["cause"]["status"] == "cited":
+                self.assertIn(move["cause"]["quote"], h8.ingest._frb_h8_text(self.notes), move["id"])
+
+    def test_every_move_cites_the_pages_the_extract_was_cut_from(self):
+        listed = {record["release_date"]: record for record in self.releases["releases"]}
+        for move in self.record["moves"]:
+            for page in (move, move["compared_with"]):
+                record = listed[page["release_date"]]
+                self.assertEqual((page["url"], page["release_sha256"]), (record["url"], record["sha256"]), move["id"])
+                self.assertRegex(page["fetched_sha256"], r"^[0-9a-f]{64}$")
+
+    def test_the_break_week_is_the_week_the_release_first_printed(self):
+        first_printed = {item.release_date.isoformat(): item.week_ending.isoformat() for item in self.prints}
+        for move in self.record["moves"]:
+            self.assertEqual(move["break_week"], first_printed[move["release_date"]], move["id"])
+            self.assertTrue(move["restated_weeks"], move["id"])
+            for week in move["restated_weeks"]:
+                self.assertGreaterEqual(abs(week["large_total_assets_change_billion"]), 50)
+                self.assertGreaterEqual(abs(week["small_total_assets_change_billion"]), 50)
+
+    def test_the_2023_failures_are_each_cited_or_unexplained(self):
+        self.assertEqual([item["institution"] for item in self.record["failures_2023"]],
+                         ["Silicon Valley Bank", "Signature Bank",
+                          "The acquisitions of Silicon Valley Bank and Signature Bank", "First Republic Bank"])
+        for item in self.record["failures_2023"]:
+            self.assertIn(item["cause"]["status"], ("cited", "unexplained"), item["id"])
+            if item["cause"]["status"] == "unexplained":
+                self.assertIsNone(item["week"], item["id"])
+
+    def test_a_move_with_neither_a_cited_cause_nor_unexplained_is_refused(self):
+        record = copy.deepcopy(self.record)
+        record["moves"][0]["cause"] = {"status": "probably a panel reassessment", "note_as_of": None, "quote": None}
+        with self.assertRaises(ValueError):
+            h8.check_moves(record, self.notes)
+
+    def test_a_cited_cause_must_quote_the_saved_notes(self):
+        record = copy.deepcopy(self.record)
+        record["moves"][0]["cause"] = {"status": "cited", "note_as_of": "2019-05-01", "quote": "a panel reassessment"}
+        with self.assertRaises(ValueError):
+            h8.check_moves(record, self.notes)
+
+    def test_the_break_flags_are_the_13_break_weeks(self):
+        flags = h8.break_flags(self.record)
+        self.assertEqual(len(flags), 13)
+        self.assertEqual(sorted(flags.values()), sorted(move["id"] for move in self.record["moves"]))
+        weeks = {item.week_ending for item in self.prints}
+        self.assertTrue(set(flags) <= weeks)
+
+    def test_a_difference_across_a_break_is_refused(self):
+        """Data guard: a first-print difference that spans a break week is not a flow, so it is refused unadjusted.
+
+        Recorded mutation (14 October 2026): in `src/repo_liquidity/h8.py`, `difference`'s test
+        `start < week <= end` changed to `start < week < end`. This test then fails with AssertionError: ValueError
+        not raised (the difference of 2025-05-14 to 2025-05-21 reads across the break week 2025-05-21 unflagged).
+        """
+        field = "h8_large_domestic_total_assets"
+        week = date.fromisoformat(next(m["break_week"] for m in self.record["moves"] if m["release_date"] == "2025-05-30"))
+        with self.assertRaisesRegex(ValueError, "break"):
+            h8.difference(self.prints, field, week - timedelta(days=7), week, self.record)
+        with self.assertRaisesRegex(ValueError, "break"):
+            h8.difference(self.prints, field, week - timedelta(days=14), week + timedelta(days=7), self.record)
+
+    def test_a_difference_clear_of_the_breaks_is_the_plain_difference(self):
+        field = "h8_large_domestic_total_assets"
+        week = date.fromisoformat(next(m["break_week"] for m in self.record["moves"] if m["release_date"] == "2025-05-30"))
+        by_week = {item.week_ending: item.values[field] for item in self.prints}
+        later = week + timedelta(days=7)
+        self.assertAlmostEqual(h8.difference(self.prints, field, week, later, self.record),
+                               by_week[later] - by_week[week])
+
+    def test_a_difference_over_weeks_outside_the_extract_is_refused(self):
+        with self.assertRaises(ValueError):
+            h8.difference(self.prints, "h8_large_domestic_total_assets", date(2010, 1, 6), date(2010, 1, 13), self.record)

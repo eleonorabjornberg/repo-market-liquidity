@@ -15,12 +15,14 @@ from __future__ import annotations
 
 import csv
 import hashlib
+import io
 import json
 import re
+from datetime import date
 from pathlib import Path
 from typing import Dict, List, Optional
 
-from repo_liquidity import PANEL_SHA256, PARENT_COMMIT, h41, h8, scheduled
+from repo_liquidity import PANEL_SHA256, PARENT_COMMIT, development, h41, h8, scheduled, slr
 
 ROOT = Path(__file__).resolve().parents[2]
 SNAPSHOTS = ROOT / "snapshots"
@@ -33,11 +35,17 @@ H41_MBS_EXTRACT = H41_DIR / "h41_mbs_first_print.csv"
 AGENCY_SECURITIES_COLUMNS = ("week_ended", "release_date", "agency_debt_change_musd", "mbs_change_musd",
                              "agency_securities_change_musd", "url", "page_sha256")
 
-#: The weekly first-print series (#26): the tracked extract each is a copy of. Its manifest carries the weeks and
+#: The weekly first-print series (#26): the tracked extract each is a copy of, plus the `break_ids` column of the breaks
+#: record (#47). Its manifest carries the weeks and
 #: releases it spans, and the SHA-256 of each archived release page behind it (the pages are not tracked).
 WEEKLY: Dict[str, Path] = {
     "h8_groups": ROOT / "tests" / "fixtures" / "snapshots" / "h8_groups" / h8.EXTRACT_NAME,
 }
+
+#: The SLR headroom of the nine G-SIB depository subsidiaries (#63): the tracked latest-filed extract, published as it
+#: stands (every row labelled `vintage = latest_filed`; row 16 of `docs/decisions/data-meaning.md`).
+SLR_DIR = ROOT / "tests" / "fixtures" / "snapshots" / "slr_headroom"
+SLR_EXTRACT = SLR_DIR / slr.EXTRACT_NAME
 
 #: The published series and the tracked table each is built from. The three FOMC series are copies of their tables;
 #: `agency_securities` is computed from two H.4.1 first-print extracts (see `build`); the weekly series are copies of
@@ -48,6 +56,7 @@ SERIES: Dict[str, Path] = {
     "runoff_caps": scheduled.CAPS_TABLE,
     "agency_securities": H41_AGENCY_EXTRACT,
     **WEEKLY,
+    "slr_headroom": SLR_EXTRACT,
 }
 _HEX40 = re.compile(r"^[0-9a-f]{40}$")
 
@@ -129,6 +138,26 @@ def _build_agency_securities(root: Path, repo_commit: str, agency_extract: Path,
     return manifest
 
 
+def _unlocked(source: bytes):
+    """The rate table's bytes without the rows the model repo's lockbox holds (#59, finding #55).
+
+    A row is dated by its announcement (the day it became public). The tracked table keeps every row, because the
+    Stage 4 freeze and the records read it there; the snapshot is the part of it a reader may see. Returns the bytes,
+    the kept rows and the announcement dates left out.
+    """
+    lines = source.decode("utf-8").splitlines()
+    rows: List[dict] = list(csv.DictReader(lines))
+    kept, omitted = [lines[0]], []
+    kept_rows: List[dict] = []
+    for line, row in zip(lines[1:], rows):
+        if development.is_locked(date.fromisoformat(row["announcement_date"])):
+            omitted.append(row["announcement_date"])
+        else:
+            kept.append(line)
+            kept_rows.append(row)
+    return ("\n".join(kept) + "\n").encode("utf-8"), kept_rows, omitted
+
+
 def build(series: str, root: Path = ROOT, *, repo_commit: str, agency_extract: Optional[Path] = None) -> dict:
     """Write the series' snapshot and manifest under `root/snapshots/<series>/`, and return the manifest.
 
@@ -145,12 +174,14 @@ def build(series: str, root: Path = ROOT, *, repo_commit: str, agency_extract: O
         raise ValueError(f"repo_commit must be a full 40-character lowercase hash, got {repo_commit!r}")
     if series in WEEKLY:
         return _build_weekly(series, table, root, repo_commit)
+    if series == "slr_headroom":
+        return _build_slr(table, root, repo_commit)
     if series == "agency_securities":
         return _build_agency_securities(root, repo_commit, agency_extract or table, H41_MBS_EXTRACT)
     scheduled._verified_rows(table)
-    data = table.read_bytes()
+    source = table.read_bytes()
+    data, rows, omitted = _unlocked(source)
     digest = hashlib.sha256(data).hexdigest()
-    rows: List[dict] = list(csv.DictReader(data.decode("utf-8").splitlines()))
     pages = {}
     for row in rows:
         page = scheduled.NOTES / "pages" / row["page"]
@@ -171,12 +202,60 @@ def build(series: str, root: Path = ROOT, *, repo_commit: str, agency_extract: O
         "last_announced": f"{rows[-1]['announcement_date']}T{rows[-1]['announcement_time']}",
         "last_effective": rows[-1]["effective_date"],
         "source_table": str(table.relative_to(ROOT)),
+        "source_table_sha256": hashlib.sha256(source).hexdigest(),
+        "locked_rows_omitted": omitted,
         "source_pages": pages,
         "parent_commit": PARENT_COMMIT,
         "parent_panel_sha256": PANEL_SHA256,
         "repo_commit": repo_commit,
     }
     manifest_path(series, root).write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return manifest
+
+
+def _build_slr(table: Path, root: Path, repo_commit: str) -> dict:
+    """The snapshot of the SLR-headroom extract: its bytes, labelled as amended (latest-filed) figures.
+
+    The extract is read through `slr.load_extract`, which refuses one that does not match its manifest, is not labelled
+    `latest_filed`, or holds a figure updated on a day the parent's lockbox holds. The manifest says in words that the
+    figures are not first prints, names the stored zips by digest, and points at the coverage record.
+    """
+    rows = slr.load_extract(table)
+    data = table.read_bytes()
+    digest = hashlib.sha256(data).hexdigest()
+    sources = json.loads(table.with_name(slr.SOURCES_NAME).read_text(encoding="utf-8"))
+    coverage = table.with_name(slr.COVERAGE_NAME)
+    used = {row.source_zip_sha256 for row in rows}
+    pages = {item["quarter_end"]: item["sha256"] for item in sources["zips"]}
+    unknown = sorted(used - set(pages.values()))
+    if unknown:
+        raise ValueError(f"{table.name}: a row names the zip {unknown[0]}, which the sources record does not list")
+    directory = root / "snapshots" / "slr_headroom"
+    directory.mkdir(parents=True, exist_ok=True)
+    relative = f"snapshots/slr_headroom/{digest}.csv"
+    (root / relative).write_bytes(data)
+    manifest = {
+        "series": "slr_headroom",
+        "path": relative,
+        "sha256": digest,
+        "columns": list(slr.EXTRACT_COLUMNS),
+        "rows": len(rows),
+        "vintage": slr.VINTAGE,
+        "vintage_note": ("Latest-filed Call Report figures, amended since their first filing, not first prints: each "
+                         "(bank, quarter) value is available only from the day after its latest-update time. "
+                         "docs/decisions/data-meaning.md row 16 (ruling of 13 October 2026, reading 2)."),
+        "first_quarter": min(row.quarter_end for row in rows).isoformat(),
+        "last_quarter": max(row.quarter_end for row in rows).isoformat(),
+        "last_update": max(row.latest_update for row in rows).isoformat(),
+        "source_table": str(table.relative_to(ROOT)),
+        "source_zips": pages,
+        "source_zips_record": str(table.with_name(slr.SOURCES_NAME).relative_to(ROOT)),
+        "coverage": {"path": str(coverage.relative_to(ROOT)), "sha256": hashlib.sha256(coverage.read_bytes()).hexdigest()},
+        "parent_commit": PARENT_COMMIT,
+        "parent_panel_sha256": PANEL_SHA256,
+        "repo_commit": repo_commit,
+    }
+    manifest_path("slr_headroom", root).write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return manifest
 
 
@@ -188,7 +267,20 @@ def _build_weekly(series: str, table: Path, root: Path, repo_commit: str) -> dic
     release date, and the build refuses an extract whose rows name a page the releases record does not list.
     """
     prints = h8.load_extract(table)
-    data = table.read_bytes()
+    record = h8.load_moves()
+    flags = h8.break_flags(record)
+    unknown = sorted(week for week in flags if week not in {item.week_ending for item in prints})
+    if unknown:
+        raise ValueError(f"{table.name}: the breaks record flags the week ending {unknown[0]}, which is not in the extract")
+    # The snapshot is the extract's rows with one more column: the id of the break that starts at the week, if any.
+    with table.open(encoding="utf-8", newline="") as handle:
+        rows = list(csv.DictReader(handle))
+    buffer = io.StringIO(newline="")
+    writer = csv.writer(buffer, lineterminator="\n")
+    writer.writerow(h8.SNAPSHOT_COLUMNS)
+    for row, item in zip(rows, prints):
+        writer.writerow([row[column] for column in h8.EXTRACT_COLUMNS] + [flags.get(item.week_ending, "")])
+    data = buffer.getvalue().encode("utf-8")
     digest = hashlib.sha256(data).hexdigest()
     releases = json.loads(table.with_name(h8.RELEASES_NAME).read_text(encoding="utf-8"))
     pages = {record["release_date"]: record["sha256"] for record in releases["releases"]}
@@ -204,7 +296,10 @@ def _build_weekly(series: str, table: Path, root: Path, repo_commit: str) -> dic
         "series": series,
         "path": relative,
         "sha256": digest,
-        "columns": list(h8.EXTRACT_COLUMNS),
+        "columns": list(h8.SNAPSHOT_COLUMNS),
+        "breaks": {"source": str(h8.MOVES_PATH.relative_to(ROOT)),
+                   "sha256": hashlib.sha256(h8.MOVES_PATH.read_bytes()).hexdigest(),
+                   "weeks": {week.isoformat(): move for week, move in sorted(flags.items())}},
         "rows": len(prints),
         "first_week": prints[0].week_ending.isoformat(),
         "last_week": prints[-1].week_ending.isoformat(),

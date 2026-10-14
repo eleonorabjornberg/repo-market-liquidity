@@ -22,7 +22,7 @@ from collections import Counter
 from datetime import date
 from pathlib import Path
 
-from repo_liquidity import h8
+from repo_liquidity import development, h8
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import extract_h8_groups  # noqa: E402
@@ -36,7 +36,7 @@ def main(argv=None):
     args = parser.parse_args(argv)
     _index, found = extract_h8_groups.snapshots(args.raw_root)
     pages = {day: h8.parse_group_lines(artifact.path.read_bytes(), day) for day, artifact in sorted(found.items())
-             if day <= h8.LAST_RELEASE}
+             if day <= development.development_end()}
     prints = h8.load_extract(extract_h8_groups.OUTPUT / h8.EXTRACT_NAME)
     lags = Counter((item.release_date - item.week_ending).days for item in prints)
     revisions = {}
