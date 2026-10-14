@@ -39,7 +39,7 @@ import unittest
 from datetime import date, time, timedelta
 
 from repo_model import measurement_fields, scarcity
-from repo_model.asof import InformationRule
+from repo_model.asof import InformationRule, StaleReadError
 from repo_model.data import DailyObservation, next_business_day
 from repo_model.splits import LookAheadError
 
@@ -320,6 +320,56 @@ class LeakageTests(_Measured):
             later.values["reserve_balances"] = 1.0
         after = h7.refit_on(self.days(changed), cutoff, replications=0)
         self.assertEqual(before.level, after.level)
+
+
+class _Misread(InformationRule):
+    """A rule whose reads are shifted by `shift` rows for one feature: a mis-declared or late input, as the parent's
+    `check` sees it. `information_set` is the parent's own; only the named feature's read row is moved."""
+
+    def __init__(self, *args, feature="reserve_balances", shift=0, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._feature, self._shift = feature, shift
+
+    def information_set(self, dates, index):
+        info = super().information_set(dates, index)
+        reads = tuple(r._replace(row=r.row + self._shift) if r.feature == self._feature else r for r in info.reads)
+        return info._replace(reads=reads)
+
+
+class AsofGuardTests(_Measured):
+    """Directive #58 (finding #53): the estimator runs the parent's `rule.check` on every information set it reads.
+
+    Written first, and watched failing before the call existed: `LookAheadError not raised` and `StaleReadError not
+    raised`.
+
+    Recorded mutation 3 (14 October 2026, disposable copy, CPython 3.11, parent at the pin 09640f5): in
+    `asof_days`, delete the line `rule.check(extended, info)`. Both `test_a_read_observable_only_after_the_decision_is_refused`
+    (`AssertionError: LookAheadError not raised`) and `test_a_read_older_than_the_latest_admissible_value_is_refused`
+    (`AssertionError: StaleReadError not raised`) fail; `test_the_honest_rule_passes_the_check` still passes.
+    """
+
+    def misread(self, shift):
+        return _Misread(self.registry, scarcity.LEGS, decision_time=time(16, 0), horizon=1, shift=shift)
+
+    def test_the_honest_rule_passes_the_check(self):
+        rows = _panel(count=300)
+        self.assertEqual(len(h7.asof_days(rows, self.rule())), len(rows) - 1)
+
+    def test_a_read_observable_only_after_the_decision_is_refused(self):
+        rows = _panel(count=300)
+        with self.assertRaises(LookAheadError):
+            h7.real_time_path(h7.asof_days(rows, self.misread(+3)), [rows[200].date], replications=0)
+
+    def test_a_read_older_than_the_latest_admissible_value_is_refused(self):
+        rows = _panel(count=300)
+        with self.assertRaises(StaleReadError):
+            h7.real_time_path(h7.asof_days(rows, self.misread(-3)), [rows[200].date], replications=0)
+
+    def test_the_estimator_keeps_no_copy_of_the_parents_date_extension(self):
+        from repo_model import satiation
+
+        self.assertIs(h7._extended, satiation._extended)
+        self.assertEqual(h7._EXTRA_DATES, satiation._EXTRA_DATES)
 
 
 if __name__ == "__main__":

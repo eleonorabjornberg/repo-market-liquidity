@@ -25,6 +25,12 @@ total assets that were public at T's decision (`dollars`). Each estimate carries
 **Decision instant.** 16:00 on the panel day before T, through `repo_model.asof.InformationRule`, with the parent's
 reads and guards unchanged. Each leg of the ratio is read at its own latest public row.
 
+*14 October 2026 (directive #58, finding #53):* the sentence above was not yet true of the code. The estimator built each
+information set but did not call the parent's `rule.check`, and it carried a copy of the parent's date extension. It now
+calls `rule.check(dates, info)` on every set it reads (so `LookAheadError` and `StaleReadError` can be raised from
+`asof_days`) and imports `satiation._extended` from the parent at the pin. The estimate path on the development panel
+(days to 2025-12-31) is byte-identical before and after.
+
 **Real-time reading, filtered and never smoothed.** The estimate for T uses the refit in force at T's decision. A
 refit with cutoff `c` is fitted on the training pairs whose scored day is on or before `c`, each pair being the ratio
 public at that day's own decision and that day's SOFR − IORB spread in basis points. It serves the days from the
