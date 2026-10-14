@@ -68,7 +68,7 @@ class RecoveryTests(unittest.TestCase):
     def test_with_no_noise_and_no_planted_residual_the_residual_is_zero(self):
         series = synthetic([100, 200])
         for start in (100, 200):
-            result = attribution.attribute(series, start, draws=20)
+            result = attribution.attribute_synthetic(series, start, draws=20)
             self.assertEqual(result.status, "attributed")
             self.assertAlmostEqual(result.residual_share, planted(series, start)[2], places=6)
             self.assertLess(abs(result.residual_share), 1e-6)
@@ -96,7 +96,7 @@ class RecoveryTests(unittest.TestCase):
 
     def test_an_attributed_episode_carries_fixed_shares_that_match_the_planted_ones(self):
         series = synthetic([100, 200])
-        result = attribution.attribute(series, 100, draws=20)
+        result = attribution.attribute_synthetic(series, 100, draws=20)
         _, true_shares, _ = planted(series, 100)
         self.assertEqual(set(result.fixed_shares), set(DRIVERS))
         for name in DRIVERS:
@@ -104,7 +104,7 @@ class RecoveryTests(unittest.TestCase):
 
     def test_shares_and_residual_sum_to_one(self):
         series = synthetic([100, 200], noise=0.3)
-        result = attribution.attribute(series, 100, draws=20)
+        result = attribution.attribute_synthetic(series, 100, draws=20)
         self.assertAlmostEqual(sum(result.shares.values()) + result.residual_share, 1.0, places=9)
 
     def test_a_planted_residual_is_recovered_and_the_episode_does_not_fit_itself(self):
@@ -112,13 +112,13 @@ class RecoveryTests(unittest.TestCase):
         its own fitting sample, the regression would absorb part of it into the drivers."""
         series = synthetic([100, 200], extra={100: 3.0})
         rise, _, _ = planted(series, 100)
-        result = attribution.attribute(series, 100, draws=20)
+        result = attribution.attribute_synthetic(series, 100, draws=20)
         self.assertAlmostEqual(result.residual_share, 3.0 / rise, places=6)
         self.assertGreater(result.residual_share, 0.05)
 
     def test_a_dominant_residual_is_reported_as_one(self):
         series = synthetic([100], extra={100: 60.0})
-        result = attribution.attribute(series, 100, draws=20)
+        result = attribution.attribute_synthetic(series, 100, draws=20)
         self.assertGreater(result.residual_share, 0.5)
         self.assertFalse(result.residual_under_bar)
 
@@ -130,7 +130,7 @@ class RecoveryTests(unittest.TestCase):
             covered = total = 0
             for seed in range(30):
                 series = synthetic([100], noise=noise, seed=seed)
-                result = attribution.attribute(series, 100, draws=150, seed=seed)
+                result = attribution.attribute_synthetic(series, 100, draws=150, seed=seed)
                 _, shares, residual = planted(series, 100)
                 for name in DRIVERS:
                     lo, hi = result.intervals[name]
@@ -143,8 +143,8 @@ class RecoveryTests(unittest.TestCase):
 
     def test_the_same_seed_gives_the_same_interval(self):
         series = synthetic([100], noise=0.3)
-        a = attribution.attribute(series, 100, draws=40, seed=5)
-        b = attribution.attribute(series, 100, draws=40, seed=5)
+        a = attribution.attribute_synthetic(series, 100, draws=40, seed=5)
+        b = attribution.attribute_synthetic(series, 100, draws=40, seed=5)
         self.assertEqual(a.intervals, b.intervals)
 
 
@@ -166,7 +166,7 @@ class MissingDataTests(unittest.TestCase):
         series = synthetic([100, 200])
         series["tga"][198] = None
         series = {k: list(v) for k, v in series.items()}
-        results = [attribution.attribute(series, s, draws=20) for s in (100, 200)]
+        results = [attribution.attribute_synthetic(series, s, draws=20) for s in (100, 200)]
         self.assertEqual([r.status for r in results], ["attributed", "not attributable"])
         self.assertIn("missing", results[1].reason)
         summary = attribution.outcome(results)
@@ -175,12 +175,12 @@ class MissingDataTests(unittest.TestCase):
 
     def test_an_incomplete_window_at_the_end_is_not_attributable(self):
         series = synthetic([100], n=300)
-        self.assertEqual(attribution.attribute(series, 297, draws=5).status, "not attributable")
+        self.assertEqual(attribution.attribute_synthetic(series, 297, draws=5).status, "not attributable")
 
     def test_a_window_with_no_rise_is_not_attributable(self):
         series = synthetic([100])
         series[SPREAD] = [1.0] * len(series[SPREAD])
-        result = attribution.attribute(series, 100, draws=5)
+        result = attribution.attribute_synthetic(series, 100, draws=5)
         self.assertEqual(result.status, "not attributable")
 
 
@@ -344,12 +344,26 @@ class PanelTests(unittest.TestCase):
         result = attribution.attribute(series, onset, report_index=onset + WINDOW_DAYS + 10, **kwargs)
         self.assertIn(result.status, ("attributed", "not attributable"))
 
-    def test_the_public_check_needs_all_three_arguments(self):
+    def test_a_real_data_call_needs_all_three_arguments(self):
+        """Leakage guard: `attribute` (the real-data entry point) refuses a call without the rule, the dates and the
+        report index, or with only some of them (Eleonora's ruling on PR #61, 14 October 2026: required from H10 step 2).
+
+        Recorded mutation (14 October 2026): in `attribution.attribute`, `if len(missing) > 0:` changed to
+        `if len(missing) > 3:` (no call is ever refused for a missing argument). The first case then fails with
+        AttributeError: 'NoneType' object has no attribute 'decision_instant' (the unchecked call reaches the guard).
+        """
         series = attribution.series_from_rows(self.rows)
         onset = attribution.episode_onsets(self.rows)[3]
-        for partial in ({"rule": self._rule()}, {"dates": self.dates}, {"report_index": onset + 20}):
+        for partial in ({}, {"rule": self._rule()}, {"dates": self.dates}, {"report_index": onset + 20},
+                        {"rule": self._rule(), "dates": self.dates}):
             with self.assertRaises(ValueError):
                 attribution.attribute(series, onset, draws=10, **partial)
+
+    def test_the_synthetic_entry_point_takes_no_dates_and_the_real_one_is_not_it(self):
+        series = synthetic([100], noise=0.3)
+        self.assertEqual(attribution.attribute_synthetic(series, 100, draws=5).status, "attributed")
+        with self.assertRaises(ValueError):
+            attribution.attribute(series, 100, draws=5)
 
 
 # ---------------------------------------------------------------------------------------------------------------
@@ -394,7 +408,7 @@ class SelectionNullTests(unittest.TestCase):
         self.assertGreater(null.episodes, 20)
         for start in self.EPISODES:
             self.assertIn(start, attribution.rule_onsets(series[SPREAD]))
-            result = attribution.attribute(series, start, draws=10)
+            result = attribution.attribute_synthetic(series, start, draws=10)
             self.assertTrue(attribution.beats_null(result, null), (start, result.explained_share, null.bar))
 
     def test_the_null_does_not_reject_episodes_the_rule_picked_from_pure_noise(self):
@@ -456,7 +470,7 @@ class OnRrpDriverTests(unittest.TestCase):
         series = episodic([150, 400, 650, 900, 1150], noise=0.3, drivers=drivers)
         beta = attribution.coefficients(series, drivers)
         self.assertAlmostEqual(beta["on_rrp"], SLOPE["on_rrp"], delta=0.002)
-        result = attribution.attribute(series, 400, drivers=drivers, draws=30)
+        result = attribution.attribute_synthetic(series, 400, drivers=drivers, draws=30)
         self.assertEqual(result.status, "attributed")
         self.assertIn("on_rrp", result.shares)
         planted_share = SLOPE["on_rrp"] * attribution.change(series["on_rrp"], 400) / result.rise_bp
