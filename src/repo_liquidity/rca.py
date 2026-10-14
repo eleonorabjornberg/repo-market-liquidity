@@ -13,7 +13,8 @@ files and publishes it, by group and quarter, as an input. Nothing is scored.
   the H.8 leaves out. The Board's list replaces the stand-in wherever one is found.
 - **The foreign-related group has no anchor here.** Eleonora's ruling of 14 October 2026 (option a) uses the H.8
   foreign-related institutions' cash assets as that group's weekly level, labelled an approximation (cash assets, not
-  reserves alone); no FFIEC 002 is read. See `repo_liquidity.group_reserves`.
+  reserves alone); no FFIEC 002 is read. The weekly series (`repo_liquidity.group_reserves`) no longer reads this anchor
+  (her ruling of 14 October 2026, option (i)): it is a published input kept for a later, anchored version.
 - **Vintage and availability** (data-meaning answer 16(d) as amended on 13 October 2026, PR #44): a bulk file carries
   only the **latest-filed** figure of each filer, so a figure is available only from its "Last Date/Time Submission
   Updated On" time (`Call Bulk POR`), and the extract labels every row `vintage = latest_filed`. A group's figure is a sum,

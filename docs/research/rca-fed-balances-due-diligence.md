@@ -146,8 +146,10 @@ python3 -I scripts/diagnostics/ffiec_rca_diligence.py DIRECTORY --reserves \
 **What was built.** `repo_liquidity.rca` reads RC-A item 0090 from the 34 stored quarters (2018-03-31 to 2026-06-30) into
 two groups (the 25 filers with the largest total assets; every other carrying filer), each a latest-filed sum available from
 the day after its slowest member's latest update (`declarations/ffiec_call_rca.json`, snapshot `snapshots/rca_anchor/`).
-`repo_liquidity.group_reserves` moves each anchor with the H.8 group cash assets, takes the foreign group from the H.8, and
-leaves the residual "other depository institutions" against H.4.1 reserves.
+`repo_liquidity.group_reserves` does **not** read the anchor (her ruling of 14 October 2026, option (i), comment 6178605509):
+each of the three groups is the H.8 group's cash assets, first print, unanchored and labelled an approximation, and the
+residual "other depository institutions" is H.4.1 reserves less the three. The anchor stays as a published input for a
+later, anchored version.
 
 **What it shows (generated tables: `docs/research/rca-anchor-coverage.md`, `docs/research/group-reserves-coverage.md`).**
 

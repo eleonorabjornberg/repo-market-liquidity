@@ -1,29 +1,29 @@
 {
+  "basis_note": "Eleonora's rulings of 14 October 2026 on PR #50 (options (a) and (i)): every group level is the H.8 group's cash assets, first print, unanchored and an approximation. Cash assets are not reserves alone.",
+  "break_note": "`h8_break_week` is true at a week where the H.8 restates the large and small panels (docs/research/h8-group-moves.json); levels across it are on different panels.",
   "columns": [
     "week_ending",
     "public_at",
     "reserves_bn",
-    "large_anchor_quarter",
     "large_domestic_bn",
-    "small_anchor_quarter",
     "small_domestic_bn",
     "foreign_related_bn",
     "other_bn",
     "other_negative",
-    "large_anchor_age_days",
-    "small_anchor_age_days",
+    "h8_break_week",
+    "domestic_basis",
     "foreign_basis"
   ],
+  "domestic_basis": "h8_cash_assets_approximation",
   "foreign_basis": "h8_cash_assets_approximation",
   "inputs": {
     "h8_group_moves": "d8eab25676bc9e866fdc48eb0fe1203c5fc5ef912ed502b416d810c3234d0404",
     "h8_groups": "1069af546ca0c5d3d69190b680dbc617557d3bbac0798f6a1e12d155f9f1f7f9",
-    "rca_anchor": "5906389242dfb1c20726a0d66677fd83e37179049a6914023b8261829061f15f",
     "wresbal": "7b806f2681ed790f878f9b7c31fd021a8fde58a43dbb6779c4439b219f645ff4"
   },
-  "rows": 0,
+  "rows": 452,
   "series": "group_reserves_weekly",
-  "sha256": "1e3388ad4895b3e21a3e92713d1d10fa5114726f6d77f284ff1c32664cacddf0",
-  "small_domestic_caveat": "Answer 17(a): cash assets overstate small domestic banks' reserves (vault cash and correspondent balances); the small group's anchor is RC-A balances at the Reserve Banks of the filers that carry the item, its weekly moves are H.8 cash-asset moves, and the groups must not be summed naively (docs/stages/group-reserves.md).",
+  "sha256": "de8cbade4e06ee47cde8a6bdb0c57492907817ae35d77946329b0a983f221a55",
+  "small_domestic_caveat": "Answer 17(a): cash assets overstate small domestic banks' reserves (vault cash and correspondent balances), and balances due from other depository institutions double-count, so the groups must not be summed naively; the residual absorbs every difference and is not a measure of anything on its own (docs/stages/group-reserves.md).",
   "units": "billions of US dollars, not seasonally adjusted (H.8) and week average (H.4.1 WRESBAL)"
 }

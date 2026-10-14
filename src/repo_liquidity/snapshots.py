@@ -49,7 +49,7 @@ SLR_EXTRACT = SLR_DIR / slr.EXTRACT_NAME
 
 #: The RC-A anchor of the group reserves (#43): the tracked latest-filed extract of the two domestic groups, published as it
 #: stands (every row labelled `vintage = latest_filed`; row 16 of `docs/decisions/data-meaning.md`). The weekly
-#: group-reserves series is not published: it has no row under the rules it was built by (`group_reserves`).
+#: group-reserves series does not read it (her ruling of 14 October 2026, option (i)) and is tracked, not published.
 RCA_DIR = ROOT / "tests" / "fixtures" / "snapshots" / "rca_anchor"
 RCA_EXTRACT = RCA_DIR / rca.EXTRACT_NAME
 

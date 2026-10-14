@@ -3,11 +3,11 @@
 
     PYTHONPATH=src python3 scripts/build_group_reserves.py [--check]
 
-Reads the H.8 group first prints, the RC-A anchor extract, the H.8 break record and the parent's tracked `WRESBAL` vintage
+Reads the H.8 group first prints, the H.8 break record and the parent's tracked `WRESBAL` vintage
 (no network), and writes under `tests/fixtures/snapshots/group_reserves/`:
 
 - `group_reserves_weekly.csv` and its `.manifest.json` (which names each input file by SHA-256);
-- `group_reserves_weekly.coverage.json`: every hole by week and reason, and the age of the anchors;
+- `group_reserves_weekly.coverage.json`: every hole by week and reason, and the spread of the residual;
 - `docs/research/group-reserves-coverage.md`: the same, in words (generated, never hand-edited).
 
 `--check` rebuilds in memory and compares. Nothing is scored.
@@ -34,15 +34,21 @@ def _json(value) -> bytes:
 def cut():
     inputs = gr.tracked_inputs()
     rows, holes = gr.build(**inputs)
-    gr.verify(rows, inputs["anchors"])
+    gr.verify(rows, inputs["prints"], inputs["reserves"])
     extract = gr.write_extract(rows)
-    record = gr.coverage(rows, holes, inputs["prints"], inputs)
+    record = gr.coverage(rows, holes, inputs["prints"])
     manifest = {"series": "group_reserves_weekly", "sha256": hashlib.sha256(extract).hexdigest(), "rows": len(rows),
                 "columns": list(gr.COLUMNS), "inputs": gr.source_digests(), "foreign_basis": gr.FOREIGN_BASIS,
+                "domestic_basis": gr.DOMESTIC_BASIS,
+                "basis_note": ("Eleonora's rulings of 14 October 2026 on PR #50 (options (a) and (i)): every group level is the "
+                               "H.8 group's cash assets, first print, unanchored and an approximation. Cash assets are not "
+                               "reserves alone."),
                 "small_domestic_caveat": ("Answer 17(a): cash assets overstate small domestic banks' reserves (vault cash and "
-                                          "correspondent balances); the small group's anchor is RC-A balances at the Reserve "
-                                          "Banks of the filers that carry the item, its weekly moves are H.8 cash-asset moves, "
-                                          "and the groups must not be summed naively (docs/stages/group-reserves.md)."),
+                                          "correspondent balances), and balances due from other depository institutions "
+                                          "double-count, so the groups must not be summed naively; the residual absorbs every "
+                                          "difference and is not a measure of anything on its own (docs/stages/group-reserves.md)."),
+                "break_note": ("`h8_break_week` is true at a week where the H.8 restates the large and small panels "
+                               "(docs/research/h8-group-moves.json); levels across it are on different panels."),
                 "units": "billions of US dollars, not seasonally adjusted (H.8) and week average (H.4.1 WRESBAL)"}
     files = {gr.EXTRACT_NAME: extract, gr.EXTRACT_NAME + ".manifest.json": _json(manifest), gr.COVERAGE_NAME: _json(record)}
     return files, record, render_markdown(rows, record)
@@ -59,41 +65,32 @@ def render_markdown(rows, record) -> str:
         (f"- First row public at {record['first_public_at']}; weeks {record['first_week']} to {record['last_week']}."
          if record["rows"] else "- **No week has a row**: every week is a listed hole (below)."),
         f"- Weeks whose residual \"other depository institutions\" is negative: {record['other_negative_weeks']}.",
+        f"- Rows at an H.8 break week (`h8_break_week`): {record['break_weeks']}.",
     ]
-    if record["anchor_age_days"]:
-        age = record["anchor_age_days"]
-        lines.append(f"- Age of the anchors the rows stand on, in days from quarter-end to week: min {age['min']}, "
-                     f"median {age['median']}, max {age['max']}.")
-    diag = record["diagnostic_without_break_refusal"]
-    lines += ["", "## What the break refusal costs (diagnostic, not a series)", "",
-              f"With the refusal switched off the same builder would give {diag['rows']} rows"
-              + (f" ({diag['first_week']} to {diag['last_week']}), {diag['other_negative_weeks']} of them with a negative residual,"
-                 f" the residual running from {diag['other_bn']['min']:,.1f} to {diag['other_bn']['max']:,.1f} billion"
-                 f" (median {diag['other_bn']['median']:,.1f})." if diag["rows"] else "."),
-              "These rows move a ratio across a change of basis (the H.8 restates the large and small panels at a break week);",
-              "they are not published and no model reads them. They show how much of the empty series is the refusal and how much",
-              "is the anchors' availability.", ""]
+    if record["other_bn"]:
+        other = record["other_bn"]
+        lines.append(f"- The residual runs from {other['min']:,.1f} to {other['max']:,.1f} billion (median {other['median']:,.1f}).")
     lines += ["", "## Holes, by reason", "", "| reason | weeks |", "|---|---|"]
     for reason, count in record["reasons"].items():
         lines.append(f"| `{reason}` | {count} |")
+    if not record["reasons"]:
+        lines.append("| none | 0 |")
     lines += ["", "## Rows by year", "", "| year | rows |", "|---|---|"]
     for year, count in record["rows_by_year"].items():
         lines.append(f"| {year} | {count} |")
-    lines += ["", "## The series, by quarter-end of the week", "",
-              "Billions of dollars; the week's row as first computed. `large`/`small` are the RC-A anchors moved by H.8 cash;",
-              "`foreign` is H.8 foreign-related cash assets (an approximation); `other` is reserves less the three.", "",
-              "| week | reserves | large | small | foreign | other | anchor quarters (large, small) |", "|---|---|---|---|---|---|---|"]
+    lines += ["", "## The series, at the last week of each quarter", "",
+              "Billions of dollars; the week's row as first computed. `large`, `small` and `foreign` are H.8 cash assets (first",
+              "prints, an approximation); `other` is H.4.1 reserves less the three.", "",
+              "| week | reserves | large | small | foreign | other |", "|---|---|---|---|---|---|"]
     shown = [r for r in rows if r.week_ending.month in (3, 6, 9, 12) and r.week_ending.day > 24]
     for r in shown:
         lines.append(f"| {r.week_ending} | {r.reserves_bn:,.1f} | {r.large_domestic_bn:,.1f} | {r.small_domestic_bn:,.1f} | "
-                     f"{r.foreign_related_bn:,.1f} | {r.other_bn:,.1f} | {r.large_anchor_quarter}, {r.small_anchor_quarter} |")
+                     f"{r.foreign_related_bn:,.1f} | {r.other_bn:,.1f} |")
     lines += ["", "## Not checked", "",
               "- That H.8 cash assets, a weekly figure, move like Federal Reserve balances: cash assets include vault cash, cash",
               "  items in process of collection and balances due from other depository institutions (answer 17(a)).",
               "- Whether the H.8 week and the H.4.1 week average cover the same days; the H.8 line is read as printed.",
-              "- The Board's large-bank panel against the 25 largest filers; the thrift/commercial-bank split.",
-              "- A different move rule (for example one that splits a move when the anchor and the H.8 disagree in sign): a",
-              "  marked question for Eleonora.", ""]
+              "- An anchored version (RC-A or FFIEC 002 first prints): a later directive once the CDR archive (#49) has them.", ""]
     return "\n".join(lines)
 
 
