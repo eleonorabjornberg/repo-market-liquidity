@@ -14,6 +14,7 @@
     "requirement_pct",
     "headroom_pp",
     "exclusion_status",
+    "measure",
     "source_zip_sha256"
   ],
   "coverage": {
@@ -23,13 +24,15 @@
   "first_quarter": "2018-03-31",
   "last_quarter": "2026-06-30",
   "last_update": "2026-08-21T14:23:13",
+  "measure_note": "The `measure` column is `main` for eight banks and `sensitivity_state_street` for State Street Bank and Trust Company, N.A. (IDRSSD 93619): outside the main measure and a labelled sensitivity, its figures as filed in the extract (Eleonora's decision on repo-market-liquidity#69, 14 October 2026, Q2; recorded for #71). A reader of the main measure must filter on `measure == main`.",
   "parent_commit": "09640f5bb4063da150e09a285d242cd28db1c136",
   "parent_panel_sha256": "4ddc3882cd6d406b11e1088f8ff6195e16dde175a0ad6818abe40dd5bdac8999",
-  "path": "snapshots/slr_headroom/998c5aa153689d76520e9901f82e7813eeffc1709ab4030735d4855cc9ea31f0.csv",
-  "repo_commit": "4e84d03b0c80ead4e62efdeb296053c1cc5ce86f",
+  "path": "snapshots/slr_headroom/09c138ad385424b8ba9d705e258ac254cd0ab6ee5e93e7ba199276440ba4de27.csv",
+  "repo_commit": "50ee4990c54eaa65fae5a4e3206a728bbacb90a9",
+  "requirement_note": "`requirement_pct` and `headroom_pp` follow the requirement table of docs/decisions/slr-requirement.md (a draft until Eleonora merges it): 6.0% for quarter-ends 2018-01-01 to 2026-03-31, and no value from 2026-04-01, where the rule is bank-specific.",
   "rows": 277,
   "series": "slr_headroom",
-  "sha256": "998c5aa153689d76520e9901f82e7813eeffc1709ab4030735d4855cc9ea31f0",
+  "sha256": "09c138ad385424b8ba9d705e258ac254cd0ab6ee5e93e7ba199276440ba4de27",
   "source_table": "tests/fixtures/snapshots/slr_headroom/slr_latest_filed.csv",
   "source_zips": {
     "2018-03-31": "a9be30d444f7a2dd4d43db96d2a8bc56eb8deac28387617b7bcb46482742f87c",
