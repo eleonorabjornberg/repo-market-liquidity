@@ -39,6 +39,10 @@ def cut():
     record = gr.coverage(rows, holes, inputs["prints"], inputs)
     manifest = {"series": "group_reserves_weekly", "sha256": hashlib.sha256(extract).hexdigest(), "rows": len(rows),
                 "columns": list(gr.COLUMNS), "inputs": gr.source_digests(), "foreign_basis": gr.FOREIGN_BASIS,
+                "small_domestic_caveat": ("Answer 17(a): cash assets overstate small domestic banks' reserves (vault cash and "
+                                          "correspondent balances); the small group's anchor is RC-A balances at the Reserve "
+                                          "Banks of the filers that carry the item, its weekly moves are H.8 cash-asset moves, "
+                                          "and the groups must not be summed naively (docs/stages/group-reserves.md)."),
                 "units": "billions of US dollars, not seasonally adjusted (H.8) and week average (H.4.1 WRESBAL)"}
     files = {gr.EXTRACT_NAME: extract, gr.EXTRACT_NAME + ".manifest.json": _json(manifest), gr.COVERAGE_NAME: _json(record)}
     return files, record, render_markdown(rows, record)
