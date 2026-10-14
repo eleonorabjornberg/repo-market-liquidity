@@ -1,4 +1,23 @@
 {
+  "breaks": {
+    "sha256": "d8eab25676bc9e866fdc48eb0fe1203c5fc5ef912ed502b416d810c3234d0404",
+    "source": "docs/research/h8-group-moves.json",
+    "weeks": {
+      "2019-05-22": "move-01",
+      "2019-12-11": "move-02",
+      "2021-09-22": "move-03",
+      "2021-10-13": "move-04",
+      "2022-04-06": "move-05",
+      "2022-10-05": "move-06",
+      "2023-02-08": "move-07",
+      "2023-03-15": "move-08",
+      "2023-05-03": "move-09",
+      "2023-05-31": "move-10",
+      "2023-06-21": "move-11",
+      "2025-05-21": "move-12",
+      "2026-02-04": "move-13"
+    }
+  },
   "columns": [
     "week_ending",
     "release_date",
@@ -8,18 +27,19 @@
     "h8_small_domestic_total_assets",
     "h8_foreign_related_cash_assets",
     "h8_foreign_related_total_assets",
-    "release_sha256"
+    "release_sha256",
+    "break_ids"
   ],
   "first_week": "2017-12-27",
   "last_release": "2026-08-28",
   "last_week": "2026-08-19",
   "parent_commit": "09640f5bb4063da150e09a285d242cd28db1c136",
   "parent_panel_sha256": "4ddc3882cd6d406b11e1088f8ff6195e16dde175a0ad6818abe40dd5bdac8999",
-  "path": "snapshots/h8_groups/1069af546ca0c5d3d69190b680dbc617557d3bbac0798f6a1e12d155f9f1f7f9.csv",
-  "repo_commit": "da6d0ba39826332ca5ebd728d32bc7238f27fcdb",
+  "path": "snapshots/h8_groups/326466ae847af5c5be0a462d0a71e6d4022fc792816a1c7f57ad1a9e8ee022fe.csv",
+  "repo_commit": "a91faa4fdf4a901ae85dbde4a51f8b36e177afed",
   "rows": 452,
   "series": "h8_groups",
-  "sha256": "1069af546ca0c5d3d69190b680dbc617557d3bbac0798f6a1e12d155f9f1f7f9",
+  "sha256": "326466ae847af5c5be0a462d0a71e6d4022fc792816a1c7f57ad1a9e8ee022fe",
   "source_pages": {
     "2018-01-05": "c90bbb1c411c1e8a93a4e310afdc580191a3c2f85510d14516d4eca14f8a4aa3",
     "2018-01-12": "6e2451a43a1a01b9d853e85cdc5580b414d3faa169338893cb7f5b3003c56f3e",

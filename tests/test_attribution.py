@@ -84,6 +84,24 @@ class RecoveryTests(unittest.TestCase):
         self.assertAlmostEqual(residual, (4.0 - 1.5) / 4.0)
         self.assertAlmostEqual(explained, 1.5 / 4.0)
 
+    def test_fixed_coefficient_shares_equal_coefficient_times_change_over_rise(self):
+        """H10 method v1, section 2: beta_j * dx_j / rise from the full model's coefficients, reported beside the
+        Shapley shares. Known coefficients 2, -1, 3 on an orthogonal design."""
+        xtx = [[2.0 if i == j else 0.0 for j in range(3)] for i in range(3)]
+        xty = [4.0, -2.0, 6.0]
+        fixed = attribution._fixed_shares(xtx, xty, [1.0, 2.0, 0.5], rise=4.0)
+        self.assertEqual(len(fixed), 3)
+        for got, want in zip(fixed, (2.0 / 4.0, -2.0 / 4.0, 1.5 / 4.0)):
+            self.assertAlmostEqual(got, want)
+
+    def test_an_attributed_episode_carries_fixed_shares_that_match_the_planted_ones(self):
+        series = synthetic([100, 200])
+        result = attribution.attribute(series, 100, draws=20)
+        _, true_shares, _ = planted(series, 100)
+        self.assertEqual(set(result.fixed_shares), set(DRIVERS))
+        for name in DRIVERS:
+            self.assertAlmostEqual(result.fixed_shares[name], true_shares[name], places=6)
+
     def test_shares_and_residual_sum_to_one(self):
         series = synthetic([100, 200], noise=0.3)
         result = attribution.attribute(series, 100, draws=20)
@@ -188,6 +206,19 @@ class OutcomeRuleTests(unittest.TestCase):
 
 
 class PlaceboTests(unittest.TestCase):
+    def test_the_decided_count_is_twenty_windows_per_episode(self):
+        """H10 method v1, section 4 (Eleonora's ruling on #37): 20 placebo windows per episode, fixed seed."""
+        self.assertEqual(attribution.PLACEBO_WINDOWS, 20)
+        series = synthetic([130, 250])
+        series["treasury_settlement"] = [v + 5000.0 for v in series["treasury_settlement"]]  # all one day type
+        picks = attribution.placebo_starts(series, [130, 250])
+        gap = BASELINE_DAYS + WINDOW_DAYS
+        for onset, starts in picks.items():
+            self.assertEqual(len(starts), 20)
+            self.assertEqual(len(set(starts)), 20)
+            self.assertTrue(all(abs(t - o) >= gap for t in starts for o in (130, 250)))
+        self.assertEqual(picks, attribution.placebo_starts(series, [130, 250]))
+
     def test_placebo_windows_touch_no_episode_and_share_the_day_type(self):
         series = synthetic([100, 200])
         series["quarter_end"][200] = 1.0
