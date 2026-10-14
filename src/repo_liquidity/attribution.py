@@ -343,17 +343,47 @@ def attribute(
     series: Series,
     start: int,
     *,
+    rule=None,
+    dates: Optional[Sequence[date]] = None,
+    report_index: Optional[int] = None,
+    **settings,
+) -> Attribution:
+    """A real episode's attribution: the shares of the rise in the window starting at `start`.
+
+    `rule`, `dates` and `report_index` are required (Eleonora's ruling on PR #61, 14 October 2026, in force from H10
+    step 2): the window's spread and drivers must have been public at the decision instant of `report_index`
+    (`check_window_public`). A call without all three is refused. The synthetic series of the method's tests have no
+    dates and use `attribute_synthetic`.
+
+    The remaining settings (`drivers`, `draws`, `seed`, `block_length`, `level`, `last_start`) are those of
+    `attribute_synthetic`.
+
+    Raises:
+        LookAheadError: an input of the window was not public at the report instant.
+        ValueError: any of `rule`, `dates` and `report_index` is missing.
+    """
+    missing = [name for name, value in (("rule", rule), ("dates", dates), ("report_index", report_index)) if value is None]
+    if len(missing) > 0:
+        raise ValueError(f"a real-data attribution needs rule, dates and report_index; {', '.join(missing)} missing")
+    check_window_public(rule, dates, start, report_index)
+    return attribute_synthetic(series, start, **settings)
+
+
+def attribute_synthetic(
+    series: Series,
+    start: int,
+    *,
     drivers: Sequence[str] = DRIVERS,
     draws: int = DRAWS,
     seed: int = SEED,
     block_length: float = BLOCK_LENGTH,
     level: float = LEVEL,
     last_start: Optional[int] = None,
-    rule=None,
-    dates: Optional[Sequence[date]] = None,
-    report_index: Optional[int] = None,
 ) -> Attribution:
     """The shares of the rise in the window starting at `start`, fitted with that window's neighbourhood left out.
+
+    This entry point reads no as-of rule, so it is for the synthetic series of the method's tests, which carry no dates,
+    and for `attribute`, which checks the window first. A real episode goes through `attribute`.
 
     A window with a missing input, an incomplete window, a rise of no more than zero, or a singular fit is returned
     as "not attributable" with the reason; it is never dropped. `last_start` truncates the fitting sample (a
@@ -362,22 +392,9 @@ def attribute(
     The point shares come from the regression on the whole fitting sample. The interval is the percentile interval of
     the shares over `draws` stationary-bootstrap resamples of the fitting rows (the parent's
     `metrics.stationary_bootstrap_indices`), each refitted.
-
-    A real episode is attributed with `rule`, `dates` and `report_index` all given: the window's spread and drivers must
-    have been public at the report's decision instant (`check_window_public`). They are given together or not at all;
-    the synthetic series of the method's tests carry no dates and pass none.
-
-    Raises:
-        LookAheadError: an input of the window was not public at the report instant.
-        ValueError: only some of `rule`, `dates` and `report_index` are given.
     """
     from repo_model.metrics import stationary_bootstrap_indices
 
-    given = [name for name, value in (("rule", rule), ("dates", dates), ("report_index", report_index)) if value is not None]
-    if given and len(given) != 3:
-        raise ValueError(f"rule, dates and report_index are given together; only {', '.join(given)} was")
-    if rule is not None:
-        check_window_public(rule, dates, start, report_index)
     drivers = tuple(drivers)
     fit = _point_fit(series, start, drivers, last_start)
     if isinstance(fit, Attribution):
@@ -421,11 +438,11 @@ def attribute(
     )
 
 
-def explained_above_reserves(series: Series, start: int, **kwargs) -> Optional[float]:
+def explained_above_reserves(series: Series, start: int, drivers: Sequence[str] = DRIVERS, **kwargs) -> Optional[float]:
     """The benchmark: the drivers' explained share minus that of reserves alone, for one episode. None if either is
-    not attributable."""
-    full = attribute(series, start, drivers=DRIVERS, **kwargs)
-    alone = attribute(series, start, drivers=RESERVES_ONLY, **kwargs)
+    not attributable. Point shares only; the window's public check is `attribute`'s."""
+    full = point_attribution(series, start, drivers=drivers, **kwargs)
+    alone = point_attribution(series, start, drivers=RESERVES_ONLY, **kwargs)
     if full.status != "attributed" or alone.status != "attributed":
         return None
     return full.explained_share - alone.explained_share

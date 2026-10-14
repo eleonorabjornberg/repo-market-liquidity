@@ -45,6 +45,12 @@ RECORD_FILES = {
     "results/stage6/b_checkpoint.jsonl": "cacf4c21c3a98bca1e7694e2ef117658594c705387901fd38f47635027c60ecf",
 }
 
+#: Records made after L0, each with the test file that checks it (L0's docstring: "a record made after L0 carries its own
+#: check"). They are not byte-pinned to `RECORD_COMMIT`; their own tests recompute them against the parent's pin.
+OWN_CHECK = {
+    "results/h10/development.json": "tests/test_h10_step2.py",
+}
+
 
 def changed(root: Path) -> List[str]:
     """The record files under `root` whose bytes are not the recorded ones, or that are missing."""
