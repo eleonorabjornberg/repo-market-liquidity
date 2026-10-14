@@ -107,6 +107,12 @@ choosing among them is a data-meaning question (Nicholas's) and a decision about
    return per-filer submission times and the facsimile of a stated submission). Neither was tried: the web services need
    a login, and archive.org was refused by the environment's proxy (`CONNECT tunnel failed, response 403`).
 
+**Chosen** ([Eleonora's ruling, 13 October 2026](https://github.com/eleonorabjornberg/repo-market-liquidity/pull/44#issuecomment-6159865654),
+recorded in `docs/decisions/data-meaning.md` row 16 as amending 16(d)): **reading 2 now**, the latest-filed figures as a
+labelled input, available only from their latest-update time; and **reading 1 alongside it**, a scheduled archive of the
+CDR bulk files, queued as #46. The ruling does not address reading 3. Nicholas has stepped back; until she names someone, Eleonora
+rules on data meaning. The overlay, declaration, tests and snapshot under reading 2 wait for their own directive.
+
 ## 4. Not checked, or for Eleonora and Nicholas
 
 - **Not checked:** item definitions against the current FFIEC 031 instructions (his caveat); the FR Y-9C (holding
@@ -114,9 +120,9 @@ choosing among them is a data-meaning question (Nicholas's) and a decision about
   Federal Reserve's NIC, a different host); which of the nine subsidiaries were subject to the 6% enhanced ratio in each
   quarter; each subsidiary's 2020-21 election status (answer 16(e)); the posting lag between submission and public
   availability.
-- **For Nicholas:** is reading (2) acceptable as a labelled sensitivity, or must the input wait for archived first prints
+- **For Nicholas (answered by Eleonora's ruling above: reading 2 accepted as a labelled input):** is reading (2) acceptable as a labelled sensitivity, or must the input wait for archived first prints
   (reading 1)? Is there a source of Call Report first-filed vintages he knows of?
-- **For Eleonora:** a decision whether this repository starts a scheduled archive of the CDR bulk files (reading 1), which
+- **For Eleonora (answered by her ruling above: yes, as #46):** a decision whether this repository starts a scheduled archive of the CDR bulk files (reading 1), which
   adds a recurring fetch and a new snapshot series.
 
 ## Checksums
