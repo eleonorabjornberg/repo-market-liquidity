@@ -210,6 +210,8 @@ class H8ReleasesRecordTests(unittest.TestCase):
         self.assertIn("fetch_sha256", module.RELEASE_KEYS)
         self.assertIn("content_sha256", module.RELEASE_KEYS)
         self.assertNotIn("sha256", module.RELEASE_KEYS)
+        for release in self.record["releases"]:
+            self.assertEqual(set(release), set(module.RELEASE_KEYS), release["release_date"])
 
 
 class SnapshotTests(unittest.TestCase):
