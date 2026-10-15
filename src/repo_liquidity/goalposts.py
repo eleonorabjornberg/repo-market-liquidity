@@ -34,6 +34,9 @@ STABILITY_LIMIT = deployable.STABILITY_LIMIT
 WIDTH_LIMIT = deployable.WIDTH_LIMIT
 #: §5: the minimum meaningful effect, in AUROC points. The power study checks that it is detectable.
 MME = 0.05
+#: §9: the one-sided level of the upper bound a "killed" verdict is read at: the 95% bound, mirroring the lower bound
+#: (marked question Q4, decided by Eleonora on 15 Oct 2026).
+FUTILITY_LEVEL = 0.05
 #: §9: at least this many stress events must have been logged for a "supported" verdict.
 EVENT_FLOOR = 10
 #: §11: more than this share of missing days voids a registration.
@@ -233,12 +236,12 @@ def information_test(estimate: Sequence[Optional[float]], ratio: Sequence[float]
     return InformationTest(point.value, lower, upper, level, draws, point.events, point.strata, point.dropped)
 
 
-def verdict(test: InformationTest, *, look: int, goalposts_held: bool, futility_level: float, mme: float = MME,
-            floor: int = EVENT_FLOOR) -> str:
+def verdict(test: InformationTest, *, look: int, goalposts_held: bool, futility_level: float = FUTILITY_LEVEL,
+            mme: float = MME, floor: int = EVENT_FLOOR) -> str:
     """§9. Supported, killed, inconclusive, or (at the last look) not shown.
 
-    `futility_level` has no default: the protocol gives no level for the upper bound (marked question Q4 in
-    `docs/stages/h7-g6.md`). `test` must have been made with an upper bound unless the verdict is settled without one.
+    `futility_level` defaults to `FUTILITY_LEVEL`, the one-sided 95% upper bound (marked question Q4 in
+    `docs/stages/h7-g6.md`, decided by Eleonora on 15 Oct 2026). `test` must have been made with an upper bound unless the verdict is settled without one.
 
     Raises:
         ValueError: if a kill must be judged and the test has no upper bound.
