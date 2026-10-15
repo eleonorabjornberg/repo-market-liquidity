@@ -1,0 +1,2128 @@
+{
+  "directive": "eleonorabjornberg/repo-market-liquidity#77",
+  "episode_source": {
+    "cross_check": "held",
+    "cross_checked_with": "repo_model.pressure.onsets at +5 bp",
+    "onsets": "repo_model.onset.onset_flags"
+  },
+  "episodes": [
+    {
+      "beats_null": false,
+      "counted": false,
+      "explained_above_reserves": 0.09712473660389298,
+      "explained_share": 0.0969048309791118,
+      "fixed_shares": {
+        "on_rrp": 0.038403732797895,
+        "quarter_end": 0.0,
+        "reserve_balances": -0.00016129410519873436,
+        "tga": -0.0025990213820716425,
+        "treasury_settlement": 0.06126141366848718
+      },
+      "index": 41,
+      "on_rrp_at_onset": 21.475,
+      "onset": "2018-05-31",
+      "placebo": {
+        "attributed": 12,
+        "median_explained": 1.241441287882477,
+        "share_at_or_above": 0.75,
+        "windows": 20
+      },
+      "quarter_end": false,
+      "reason": null,
+      "regime": "depleted",
+      "report_day": "2018-06-14",
+      "residual": {
+        "high": 0.9736883797477317,
+        "low": 0.8083554791397417,
+        "point": 0.9030951690208882
+      },
+      "rise_bp": 6.400000000000006,
+      "shares": {
+        "on_rrp": {
+          "high": 0.13247303184069292,
+          "low": -0.024316618007058057,
+          "point": 0.04198900547851556
+        },
+        "quarter_end": {
+          "high": -0.002667574086660114,
+          "low": -0.027634750461116252,
+          "point": -0.0122722008565657
+        },
+        "reserve_balances": {
+          "high": 0.009076683203538674,
+          "low": -7.477985432069386e-05,
+          "point": 0.003286555309184805
+        },
+        "tga": {
+          "high": 0.0017958658293926798,
+          "low": -0.013359594285208491,
+          "point": -0.006083314992401698
+        },
+        "treasury_settlement": {
+          "high": 0.08796010148208133,
+          "low": 0.05292066539323098,
+          "point": 0.06998478604037883
+        }
+      },
+      "status": "attributed",
+      "under_bar": false,
+      "unusable_draws": 0
+    },
+    {
+      "beats_null": true,
+      "counted": false,
+      "explained_above_reserves": 0.24679507350049484,
+      "explained_share": 0.26990000468215547,
+      "fixed_shares": {
+        "on_rrp": 0.02486894092799235,
+        "quarter_end": 0.1518917411332163,
+        "reserve_balances": 0.017110903859461433,
+        "tga": -0.00058582368801017,
+        "treasury_settlement": 0.07661424244949556
+      },
+      "index": 62,
+      "on_rrp_at_onset": 96.97,
+      "onset": "2018-06-29",
+      "placebo": {
+        "attributed": 16,
+        "median_explained": 2.0763350300515184,
+        "share_at_or_above": 1.0,
+        "windows": 20
+      },
+      "quarter_end": true,
+      "reason": null,
+      "regime": "depleted",
+      "report_day": "2018-07-16",
+      "residual": {
+        "high": 0.8577794624110068,
+        "low": 0.5569593352837457,
+        "point": 0.7300999953178445
+      },
+      "rise_bp": 10.000000000000009,
+      "shares": {
+        "on_rrp": {
+          "high": 0.1099754279759856,
+          "low": -0.03583997110344065,
+          "point": 0.0248879849043953
+        },
+        "quarter_end": {
+          "high": 0.3218618665721902,
+          "low": 0.10714713283909692,
+          "point": 0.20434991545842132
+        },
+        "reserve_balances": {
+          "high": 0.031174275338586296,
+          "low": 0.007586761463526231,
+          "point": 0.016765238904560015
+        },
+        "tga": {
+          "high": 0.003942773127203339,
+          "low": -0.011818649037856677,
+          "point": -0.004444031236149539
+        },
+        "treasury_settlement": {
+          "high": 0.038928007341750476,
+          "low": 0.01742810717093131,
+          "point": 0.028340896650928406
+        }
+      },
+      "status": "attributed",
+      "under_bar": false,
+      "unusable_draws": 0
+    },
+    {
+      "beats_null": true,
+      "counted": false,
+      "explained_above_reserves": 0.1863811754259812,
+      "explained_share": 0.2574162484049152,
+      "fixed_shares": {
+        "on_rrp": 0.08970122454860378,
+        "quarter_end": 0.0,
+        "reserve_balances": 0.052088807582438994,
+        "tga": 0.010365774705532883,
+        "treasury_settlement": 0.10526044156833955
+      },
+      "index": 157,
+      "on_rrp_at_onset": 0.494,
+      "onset": "2018-11-15",
+      "placebo": {
+        "attributed": 16,
+        "median_explained": 0.7344142437489873,
+        "share_at_or_above": 0.6875,
+        "windows": 20
+      },
+      "quarter_end": false,
+      "reason": null,
+      "regime": "depleted",
+      "report_day": "2018-11-30",
+      "residual": {
+        "high": 0.8882714403813158,
+        "low": 0.535768709658523,
+        "point": 0.7425837515950847
+      },
+      "rise_bp": 3.39999999999999,
+      "shares": {
+        "on_rrp": {
+          "high": 0.3027114132446457,
+          "low": -0.04391784798899457,
+          "point": 0.09805345452353179
+        },
+        "quarter_end": {
+          "high": -0.0076810264663276055,
+          "low": -0.06585396603911046,
+          "point": -0.029847768561704888
+        },
+        "reserve_balances": {
+          "high": 0.08855653737055169,
+          "low": 0.026923389913690848,
+          "point": 0.054541821435501354
+        },
+        "tga": {
+          "high": 0.03028801244121598,
+          "low": 0.003874885606560499,
+          "point": 0.015521151973839754
+        },
+        "treasury_settlement": {
+          "high": 0.15093568042720087,
+          "low": 0.08857766738901102,
+          "point": 0.1191475890337472
+        }
+      },
+      "status": "attributed",
+      "under_bar": false,
+      "unusable_draws": 0
+    },
+    {
+      "beats_null": false,
+      "counted": false,
+      "explained_above_reserves": -0.004096922347425232,
+      "explained_share": 0.00924592345166055,
+      "fixed_shares": {
+        "on_rrp": -0.000470857846087548,
+        "quarter_end": 0.0,
+        "reserve_balances": 0.009773672774064646,
+        "tga": 0.001632010815126574,
+        "treasury_settlement": -0.0016889022914431213
+      },
+      "index": 167,
+      "on_rrp_at_onset": 2.49,
+      "onset": "2018-11-30",
+      "placebo": {
+        "attributed": 7,
+        "median_explained": 0.5328049559730835,
+        "share_at_or_above": 0.7142857142857143,
+        "windows": 20
+      },
+      "quarter_end": false,
+      "reason": null,
+      "regime": "depleted",
+      "report_day": "2018-12-17",
+      "residual": {
+        "high": 0.9966947633233514,
+        "low": 0.9841782229164359,
+        "point": 0.9907540765483395
+      },
+      "rise_bp": 7.399999999999984,
+      "shares": {
+        "on_rrp": {
+          "high": 0.00021937841708311918,
+          "low": -0.0015781303701282391,
+          "point": -0.00048378756870581015
+        },
+        "quarter_end": {
+          "high": -0.0002152889060596093,
+          "low": -0.0017863752768022582,
+          "point": -0.0008517316743770521
+        },
+        "reserve_balances": {
+          "high": 0.01564488733712432,
+          "low": 0.004909956495588781,
+          "point": 0.009945953655360192
+        },
+        "tga": {
+          "high": 0.004745945284831528,
+          "low": 0.000627845266963647,
+          "point": 0.0025597846864227865
+        },
+        "treasury_settlement": {
+          "high": -0.0012174004234335506,
+          "low": -0.0028635279641334712,
+          "point": -0.0019242956470395672
+        }
+      },
+      "status": "attributed",
+      "under_bar": false,
+      "unusable_draws": 0
+    },
+    {
+      "beats_null": false,
+      "counted": false,
+      "explained_above_reserves": 0.09256584856861994,
+      "explained_share": 0.1215198082056246,
+      "fixed_shares": {
+        "on_rrp": 0.01741110163575811,
+        "quarter_end": 0.0,
+        "reserve_balances": 0.021328536864627014,
+        "tga": 0.0034727545280567097,
+        "treasury_settlement": 0.07930741517718276
+      },
+      "index": 177,
+      "on_rrp_at_onset": 0.415,
+      "onset": "2018-12-17",
+      "placebo": {
+        "attributed": 12,
+        "median_explained": 0.5743672547914018,
+        "share_at_or_above": 0.6666666666666666,
+        "windows": 20
+      },
+      "quarter_end": false,
+      "reason": null,
+      "regime": "depleted",
+      "report_day": "2019-01-02",
+      "residual": {
+        "high": 0.9239171916594031,
+        "low": 0.8189100288388343,
+        "point": 0.8784801917943754
+      },
+      "rise_bp": 6.2,
+      "shares": {
+        "on_rrp": {
+          "high": 0.06359851478177926,
+          "low": -0.015020772413898856,
+          "point": 0.018782088600107445
+        },
+        "quarter_end": {
+          "high": -0.003947633304762289,
+          "low": -0.02189489241480327,
+          "point": -0.011815671001307563
+        },
+        "reserve_balances": {
+          "high": 0.03784247809916823,
+          "low": 0.010605540021238893,
+          "point": 0.02287024199563094
+        },
+        "tga": {
+          "high": 0.007954500233820355,
+          "low": 0.001539784311845387,
+          "point": 0.004192924161550418
+        },
+        "treasury_settlement": {
+          "high": 0.10996803586598648,
+          "low": 0.06744186066973708,
+          "point": 0.08749022444964338
+        }
+      },
+      "status": "attributed",
+      "under_bar": false,
+      "unusable_draws": 0
+    },
+    {
+      "beats_null": false,
+      "counted": false,
+      "explained_above_reserves": 0.05125706426448975,
+      "explained_share": 0.062125398650610335,
+      "fixed_shares": {
+        "on_rrp": 0.0030339770758457374,
+        "quarter_end": 0.03142570400717873,
+        "reserve_balances": 0.008257753607965606,
+        "tga": 0.0012718011760979688,
+        "treasury_settlement": 0.018136162783522283
+      },
+      "index": 185,
+      "on_rrp_at_onset": 3.21,
+      "onset": "2018-12-28",
+      "placebo": {
+        "attributed": 12,
+        "median_explained": 0.2599075090370914,
+        "share_at_or_above": 0.5833333333333334,
+        "windows": 20
+      },
+      "quarter_end": false,
+      "reason": null,
+      "regime": "depleted",
+      "report_day": "2019-01-14",
+      "residual": {
+        "high": 0.9610049483262825,
+        "low": 0.9137038492601237,
+        "point": 0.9378746013493897
+      },
+      "rise_bp": 33.2,
+      "shares": {
+        "on_rrp": {
+          "high": 0.01360319863888597,
+          "low": -0.006294811620111666,
+          "point": 0.003050781540865014
+        },
+        "quarter_end": {
+          "high": 0.06895575117631962,
+          "low": 0.02690702654607864,
+          "point": 0.04792126239150508
+        },
+        "reserve_balances": {
+          "high": 0.01228198668092096,
+          "low": 0.0033880596849903497,
+          "point": 0.007270382510232728
+        },
+        "tga": {
+          "high": 0.002429277559494612,
+          "low": 0.0004637157652698154,
+          "point": 0.0012386596083440327
+        },
+        "treasury_settlement": {
+          "high": 0.004513382762553346,
+          "low": 0.0004976443990247426,
+          "point": 0.002644312599663488
+        }
+      },
+      "status": "attributed",
+      "under_bar": false,
+      "unusable_draws": 0
+    },
+    {
+      "beats_null": true,
+      "counted": false,
+      "explained_above_reserves": 2.502920887315721,
+      "explained_share": 2.1516479048779567,
+      "fixed_shares": {
+        "on_rrp": 0.16249142493558563,
+        "quarter_end": 0.0,
+        "reserve_balances": -0.26411675890858094,
+        "tga": -0.052288027064551004,
+        "treasury_settlement": 2.305561265915503
+      },
+      "index": 196,
+      "on_rrp_at_onset": 2.016,
+      "onset": "2019-01-15",
+      "placebo": {
+        "attributed": 12,
+        "median_explained": 0.7683305473770308,
+        "share_at_or_above": 0.25,
+        "windows": 20
+      },
+      "quarter_end": false,
+      "reason": null,
+      "regime": "depleted",
+      "report_day": "2019-01-30",
+      "residual": {
+        "high": -0.36414300292005297,
+        "low": -2.115518172666522,
+        "point": -1.1516479048779567
+      },
+      "rise_bp": 0.40000000000000036,
+      "shares": {
+        "on_rrp": {
+          "high": 0.6222958110350779,
+          "low": -0.14582223344964854,
+          "point": 0.17651975733337147
+        },
+        "quarter_end": {
+          "high": -0.07511624202403606,
+          "low": -0.4027802135227896,
+          "point": -0.23142597972933834
+        },
+        "reserve_balances": {
+          "high": -0.12420948289987975,
+          "low": -0.379134435124345,
+          "point": -0.24660393131155312
+        },
+        "tga": {
+          "high": -0.010538749056577264,
+          "low": -0.18472227718876652,
+          "point": -0.0942212743630321
+        },
+        "treasury_settlement": {
+          "high": 3.1998903764131614,
+          "low": 1.9688046189083226,
+          "point": 2.547379332948509
+        }
+      },
+      "status": "attributed",
+      "under_bar": false,
+      "unusable_draws": 0
+    },
+    {
+      "beats_null": false,
+      "counted": false,
+      "explained_above_reserves": 0.21843675030571916,
+      "explained_share": 0.2136474880691577,
+      "fixed_shares": {
+        "on_rrp": -0.01174618391312505,
+        "quarter_end": 0.0,
+        "reserve_balances": -0.0035257407914251184,
+        "tga": 0.0003555739308435813,
+        "treasury_settlement": 0.2285638388428643
+      },
+      "index": 207,
+      "on_rrp_at_onset": 1.051,
+      "onset": "2019-01-31",
+      "placebo": {
+        "attributed": 9,
+        "median_explained": 0.09786303447865208,
+        "share_at_or_above": 0.4444444444444444,
+        "windows": 20
+      },
+      "quarter_end": false,
+      "reason": null,
+      "regime": "depleted",
+      "report_day": "2019-02-14",
+      "residual": {
+        "high": 0.8416791457300818,
+        "low": 0.7255575001217369,
+        "point": 0.7863525119308423
+      },
+      "rise_bp": 4.799999999999995,
+      "shares": {
+        "on_rrp": {
+          "high": 0.005241396079280977,
+          "low": -0.038669077907343904,
+          "point": -0.012612755522812581
+        },
+        "quarter_end": {
+          "high": -0.009876346877201797,
+          "low": -0.047377651788780575,
+          "point": -0.02746103557682631
+        },
+        "reserve_balances": {
+          "high": -0.001032613474885654,
+          "low": -0.008802143392397566,
+          "point": -0.004362027518409053
+        },
+        "tga": {
+          "high": 0.0031431693502631886,
+          "low": -0.0009107080881966234,
+          "point": 0.0009543400512589656
+        },
+        "treasury_settlement": {
+          "high": 0.32392045171222406,
+          "low": 0.19784329197585993,
+          "point": 0.2571289666359467
+        }
+      },
+      "status": "attributed",
+      "under_bar": false,
+      "unusable_draws": 0
+    },
+    {
+      "beats_null": false,
+      "counted": false,
+      "explained_above_reserves": 0.27620716738258944,
+      "explained_share": 0.22326142464200766,
+      "fixed_shares": {
+        "on_rrp": 0.00012030915129172343,
+        "quarter_end": 0.0,
+        "reserve_balances": -0.0388209786115191,
+        "tga": -0.024582669892471057,
+        "treasury_settlement": 0.2865447639947061
+      },
+      "index": 226,
+      "on_rrp_at_onset": 3.415,
+      "onset": "2019-02-28",
+      "placebo": {
+        "attributed": 11,
+        "median_explained": 0.6085618798948934,
+        "share_at_or_above": 0.8181818181818182,
+        "windows": 20
+      },
+      "quarter_end": false,
+      "reason": null,
+      "regime": "depleted",
+      "report_day": "2019-03-14",
+      "residual": {
+        "high": 0.8675143177019867,
+        "low": 0.6685172895971755,
+        "point": 0.7767385753579924
+      },
+      "rise_bp": 3.5999999999999943,
+      "shares": {
+        "on_rrp": {
+          "high": 0.005347321336324652,
+          "low": -0.0028432914805017412,
+          "point": 0.0009119145452042084
+        },
+        "quarter_end": {
+          "high": -0.008904446048096664,
+          "low": -0.05044946451209319,
+          "point": -0.028451581940581734
+        },
+        "reserve_balances": {
+          "high": -0.01277311235727668,
+          "low": -0.038889464246726346,
+          "point": -0.025000911969607246
+        },
+        "tga": {
+          "high": 0.005201422033619856,
+          "low": -0.09544098549235026,
+          "point": -0.04713792885810274
+        },
+        "treasury_settlement": {
+          "high": 0.4056456221234895,
+          "low": 0.25068712616943833,
+          "point": 0.3229399328650951
+        }
+      },
+      "status": "attributed",
+      "under_bar": false,
+      "unusable_draws": 0
+    },
+    {
+      "beats_null": false,
+      "counted": false,
+      "explained_above_reserves": 0.11952644726044055,
+      "explained_share": 0.19613530706297128,
+      "fixed_shares": {
+        "on_rrp": 0.0076271191576402966,
+        "quarter_end": 0.0,
+        "reserve_balances": 0.056576638209173566,
+        "tga": 0.020667631913931322,
+        "treasury_settlement": 0.1112639177822261
+      },
+      "index": 237,
+      "on_rrp_at_onset": 0.015,
+      "onset": "2019-03-15",
+      "placebo": {
+        "attributed": 9,
+        "median_explained": 0.08590975170170388,
+        "share_at_or_above": 0.4444444444444444,
+        "windows": 20
+      },
+      "quarter_end": false,
+      "reason": null,
+      "regime": "depleted",
+      "report_day": "2019-03-29",
+      "residual": {
+        "high": 0.8601934314653219,
+        "low": 0.7372257614255332,
+        "point": 0.8038646929370288
+      },
+      "rise_bp": 4.400000000000004,
+      "shares": {
+        "on_rrp": {
+          "high": 0.025070786282592145,
+          "low": -0.0034500471086337256,
+          "point": 0.008141080729663725
+        },
+        "quarter_end": {
+          "high": -0.008358995208415642,
+          "low": -0.04079235510522837,
+          "point": -0.022500521003333343
+        },
+        "reserve_balances": {
+          "high": 0.07625013907997871,
+          "low": 0.024990888202488033,
+          "point": 0.04871796171392732
+        },
+        "tga": {
+          "high": 0.07378455578662148,
+          "low": -0.0013902532045247972,
+          "point": 0.0377241423140021
+        },
+        "treasury_settlement": {
+          "high": 0.15675932464827885,
+          "low": 0.09599099728174822,
+          "point": 0.12405264330871146
+        }
+      },
+      "status": "attributed",
+      "under_bar": false,
+      "unusable_draws": 0
+    },
+    {
+      "beats_null": true,
+      "counted": false,
+      "explained_above_reserves": 0.23641049754036172,
+      "explained_share": 0.24831503983790643,
+      "fixed_shares": {
+        "on_rrp": -0.0027135498952666967,
+        "quarter_end": 0.17203289621905127,
+        "reserve_balances": 0.008727026471977064,
+        "tga": 0.0010654134770600192,
+        "treasury_settlement": 0.06920325356508475
+      },
+      "index": 247,
+      "on_rrp_at_onset": 0.731,
+      "onset": "2019-03-29",
+      "placebo": {
+        "attributed": 17,
+        "median_explained": 2.0337103663698572,
+        "share_at_or_above": 1.0,
+        "windows": 20
+      },
+      "quarter_end": true,
+      "reason": null,
+      "regime": "depleted",
+      "report_day": "2019-04-12",
+      "residual": {
+        "high": 0.8664034550457163,
+        "low": 0.6224902191553946,
+        "point": 0.7516849601620935
+      },
+      "rise_bp": 9.400000000000006,
+      "shares": {
+        "on_rrp": {
+          "high": 0.0015385026835456075,
+          "low": -0.018450992210054865,
+          "point": -0.004796053259157674
+        },
+        "quarter_end": {
+          "high": 0.3591323894859513,
+          "low": 0.12168778455759933,
+          "point": 0.2327919416449664
+        },
+        "reserve_balances": {
+          "high": 0.009866246908402718,
+          "low": 0.001240979338436767,
+          "point": 0.004126461368249754
+        },
+        "tga": {
+          "high": 0.0019120621235288954,
+          "low": -0.0020914495459966463,
+          "point": -0.000114338601699012
+        },
+        "treasury_settlement": {
+          "high": 0.024717103877552382,
+          "low": 0.008612861104944993,
+          "point": 0.016307028685546954
+        }
+      },
+      "status": "attributed",
+      "under_bar": false,
+      "unusable_draws": 0
+    },
+    {
+      "beats_null": false,
+      "counted": false,
+      "explained_above_reserves": 0.1232101777635658,
+      "explained_share": 0.07590637291400877,
+      "fixed_shares": {
+        "on_rrp": -0.022857534779510327,
+        "quarter_end": 0.0,
+        "reserve_balances": -0.03467036216475136,
+        "tga": -0.0242851668751128,
+        "treasury_settlement": 0.15771943673338326
+      },
+      "index": 287,
+      "on_rrp_at_onset": 1.52,
+      "onset": "2019-05-28",
+      "placebo": {
+        "attributed": 12,
+        "median_explained": 0.37290475627039865,
+        "share_at_or_above": 0.6666666666666666,
+        "windows": 20
+      },
+      "quarter_end": false,
+      "reason": null,
+      "regime": "depleted",
+      "report_day": "2019-06-11",
+      "residual": {
+        "high": 0.9946159609547187,
+        "low": 0.8480550561950106,
+        "point": 0.9240936270859912
+      },
+      "rise_bp": 4.399999999999995,
+      "shares": {
+        "on_rrp": {
+          "high": 0.010161643379256161,
+          "low": -0.07313777635802672,
+          "point": -0.02403323012136643
+        },
+        "quarter_end": {
+          "high": -0.0003588959436673746,
+          "low": -0.021089616057626437,
+          "point": -0.010177492392147429
+        },
+        "reserve_balances": {
+          "high": -0.010237955157939172,
+          "low": -0.03381428078689506,
+          "point": -0.021115096187312783
+        },
+        "tga": {
+          "high": 0.0053986614639453985,
+          "low": -0.09349122455997934,
+          "point": -0.046830712528243564
+        },
+        "treasury_settlement": {
+          "high": 0.22522616280833976,
+          "low": 0.13626947903678668,
+          "point": 0.17806290414307896
+        }
+      },
+      "status": "attributed",
+      "under_bar": false,
+      "unusable_draws": 0
+    },
+    {
+      "beats_null": true,
+      "counted": true,
+      "explained_above_reserves": 1.0818700084241584,
+      "explained_share": 1.0118547854367628,
+      "fixed_shares": {
+        "on_rrp": 0.42219125146075576,
+        "quarter_end": 0.0,
+        "reserve_balances": -0.05193540562083032,
+        "tga": -0.018163414867163358,
+        "treasury_settlement": 0.6597623544640008
+      },
+      "index": 301,
+      "on_rrp_at_onset": 2.269,
+      "onset": "2019-06-17",
+      "placebo": {
+        "attributed": 11,
+        "median_explained": -0.0447355771394871,
+        "share_at_or_above": 0.45454545454545453,
+        "windows": 20
+      },
+      "quarter_end": false,
+      "reason": null,
+      "regime": "depleted",
+      "report_day": "2019-07-01",
+      "residual": {
+        "high": 0.7073709288448515,
+        "low": -0.9670808410494315,
+        "point": -0.011854785436762813
+      },
+      "rise_bp": 0.9999999999999964,
+      "shares": {
+        "on_rrp": {
+          "high": 1.3752488141380126,
+          "low": -0.20806692007515387,
+          "point": 0.45429903987170017
+        },
+        "quarter_end": {
+          "high": -0.020720803664683658,
+          "low": -0.2665525569083896,
+          "point": -0.11567339159425111
+        },
+        "reserve_balances": {
+          "high": 0.0021439821550486428,
+          "low": -0.06699134993773606,
+          "point": -0.03173126449519599
+        },
+        "tga": {
+          "high": 0.005919317484861867,
+          "low": -0.09162167287468179,
+          "point": -0.04055613917639308
+        },
+        "treasury_settlement": {
+          "high": 0.9363267340954831,
+          "low": 0.5697311007640351,
+          "point": 0.7455165408309028
+        }
+      },
+      "status": "attributed",
+      "under_bar": true,
+      "unusable_draws": 0
+    },
+    {
+      "beats_null": true,
+      "counted": false,
+      "explained_above_reserves": 0.3800963591420209,
+      "explained_share": 0.4511110874898786,
+      "fixed_shares": {
+        "on_rrp": -0.00788720744482782,
+        "quarter_end": 0.2698486689492837,
+        "reserve_balances": 0.05155967114693833,
+        "tga": 0.01589558800522134,
+        "treasury_settlement": 0.121694366833263
+      },
+      "index": 307,
+      "on_rrp_at_onset": 6.4,
+      "onset": "2019-06-25",
+      "placebo": {
+        "attributed": 7,
+        "median_explained": 1.1547481136057913,
+        "share_at_or_above": 0.5714285714285714,
+        "windows": 20
+      },
+      "quarter_end": false,
+      "reason": null,
+      "regime": "depleted",
+      "report_day": "2019-07-10",
+      "residual": {
+        "high": 0.7305829912648214,
+        "low": 0.3425367927711276,
+        "point": 0.5488889125101214
+      },
+      "rise_bp": 6.200000000000001,
+      "shares": {
+        "on_rrp": {
+          "high": 0.0036952340903717955,
+          "low": -0.03946820159073712,
+          "point": -0.011077565559869003
+        },
+        "quarter_end": {
+          "high": 0.5435788132043877,
+          "low": 0.19025169939293246,
+          "point": 0.3532377646293904
+        },
+        "reserve_balances": {
+          "high": 0.06552214584150988,
+          "low": 0.02047827312799663,
+          "point": 0.04009848156519058
+        },
+        "tga": {
+          "high": 0.05112065474090082,
+          "low": 0.0004098460064342914,
+          "point": 0.025767489877308657
+        },
+        "treasury_settlement": {
+          "high": 0.058455671033589084,
+          "low": 0.029561035278442765,
+          "point": 0.04308491697785798
+        }
+      },
+      "status": "attributed",
+      "under_bar": false,
+      "unusable_draws": 0
+    },
+    {
+      "beats_null": true,
+      "counted": false,
+      "explained_above_reserves": 0.26390191330119783,
+      "explained_share": 0.2406436031653188,
+      "fixed_shares": {
+        "on_rrp": 0.025852333734382196,
+        "quarter_end": 0.0,
+        "reserve_balances": -0.017163112267632483,
+        "tga": -0.00490966825299227,
+        "treasury_settlement": 0.23686404995156138
+      },
+      "index": 341,
+      "on_rrp_at_onset": 5.001,
+      "onset": "2019-08-13",
+      "placebo": {
+        "attributed": 14,
+        "median_explained": 0.27720388918537675,
+        "share_at_or_above": 0.5,
+        "windows": 20
+      },
+      "quarter_end": false,
+      "reason": null,
+      "regime": "depleted",
+      "report_day": "2019-08-27",
+      "residual": {
+        "high": 0.8431977319758975,
+        "low": 0.6544546335323514,
+        "point": 0.7593563968346811
+      },
+      "rise_bp": 3.600000000000003,
+      "shares": {
+        "on_rrp": {
+          "high": 0.08582416699967686,
+          "low": -0.012715174039491314,
+          "point": 0.02821320299295164
+        },
+        "quarter_end": {
+          "high": -0.010601048458257975,
+          "low": -0.05580448468715149,
+          "point": -0.03086740302578381
+        },
+        "reserve_balances": {
+          "high": -0.007602142151583445,
+          "low": -0.02238669687233772,
+          "point": -0.01447431903811243
+        },
+        "tga": {
+          "high": 0.00027752262843851714,
+          "low": -0.019406067926333412,
+          "point": -0.009745349418725265
+        },
+        "treasury_settlement": {
+          "high": 0.3357234021009577,
+          "low": 0.20678069451426062,
+          "point": 0.2675174716549886
+        }
+      },
+      "status": "attributed",
+      "under_bar": false,
+      "unusable_draws": 0
+    },
+    {
+      "beats_null": false,
+      "counted": false,
+      "explained_above_reserves": 0.12767737625118591,
+      "explained_share": 0.1485084310885741,
+      "fixed_shares": {
+        "on_rrp": -0.0010184279429988011,
+        "quarter_end": 0.0,
+        "reserve_balances": 0.015912478354962314,
+        "tga": 0.0022477832150820456,
+        "treasury_settlement": 0.1313665974615285
+      },
+      "index": 354,
+      "on_rrp_at_onset": 12.089,
+      "onset": "2019-08-30",
+      "placebo": {
+        "attributed": 7,
+        "median_explained": 1.4751767047685795,
+        "share_at_or_above": 0.8571428571428571,
+        "windows": 20
+      },
+      "quarter_end": false,
+      "reason": null,
+      "regime": "depleted",
+      "report_day": "2019-09-16",
+      "residual": {
+        "high": 0.8837376160193215,
+        "low": 0.8166109129171977,
+        "point": 0.851491568911426
+      },
+      "rise_bp": 6.199999999999991,
+      "shares": {
+        "on_rrp": {
+          "high": 0.0005409090947225998,
+          "low": -0.004122726522184043,
+          "point": -0.001043431578194771
+        },
+        "quarter_end": {
+          "high": -0.008447624691620307,
+          "low": -0.034944552300673275,
+          "point": -0.0205472799152833
+        },
+        "reserve_balances": {
+          "high": 0.02292913528205033,
+          "low": 0.006739811398695348,
+          "point": 0.014035136173325505
+        },
+        "tga": {
+          "high": 0.015109592787896501,
+          "low": -0.0033470170254435187,
+          "point": 0.006801514037267841
+        },
+        "treasury_settlement": {
+          "high": 0.18570015634070855,
+          "low": 0.11671846411836663,
+          "point": 0.14926249237145878
+        }
+      },
+      "status": "attributed",
+      "under_bar": false,
+      "unusable_draws": 0
+    },
+    {
+      "beats_null": false,
+      "counted": false,
+      "explained_above_reserves": 0.045431742990138205,
+      "explained_share": 0.050278034426690654,
+      "fixed_shares": {
+        "on_rrp": 0.013720689690226677,
+        "quarter_end": 0.0,
+        "reserve_balances": 0.003426596335763698,
+        "tga": -0.000525422550287164,
+        "treasury_settlement": 0.033656170950987434
+      },
+      "index": 384,
+      "on_rrp_at_onset": 1.726,
+      "onset": "2019-10-15",
+      "placebo": {
+        "attributed": 5,
+        "median_explained": 0.07303512105759748,
+        "share_at_or_above": 0.6,
+        "windows": 20
+      },
+      "quarter_end": false,
+      "reason": null,
+      "regime": "depleted",
+      "report_day": "2019-10-29",
+      "residual": {
+        "high": 0.9753696602415892,
+        "low": 0.9158962914735115,
+        "point": 0.9497219655733093
+      },
+      "rise_bp": 10.199999999999985,
+      "shares": {
+        "on_rrp": {
+          "high": 0.04513459653565329,
+          "low": -0.007209014496052781,
+          "point": 0.014990219419323627
+        },
+        "quarter_end": {
+          "high": -0.0013082398673906744,
+          "low": -0.011656791261868294,
+          "point": -0.0055093640177392746
+        },
+        "reserve_balances": {
+          "high": 0.00840176171455689,
+          "low": 0.0020578229556605853,
+          "point": 0.004764096357466061
+        },
+        "tga": {
+          "high": 0.0004196311724023692,
+          "low": -0.0037101484342548043,
+          "point": -0.0016256229783729655
+        },
+        "treasury_settlement": {
+          "high": 0.047111320830137214,
+          "low": 0.029119344541265458,
+          "point": 0.037658705646013216
+        }
+      },
+      "status": "attributed",
+      "under_bar": false,
+      "unusable_draws": 0
+    },
+    {
+      "beats_null": true,
+      "counted": false,
+      "explained_above_reserves": 0.5716800385279768,
+      "explained_share": 0.47608918911078607,
+      "fixed_shares": {
+        "on_rrp": -0.06484828501131698,
+        "quarter_end": 0.0,
+        "reserve_balances": -0.06981178713970608,
+        "tga": -0.01332011476521809,
+        "treasury_settlement": 0.6240693760270272
+      },
+      "index": 415,
+      "on_rrp_at_onset": 0.75,
+      "onset": "2019-11-29",
+      "placebo": {
+        "attributed": 7,
+        "median_explained": 0.5951458117383724,
+        "share_at_or_above": 0.7142857142857143,
+        "windows": 20
+      },
+      "quarter_end": false,
+      "reason": null,
+      "regime": "depleted",
+      "report_day": "2019-12-13",
+      "residual": {
+        "high": 0.687571329093526,
+        "low": 0.3667739437665648,
+        "point": 0.523910810889214
+      },
+      "rise_bp": 2.199999999999993,
+      "shares": {
+        "on_rrp": {
+          "high": 0.03354498321075202,
+          "low": -0.21890494764520688,
+          "point": -0.07048219266179008
+        },
+        "quarter_end": {
+          "high": -0.020338434802641803,
+          "low": -0.10844679221216329,
+          "point": -0.06214434895952734
+        },
+        "reserve_balances": {
+          "high": -0.03565763985884128,
+          "low": -0.11534933821863973,
+          "point": -0.07130408433438055
+        },
+        "tga": {
+          "high": -0.0055228616189841265,
+          "low": -0.040217405393913545,
+          "point": -0.02069334048008946
+        },
+        "treasury_settlement": {
+          "high": 0.8854193378526785,
+          "low": 0.5376746823052373,
+          "point": 0.7007131555465735
+        }
+      },
+      "status": "attributed",
+      "under_bar": false,
+      "unusable_draws": 0
+    },
+    {
+      "beats_null": true,
+      "counted": true,
+      "explained_above_reserves": 1.2551175871363873,
+      "explained_share": 0.7083977090956776,
+      "fixed_shares": {
+        "on_rrp": 0.31070462614571914,
+        "quarter_end": 0.0,
+        "reserve_balances": -0.3974586330111,
+        "tga": -0.01953354029346576,
+        "treasury_settlement": 0.8146852562545241
+      },
+      "index": 426,
+      "on_rrp_at_onset": 1.328,
+      "onset": "2019-12-16",
+      "placebo": {
+        "attributed": 6,
+        "median_explained": 1.232498118106648,
+        "share_at_or_above": 1.0,
+        "windows": 20
+      },
+      "quarter_end": false,
+      "reason": null,
+      "regime": "depleted",
+      "report_day": "2019-12-31",
+      "residual": {
+        "high": 0.9367813260239986,
+        "low": -0.4732343179643209,
+        "point": 0.2916022909043225
+      },
+      "rise_bp": 0.6000000000000005,
+      "shares": {
+        "on_rrp": {
+          "high": 0.9993653112259813,
+          "low": -0.1389701964001936,
+          "point": 0.331347701181165
+        },
+        "quarter_end": {
+          "high": -0.016842778943935852,
+          "low": -0.2194233212381705,
+          "point": -0.09609993546891742
+        },
+        "reserve_balances": {
+          "high": -0.2112233497048698,
+          "low": -0.6990308794288359,
+          "point": -0.435517612246802
+        },
+        "tga": {
+          "high": 0.03441744385852407,
+          "low": -0.05909875800132718,
+          "point": -0.009818294880243423
+        },
+        "treasury_settlement": {
+          "high": 1.153367661450285,
+          "low": 0.7113508814630973,
+          "point": 0.9184858505104753
+        }
+      },
+      "status": "attributed",
+      "under_bar": true,
+      "unusable_draws": 0
+    },
+    {
+      "beats_null": false,
+      "counted": false,
+      "explained_above_reserves": -0.3153373596367126,
+      "explained_share": -0.5163851055450844,
+      "fixed_shares": {
+        "on_rrp": 0.005363773100157779,
+        "quarter_end": 0.0,
+        "reserve_balances": -0.15038666343650245,
+        "tga": -0.04778788324633683,
+        "treasury_settlement": -0.323574331962403
+      },
+      "index": 479,
+      "on_rrp_at_onset": 5.025,
+      "onset": "2020-03-04",
+      "placebo": {
+        "attributed": 11,
+        "median_explained": 0.06955158795385089,
+        "share_at_or_above": 0.6363636363636364,
+        "windows": 20
+      },
+      "quarter_end": false,
+      "reason": null,
+      "regime": "depleted",
+      "report_day": "2020-03-18",
+      "residual": {
+        "high": 1.6764025266085543,
+        "low": 1.3774780362138137,
+        "point": 1.5163851055450843
+      },
+      "rise_bp": 3.2000000000000024,
+      "shares": {
+        "on_rrp": {
+          "high": 0.021054917162569253,
+          "low": -0.0028987414640131684,
+          "point": 0.005979038719227602
+        },
+        "quarter_end": {
+          "high": 0.10282576667135436,
+          "low": 0.022798567225057607,
+          "point": 0.05967027970967838
+        },
+        "reserve_balances": {
+          "high": -0.06756741251094517,
+          "low": -0.20758878083927493,
+          "point": -0.13063276354303363
+        },
+        "tga": {
+          "high": -0.001965806098174001,
+          "low": -0.17466152394362655,
+          "point": -0.08971197615093245
+        },
+        "treasury_settlement": {
+          "high": -0.2784822814488974,
+          "low": -0.4555877407366639,
+          "point": -0.36168968428002435
+        }
+      },
+      "status": "attributed",
+      "under_bar": false,
+      "unusable_draws": 0
+    },
+    {
+      "beats_null": false,
+      "counted": false,
+      "explained_above_reserves": 0.07162379473525378,
+      "explained_share": 0.03468916714972534,
+      "fixed_shares": {
+        "on_rrp": 0.021505282804971944,
+        "quarter_end": 0.0,
+        "reserve_balances": -0.02038199912618676,
+        "tga": 0.000387741549906563,
+        "treasury_settlement": 0.0331781419210336
+      },
+      "index": 485,
+      "on_rrp_at_onset": 21.05,
+      "onset": "2020-03-12",
+      "placebo": {
+        "attributed": 5,
+        "median_explained": 0.987889239196769,
+        "share_at_or_above": 1.0,
+        "windows": 20
+      },
+      "quarter_end": false,
+      "reason": null,
+      "regime": "depleted",
+      "report_day": "2020-03-26",
+      "residual": {
+        "high": 0.993031270367576,
+        "low": 0.932344972767493,
+        "point": 0.9653108328502746
+      },
+      "rise_bp": 12.600000000000003,
+      "shares": {
+        "on_rrp": {
+          "high": 0.055264743696008665,
+          "low": 0.002349354759115843,
+          "point": 0.023018335146521317
+        },
+        "quarter_end": {
+          "high": 0.0006627963275469909,
+          "low": -0.007945276370308828,
+          "point": -0.0026587729406763088
+        },
+        "reserve_balances": {
+          "high": -0.0143334583970964,
+          "low": -0.04571322545252309,
+          "point": -0.027604113426541413
+        },
+        "tga": {
+          "high": 0.010772366906723743,
+          "low": -0.00315685899311568,
+          "point": 0.004582411960961423
+        },
+        "treasury_settlement": {
+          "high": 0.04723578742658969,
+          "low": 0.02869888815430374,
+          "point": 0.03735130640946032
+        }
+      },
+      "status": "attributed",
+      "under_bar": false,
+      "unusable_draws": 0
+    },
+    {
+      "beats_null": true,
+      "counted": false,
+      "explained_above_reserves": 0.35353509295866803,
+      "explained_share": 0.4530405066450748,
+      "fixed_shares": {
+        "on_rrp": 0.0,
+        "quarter_end": 0.18329518988401683,
+        "reserve_balances": 0.07246507329597518,
+        "tga": 0.002789627511894849,
+        "treasury_settlement": 0.19449061595318795
+      },
+      "index": 1623,
+      "on_rrp_at_onset": 465.638,
+      "onset": "2024-09-30",
+      "placebo": {
+        "attributed": 15,
+        "median_explained": 1.509804631429253,
+        "share_at_or_above": 1.0,
+        "windows": 20
+      },
+      "quarter_end": true,
+      "reason": null,
+      "regime": "abundant",
+      "report_day": "2024-10-15",
+      "residual": {
+        "high": 0.6822473986179428,
+        "low": 0.38679165582959546,
+        "point": 0.5469594933549252
+      },
+      "rise_bp": 8.599999999999994,
+      "shares": {
+        "on_rrp": {
+          "high": 0.00161589654323388,
+          "low": -0.01020754146968943,
+          "point": -0.0013000428868982998
+        },
+        "quarter_end": {
+          "high": 0.3526861002362435,
+          "low": 0.12230908019093686,
+          "point": 0.22900055929550422
+        },
+        "reserve_balances": {
+          "high": 0.12860847526743743,
+          "low": 0.03603666155512077,
+          "point": 0.0771598257112857
+        },
+        "tga": {
+          "high": 0.011296887952325403,
+          "low": -0.015388586203021876,
+          "point": -0.0032836751608847155
+        },
+        "treasury_settlement": {
+          "high": 0.19065946406845607,
+          "low": 0.11540933138370432,
+          "point": 0.1514638396860678
+        }
+      },
+      "status": "attributed",
+      "under_bar": false,
+      "unusable_draws": 0
+    },
+    {
+      "beats_null": true,
+      "counted": false,
+      "explained_above_reserves": 0.3236635245685263,
+      "explained_share": 0.3689054466161398,
+      "fixed_shares": {
+        "on_rrp": -0.04728143950943374,
+        "quarter_end": 0.12720355643834433,
+        "reserve_balances": 0.03560246735684043,
+        "tga": -0.0016203808284990524,
+        "treasury_settlement": 0.25500124315888784
+      },
+      "index": 1682,
+      "on_rrp_at_onset": 196.818,
+      "onset": "2024-12-26",
+      "placebo": {
+        "attributed": 8,
+        "median_explained": 0.7345062523367835,
+        "share_at_or_above": 0.625,
+        "windows": 20
+      },
+      "quarter_end": false,
+      "reason": null,
+      "regime": "abundant",
+      "report_day": "2025-01-10",
+      "residual": {
+        "high": 0.7402711881464434,
+        "low": 0.5248509516683996,
+        "point": 0.6310945533838602
+      },
+      "rise_bp": 12.40000000000002,
+      "shares": {
+        "on_rrp": {
+          "high": 0.01227632894596525,
+          "low": -0.14946135264135352,
+          "point": -0.05314465697541025
+        },
+        "quarter_end": {
+          "high": 0.23669781418925803,
+          "low": 0.08098065378389512,
+          "point": 0.15074612285352795
+        },
+        "reserve_balances": {
+          "high": 0.06126400609550464,
+          "low": 0.018684266272426402,
+          "point": 0.037048402827151605
+        },
+        "tga": {
+          "high": 0.0075557672533575725,
+          "low": -0.017929484388764787,
+          "point": -0.006778446424564417
+        },
+        "treasury_settlement": {
+          "high": 0.30591785520782505,
+          "low": 0.18269056797706015,
+          "point": 0.2410340243354349
+        }
+      },
+      "status": "attributed",
+      "under_bar": false,
+      "unusable_draws": 0
+    },
+    {
+      "beats_null": true,
+      "counted": true,
+      "explained_above_reserves": 0.7476651006619633,
+      "explained_share": 1.3904141532909715,
+      "fixed_shares": {
+        "on_rrp": -0.284585076371232,
+        "quarter_end": 0.0,
+        "reserve_balances": 0.4712508591535767,
+        "tga": 0.24841351998437322,
+        "treasury_settlement": 0.9553348505242535
+      },
+      "index": 1861,
+      "on_rrp_at_onset": 16.954,
+      "onset": "2025-09-15",
+      "placebo": {
+        "attributed": 7,
+        "median_explained": 1.5167087737555394,
+        "share_at_or_above": 0.5714285714285714,
+        "windows": 20
+      },
+      "quarter_end": false,
+      "reason": null,
+      "regime": "depleted",
+      "report_day": "2025-09-29",
+      "residual": {
+        "high": 0.3833250728212593,
+        "low": -1.06941247456492,
+        "point": -0.3904141532909714
+      },
+      "rise_bp": 0.7999999999999652,
+      "shares": {
+        "on_rrp": {
+          "high": 0.12586251501034085,
+          "low": -0.8939871805418464,
+          "point": -0.30036133733524395
+        },
+        "quarter_end": {
+          "high": -0.06014572485462908,
+          "low": -0.2873781415584662,
+          "point": -0.16409774964137158
+        },
+        "reserve_balances": {
+          "high": 0.5493479152547747,
+          "low": 0.17803211915503694,
+          "point": 0.34579544549176927
+        },
+        "tga": {
+          "high": 0.9215483746963538,
+          "low": -0.03836850542532846,
+          "point": 0.4664753445696456
+        },
+        "treasury_settlement": {
+          "high": 1.3210936444522692,
+          "low": 0.7981338969009607,
+          "point": 1.0426024502061724
+        }
+      },
+      "status": "attributed",
+      "under_bar": true,
+      "unusable_draws": 0
+    },
+    {
+      "beats_null": true,
+      "counted": true,
+      "explained_above_reserves": 0.5540452440612728,
+      "explained_share": 0.6278405293672967,
+      "fixed_shares": {
+        "on_rrp": -0.06187343498363073,
+        "quarter_end": 0.3349904693635812,
+        "reserve_balances": 0.05439116014707093,
+        "tga": 0.005045305990413111,
+        "treasury_settlement": 0.2952870288498622
+      },
+      "index": 1872,
+      "on_rrp_at_onset": 49.071,
+      "onset": "2025-09-30",
+      "placebo": {
+        "attributed": 16,
+        "median_explained": 2.0763350300515184,
+        "share_at_or_above": 0.9375,
+        "windows": 20
+      },
+      "quarter_end": true,
+      "reason": null,
+      "regime": "depleted",
+      "report_day": "2025-10-15",
+      "residual": {
+        "high": 0.5941921993208075,
+        "low": 0.14164331786633796,
+        "point": 0.3721594706327033
+      },
+      "rise_bp": 5.000000000000018,
+      "shares": {
+        "on_rrp": {
+          "high": 0.031970749376448275,
+          "low": -0.2140634694320102,
+          "point": -0.06516438486474213
+        },
+        "quarter_end": {
+          "high": 0.6566610071808451,
+          "low": 0.22721638832992472,
+          "point": 0.4241165096308725
+        },
+        "reserve_balances": {
+          "high": 0.07965301987465104,
+          "low": 0.024040726848763294,
+          "point": 0.047790699098694385
+        },
+        "tga": {
+          "high": 0.009561921923695952,
+          "low": -0.0022727895485963297,
+          "point": 0.0031747786253918725
+        },
+        "treasury_settlement": {
+          "high": 0.2775105329580121,
+          "low": 0.16679714659063424,
+          "point": 0.21792292687708012
+        }
+      },
+      "status": "attributed",
+      "under_bar": true,
+      "unusable_draws": 0
+    },
+    {
+      "beats_null": false,
+      "counted": false,
+      "explained_above_reserves": -0.08648989054162583,
+      "explained_share": -0.11250185698844987,
+      "fixed_shares": {
+        "on_rrp": 0.002858090646425549,
+        "quarter_end": 0.0,
+        "reserve_balances": -0.019212782853311662,
+        "tga": 0.000641168484676891,
+        "treasury_settlement": -0.09678833326624066
+      },
+      "index": 1882,
+      "on_rrp_at_onset": 5.484,
+      "onset": "2025-10-15",
+      "placebo": {
+        "attributed": 11,
+        "median_explained": 0.10458164971280288,
+        "share_at_or_above": 0.6363636363636364,
+        "windows": 20
+      },
+      "quarter_end": false,
+      "reason": null,
+      "regime": "depleted",
+      "report_day": "2025-10-29",
+      "residual": {
+        "high": 1.1508125782881669,
+        "low": 1.080285803952847,
+        "point": 1.11250185698845
+      },
+      "rise_bp": 8.599999999999994,
+      "shares": {
+        "on_rrp": {
+          "high": 0.009077175395957635,
+          "low": -0.001631702518779531,
+          "point": 0.00264774970526282
+        },
+        "quarter_end": {
+          "high": 0.023218036408434478,
+          "low": 0.005119948032615696,
+          "point": 0.0135359126145665
+        },
+        "reserve_balances": {
+          "high": -0.010493833266173012,
+          "low": -0.037221935064331246,
+          "point": -0.022610072200478608
+        },
+        "tga": {
+          "high": 0.007824555543817347,
+          "low": -0.0037978531785615877,
+          "point": 0.002861190990315606
+        },
+        "treasury_settlement": {
+          "high": -0.08341297832205018,
+          "low": -0.13736149971963393,
+          "point": -0.1089366380981162
+        }
+      },
+      "status": "attributed",
+      "under_bar": false,
+      "unusable_draws": 0
+    },
+    {
+      "beats_null": false,
+      "counted": false,
+      "explained_above_reserves": 0.4129225823914351,
+      "explained_share": 0.19564329594176214,
+      "fixed_shares": {
+        "on_rrp": 0.04254181401141192,
+        "quarter_end": 0.0,
+        "reserve_balances": -0.15863112288791956,
+        "tga": -0.0649173510014111,
+        "treasury_settlement": 0.37664995581968086
+      },
+      "index": 1923,
+      "on_rrp_at_onset": 2.601,
+      "onset": "2025-12-15",
+      "placebo": {
+        "attributed": 6,
+        "median_explained": 0.30528592970828944,
+        "share_at_or_above": 0.5,
+        "windows": 20
+      },
+      "quarter_end": false,
+      "reason": null,
+      "regime": "depleted",
+      "report_day": "2025-12-30",
+      "residual": {
+        "high": 0.9916042816012043,
+        "low": 0.566646501209621,
+        "point": 0.8043567040582379
+      },
+      "rise_bp": 1.7999999999999963,
+      "shares": {
+        "on_rrp": {
+          "high": 0.1430938864159103,
+          "low": -0.024998989342192524,
+          "point": 0.04716470830475043
+        },
+        "quarter_end": {
+          "high": -0.0057245256494033335,
+          "low": -0.06202544369997683,
+          "point": -0.03129708679055667
+        },
+        "reserve_balances": {
+          "high": -0.07138445279373623,
+          "low": -0.20137841017566446,
+          "point": -0.13171133793531514
+        },
+        "tga": {
+          "high": 0.0055787232996274555,
+          "low": -0.2308363377340618,
+          "point": -0.1189694094028545
+        },
+        "treasury_settlement": {
+          "high": 0.5433186195520898,
+          "low": 0.3321614966354087,
+          "point": 0.4304564217657381
+        }
+      },
+      "status": "attributed",
+      "under_bar": false,
+      "unusable_draws": 0
+    },
+    {
+      "beats_null": true,
+      "counted": false,
+      "explained_above_reserves": 0.4615313573508255,
+      "explained_share": 0.46309982820879303,
+      "fixed_shares": {
+        "on_rrp": 0.01007508938172007,
+        "quarter_end": 0.14424355280627468,
+        "reserve_balances": 0.0011688903348954453,
+        "tga": 0.0007301904397850237,
+        "treasury_settlement": 0.3068821052461178
+      },
+      "index": 1931,
+      "on_rrp_at_onset": 20.339,
+      "onset": "2025-12-26",
+      "placebo": {
+        "attributed": 9,
+        "median_explained": 0.8687901307622823,
+        "share_at_or_above": 0.6666666666666666,
+        "windows": 20
+      },
+      "quarter_end": false,
+      "reason": null,
+      "regime": "depleted",
+      "report_day": "2026-01-12",
+      "residual": {
+        "high": 0.6551562786506653,
+        "low": 0.39937825475725597,
+        "point": 0.536900171791207
+      },
+      "rise_bp": 10.799999999999983,
+      "shares": {
+        "on_rrp": {
+          "high": 0.026346538602599553,
+          "low": -0.005155918987716129,
+          "point": 0.009528414745645614
+        },
+        "quarter_end": {
+          "high": 0.2539944733075041,
+          "low": 0.09146090041232478,
+          "point": 0.16570629631956033
+        },
+        "reserve_balances": {
+          "high": 0.001854000735321547,
+          "low": -0.006597017722070492,
+          "point": -0.0027889505923591037
+        },
+        "tga": {
+          "high": 0.0015722043125405414,
+          "low": -0.002315302874994316,
+          "point": -0.00037020034071150176
+        },
+        "treasury_settlement": {
+          "high": 0.3676275380094129,
+          "low": 0.2234237936491897,
+          "point": 0.2910242680766577
+        }
+      },
+      "status": "attributed",
+      "under_bar": false,
+      "unusable_draws": 0
+    },
+    {
+      "beats_null": true,
+      "counted": false,
+      "explained_above_reserves": 0.29362826821448323,
+      "explained_share": 0.26247213071831016,
+      "fixed_shares": {
+        "on_rrp": -0.0049479512335217826,
+        "quarter_end": 0.0,
+        "reserve_balances": -0.02279687047863874,
+        "tga": 0.00035343342006591576,
+        "treasury_settlement": 0.28986351901040475
+      },
+      "index": 1965,
+      "on_rrp_at_onset": 0.441,
+      "onset": "2026-02-17",
+      "placebo": {
+        "attributed": 12,
+        "median_explained": 0.4308233511051939,
+        "share_at_or_above": 0.5833333333333334,
+        "windows": 20
+      },
+      "quarter_end": false,
+      "reason": null,
+      "regime": "depleted",
+      "report_day": "2026-03-03",
+      "residual": {
+        "high": 0.8104263448221968,
+        "low": 0.6580211968059049,
+        "point": 0.7375278692816899
+      },
+      "rise_bp": 3.800000000000007,
+      "shares": {
+        "on_rrp": {
+          "high": 0.0023060693428640917,
+          "low": -0.017176346033625552,
+          "point": -0.005240260084940581
+        },
+        "quarter_end": {
+          "high": -0.011906248925249423,
+          "low": -0.05910346848359753,
+          "point": -0.03387361856980411
+        },
+        "reserve_balances": {
+          "high": -0.013055118077156707,
+          "low": -0.04275593678804019,
+          "point": -0.02629441673812763
+        },
+        "tga": {
+          "high": 0.007795978689547154,
+          "low": -0.0037697134915550155,
+          "point": 0.0023156069432298653
+        },
+        "treasury_settlement": {
+          "high": 0.41017601891205135,
+          "low": 0.24949033611785612,
+          "point": 0.3255648191679526
+        }
+      },
+      "status": "attributed",
+      "under_bar": false,
+      "unusable_draws": 0
+    },
+    {
+      "beats_null": true,
+      "counted": true,
+      "explained_above_reserves": 1.1455954084207969,
+      "explained_share": 0.7639102058770165,
+      "fixed_shares": {
+        "on_rrp": -0.10094612776824373,
+        "quarter_end": 0.0,
+        "reserve_balances": -0.2797521636013094,
+        "tga": -0.13210171969465,
+        "treasury_settlement": 1.2767102169412197
+      },
+      "index": 1974,
+      "on_rrp_at_onset": 0.627,
+      "onset": "2026-03-02",
+      "placebo": {
+        "attributed": 11,
+        "median_explained": 0.5581488737292112,
+        "share_at_or_above": 0.2727272727272727,
+        "windows": 20
+      },
+      "quarter_end": false,
+      "reason": null,
+      "regime": "depleted",
+      "report_day": "2026-03-16",
+      "residual": {
+        "high": 0.6490182984121855,
+        "low": -0.20849767092956234,
+        "point": 0.23608979412298342
+      },
+      "rise_bp": 0.8000000000000007,
+      "shares": {
+        "on_rrp": {
+          "high": 0.04798367520509391,
+          "low": -0.3276738029175392,
+          "point": -0.10542872094938652
+        },
+        "quarter_end": {
+          "high": -0.024639853795869235,
+          "low": -0.18748504041706154,
+          "point": -0.1017525908053388
+        },
+        "reserve_balances": {
+          "high": -0.11438410850897851,
+          "low": -0.33860938208528774,
+          "point": -0.22058446297886788
+        },
+        "tga": {
+          "high": 0.00736062904495602,
+          "low": -0.4850765546461986,
+          "point": -0.2443719622432443
+        },
+        "treasury_settlement": {
+          "high": 1.8055041317154676,
+          "low": 1.1037968638827993,
+          "point": 1.436047942853854
+        }
+      },
+      "status": "attributed",
+      "under_bar": true,
+      "unusable_draws": 0
+    },
+    {
+      "beats_null": false,
+      "counted": false,
+      "explained_above_reserves": 0.22986112334359948,
+      "explained_share": 0.20575088007658765,
+      "fixed_shares": {
+        "on_rrp": 0.00022324102510489912,
+        "quarter_end": 0.0,
+        "reserve_balances": -0.017627825092368064,
+        "tga": 0.0017907553344532596,
+        "treasury_settlement": 0.22136470880939757
+      },
+      "index": 2005,
+      "on_rrp_at_onset": 0.223,
+      "onset": "2026-04-15",
+      "placebo": {
+        "attributed": 11,
+        "median_explained": 0.33337811531910705,
+        "share_at_or_above": 0.6363636363636364,
+        "windows": 20
+      },
+      "quarter_end": false,
+      "reason": null,
+      "regime": "depleted",
+      "report_day": "2026-04-29",
+      "residual": {
+        "high": 0.8496662587504882,
+        "low": 0.7310695420896437,
+        "point": 0.7942491199234124
+      },
+      "rise_bp": 4.800000000000004,
+      "shares": {
+        "on_rrp": {
+          "high": 0.0022089904558488496,
+          "low": -0.0018856219490467876,
+          "point": 0.000250198883215068
+        },
+        "quarter_end": {
+          "high": -0.008866866354457653,
+          "low": -0.04579576447678296,
+          "point": -0.025874002188819155
+        },
+        "reserve_balances": {
+          "high": -0.010363442332876572,
+          "low": -0.03472320625138415,
+          "point": -0.02124970045453761
+        },
+        "tga": {
+          "high": 0.011100394382486055,
+          "low": -0.002783564501571793,
+          "point": 0.004598319162973237
+        },
+        "treasury_settlement": {
+          "high": 0.3137134039841751,
+          "low": 0.19217576561889893,
+          "point": 0.24802606467375612
+        }
+      },
+      "status": "attributed",
+      "under_bar": false,
+      "unusable_draws": 0
+    }
+  ],
+  "last_day_read": "2026-09-03",
+  "not_a_verdict": "Development evidence only (measurement-protocol.md section 1; repo-market-model#640). It confirms nothing.",
+  "null": {
+    "bar": 0.23331036249143766,
+    "construction": "N1: the driver-free spread, resampled by the stationary bootstrap, picked with the parent's onset rule",
+    "draws": 1000,
+    "episodes": 28185,
+    "explained_percentiles": {
+      "0.5": 0.002880502749032551,
+      "0.9": 0.12814613951929374,
+      "0.95": 0.23331036249143766,
+      "0.99": 0.7714539133965551
+    },
+    "quantile": 0.95,
+    "statistic": "explained share"
+  },
+  "panel": {
+    "first": "2018-04-03",
+    "last": "2026-09-03",
+    "rows": 2104,
+    "sha256": "acb77874e0ca2c9eeee1c33a229f5e12745e65bb1224088d52c391dbf54be2ab",
+    "version": 1
+  },
+  "parent_commit": "53e61af9b4175e854c196908d3c76b228c039667",
+  "parent_panel_sha256": "4ddc3882cd6d406b11e1088f8ff6195e16dde175a0ad6818abe40dd5bdac8999",
+  "record": "H10 step 3: sensitivity, ON RRP entering as an interaction with the depleted regime",
+  "sensitivity": {
+    "on_rrp_term": "on_rrp x 1(on_rrp < 100.0 bn)",
+    "regime_break_bn": 100.0,
+    "replaces": "the ON RRP window change",
+    "reported_only": "the decided driver set and the published outcome do not change"
+  },
+  "settings": {
+    "baseline_days": 5,
+    "block_length": 10.0,
+    "count_interval": "Wilson, 90%",
+    "decision_time": "16:00:00",
+    "draws": 10000,
+    "drivers": [
+      "treasury_settlement",
+      "tga",
+      "reserve_balances",
+      "quarter_end",
+      "on_rrp"
+    ],
+    "level": 0.9,
+    "null_draws": 1000,
+    "null_quantile": 0.95,
+    "placebo_windows": 20,
+    "regime_break_bn": 100.0,
+    "report_days": 10,
+    "residual_bar": 0.5,
+    "seed": 20261013,
+    "window_days": 5
+  },
+  "summary": {
+    "beats_null": 16,
+    "counted": 5,
+    "episodes": 31,
+    "fraction": 0.16129032258064516,
+    "intervals": {
+      "beats_null": [
+        0.3732423692620459,
+        0.6564263409120514
+      ],
+      "counted": [
+        0.08078554403288794,
+        0.29617154231106824
+      ],
+      "under_bar": [
+        0.08078554403288794,
+        0.29617154231106824
+      ]
+    },
+    "markers": {
+      "median_explained_above_reserves": {
+        "interval": [
+          0.12767737625118591,
+          0.35353509295866803
+        ],
+        "median": 0.24679507350049484,
+        "n": 31
+      },
+      "median_placebo_gap": {
+        "interval": [
+          -0.523559032521423,
+          -0.1276272352425194
+        ],
+        "median": -0.3656008057206437,
+        "n": 31
+      },
+      "median_residual_share": {
+        "interval": [
+          0.6310945533838602,
+          0.8043567040582379
+        ],
+        "median": 0.7593563968346811,
+        "n": 31
+      }
+    },
+    "not_attributable": 0,
+    "outcome": "residual dominates",
+    "splits": {
+      "day_type": {
+        "other": {
+          "beats_null": 12,
+          "counted": 4,
+          "episodes": 27,
+          "intervals": {
+            "beats_null": [
+              0.2994571133730697,
+              0.5995516354607646
+            ],
+            "counted": [
+              0.06829655036529558,
+              0.29209219224898814
+            ],
+            "under_bar": [
+              0.06829655036529558,
+              0.29209219224898814
+            ]
+          },
+          "not_attributable": 0,
+          "under_bar": 4
+        },
+        "quarter-end": {
+          "beats_null": 4,
+          "counted": 1,
+          "episodes": 4,
+          "intervals": {
+            "beats_null": [
+              0.5965213747972955,
+              1.0
+            ],
+            "counted": [
+              0.05790732119985875,
+              0.6438319914014935
+            ],
+            "under_bar": [
+              0.05790732119985875,
+              0.6438319914014935
+            ]
+          },
+          "not_attributable": 0,
+          "under_bar": 1
+        }
+      },
+      "regime": {
+        "abundant": {
+          "beats_null": 2,
+          "counted": 0,
+          "episodes": 2,
+          "intervals": {
+            "beats_null": [
+              0.42503060900634654,
+              1.0
+            ],
+            "counted": [
+              0.0,
+              0.5749693909936534
+            ],
+            "under_bar": [
+              0.0,
+              0.5749693909936534
+            ]
+          },
+          "not_attributable": 0,
+          "under_bar": 0
+        },
+        "depleted": {
+          "beats_null": 14,
+          "counted": 5,
+          "episodes": 29,
+          "intervals": {
+            "beats_null": [
+              0.338249885609629,
+              0.6302098885794543
+            ],
+            "counted": [
+              0.08653715859060776,
+              0.3141985510019756
+            ],
+            "under_bar": [
+              0.08653715859060776,
+              0.3141985510019756
+            ]
+          },
+          "not_attributable": 0,
+          "under_bar": 5
+        }
+      }
+    },
+    "under_bar": 5,
+    "under_bar_outcome": "residual dominates"
+  },
+  "tier": "development"
+}
