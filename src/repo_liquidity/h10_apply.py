@@ -13,6 +13,7 @@ development end is read; the lockbox is the parent's. Standard library only.
 
 from __future__ import annotations
 
+import hashlib
 import math
 import multiprocessing
 import statistics
@@ -29,6 +30,7 @@ ROOT = Path(__file__).resolve().parents[2]
 RECORD = ROOT / "results" / "h10" / "development.json"
 #: H10 step 3 (#77): the same application with ON RRP entering as `on_rrp x 1(on_rrp < break)` (her answer 5 on #69).
 SENSITIVITY_RECORD = ROOT / "results" / "h10" / "sensitivity_onrrp_interaction.json"
+PLACEBO_FLOOR_RECORD = ROOT / "results" / "h10" / "placebo_floor_2bp.json"
 STAGE_DOC = ROOT / "docs" / "stages" / "h10-step2.md"
 #: The panel the application reads: version 1, the published columns plus the built ON RRP take-up, to the development end.
 PANEL_VERSION = 1
@@ -143,6 +145,18 @@ def placebo_summary(results: Sequence[Attribution], episode_explained: Optional[
             if shares and episode_explained is not None else None
         ),
     }
+
+
+def floored_placebo_summary(results: Sequence[Attribution], episode_explained: Optional[float],
+                            floor: float = attribution.PLACEBO_RISE_FLOOR_BP) -> dict:
+    """`placebo_summary` over the windows whose spread rise is at least `floor` bp (section 10 of the method record).
+
+    A window below the floor is excluded, not refused, and `excluded` counts it: every window with a rise under the
+    floor, a zero or negative rise included. A window with an input missing has no rise to compare and is counted as
+    not attributable, as in the unfloored reading."""
+    excluded = sum(1 for r in results if r.rise_bp is not None and r.rise_bp < floor)
+    kept = [r for r in results if r.status == "attributed" and r.rise_bp >= floor]
+    return {**placebo_summary(kept, episode_explained), "windows": len(results), "excluded": excluded}
 
 
 def as_attribution(entry: dict) -> Attribution:
@@ -386,3 +400,62 @@ def summary_markdown(record: dict) -> str:
     for name in DAY_TYPES:
         rows.append(_count_row("Quarter-end onsets" if name == "quarter-end" else "Other onsets", s["splits"]["day_type"][name]))
     return head + "\n" + "\n".join(rows) + "\n"
+
+
+# --------------------------------------------------------------------------- the 2 bp placebo floor (#85)
+
+
+def placebo_floor_record(rows, development_record: dict, manifest: dict) -> dict:
+    """The placebo comparison with and without the 2 bp floor, as a new development record. Re-runs only the placebo, at
+    the published record's pin, seeds and episodes; nothing else is re-fitted, and the published record is not touched.
+
+    Raises:
+        ValueError: the placebo rebuilt without the floor is not the published record's.
+    """
+    dates = [row.date for row in rows]
+    series = attribution.series_from_rows(rows, DRIVERS_WITH_ON_RRP)
+    onsets = attribution.cross_check_onsets(rows)
+    if [dates[i].isoformat() for i in onsets] != [e["onset"] for e in development_record["episodes"]]:
+        raise ValueError("the onsets are not the published record's")
+    placebo = attribution.placebo_starts(series, onsets, attribution.PLACEBO_WINDOWS, SEED)
+    episodes = []
+    for start, published in zip(onsets, development_record["episodes"]):
+        entry = {"onset": published["onset"], "status": published["status"]}
+        if published["status"] == "attributed":
+            windows = [attribution.point_attribution(series, s, drivers=DRIVERS_WITH_ON_RRP) for s in placebo[start]]
+            entry["explained_share"] = published["explained_share"]
+            entry["unfloored"] = placebo_summary(windows, published["explained_share"])
+            if entry["unfloored"] != published["placebo"]:
+                raise ValueError(f"the placebo of {published['onset']} does not reproduce the published record's")
+            entry["floored"] = floored_placebo_summary(windows, published["explained_share"])
+        episodes.append(entry)
+    attributed = [e for e in episodes if e["status"] == "attributed"]
+
+    def gap(name):
+        return median_interval([e["explained_share"] - e[name]["median_explained"] for e in attributed
+                                if e[name]["median_explained"] is not None])
+
+    settings = development_record["settings"]
+    return {
+        "record": "H10 step 3 amendment: the placebo comparison with and without a 2 bp placebo rise floor",
+        "directive": "eleonorabjornberg/repo-market-liquidity#85",
+        "tier": "development",
+        "not_a_verdict": "Development evidence only (measurement-protocol.md section 1; repo-market-model#640). It confirms nothing.",
+        "parent_commit": PARENT_COMMIT,
+        "parent_panel_sha256": PANEL_SHA256,
+        "panel": development_record["panel"],
+        "last_day_read": dates[-1].isoformat(),
+        "source_record": {"path": "results/h10/development.json", "sha256": hashlib.sha256(RECORD.read_bytes()).hexdigest()},
+        "settings": {**{k: settings[k] for k in ("seed", "placebo_windows", "baseline_days", "window_days", "drivers")},
+                     "placebo_rise_floor_bp": attribution.PLACEBO_RISE_FLOOR_BP},
+        "readings": {
+            "unfloored": {"windows": sum(e["unfloored"]["windows"] for e in attributed),
+                          "attributed_windows": sum(e["unfloored"]["attributed"] for e in attributed),
+                          "median_placebo_gap": gap("unfloored")},
+            "floored": {"windows": sum(e["floored"]["windows"] for e in attributed),
+                        "windows_excluded": sum(e["floored"]["excluded"] for e in attributed),
+                        "attributed_windows": sum(e["floored"]["attributed"] for e in attributed),
+                        "median_placebo_gap": gap("floored")},
+        },
+        "episodes": episodes,
+    }

@@ -45,6 +45,8 @@ BASELINE_DAYS = 5
 WINDOW_DAYS = 5
 #: Placebo windows per episode (the record, section 4: 20, changed from the 5 first proposed).
 PLACEBO_WINDOWS = 20
+#: A placebo window counts only if its spread rise is at least this many bp (the record, section 10, a draft awaiting her merge).
+PLACEBO_RISE_FLOOR_BP = 2.0
 #: The stationary bootstrap, as in the measurement protocol (section 6) and the parent's scoring protocol.
 BLOCK_LENGTH = 10.0
 DRAWS = 10_000
