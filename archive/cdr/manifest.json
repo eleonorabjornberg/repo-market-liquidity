@@ -11,7 +11,7 @@
       "sha256": "e19452450909399dc104d51cddcea0db17d71d872b20f67234fedf56340c1e69",
       "size": 5483032,
       "first_retrieved_utc": "2026-10-14T04:20:06Z",
-      "last_checked_utc": "2026-10-14T04:20:06Z"
+      "last_checked_utc": "2026-10-15T11:28:32Z"
     },
     {
       "quarter": "2026-06-30",
@@ -21,7 +21,7 @@
       "sha256": "0a2d59ce16b5a5b756765e00364d525855019ac657e0398c96323aebfa1679fe",
       "size": 5980988,
       "first_retrieved_utc": "2026-10-14T04:20:06Z",
-      "last_checked_utc": "2026-10-14T04:20:06Z"
+      "last_checked_utc": "2026-10-15T11:28:32Z"
     }
   ]
 }
