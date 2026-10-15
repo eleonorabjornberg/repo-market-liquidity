@@ -6,9 +6,11 @@ split across the three groups by their H.8 cash-asset shares, unanchored and lab
 by `scripts/build_group_reserves.py` from tracked inputs only. No test scores anything.
 """
 
+import csv
 import hashlib
 import json
 import pathlib
+import re
 import shutil
 import tempfile
 import unittest
@@ -94,6 +96,24 @@ class BuildTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 self.build(other_share=bad)
 
+    def test_the_sensitivity_splits_the_rest_at_each_end_of_the_range_of_the_share(self):
+        """Condition 2 of her ruling of 15 October: the group levels also at the range of the share's computable weeks.
+
+        Week 0: reserves 300, cash 100, 50, 80. At share s the three levels are 300 * (1 - s) split 100:50:80."""
+        rows, _ = self.build()
+        for share, levels in zip(gr.SENSITIVITY_SHARES, (rows[0].sens_low, rows[0].sens_high)):
+            rest = 300.0 * (1 - share)
+            self.assertEqual(len(levels), 3)
+            for got, cash in zip(levels, (100.0, 50.0, 80.0)):
+                self.assertAlmostEqual(got, rest * cash / 230.0, places=4)
+        self.assertEqual(gr.SENSITIVITY_SHARES, (-0.009, 0.163))
+
+    def test_the_sensitivity_levels_plus_that_share_of_reserves_sum_to_reserves(self):
+        rows, _ = self.build()
+        for row in rows:
+            for share, levels in zip(gr.SENSITIVITY_SHARES, (row.sens_low, row.sens_high)):
+                self.assertAlmostEqual(sum(levels) + share * row.reserves_bn, row.reserves_bn, places=4)
+
     def test_a_week_with_no_cash_assets_in_any_group_is_a_hole(self):
         zero = prints()
         for item in zero[:1]:
@@ -158,6 +178,14 @@ class VerifyTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             gr.verify(bad, prints(), reserves())
 
+    def test_verify_refuses_a_sensitivity_level_that_is_not_the_cash_share_at_that_share(self):
+        """Recorded mutation (15 October 2026): in `group_reserves.verify`, `for (name, _), want in zip(...)` over the
+        sensitivity is replaced by `pass`; this test then fails with `AssertionError: ValueError not raised`."""
+        rows = self.rows()
+        bad = [gr.Row(**{**rows[0].__dict__, "sens_high": (1.0, 1.0, 1.0)})]
+        with self.assertRaises(ValueError):
+            gr.verify(bad, prints(), reserves())
+
     def test_verify_refuses_a_week_the_inputs_do_not_hold(self):
         rows = self.rows()
         with self.assertRaises(ValueError):
@@ -213,6 +241,49 @@ class ExtractTests(unittest.TestCase):
     def test_the_share_and_where_it_comes_from_are_recorded(self):
         self.assertEqual(self.coverage["other_share"], gr.OTHER_SHARE)
         self.assertIn("RC-A", self.coverage["other_share_source"])
+
+
+class LabelTests(unittest.TestCase):
+    """Conditions 1 and 3 of her ruling of 15 October 2026: the share is labelled a retrospective calibration, in the data
+    and in the record, and nothing scored or registered uses the series."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.coverage = json.loads((DIRECTORY / gr.COVERAGE_NAME).read_text(encoding="utf-8"))
+        cls.manifest = json.loads((DIRECTORY / (gr.EXTRACT_NAME + ".manifest.json")).read_text(encoding="utf-8"))
+
+    def test_every_row_carries_the_retrospective_label(self):
+        with EXTRACT.open(encoding="utf-8", newline="") as handle:
+            labels = {row["other_share_basis"] for row in csv.DictReader(handle)}
+        self.assertEqual(labels, {gr.OTHER_SHARE_BASIS})
+        self.assertIn("retrospective", gr.OTHER_SHARE_BASIS)
+        self.assertIn("not_point_in_time", gr.OTHER_SHARE_BASIS)
+
+    def test_the_record_says_the_share_is_retrospective_and_not_for_scoring(self):
+        for record in (self.coverage, self.manifest):
+            self.assertEqual(record["other_share_basis"], gr.OTHER_SHARE_BASIS)
+        self.assertIn("not point-in-time", self.coverage["other_share_source"])
+        self.assertIn("Nothing scored or registered", self.manifest["use_note"])
+        self.assertEqual(self.coverage["sensitivity_shares"], list(gr.SENSITIVITY_SHARES))
+
+    def test_the_coverage_reports_the_sensitivity_next_to_the_main_series(self):
+        sens = self.coverage["sensitivity"]
+        self.assertEqual(set(sens), {"main", "low", "high"})
+        for end, share in zip(("low", "high"), gr.SENSITIVITY_SHARES):
+            self.assertEqual(sens[end]["share"], share)
+            self.assertEqual(sens[end]["rows"], self.coverage["rows"])
+
+    def test_no_module_of_the_package_reads_the_series_but_its_builder(self):
+        """Nothing scored or registered uses it: no other module under `src/` or `scripts/` imports it."""
+        readers = []
+        for base in (ROOT / "src", ROOT / "scripts"):
+            for path in base.rglob("*.py"):
+                if path.name in ("group_reserves.py", "build_group_reserves.py"):
+                    continue
+                text = path.read_text(encoding="utf-8")
+                if re.search(r"^\s*(from|import)\b.*\bgroup_reserves\b", text, re.M):
+                    readers.append(str(path.relative_to(ROOT)))
+        self.assertEqual(readers, [])
 
 
 class LoadGuardTests(unittest.TestCase):

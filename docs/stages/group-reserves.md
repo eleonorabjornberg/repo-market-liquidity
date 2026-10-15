@@ -20,7 +20,7 @@ Read with `docs/research/rca-fed-balances-due-diligence.md` (section 7 is the up
    domestic, small domestic and foreign-related groups by their H.8 cash-asset shares, first print, unanchored and labelled an
    approximation (`domestic_basis`, `foreign_basis`). The four pieces sum to reserves in every week. The weekly series does **not**
    read the RC-A anchor: that would break rule 16(d). A week at an H.8 break (`h8_break_week`) is flagged, not refused.
-   **The fixed share** is 0.086; its source and its limits are in `OTHER_SHARE_SOURCE` and the coverage record. **Switch later:**
+   **The fixed share** is 0.086, labelled in the data (`other_share_basis`) and here a **retrospective calibration, not point-in-time**: the median of the anchored build's residual share over 2022-08-10 to 2026-08-19, from latest-filed RC-A data (her ruling of 15 October 2026, condition 1). **Sensitivity** (condition 2): the extract carries the three group levels also at the range of the share's computable weeks, -0.009 and 0.163 (`*_share_low_bn`, `*_share_high_bn`), and the coverage record and page report them beside the main series. **Nothing scored or registered uses the series** (condition 3; a test shows no module reads it but its builder). Its source and limits are in `OTHER_SHARE_SOURCE` and the coverage record. **Switch later:**
    once the CDR archive (#49) has first prints, the quarterly Call Report total replaces the fixed share, read only where public
    at the time under rule 16(d); the switch date and both versions are recorded (a later directive, not built here).
 

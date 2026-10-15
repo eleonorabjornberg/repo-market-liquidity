@@ -59,11 +59,21 @@ OTHER_SHARE_SOURCE = (
     "2022-08-10 to 2026-08-19 on which the retired anchored build (latest-filed Call Report RC-A item 0090, moved by the "
     "H.8 and with the break refusal switched off) could be computed: median 0.0862, range -0.009 to 0.163 (docs/research/"
     "rca-fed-balances-due-diligence.md, section 7). A full-sample constant from latest-filed data, so a retrospective "
-    "calibration and not a point-in-time figure; the value is rounded to 0.086 and is Eleonora's to confirm or replace.")
+    "calibration, not point-in-time; the value is rounded to 0.086 and is Eleonora's to confirm or replace.")
 
+#: What `OTHER_SHARE` is (her ruling of 15 October 2026, condition 1): a full-sample constant from latest-filed data.
+OTHER_SHARE_BASIS = "retrospective_calibration_not_point_in_time"
+#: The range of the share's computable weeks (condition 2): the group levels are also reported at each end, next to the main
+#: series. At the low end the residual is a small negative share of reserves, which is part of what the range shows.
+SENSITIVITY_SHARES = (-0.009, 0.163)
+USE_NOTE = ("Nothing scored or registered uses this series (her ruling of 15 October 2026, condition 3). The Call Report switch "
+            "(step 2 of her ruling of 14 October 2026, once the CDR archive #49 has first prints) replaces the fixed share first.")
+
+_GROUPS = ("large_domestic", "small_domestic", "foreign_related")
+_SENSITIVITY_COLUMNS = tuple(f"{group}_share_{end}_bn" for end in ("low", "high") for group in _GROUPS)
 COLUMNS: Tuple[str, ...] = (
     "week_ending", "public_at", "reserves_bn", "large_domestic_bn", "small_domestic_bn", "foreign_related_bn", "other_bn",
-    "other_share", "h8_break_week", "domestic_basis", "foreign_basis")
+    "other_share", "other_share_basis") + _SENSITIVITY_COLUMNS + ("h8_break_week", "domestic_basis", "foreign_basis")
 DOMESTIC_BASIS = "h8_cash_assets_approximation"
 FOREIGN_BASIS = "h8_cash_assets_approximation"
 REFUSALS = ("reserves_missing", "no_cash_assets")
@@ -83,6 +93,9 @@ class Row:
     foreign_related_bn: float
     other_bn: float
     h8_break_week: bool = False
+    #: The three group levels at `SENSITIVITY_SHARES[0]` and `[1]` (the range of the share's computable weeks).
+    sens_low: Tuple[float, float, float] = (0.0, 0.0, 0.0)
+    sens_high: Tuple[float, float, float] = (0.0, 0.0, 0.0)
 
     @property
     def other_negative(self) -> bool:
@@ -96,6 +109,11 @@ def _public_at(item: h8.FirstPrint, reserve_at: datetime) -> datetime:
 def _check_share(share: float) -> None:
     if not 0.0 <= share < 1.0:
         raise ValueError(f"the other-depository share must be in [0, 1), not {share}")
+
+
+def _check_sensitivity(share: float) -> None:
+    if not -1.0 < share < 1.0:
+        raise ValueError(f"the sensitivity share must be in (-1, 1), not {share}")
 
 
 def _split(reserve_bn: float, cash: Sequence[float], share: float) -> List[float]:
@@ -119,6 +137,8 @@ def build(*, prints: Sequence[h8.FirstPrint], reserves: Mapping[date, Tuple[floa
         ValueError: if an instant has no time zone, or the share is not in [0, 1).
     """
     _check_share(other_share)
+    for sens in SENSITIVITY_SHARES:
+        _check_sensitivity(sens)
     rows: List[Row] = []
     holes: List[dict] = []
     for item in sorted(prints, key=lambda p: p.week_ending):
@@ -137,8 +157,9 @@ def build(*, prints: Sequence[h8.FirstPrint], reserves: Mapping[date, Tuple[floa
             continue
         levels = dict(zip((name for name, _ in _LEVEL_FIELDS), _split(reserve_bn, cash, other_share)))
         other = round(reserve_bn - sum(levels.values()), 6)
+        low, high = (tuple(_split(reserve_bn, cash, sens)) for sens in SENSITIVITY_SHARES)
         rows.append(Row(week_ending=week, public_at=_public_at(item, reserve_at), reserves_bn=reserve_bn, other_bn=other,
-                        h8_break_week=week in breaks, **levels))
+                        h8_break_week=week in breaks, sens_low=low, sens_high=high, **levels))
     return rows, holes
 
 
@@ -167,6 +188,10 @@ def verify(rows: Iterable[Row], prints: Sequence[h8.FirstPrint], reserves: Mappi
             if getattr(row, name) != want:
                 raise ValueError(f"the week ending {row.week_ending}: {name} {getattr(row, name)} is not the H.8 cash share "
                                  f"of the rest of reserves ({want})")
+        for sens, got in zip(SENSITIVITY_SHARES, (row.sens_low, row.sens_high)):
+            if tuple(got) != tuple(_split(reserve_bn, cash, sens)):
+                raise ValueError(f"the week ending {row.week_ending}: the levels at the share {sens} are not the H.8 cash "
+                                 f"shares of the rest of reserves ({_split(reserve_bn, cash, sens)})")
         expected = round(reserve_bn - row.large_domestic_bn - row.small_domestic_bn - row.foreign_related_bn, 6)
         if row.other_bn != expected or row.reserves_bn != reserve_bn:
             raise ValueError(f"the week ending {row.week_ending}: the reserves or the residual are not what the inputs give")
@@ -232,8 +257,9 @@ def write_extract(rows: Iterable[Row]) -> bytes:
     for row in sorted(rows, key=lambda r: r.week_ending):
         writer.writerow((row.week_ending.isoformat(), row.public_at.isoformat(), _fmt(row.reserves_bn),
                          _fmt(row.large_domestic_bn), _fmt(row.small_domestic_bn), _fmt(row.foreign_related_bn),
-                         _fmt(row.other_bn), _fmt(OTHER_SHARE), str(row.h8_break_week).lower(),
-                         DOMESTIC_BASIS, FOREIGN_BASIS))
+                         _fmt(row.other_bn), _fmt(OTHER_SHARE), OTHER_SHARE_BASIS,
+                         *(_fmt(v) for v in row.sens_low), *(_fmt(v) for v in row.sens_high),
+                         str(row.h8_break_week).lower(), DOMESTIC_BASIS, FOREIGN_BASIS))
     return buffer.getvalue().encode("utf-8")
 
 
@@ -260,11 +286,14 @@ def load_extract(path: Path) -> List[Row]:
         row = Row(week_ending=date.fromisoformat(item["week_ending"]), public_at=datetime.fromisoformat(item["public_at"]),
                   reserves_bn=float(item["reserves_bn"]), large_domestic_bn=float(item["large_domestic_bn"]),
                   small_domestic_bn=float(item["small_domestic_bn"]), foreign_related_bn=float(item["foreign_related_bn"]),
-                  other_bn=float(item["other_bn"]), h8_break_week=item["h8_break_week"] == "true")
+                  other_bn=float(item["other_bn"]), h8_break_week=item["h8_break_week"] == "true",
+                  sens_low=tuple(float(item[f"{g}_share_low_bn"]) for g in _GROUPS),
+                  sens_high=tuple(float(item[f"{g}_share_high_bn"]) for g in _GROUPS))
         if row.week_ending in seen:
             raise ValueError(f"{path.name}: the week ending {row.week_ending} is listed twice")
         seen.add(row.week_ending)
-        for column, want in (("domestic_basis", DOMESTIC_BASIS), ("foreign_basis", FOREIGN_BASIS)):
+        for column, want in (("domestic_basis", DOMESTIC_BASIS), ("foreign_basis", FOREIGN_BASIS),
+                             ("other_share_basis", OTHER_SHARE_BASIS)):
             if item[column] != want:
                 raise ValueError(f"{path.name}: {row.week_ending} is labelled {item[column]!r}, not {want!r}")
         expected = round(row.reserves_bn - row.large_domestic_bn - row.small_domestic_bn - row.foreign_related_bn, 6)
@@ -273,6 +302,21 @@ def load_extract(path: Path) -> List[Row]:
                 raise ValueError(f"{path.name}: {row.week_ending} stores {column} {item[column]!r}, the levels give {want!r}")
         rows.append(row)
     return rows
+
+
+def _sensitivity(rows: Sequence[Row]) -> Dict:
+    """For each end of the range: the share, and the median of each group's level beside the main series' median."""
+    def med(values):
+        return round(statistics.median(values), 3) if values else None
+
+    out: Dict = {"main": {"share": OTHER_SHARE, "rows": len(rows),
+                          **{f"{g}_median_bn": med([getattr(r, f"{g}_bn") for r in rows]) for g in _GROUPS}}}
+    for end, share in zip(("low", "high"), SENSITIVITY_SHARES):
+        attr = f"sens_{end}"
+        out[end] = {"share": share, "rows": len(rows),
+                    "residual_median_bn": med([share * r.reserves_bn for r in rows]),
+                    **{f"{g}_median_bn": med([getattr(r, attr)[i] for r in rows]) for i, g in enumerate(_GROUPS)}}
+    return out
 
 
 def coverage(rows: Sequence[Row], holes: Sequence[dict], prints: Sequence[h8.FirstPrint]) -> Dict:
@@ -294,5 +338,6 @@ def coverage(rows: Sequence[Row], holes: Sequence[dict], prints: Sequence[h8.Fir
             "break_weeks": sum(1 for r in rows if r.h8_break_week),
             "other_negative_weeks": sum(1 for r in rows if r.other_negative),
             "levels_reading_negative_weeks": levels_negative,
-            "other_share": OTHER_SHARE, "other_share_source": OTHER_SHARE_SOURCE,
+            "other_share": OTHER_SHARE, "other_share_source": OTHER_SHARE_SOURCE, "other_share_basis": OTHER_SHARE_BASIS,
+            "sensitivity_shares": list(SENSITIVITY_SHARES), "sensitivity": _sensitivity(rows),
             "other_bn": ({"min": others[0], "median": statistics.median(others), "max": others[-1]} if others else None)}

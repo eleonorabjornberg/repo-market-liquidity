@@ -10,6 +10,13 @@
     "foreign_related_bn",
     "other_bn",
     "other_share",
+    "other_share_basis",
+    "large_domestic_share_low_bn",
+    "small_domestic_share_low_bn",
+    "foreign_related_share_low_bn",
+    "large_domestic_share_high_bn",
+    "small_domestic_share_high_bn",
+    "foreign_related_share_high_bn",
     "h8_break_week",
     "domestic_basis",
     "foreign_basis"
@@ -22,10 +29,16 @@
     "wresbal": "7b806f2681ed790f878f9b7c31fd021a8fde58a43dbb6779c4439b219f645ff4"
   },
   "other_share": 0.086,
-  "other_share_source": "Median of the residual 'other depository institutions' divided by H.4.1 reserves over the 211 H.8 weeks from 2022-08-10 to 2026-08-19 on which the retired anchored build (latest-filed Call Report RC-A item 0090, moved by the H.8 and with the break refusal switched off) could be computed: median 0.0862, range -0.009 to 0.163 (docs/research/rca-fed-balances-due-diligence.md, section 7). A full-sample constant from latest-filed data, so a retrospective calibration and not a point-in-time figure; the value is rounded to 0.086 and is Eleonora's to confirm or replace.",
+  "other_share_basis": "retrospective_calibration_not_point_in_time",
+  "other_share_source": "Median of the residual 'other depository institutions' divided by H.4.1 reserves over the 211 H.8 weeks from 2022-08-10 to 2026-08-19 on which the retired anchored build (latest-filed Call Report RC-A item 0090, moved by the H.8 and with the break refusal switched off) could be computed: median 0.0862, range -0.009 to 0.163 (docs/research/rca-fed-balances-due-diligence.md, section 7). A full-sample constant from latest-filed data, so a retrospective calibration, not point-in-time; the value is rounded to 0.086 and is Eleonora's to confirm or replace.",
   "rows": 452,
+  "sensitivity_shares": [
+    -0.009,
+    0.163
+  ],
   "series": "group_reserves_weekly",
-  "sha256": "436887b7370210f22358b9f8df83e28c9b46c3ee0d8b80e40f33273375d18140",
+  "sha256": "cb6cc7b3be58dd97d23edafd1bf941e9ac9270dd2789d3129558631064dde460",
   "small_domestic_caveat": "Answer 17(a): cash assets overstate small domestic banks' reserves (vault cash and correspondent balances), and balances due from other depository institutions double-count, so the groups must not be summed naively; the residual absorbs every difference and is not a measure of anything on its own (docs/stages/group-reserves.md).",
-  "units": "billions of US dollars, not seasonally adjusted (H.8) and week average (H.4.1 WRESBAL)"
+  "units": "billions of US dollars, not seasonally adjusted (H.8) and week average (H.4.1 WRESBAL)",
+  "use_note": "Nothing scored or registered uses this series (her ruling of 15 October 2026, condition 3). The Call Report switch (step 2 of her ruling of 14 October 2026, once the CDR archive #49 has first prints) replaces the fixed share first."
 }

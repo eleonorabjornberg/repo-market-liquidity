@@ -41,6 +41,8 @@ def cut():
                 "columns": list(gr.COLUMNS), "inputs": gr.source_digests(), "foreign_basis": gr.FOREIGN_BASIS,
                 "domestic_basis": gr.DOMESTIC_BASIS,
                 "other_share": gr.OTHER_SHARE, "other_share_source": gr.OTHER_SHARE_SOURCE,
+                "other_share_basis": gr.OTHER_SHARE_BASIS, "sensitivity_shares": list(gr.SENSITIVITY_SHARES),
+                "use_note": gr.USE_NOTE,
                 "basis_note": ("Eleonora's rulings of 14 October 2026 on PR #50 (options (a) and (i), then the middle option): "
                                "other depository institutions are a labelled fixed share of H.4.1 reserves; the rest is split "
                                "across the three groups by their H.8 cash-asset shares, first print, unanchored and an "
@@ -77,6 +79,19 @@ def render_markdown(rows, record) -> str:
     if record["other_bn"]:
         other = record["other_bn"]
         lines.append(f"- The residual runs from {other['min']:,.1f} to {other['max']:,.1f} billion (median {other['median']:,.1f}).")
+    sens = record["sensitivity"]
+    lines += ["", "## Sensitivity to the fixed share (retrospective calibration, not point-in-time)", "",
+              f"The share {record['other_share']:.3f} is a full-sample median of the retired anchored build, from latest-filed RC-A data "
+              f"(`{record['other_share_basis']}`). The range of its computable weeks is {gr.SENSITIVITY_SHARES[0]} to "
+              f"{gr.SENSITIVITY_SHARES[1]}; the extract carries the group levels at each end beside the main series.",
+              gr.USE_NOTE, "",
+              "| share | large (median, bn) | small (median, bn) | foreign (median, bn) | residual (median, bn) |",
+              "|---|---|---|---|---|"]
+    for name in ("low", "main", "high"):
+        row = sens[name]
+        residual = row.get("residual_median_bn", record["other_bn"]["median"] if record["other_bn"] else None)
+        lines.append(f"| {row['share']} ({name}) | {row['large_domestic_median_bn']:,.1f} | {row['small_domestic_median_bn']:,.1f} | "
+                     f"{row['foreign_related_median_bn']:,.1f} | {residual:,.1f} |")
     lines += ["", "## Holes, by reason", "", "| reason | weeks |", "|---|---|"]
     for reason, count in record["reasons"].items():
         lines.append(f"| `{reason}` | {count} |")

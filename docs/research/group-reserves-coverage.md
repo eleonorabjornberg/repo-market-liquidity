@@ -5,11 +5,22 @@
 
 - H.8 weeks in the extract: 452. Weeks with a row: 452.
 - First row public at 2018-01-05T16:15:00-05:00; weeks 2017-12-27 to 2026-08-19.
-- The residual "other depository institutions" is a fixed 0.086 of H.4.1 reserves. Source: Median of the residual 'other depository institutions' divided by H.4.1 reserves over the 211 H.8 weeks from 2022-08-10 to 2026-08-19 on which the retired anchored build (latest-filed Call Report RC-A item 0090, moved by the H.8 and with the break refusal switched off) could be computed: median 0.0862, range -0.009 to 0.163 (docs/research/rca-fed-balances-due-diligence.md, section 7). A full-sample constant from latest-filed data, so a retrospective calibration and not a point-in-time figure; the value is rounded to 0.086 and is Eleonora's to confirm or replace.
+- The residual "other depository institutions" is a fixed 0.086 of H.4.1 reserves. Source: Median of the residual 'other depository institutions' divided by H.4.1 reserves over the 211 H.8 weeks from 2022-08-10 to 2026-08-19 on which the retired anchored build (latest-filed Call Report RC-A item 0090, moved by the H.8 and with the break refusal switched off) could be computed: median 0.0862, range -0.009 to 0.163 (docs/research/rca-fed-balances-due-diligence.md, section 7). A full-sample constant from latest-filed data, so a retrospective calibration, not point-in-time; the value is rounded to 0.086 and is Eleonora's to confirm or replace.
 - Weeks whose residual is negative: 0. Under the levels reading (reserves less the three groups' cash-asset levels) it would have been negative in 344 of 452 weeks.
 - The four pieces (three groups and the residual) sum to H.4.1 reserves in every week.
 - Rows at an H.8 break week (`h8_break_week`): 13.
 - The residual runs from 119.9 to 367.7 billion (median 270.4).
+
+## Sensitivity to the fixed share (retrospective calibration, not point-in-time)
+
+The share 0.086 is a full-sample median of the retired anchored build, from latest-filed RC-A data (`retrospective_calibration_not_point_in_time`). The range of its computable weeks is -0.009 to 0.163; the extract carries the group levels at each end beside the main series.
+Nothing scored or registered uses this series (her ruling of 15 October 2026, condition 3). The Call Report switch (step 2 of her ruling of 14 October 2026, once the CDR archive #49 has first prints) replaces the fixed share first.
+
+| share | large (median, bn) | small (median, bn) | foreign (median, bn) | residual (median, bn) |
+|---|---|---|---|---|
+| -0.009 (low) | 1,435.9 | 485.2 | 1,169.9 | -28.3 |
+| 0.086 (main) | 1,300.7 | 439.5 | 1,059.7 | 270.4 |
+| 0.163 (high) | 1,191.2 | 402.5 | 970.5 | 512.5 |
 
 ## Holes, by reason
 
