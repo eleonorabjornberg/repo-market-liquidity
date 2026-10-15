@@ -122,7 +122,7 @@ class ExtractTests(unittest.TestCase):
         self.assertEqual(self.prints[-1].release_date, date(2026, 8, 28))
 
     def test_the_tracked_page_digests_name_the_releases_the_record_lists(self):
-        listed = {record["release_date"]: record["sha256"] for record in self.releases["releases"]}
+        listed = {record["release_date"]: record["fetch_sha256"] for record in self.releases["releases"]}
         for item in self.prints:
             self.assertEqual(listed[item.release_date.isoformat()], item.release_sha256, item.week_ending)
 
@@ -365,7 +365,7 @@ class MovesTests(unittest.TestCase):
         for move in self.record["moves"]:
             for page in (move, move["compared_with"]):
                 record = listed[page["release_date"]]
-                self.assertEqual((page["url"], page["release_sha256"]), (record["url"], record["sha256"]), move["id"])
+                self.assertEqual((page["url"], page["release_sha256"]), (record["url"], record["fetch_sha256"]), move["id"])
                 self.assertRegex(page["fetched_sha256"], r"^[0-9a-f]{64}$")
 
     def test_the_break_week_is_the_week_the_release_first_printed(self):

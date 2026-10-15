@@ -177,7 +177,7 @@ class AgencySecuritiesSnapshotTests(unittest.TestCase):
         """#26: the H.8 group first prints are published like the rate tables, as a copy of the tracked extract.
 
         Recorded mutation (13 October 2026): in `tests/fixtures/snapshots/h8_groups/h8_group_first_print.releases.json`,
-        the `sha256` of the release of 2018-01-12 changed to another digest. This test then fails with ValueError:
+        the `fetch_sha256` of the release of 2018-01-12 changed to another digest. This test then fails with ValueError:
         h8_group_first_print.csv: the week ending 2018-01-03 names a page for the
         release of 2018-01-12 that the releases record does not list.
         """

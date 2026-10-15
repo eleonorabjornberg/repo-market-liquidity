@@ -11,7 +11,8 @@ row on the same page against the tracked Treasury extract, so both extracts read
 week's Treasury row and MBS row on the same page against the two tracked extracts.
 
 Needs network access to federalreserve.gov. Each week's release is found in the eight days after its Wednesday,
-parsed by `repo_liquidity.h41.parse_release`, and recorded with its URL and the page's sha256. A week whose
+parsed by `repo_liquidity.h41.parse_release`, and recorded with its URL and the page's `fetch_sha256` (it identifies the fetch, not the release: finding #40), and with
+a `content_sha256` of the extracted values, which `h41.write_extract` adds. A week whose
 release cannot be found or parsed is listed and the script exits non-zero: a gap is reported, never filled.
 Standard library only.
 """

@@ -23,6 +23,8 @@ from pathlib import Path
 from typing import Iterable, List, Optional
 from zoneinfo import ZoneInfo
 
+from repo_liquidity import contenthash
+
 ARCHIVE = "https://www.federalreserve.gov/releases/h41/{stamp}/"
 
 #: The release time, New York, as the release pages and the Board's release calendar state it.
@@ -151,20 +153,38 @@ def available_at(release_date: date) -> datetime:
 # ---------------------------------------------------------------------------------------------------------------
 # The tracked extract
 
+#: `fetch_sha256` is the SHA-256 of the page as fetched: it identifies the fetch, not the release (finding #40; the
+#: archive injects per-request tokens). `content_sha256` identifies the extracted values (`repo_liquidity.contenthash`).
 EXTRACT_COLUMNS = (
-    "week_ended", "release_date", "url", "page_sha256",
+    "week_ended", "release_date", "url", "fetch_sha256",
     "week_average_musd", "change_from_prior_week_musd", "wednesday_level_musd",
+    "content_sha256",
 )
+#: The columns the content hash covers: the release's extracted values. Not the URL or the fetch hash, which say where
+#: and when a page was read, not what it said.
+CONTENT_COLUMNS = ("week_ended", "release_date", "week_average_musd", "change_from_prior_week_musd",
+                   "wednesday_level_musd")
+CONTENT_PLACES = {"week_average_musd": 0, "change_from_prior_week_musd": 0, "wednesday_level_musd": 0}
+
+
+def row_content_sha256(row) -> str:
+    """The content hash of one extract row (a mapping by column name): recomputed from its extracted values alone."""
+    return contenthash.content_sha256(CONTENT_COLUMNS, [[row[column] for column in CONTENT_COLUMNS]], CONTENT_PLACES)
 
 
 def write_extract(rows: Iterable[tuple], path: Path) -> str:
-    """Write the extract and its manifest; return the extract's sha256."""
+    """Write the extract and its manifest; return the extract's sha256.
+
+    A row is `(week_ended, release_date, url, fetch_sha256, week_average, change, wednesday_level)`; the content hash is
+    appended here.
+    """
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", newline="", encoding="utf-8") as handle:
         writer = csv.writer(handle, lineterminator="\n")
         writer.writerow(EXTRACT_COLUMNS)
         for row in rows:
-            writer.writerow(row)
+            named = dict(zip(EXTRACT_COLUMNS, row))
+            writer.writerow(tuple(row) + (row_content_sha256(named),))
     digest = hashlib.sha256(path.read_bytes()).hexdigest()
     manifest = {"path": path.name, "sha256": digest, "source": ARCHIVE.format(stamp="YYYYMMDD")}
     path.with_name(path.name + ".manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
@@ -175,7 +195,8 @@ def load_extract(path: Path) -> List[Release]:
     """The tracked extract, checked against its manifest.
 
     Raises:
-        ValueError: if the extract's bytes do not match its manifest, or its weeks are not consecutive Wednesdays.
+        ValueError: if the extract's bytes do not match its manifest, its columns are not `EXTRACT_COLUMNS`, a row's
+            `content_sha256` is not the hash of its own values, or its weeks are not consecutive Wednesdays.
     """
     manifest = json.loads(path.with_name(path.name + ".manifest.json").read_text(encoding="utf-8"))
     digest = hashlib.sha256(path.read_bytes()).hexdigest()
@@ -183,7 +204,13 @@ def load_extract(path: Path) -> List[Release]:
         raise ValueError(f"{path.name} does not match its manifest ({digest} != {manifest['sha256']})")
     releases = []
     with path.open(encoding="utf-8") as handle:
-        for row in csv.DictReader(handle):
+        reader = csv.DictReader(handle)
+        if tuple(reader.fieldnames or ()) != EXTRACT_COLUMNS:
+            raise ValueError(f"{path.name}: columns {reader.fieldnames} are not {list(EXTRACT_COLUMNS)}")
+        for row in reader:
+            if row["content_sha256"] != row_content_sha256(row):
+                raise ValueError(f"{path.name}: the content_sha256 of the week ended {row['week_ended']} is not the hash "
+                                 f"of its values")
             releases.append(Release(
                 week_ended=date.fromisoformat(row["week_ended"]),
                 release_date=date.fromisoformat(row["release_date"]),
