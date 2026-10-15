@@ -1,7 +1,10 @@
 """The research-log check (`scripts/check_log_entry.py`), one test per failure mode.
 
-The format is the one decided on #20 (its second comment, adopted by Eleonora on 12 October 2026 with the plan) and
-passed to repo-market-model#638 as the shared one. A pull request that adds or changes `results/`, `docs/stages/`, a
+The format is the one of repo-market-model's `scripts/check_research_log.py` (the model repo's format is the one in
+use; finding #80, directive #83): a heading `### YYYY-MM-DD [H#] step N · owner/repo#n` (N from 1 to 6) or
+`### YYYY-MM-DD [H#] groundwork G<n> · owner/repo#n`, then the eight fields in order, the sixth being `Against kill`.
+This check is stricter than the model repo's in three ways (fixed order, no extra lines, this repository's tags and
+its own pull request number), so an entry that passes here passes there verbatim. A pull request that adds or changes `results/`, `docs/stages/`, a
 snapshot or a decision record must carry one fenced `research-log` block in that format, with a tag from {H7, H10} and
 the pull request's own number. The check reads the body from the `pull_request` event payload, so it needs no API call.
 """
@@ -28,7 +31,7 @@ ENTRY_LINES = [
     "- Pins: model 490f23d, panel digest abc123, snapshot none",
     "- Tried: one estimator; variant count 1",
     "- Result: built, nothing scored",
-    "- Against the goalpost or kill: not applicable",
+    "- Against kill: not applicable",
     "- Next: step 2",
 ]
 
@@ -69,8 +72,49 @@ class EntryTests(unittest.TestCase):
     def test_a_well_formed_entry_passes(self):
         self.assertEqual(errors(body()), [])
 
-    def test_the_heading_step_is_free_text(self):
-        self.assertEqual(errors(body(replaced(0, "### 2026-10-12 [H10] groundwork G3 · " + REPO + "#40"))), [])
+    def test_the_heading_may_name_a_step_one_to_six(self):
+        for step in range(1, 7):
+            with self.subTest(step=step):
+                self.assertEqual(errors(body(replaced(0, f"### 2026-10-14 [H7] step {step} · {REPO}#40"))), [])
+
+    def test_the_heading_may_name_groundwork(self):
+        for groundwork in ("G1", "G5", "G12"):
+            with self.subTest(groundwork=groundwork):
+                self.assertEqual(
+                    errors(body(replaced(0, f"### 2026-10-12 [H10] groundwork {groundwork} · {REPO}#40"))), [])
+
+    def test_the_heading_step_is_not_free_text(self):
+        for step in ("method amendment", "development 1", "step", "step 0", "step 7", "step 1a", "Step 1", "G5",
+                     "groundwork", "groundwork G0", "groundwork g5", "groundwork G5a", "groundwork 5"):
+            with self.subTest(step=step):
+                found = errors(body(replaced(0, f"### 2026-10-14 [H7] {step} · {REPO}#40")))
+                self.assertTrue(any("heading" in e for e in found), found)
+
+    def test_the_heading_tag_is_one_hypothesis_in_square_brackets(self):
+        for tag in ("H7", "H10"):
+            with self.subTest(tag=tag):
+                self.assertEqual(errors(body(replaced(0, f"### 2026-10-14 [{tag}] step 2 · {REPO}#40"))), [])
+        for heading in (f"### 2026-10-14 H7 step 2 · {REPO}#40", f"### 2026-10-14 [h7] step 2 · {REPO}#40",
+                        f"### 2026-10-14 [H7, H10] step 2 · {REPO}#40", f"### 2026-10-14 [] step 2 · {REPO}#40"):
+            with self.subTest(heading=heading):
+                self.assertTrue(any("heading" in e for e in errors(body(replaced(0, heading)))))
+
+    def test_the_heading_date_is_written_yyyy_mm_dd(self):
+        for date in ("2026-1-4", "14-10-2026", "20261014"):
+            with self.subTest(date=date):
+                self.assertTrue(errors(body(replaced(0, f"### {date} [H7] step 1 · {REPO}#40"))))
+
+    def test_the_old_field_name_is_refused(self):
+        found = errors(body(replaced(7, "- Against the goalpost or kill: not applicable")))
+        self.assertTrue(any("Against kill" in e for e in found), found)
+
+    def test_the_field_needs_a_space_after_its_colon(self):
+        self.assertTrue(any("Result" in e for e in errors(body(replaced(6, "- Result:built, nothing scored")))))
+
+    def test_the_directive_line_names_an_issue(self):
+        found = errors(body(replaced(1, "- Directive: the log check")))
+        self.assertTrue(any("Directive" in e and "#" in e for e in found), found)
+        self.assertEqual(errors(body(replaced(1, "- Directive: #83 (L18)"))), [])
 
     def test_missing_block(self):
         self.assertTrue(any("no fenced research-log block" in e for e in errors("Just a summary.")))
@@ -120,6 +164,33 @@ class EntryTests(unittest.TestCase):
 
     def test_tier_not_development_or_confirmation(self):
         self.assertTrue(any("Tier" in e for e in errors(body(replaced(3, "- Tier: lockbox")))))
+
+
+class ConvertedEntryTests(unittest.TestCase):
+    """The merged result pull requests' entries, converted for copying into the model repo's log (directive #83).
+
+    Each fixture is the `research-log` block of that pull request's body, with the heading's step text and the field
+    name changed to the model repo's format and nothing else. The merged pull requests are not edited.
+    """
+
+    FIXTURES = ROOT / "tests" / "fixtures" / "research_log"
+
+    def test_each_converted_entry_passes(self):
+        paths = sorted(self.FIXTURES.glob("pr_*.txt"))
+        self.assertEqual([path.name for path in paths],
+                         [f"pr_{n}.txt" for n in (44, 66, 67, 72, 73, 78)])
+        for path in paths:
+            number = int(path.stem.split("_")[1])
+            with self.subTest(pr=number):
+                lines = path.read_text(encoding="utf-8").splitlines()
+                self.assertEqual(check_log_entry.check_entry(lines, number, REPO), [])
+
+    def test_the_old_field_name_fails_in_each_of_them(self):
+        for path in sorted(self.FIXTURES.glob("pr_*.txt")):
+            number = int(path.stem.split("_")[1])
+            old = path.read_text(encoding="utf-8").replace("- Against kill:", "- Against the goalpost or kill:")
+            with self.subTest(pr=number):
+                self.assertNotEqual(check_log_entry.check_entry(old.splitlines(), number, REPO), [])
 
 
 class EventTests(unittest.TestCase):
