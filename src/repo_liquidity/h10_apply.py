@@ -27,6 +27,8 @@ from repo_liquidity.attribution import Attribution, DRIVERS_WITH_ON_RRP, SEED, S
 
 ROOT = Path(__file__).resolve().parents[2]
 RECORD = ROOT / "results" / "h10" / "development.json"
+#: H10 step 3 (#77): the same application with ON RRP entering as `on_rrp x 1(on_rrp < break)` (her answer 5 on #69).
+SENSITIVITY_RECORD = ROOT / "results" / "h10" / "sensitivity_onrrp_interaction.json"
 STAGE_DOC = ROOT / "docs" / "stages" / "h10-step2.md"
 #: The panel the application reads: version 1, the published columns plus the built ON RRP take-up, to the development end.
 PANEL_VERSION = 1
@@ -188,6 +190,15 @@ def real_rule():
         yield InformationRule(declaration.registry(), list(DRIVERS_WITH_ON_RRP), decision_time=DECISION_TIME)
 
 
+def interaction_series(series: attribution.Series, break_bn: float) -> Dict[str, list]:
+    """A copy of `series` whose ON RRP column is `on_rrp x 1(on_rrp < break_bn)`: take-up counts only while it is below
+    the break (the parent's `ON_RRP_DEPLETION_BREAK_BN`, strictly), and is zero above it. A missing day stays missing.
+    Every other column is copied unchanged and the input is not modified."""
+    out = {name: list(values) for name, values in series.items()}
+    out[attribution.ON_RRP] = [None if v is None else (v if v < break_bn else 0.0) for v in series[attribution.ON_RRP]]
+    return out
+
+
 def report_index(start: int, count: int) -> int:
     """The panel day on which an episode starting at `start` is reported: `REPORT_DAYS` panel days later.
 
@@ -223,14 +234,15 @@ def _share(point, interval) -> dict:
 def _work(start: int) -> dict:
     """One episode, in a worker: its attribution, the benchmark and the placebo comparison."""
     series, dates, rule, draws, placebo_windows = (_STATE[k] for k in ("series", "dates", "rule", "draws", "placebo"))
+    raw_on_rrp = _STATE["raw_on_rrp"]
     drivers = DRIVERS_WITH_ON_RRP
     result = attribute_episode(series, dates, rule, start, draws=draws)
     entry = {
         "onset": dates[start].isoformat(), "index": start,
         "report_day": dates[start + REPORT_DAYS].isoformat() if start + REPORT_DAYS < len(dates) else None,
         "status": result.status, "reason": result.reason, "rise_bp": result.rise_bp,
-        "regime": "depleted" if series["on_rrp"][start] < _STATE["break"] else "abundant",
-        "quarter_end": bool(series["quarter_end"][start]), "on_rrp_at_onset": series["on_rrp"][start],
+        "regime": "depleted" if raw_on_rrp[start] < _STATE["break"] else "abundant",
+        "quarter_end": bool(series["quarter_end"][start]), "on_rrp_at_onset": raw_on_rrp[start],
     }
     if result.status != "attributed":
         return entry
@@ -248,17 +260,24 @@ def _work(start: int) -> dict:
 
 
 def build_record(rows, manifest, *, draws: int = attribution.DRAWS, null_draws: int = attribution.NULL_DRAWS,
-                 workers: int = 1) -> dict:
-    """The development record: every onset attributed, missed or not attributable, the null, the counts and the splits."""
+                 workers: int = 1, interaction: bool = False) -> dict:
+    """The development record: every onset attributed, missed or not attributable, the null, the counts and the splits.
+
+    With `interaction` the ON RRP driver is `on_rrp x 1(on_rrp < break)` instead of its window change, everywhere (the
+    fit, the Shapley shares, the placebo, the benchmark and the null), and the record is marked as a sensitivity. The regime
+    and `on_rrp_at_onset` are always read from the plain take-up, so the two records' episodes are comparable."""
     from repo_model.contract import ON_RRP_DEPLETION_BREAK_BN
 
     dates = [row.date for row in rows]
     series = attribution.series_from_rows(rows, DRIVERS_WITH_ON_RRP)
+    raw_on_rrp = list(series[attribution.ON_RRP])
+    if interaction:
+        series = interaction_series(series, ON_RRP_DEPLETION_BREAK_BN)
     onsets = attribution.cross_check_onsets(rows)
     placebo = attribution.placebo_starts(series, onsets, attribution.PLACEBO_WINDOWS, SEED)
     null = attribution.selection_null(series, DRIVERS_WITH_ON_RRP, draws=null_draws, seed=SEED)
     with real_rule() as rule:
-        _STATE.update(series=series, dates=dates, rule=rule, draws=draws, placebo=placebo, **{"break": ON_RRP_DEPLETION_BREAK_BN})
+        _STATE.update(series=series, dates=dates, rule=rule, draws=draws, placebo=placebo, raw_on_rrp=raw_on_rrp, **{"break": ON_RRP_DEPLETION_BREAK_BN})
         try:
             if workers > 1:
                 with multiprocessing.get_context("fork").Pool(workers) as pool:
@@ -273,9 +292,10 @@ def build_record(rows, manifest, *, draws: int = attribution.DRAWS, null_draws: 
         entry["beats_null"] = attributed and entry["explained_share"] > null.bar
         entry["counted"] = entry["under_bar"] and entry["beats_null"]
     ranked = list(null.explained)
-    return {
-        "record": "H10 step 2: the declared method applied to the development onsets",
-        "directive": "eleonorabjornberg/repo-market-liquidity#70",
+    out = {
+        "record": ("H10 step 3: sensitivity, ON RRP entering as an interaction with the depleted regime"
+                   if interaction else "H10 step 2: the declared method applied to the development onsets"),
+        "directive": "eleonorabjornberg/repo-market-liquidity#77" if interaction else "eleonorabjornberg/repo-market-liquidity#70",
         "tier": "development",
         "not_a_verdict": "Development evidence only (measurement-protocol.md section 1; repo-market-model#640). It confirms nothing.",
         "parent_commit": PARENT_COMMIT,
@@ -302,6 +322,12 @@ def build_record(rows, manifest, *, draws: int = attribution.DRAWS, null_draws: 
         "summary": summarise(entries),
         "episodes": entries,
     }
+    if interaction:
+        out["sensitivity"] = {
+            "on_rrp_term": f"on_rrp x 1(on_rrp < {ON_RRP_DEPLETION_BREAK_BN} bn)", "regime_break_bn": ON_RRP_DEPLETION_BREAK_BN,
+            "replaces": "the ON RRP window change", "reported_only": "the decided driver set and the published outcome do not change",
+        }
+    return out
 
 
 # --------------------------------------------------------------------------- rendering
