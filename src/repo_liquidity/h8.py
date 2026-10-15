@@ -30,7 +30,7 @@ from zoneinfo import ZoneInfo
 from repo_model import ingest, lockbox
 from repo_model.ingest import FrbH8Release
 
-from repo_liquidity import development
+from repo_liquidity import contenthash, development
 
 SOURCE_ID = "frb_h8_groups"
 NEW_YORK = ZoneInfo("America/New_York")
@@ -199,6 +199,28 @@ def write_extract(prints: Iterable[FirstPrint]) -> bytes:
         writer.writerow((item.week_ending.isoformat(), item.release_date.isoformat())
                         + tuple(format(item.values[field], ".1f") for field in FIELDS) + (item.release_sha256,))
     return buffer.getvalue().encode("utf-8")
+
+
+#: The columns a release's content hash covers: the values it first printed (not the page digest, which identifies a
+#: fetch, not the release: finding #40), to one decimal as the extract writes them.
+CONTENT_COLUMNS: Tuple[str, ...] = ("week_ending", "release_date") + FIELDS
+CONTENT_PLACES: Mapping[str, int] = {field: 1 for field in FIELDS}
+
+
+def release_content_hashes(prints: Iterable[FirstPrint]) -> Dict[str, str]:
+    """For each release that first printed a week, the content hash of the values it first printed (#89).
+
+    Keyed by release date. Recomputed from the extract alone, with no page.
+    """
+    grouped: Dict[str, List[FirstPrint]] = {}
+    for item in prints:
+        grouped.setdefault(item.release_date.isoformat(), []).append(item)
+    return {day: contenthash.content_sha256(
+                CONTENT_COLUMNS,
+                [(item.week_ending.isoformat(), item.release_date.isoformat())
+                 + tuple(format(item.values[field], ".1f") for field in FIELDS) for item in items],
+                CONTENT_PLACES)
+            for day, items in grouped.items()}
 
 
 def load_extract(path: Path) -> List[FirstPrint]:
