@@ -50,6 +50,7 @@ RECORD_FILES = {
 OWN_CHECK = {
     "results/h10/development.json": "tests/test_h10_step2.py",
     "results/h10/sensitivity_onrrp_interaction.json": "tests/test_h10_step3.py",
+    "results/h10/sensitivity_onrrp_regimes.json": "tests/test_h10_regimes.py",
 }
 
 

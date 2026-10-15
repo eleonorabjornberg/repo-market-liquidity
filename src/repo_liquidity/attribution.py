@@ -22,6 +22,7 @@ from datetime import date
 from typing import Dict, List, Mapping, Optional, Sequence, Tuple
 
 from repo_model import lockbox
+from repo_model.contract import ON_RRP_DEPLETION_BREAK_BN
 from repo_model.splits import LookAheadError
 
 #: The drivers, in the order the record names them. Treasury settlement and TGA are flows through the Treasury's
@@ -32,6 +33,13 @@ DRIVERS: Tuple[str, ...] = ("treasury_settlement", "tga", "reserve_balances", "q
 #: the window change like the others. `DRIVERS` stays the decided set until she merges the amendment.
 ON_RRP = "on_rrp"
 DRIVERS_WITH_ON_RRP: Tuple[str, ...] = DRIVERS + (ON_RRP,)
+#: H10 step 3 sensitivity (#86, finding #79): ON RRP as two regime-specific terms, `change x 1(depleted)` and
+#: `change x 1(abundant)`, each with its own coefficient. A window's regime is fixed by its baseline mean ON RRP against the
+#: parent's `ON_RRP_DEPLETION_BREAK_BN` (strictly below it is depleted). They stand in for `ON_RRP` and read its column.
+ON_RRP_DEPLETED = "on_rrp_depleted"
+ON_RRP_ABUNDANT = "on_rrp_abundant"
+REGIME_TERMS: Tuple[str, str] = (ON_RRP_DEPLETED, ON_RRP_ABUNDANT)
+DRIVERS_REGIME_TERMS: Tuple[str, ...] = DRIVERS + REGIME_TERMS
 #: The benchmark's single driver (the record, section 4).
 RESERVES_ONLY: Tuple[str, ...] = ("reserve_balances",)
 #: The target series name, `DailyObservation.spread_bps`.
@@ -177,9 +185,44 @@ def change(values: Sequence[Optional[float]], start: int) -> Optional[float]:
     return after - before
 
 
+def _in_regime(name: str, baseline_mean: float) -> bool:
+    return (baseline_mean < ON_RRP_DEPLETION_BREAK_BN) == (name == ON_RRP_DEPLETED)
+
+
+def window_change(series: Series, name: str, start: int) -> Optional[float]:
+    """The window change of driver `name` for the window starting at `start`.
+
+    A regime term (`REGIME_TERMS`) is the ON RRP window change where the window's baseline mean is in that term's regime and
+    0 elsewhere, so a window that straddles the break keeps the sign of its change and falls in the regime it started in.
+    None if a day of the baseline or the window is missing, or the window is incomplete."""
+    if name not in REGIME_TERMS:
+        return change(series[name], start)
+    moved = change(series[ON_RRP], start)
+    if moved is None:
+        return None
+    baseline = _mean(series[ON_RRP][start - BASELINE_DAYS : start])
+    return moved if _in_regime(name, baseline) else 0.0
+
+
+def day_value(series: Series, name: str, t: int) -> Optional[float]:
+    """The level of driver `name` on day `t`, for the selection null's driver-free spread.
+
+    A regime term is the ON RRP level while the mean of the `BASELINE_DAYS` days before `t` is in that term's regime, 0
+    otherwise. None if that baseline is incomplete or the level is missing."""
+    if name not in REGIME_TERMS:
+        return series[name][t]
+    level = series[ON_RRP][t]
+    if t < BASELINE_DAYS or level is None:
+        return None
+    baseline = _mean(series[ON_RRP][t - BASELINE_DAYS : t])
+    if baseline is None:
+        return None
+    return level if _in_regime(name, baseline) else 0.0
+
+
 def _changes(series: Series, drivers: Sequence[str], start: int) -> Optional[Tuple[float, Tuple[float, ...]]]:
     y = change(series[SPREAD], start)
-    xs = [change(series[name], start) for name in drivers]
+    xs = [window_change(series, name, start) for name in drivers]
     if y is None or any(x is None for x in xs):
         return None
     return y, tuple(xs)  # type: ignore[arg-type]
@@ -537,7 +580,7 @@ def driver_free_spread(series: Series, drivers: Sequence[str] = DRIVERS) -> List
     beta = coefficients(series, drivers)
     effect: List[Optional[float]] = []
     for t in range(len(series[SPREAD])):
-        values = [series[name][t] for name in drivers]
+        values = [day_value(series, name, t) for name in drivers]
         effect.append(None if any(v is None for v in values) else sum(beta[name] * v for name, v in zip(drivers, values)))
     present = [e for e in effect if e is not None]
     centre = sum(present) / len(present)
@@ -571,7 +614,7 @@ def selection_null(
     base = driver_free_spread(series, drivers)
     dx = {}
     for t in range(BASELINE_DAYS, n - WINDOW_DAYS + 1):
-        moved = [change(series[name], t) for name in drivers]
+        moved = [window_change(series, name, t) for name in drivers]
         if all(v is not None for v in moved):
             dx[t] = tuple(moved)
     rng = random.Random(seed)
