@@ -1,0 +1,9 @@
+### 2026-10-14 [H7] groundwork G5 · eleonorabjornberg/repo-market-liquidity#67
+- Directive: #63 (L14, SLR headroom as a labelled latest-filed input), steps 2 to 6 of #27
+- Step: groundwork G5 for H7m, before step 2 candidate D
+- Tier: development
+- Pins: parent repo-market-model 09640f5; panel 4ddc3882cd6d406b11e1088f8ff6195e16dde175a0ad6818abe40dd5bdac8999
+- Tried: built the overlay, declaration, guards and snapshot for the latest-filed SLR headroom of nine G-SIB depository subsidiaries from 34 CDR bulk quarters, 2018-03-31 to 2026-06-30
+- Result: inputs built, nothing scored; 277 of 306 bank-quarters in the extract, the rest listed with reasons; headroom blank from 2026-04-01 (requirement not set in row 16); State Street's filed exposure not credible
+- Against kill: no goalpost is tested here; this is an input
+- Next: Eleonora's answers to Q1 to Q3; then H7 step 2 candidate D may read this snapshot

@@ -1,0 +1,9 @@
+### 2026-10-14 [H10] step 1 · eleonorabjornberg/repo-market-liquidity#66
+- Directive: eleonorabjornberg/repo-market-liquidity#62
+- Step: H10 method amended before step 2 (finding #52)
+- Tier: development
+- Pins: model 09640f5, panel digest none (synthetic series only), snapshot none
+- Tried: a selection-aware null and ON RRP as a driver, on synthetic episodes; variant count 1
+- Result: method amended, nothing scored
+- Against kill: not applicable
+- Next: H10 step 2 once the record is merged

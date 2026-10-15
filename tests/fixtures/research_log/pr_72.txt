@@ -1,0 +1,9 @@
+### 2026-10-14 [H7] groundwork G5 · eleonorabjornberg/repo-market-liquidity#72
+- Directive: #71 (her decision on #69)
+- Step: groundwork G5 for H7m candidate D: the SLR requirement table (draft), State Street as a labelled sensitivity, the day-after rule
+- Tier: development
+- Pins: parent 09640f5; panel digest unchanged (4ddc3882…); slr_headroom 998c5aa1… to 09c138ad…
+- Tried: read the requirement from the OCC rule text (eCFR as of 2018-01-01, 2026-03-31, 2026-10-01); made the headroom read a per-period table; re-cut the snapshot with a measure column
+- Result: inputs revised, nothing scored; no figure moved; the headroom stays blank from 2026-04-01 pending her answer to open question 1
+- Against kill: not applicable; nothing scored
+- Next: H7 step 2 (#41), after #43 and #65, once she has ruled on the draft

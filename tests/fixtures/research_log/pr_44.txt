@@ -1,0 +1,9 @@
+### 2026-10-13 [H7] groundwork G5 · eleonorabjornberg/repo-market-liquidity#44
+- Directive: #27 (L3, SLR headroom, with answer 16), step 1 only
+- Step: groundwork G5 for H7m, before step 2 candidate D
+- Tier: development
+- Pins: parent repo-market-model 09640f5; panel 4ddc3882cd6d406b11e1088f8ff6195e16dde175a0ad6818abe40dd5bdac8999
+- Tried: read four quarters of the FFIEC CDR Call Report bulk files (2018-03-31, 2021-03-31, 2023-06-30, 2025-12-31) for the nine G-SIB depository subsidiaries and all filers, against the filing deadline
+- Result: first-filed figures are not recoverable from the public bulk files; for most G-SIB subsidiaries the file holds an amended figure last updated 30 to 1,611 days after quarter-end. No input built, nothing scored
+- Against kill: no goalpost is tested here; this is an input question
+- Next: the overlay, declaration, tests and snapshot of #27 under reading 2 (a new directive), and the archive (#46)
