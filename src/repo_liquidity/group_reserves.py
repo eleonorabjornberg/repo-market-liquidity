@@ -1,28 +1,29 @@
-"""The weekly group-reserves series: H.8 group cash assets set against H.4.1 reserves (#43, G4 for H7m).
+"""The weekly group-reserves series: H.4.1 reserves split into bank groups by H.8 cash-asset shares (#43, G4 for H7m).
 
 Candidate C (#41) needs reserves by bank group. Nicholas's answer 17(b) gave an anchored method (quarterly Call Report
 balances moved by the H.8). Eleonora's rulings of 14 October 2026 on PR #50 replace the anchor: option (a) for the
-foreign-related group and option (i) for the domestic split ("use the H.8 group cash shares for the domestic split as well,
-unanchored and labelled as an approximation ... Do not anchor on latest-filed RC-A, because that would break rule 16(d)").
-Nothing is scored.
+foreign-related group and option (i) for the domestic split (unanchored, an approximation; "do not anchor on latest-filed
+RC-A, because that would break rule 16(d)"), and then her middle option for the domestic split. Nothing is scored.
 
-- **Large and small domestic groups, and the foreign-related group.** Each level is the H.8 group's cash assets, first
-  print, in billions of dollars: `h8_large_domestic_cash_assets`, `h8_small_domestic_cash_assets`,
-  `h8_foreign_related_cash_assets`. Cash assets are not reserves alone (they include vault cash, cash items in process of
-  collection and balances due from other depository institutions), so every level is labelled an approximation
-  (`domestic_basis`, `foreign_basis`).
-- **Other depository institutions.** The residual: H.4.1 reserve balances (`WRESBAL`) less the three groups. It is not
-  clipped: a negative residual means the three approximations together exceed reserves, and the row is flagged
-  (`other_negative`), never adjusted.
+- **Other depository institutions, set first.** Thrifts and credit unions hold reserves that the H.4.1 counts and the H.8
+  does not. Their reserves are a labelled fixed share of the week's H.4.1 reserve balances (`WRESBAL`):
+  `OTHER_SHARE`. The share is a constant, not estimated week by week, so the residual is positive in every week and is never
+  clipped. Where the value comes from is in `OTHER_SHARE_SOURCE`.
+- **The rest, split by cash shares.** The remaining reserves, `(1 - OTHER_SHARE)` of the week's total, are split across the
+  large domestic, small domestic and foreign-related groups in proportion to each group's H.8 cash assets, first print
+  (`h8_large_domestic_cash_assets`, `h8_small_domestic_cash_assets`, `h8_foreign_related_cash_assets`). The shares are
+  shares, not levels: cash assets are not reserves (they include vault cash, cash items in process of collection and balances
+  due from other depository institutions), so the split is labelled an approximation (`domestic_basis`, `foreign_basis`).
+  The four pieces sum to reserves in every week.
 - **As of.** A week's row is public from the later of the H.8 first print's release (16:15 New York) and the reserves'
   declared availability (the parent's `fred_macro_latest_vintage` `WRESBAL` lag). Both inputs are first prints, so a row is
-  never revised.
-- **Breaks.** The H.8 restates the large and small panels at the break weeks of `docs/research/h8-group-moves.json`, moving
-  them in opposite directions. A level is a first print and not a ratio, so a break is not a refusal; the week carries
-  `h8_break_week` so a reader knows that levels across it are on different panels.
+  never revised. The share is a constant fixed in this module, so it adds no vintage.
+- **Breaks.** The H.8 restates the large and small panels at the break weeks of `docs/research/h8-group-moves.json`,
+  moving them in opposite directions. A share of cash is not a ratio across weeks, so a break is not a refusal; the week
+  carries `h8_break_week` so a reader knows that the split across it is on different panels.
 - **What is not built.** The RC-A anchor (`repo_liquidity.rca`) is not read here. Under rule 16(d) as amended it is public
-  years late, and the ruling says not to anchor on latest-filed figures. When the CDR archive (#49) holds first prints, an
-  anchored version can be a later directive.
+  years late. When the CDR archive (#49) holds first prints, the Call Report total can replace the fixed share (the
+  ruling's step 2, a later directive that records the switch date and both versions).
 
 Standard library only (the parent's `repo_model` is imported for the as-of declaration and the exception classes).
 """
@@ -51,12 +52,21 @@ H8_EXTRACT = ROOT / "tests" / "fixtures" / "snapshots" / "h8_groups" / h8.EXTRAC
 RESERVES_RELATIVE = Path("tests") / "fixtures" / "snapshots" / "alfred-wresbal" / "WRESBAL_2026-09-12.csv"
 RESERVES_SOURCE, RESERVES_FIELD = "fred_macro_latest_vintage", "WRESBAL"
 
+#: The labelled fixed share of H.4.1 reserves held by other depository institutions (thrifts and credit unions).
+OTHER_SHARE = 0.086
+OTHER_SHARE_SOURCE = (
+    "Median of the residual 'other depository institutions' divided by H.4.1 reserves over the 211 H.8 weeks from "
+    "2022-08-10 to 2026-08-19 on which the retired anchored build (latest-filed Call Report RC-A item 0090, moved by the "
+    "H.8 and with the break refusal switched off) could be computed: median 0.0862, range -0.009 to 0.163 (docs/research/"
+    "rca-fed-balances-due-diligence.md, section 7). A full-sample constant from latest-filed data, so a retrospective "
+    "calibration and not a point-in-time figure; the value is rounded to 0.086 and is Eleonora's to confirm or replace.")
+
 COLUMNS: Tuple[str, ...] = (
     "week_ending", "public_at", "reserves_bn", "large_domestic_bn", "small_domestic_bn", "foreign_related_bn", "other_bn",
-    "other_negative", "h8_break_week", "domestic_basis", "foreign_basis")
+    "other_share", "h8_break_week", "domestic_basis", "foreign_basis")
 DOMESTIC_BASIS = "h8_cash_assets_approximation"
 FOREIGN_BASIS = "h8_cash_assets_approximation"
-REFUSALS = ("reserves_missing",)
+REFUSALS = ("reserves_missing", "no_cash_assets")
 _LEVEL_FIELDS = (("large_domestic_bn", "h8_large_domestic_cash_assets"), ("small_domestic_bn", "h8_small_domestic_cash_assets"),
                  ("foreign_related_bn", "h8_foreign_related_cash_assets"))
 
@@ -83,18 +93,32 @@ def _public_at(item: h8.FirstPrint, reserve_at: datetime) -> datetime:
     return max(h8.available_at(item.release_date), reserve_at)
 
 
+def _check_share(share: float) -> None:
+    if not 0.0 <= share < 1.0:
+        raise ValueError(f"the other-depository share must be in [0, 1), not {share}")
+
+
+def _split(reserve_bn: float, cash: Sequence[float], share: float) -> List[float]:
+    """The three group levels: reserves less the residual, in proportion to the H.8 cash assets (`cash`)."""
+    rest = reserve_bn * (1.0 - share)
+    total = sum(cash)
+    return [round(rest * value / total, 6) for value in cash]
+
+
 def build(*, prints: Sequence[h8.FirstPrint], reserves: Mapping[date, Tuple[float, datetime]],
-          breaks: Mapping[date, str]) -> Tuple[List[Row], List[dict]]:
+          breaks: Mapping[date, str], other_share: float = OTHER_SHARE) -> Tuple[List[Row], List[dict]]:
     """The weekly series and the listed holes, from the inputs only.
 
     Args:
         prints: the H.8 group first prints (`h8.load_extract`).
         reserves: week ending -> (H.4.1 reserve balances in billions, the instant that value is public).
         breaks: the H.8 break weeks (`h8.break_flags`).
+        other_share: the fixed share of reserves held by other depository institutions.
 
     Raises:
-        ValueError: if an instant has no time zone.
+        ValueError: if an instant has no time zone, or the share is not in [0, 1).
     """
+    _check_share(other_share)
     rows: List[Row] = []
     holes: List[dict] = []
     for item in sorted(prints, key=lambda p: p.week_ending):
@@ -106,7 +130,12 @@ def build(*, prints: Sequence[h8.FirstPrint], reserves: Mapping[date, Tuple[floa
         reserve_bn, reserve_at = reserves[week]
         if reserve_at.tzinfo is None:
             raise ValueError(f"the reserves of the week ending {week} are dated without a time zone")
-        levels = {name: float(item.values[field]) for name, field in _LEVEL_FIELDS}
+        cash = [float(item.values[field]) for _, field in _LEVEL_FIELDS]
+        if sum(cash) <= 0 or min(cash) < 0:
+            holes.append({"week_ending": week.isoformat(), "reason": "no_cash_assets",
+                          "detail": "the H.8 cash assets of the three groups are not all non-negative with a positive sum"})
+            continue
+        levels = dict(zip((name for name, _ in _LEVEL_FIELDS), _split(reserve_bn, cash, other_share)))
         other = round(reserve_bn - sum(levels.values()), 6)
         rows.append(Row(week_ending=week, public_at=_public_at(item, reserve_at), reserves_bn=reserve_bn, other_bn=other,
                         h8_break_week=week in breaks, **levels))
@@ -114,11 +143,11 @@ def build(*, prints: Sequence[h8.FirstPrint], reserves: Mapping[date, Tuple[floa
 
 
 def verify(rows: Iterable[Row], prints: Sequence[h8.FirstPrint], reserves: Mapping[date, Tuple[float, datetime]]) -> None:
-    """Refuse a row that is public before its inputs are, or whose levels are not the first prints.
+    """Refuse a row that is public before its inputs are, or whose levels are not the cash shares of the rest of reserves.
 
     Raises:
         ValueError: if a row's week is not in the H.8 extract or the reserves, or a level or the residual is not what the
-            inputs give.
+            inputs give (the residual is reserves less the three levels).
         LookAheadError: if a row's `public_at` is earlier than the later of its H.8 release and its reserves' availability.
     """
     from repo_model.splits import LookAheadError
@@ -132,13 +161,14 @@ def verify(rows: Iterable[Row], prints: Sequence[h8.FirstPrint], reserves: Mappi
         if row.public_at < ready:
             raise LookAheadError(f"the week ending {row.week_ending} is public at {row.public_at}, before its inputs are "
                                  f"({ready})")
-        for name, field in _LEVEL_FIELDS:
-            if getattr(row, name) != float(item.values[field]):
-                raise ValueError(f"the week ending {row.week_ending}: {name} {getattr(row, name)} is not the H.8 first "
-                                 f"print {item.values[field]}")
-        expected = round(reserves[row.week_ending][0] - row.large_domestic_bn - row.small_domestic_bn
-                         - row.foreign_related_bn, 6)
-        if row.other_bn != expected or row.reserves_bn != reserves[row.week_ending][0]:
+        reserve_bn = reserves[row.week_ending][0]
+        cash = [float(item.values[field]) for _, field in _LEVEL_FIELDS]
+        for (name, _), want in zip(_LEVEL_FIELDS, _split(reserve_bn, cash, OTHER_SHARE)):
+            if getattr(row, name) != want:
+                raise ValueError(f"the week ending {row.week_ending}: {name} {getattr(row, name)} is not the H.8 cash share "
+                                 f"of the rest of reserves ({want})")
+        expected = round(reserve_bn - row.large_domestic_bn - row.small_domestic_bn - row.foreign_related_bn, 6)
+        if row.other_bn != expected or row.reserves_bn != reserve_bn:
             raise ValueError(f"the week ending {row.week_ending}: the reserves or the residual are not what the inputs give")
 
 
@@ -202,7 +232,7 @@ def write_extract(rows: Iterable[Row]) -> bytes:
     for row in sorted(rows, key=lambda r: r.week_ending):
         writer.writerow((row.week_ending.isoformat(), row.public_at.isoformat(), _fmt(row.reserves_bn),
                          _fmt(row.large_domestic_bn), _fmt(row.small_domestic_bn), _fmt(row.foreign_related_bn),
-                         _fmt(row.other_bn), str(row.other_negative).lower(), str(row.h8_break_week).lower(),
+                         _fmt(row.other_bn), _fmt(OTHER_SHARE), str(row.h8_break_week).lower(),
                          DOMESTIC_BASIS, FOREIGN_BASIS))
     return buffer.getvalue().encode("utf-8")
 
@@ -212,7 +242,7 @@ def load_extract(path: Path) -> List[Row]:
 
     Raises:
         ValueError: if the bytes do not match the manifest, the columns are not `COLUMNS`, a week is listed twice, a basis
-            label is not the declared one, or a stored derived column (the residual, its flag) is not what the stored
+            label is not the declared one, or a stored derived column (the residual, the share) is not what the stored
             levels give.
     """
     manifest = json.loads(path.with_name(path.name + ".manifest.json").read_text(encoding="utf-8"))
@@ -238,7 +268,7 @@ def load_extract(path: Path) -> List[Row]:
             if item[column] != want:
                 raise ValueError(f"{path.name}: {row.week_ending} is labelled {item[column]!r}, not {want!r}")
         expected = round(row.reserves_bn - row.large_domestic_bn - row.small_domestic_bn - row.foreign_related_bn, 6)
-        for column, want in (("other_bn", _fmt(expected)), ("other_negative", str(expected < 0).lower())):
+        for column, want in (("other_bn", _fmt(expected)), ("other_share", _fmt(OTHER_SHARE))):
             if item[column] != want:
                 raise ValueError(f"{path.name}: {row.week_ending} stores {column} {item[column]!r}, the levels give {want!r}")
         rows.append(row)
@@ -254,6 +284,8 @@ def coverage(rows: Sequence[Row], holes: Sequence[dict], prints: Sequence[h8.Fir
     for row in rows:
         by_year[str(row.week_ending.year)] = by_year.get(str(row.week_ending.year), 0) + 1
     others = sorted(r.other_bn for r in rows)
+    cash = {p.week_ending: sum(float(p.values[f]) for _, f in _LEVEL_FIELDS) for p in prints}
+    levels_negative = sum(1 for r in rows if r.reserves_bn - cash[r.week_ending] < 0)
     return {"weeks": len(prints), "rows": len(rows), "reasons": dict(sorted(counts.items())), "holes": list(holes),
             "first_week": rows[0].week_ending.isoformat() if rows else None,
             "last_week": rows[-1].week_ending.isoformat() if rows else None,
@@ -261,4 +293,6 @@ def coverage(rows: Sequence[Row], holes: Sequence[dict], prints: Sequence[h8.Fir
             "rows_by_year": dict(sorted(by_year.items())),
             "break_weeks": sum(1 for r in rows if r.h8_break_week),
             "other_negative_weeks": sum(1 for r in rows if r.other_negative),
+            "levels_reading_negative_weeks": levels_negative,
+            "other_share": OTHER_SHARE, "other_share_source": OTHER_SHARE_SOURCE,
             "other_bn": ({"min": others[0], "median": statistics.median(others), "max": others[-1]} if others else None)}

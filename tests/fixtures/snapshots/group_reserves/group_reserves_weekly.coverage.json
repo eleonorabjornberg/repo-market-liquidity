@@ -4,12 +4,15 @@
   "first_week": "2017-12-27",
   "holes": [],
   "last_week": "2026-08-19",
+  "levels_reading_negative_weeks": 344,
   "other_bn": {
-    "max": 332.001,
-    "median": -57.935,
-    "min": -331.056
+    "max": 367.719316,
+    "median": 270.41672300000005,
+    "min": 119.894492
   },
-  "other_negative_weeks": 344,
+  "other_negative_weeks": 0,
+  "other_share": 0.086,
+  "other_share_source": "Median of the residual 'other depository institutions' divided by H.4.1 reserves over the 211 H.8 weeks from 2022-08-10 to 2026-08-19 on which the retired anchored build (latest-filed Call Report RC-A item 0090, moved by the H.8 and with the break refusal switched off) could be computed: median 0.0862, range -0.009 to 0.163 (docs/research/rca-fed-balances-due-diligence.md, section 7). A full-sample constant from latest-filed data, so a retrospective calibration and not a point-in-time figure; the value is rounded to 0.086 and is Eleonora's to confirm or replace.",
   "reasons": {},
   "rows": 452,
   "rows_by_year": {

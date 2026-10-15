@@ -1,5 +1,5 @@
 {
-  "basis_note": "Eleonora's rulings of 14 October 2026 on PR #50 (options (a) and (i)): every group level is the H.8 group's cash assets, first print, unanchored and an approximation. Cash assets are not reserves alone.",
+  "basis_note": "Eleonora's rulings of 14 October 2026 on PR #50 (options (a) and (i), then the middle option): other depository institutions are a labelled fixed share of H.4.1 reserves; the rest is split across the three groups by their H.8 cash-asset shares, first print, unanchored and an approximation. Cash assets are not reserves alone.",
   "break_note": "`h8_break_week` is true at a week where the H.8 restates the large and small panels (docs/research/h8-group-moves.json); levels across it are on different panels.",
   "columns": [
     "week_ending",
@@ -9,7 +9,7 @@
     "small_domestic_bn",
     "foreign_related_bn",
     "other_bn",
-    "other_negative",
+    "other_share",
     "h8_break_week",
     "domestic_basis",
     "foreign_basis"
@@ -21,9 +21,11 @@
     "h8_groups": "1069af546ca0c5d3d69190b680dbc617557d3bbac0798f6a1e12d155f9f1f7f9",
     "wresbal": "7b806f2681ed790f878f9b7c31fd021a8fde58a43dbb6779c4439b219f645ff4"
   },
+  "other_share": 0.086,
+  "other_share_source": "Median of the residual 'other depository institutions' divided by H.4.1 reserves over the 211 H.8 weeks from 2022-08-10 to 2026-08-19 on which the retired anchored build (latest-filed Call Report RC-A item 0090, moved by the H.8 and with the break refusal switched off) could be computed: median 0.0862, range -0.009 to 0.163 (docs/research/rca-fed-balances-due-diligence.md, section 7). A full-sample constant from latest-filed data, so a retrospective calibration and not a point-in-time figure; the value is rounded to 0.086 and is Eleonora's to confirm or replace.",
   "rows": 452,
   "series": "group_reserves_weekly",
-  "sha256": "de8cbade4e06ee47cde8a6bdb0c57492907817ae35d77946329b0a983f221a55",
+  "sha256": "436887b7370210f22358b9f8df83e28c9b46c3ee0d8b80e40f33273375d18140",
   "small_domestic_caveat": "Answer 17(a): cash assets overstate small domestic banks' reserves (vault cash and correspondent balances), and balances due from other depository institutions double-count, so the groups must not be summed naively; the residual absorbs every difference and is not a measure of anything on its own (docs/stages/group-reserves.md).",
   "units": "billions of US dollars, not seasonally adjusted (H.8) and week average (H.4.1 WRESBAL)"
 }

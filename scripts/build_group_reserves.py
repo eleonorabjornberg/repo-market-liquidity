@@ -40,9 +40,11 @@ def cut():
     manifest = {"series": "group_reserves_weekly", "sha256": hashlib.sha256(extract).hexdigest(), "rows": len(rows),
                 "columns": list(gr.COLUMNS), "inputs": gr.source_digests(), "foreign_basis": gr.FOREIGN_BASIS,
                 "domestic_basis": gr.DOMESTIC_BASIS,
-                "basis_note": ("Eleonora's rulings of 14 October 2026 on PR #50 (options (a) and (i)): every group level is the "
-                               "H.8 group's cash assets, first print, unanchored and an approximation. Cash assets are not "
-                               "reserves alone."),
+                "other_share": gr.OTHER_SHARE, "other_share_source": gr.OTHER_SHARE_SOURCE,
+                "basis_note": ("Eleonora's rulings of 14 October 2026 on PR #50 (options (a) and (i), then the middle option): "
+                               "other depository institutions are a labelled fixed share of H.4.1 reserves; the rest is split "
+                               "across the three groups by their H.8 cash-asset shares, first print, unanchored and an "
+                               "approximation. Cash assets are not reserves alone."),
                 "small_domestic_caveat": ("Answer 17(a): cash assets overstate small domestic banks' reserves (vault cash and "
                                           "correspondent balances), and balances due from other depository institutions "
                                           "double-count, so the groups must not be summed naively; the residual absorbs every "
@@ -64,7 +66,12 @@ def render_markdown(rows, record) -> str:
         f"- H.8 weeks in the extract: {record['weeks']}. Weeks with a row: {record['rows']}.",
         (f"- First row public at {record['first_public_at']}; weeks {record['first_week']} to {record['last_week']}."
          if record["rows"] else "- **No week has a row**: every week is a listed hole (below)."),
-        f"- Weeks whose residual \"other depository institutions\" is negative: {record['other_negative_weeks']}.",
+        f"- The residual \"other depository institutions\" is a fixed {record['other_share']:.3f} of H.4.1 reserves. Source: "
+        f"{record['other_share_source']}",
+        f"- Weeks whose residual is negative: {record['other_negative_weeks']}. Under the levels reading (reserves less the "
+        f"three groups' cash-asset levels) it would have been negative in {record['levels_reading_negative_weeks']} of "
+        f"{record['rows']} weeks.",
+        "- The four pieces (three groups and the residual) sum to H.4.1 reserves in every week.",
         f"- Rows at an H.8 break week (`h8_break_week`): {record['break_weeks']}.",
     ]
     if record["other_bn"]:
@@ -79,8 +86,8 @@ def render_markdown(rows, record) -> str:
     for year, count in record["rows_by_year"].items():
         lines.append(f"| {year} | {count} |")
     lines += ["", "## The series, at the last week of each quarter", "",
-              "Billions of dollars; the week's row as first computed. `large`, `small` and `foreign` are H.8 cash assets (first",
-              "prints, an approximation); `other` is H.4.1 reserves less the three.", "",
+              "Billions of dollars; the week's row as first computed. `other` is the fixed share of H.4.1 reserves; `large`, `small`",
+              "and `foreign` split the rest by their H.8 cash-asset shares (first prints, an approximation).", "",
               "| week | reserves | large | small | foreign | other |", "|---|---|---|---|---|---|"]
     shown = [r for r in rows if r.week_ending.month in (3, 6, 9, 12) and r.week_ending.day > 24]
     for r in shown:

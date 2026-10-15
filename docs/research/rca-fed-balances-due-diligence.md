@@ -146,9 +146,10 @@ python3 -I scripts/diagnostics/ffiec_rca_diligence.py DIRECTORY --reserves \
 **What was built.** `repo_liquidity.rca` reads RC-A item 0090 from the 34 stored quarters (2018-03-31 to 2026-06-30) into
 two groups (the 25 filers with the largest total assets; every other carrying filer), each a latest-filed sum available from
 the day after its slowest member's latest update (`declarations/ffiec_call_rca.json`, snapshot `snapshots/rca_anchor/`).
-`repo_liquidity.group_reserves` does **not** read the anchor (her ruling of 14 October 2026, option (i), comment 6178605509):
-each of the three groups is the H.8 group's cash assets, first print, unanchored and labelled an approximation, and the
-residual "other depository institutions" is H.4.1 reserves less the three. The anchor stays as a published input for a
+`repo_liquidity.group_reserves` does **not** read the anchor (her ruling of 14 October 2026, option (i), comment 6178605509, then
+her middle option for the domestic split): the residual "other depository institutions" is a labelled fixed share of H.4.1
+reserves (0.086, the median of point 4 below as a share of reserves), and the rest is split across the three groups by their
+H.8 cash-asset shares, first print, unanchored and labelled an approximation. The anchor stays as a published input for a
 later, anchored version.
 
 **What it shows (generated tables: `docs/research/rca-anchor-coverage.md`, `docs/research/group-reserves-coverage.md`).**
@@ -167,7 +168,9 @@ later, anchored version.
    (`h8.difference`'s rule).
 4. **The approximations are coherent where they can be computed.** With the break refusal switched off (a diagnostic, never a
    series) the 211 weeks from 2022-08-10 give a residual "other depository institutions" of about 150 to 480 billion dollars with
-   one negative week, so the three groups do not overshoot reserves.
+   one negative week, so the three groups do not overshoot reserves. As a share of reserves the residual has median 0.0862
+   (range -0.009 to 0.163; 0.081 in 2022, 0.096 in 2023, 0.097 in 2024, 0.078 in 2025, 0.070 in 2026): the source of the fixed
+   share 0.086 used by the weekly series.
 
 **Why this is a question for her, not a code choice.** Three readings are open and each changes what is available: (i) how a
 group's sum becomes public (slowest member, as built; a completeness threshold; or filer-by-filer carry-forward);
