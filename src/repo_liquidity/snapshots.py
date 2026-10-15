@@ -22,7 +22,7 @@ from datetime import date
 from pathlib import Path
 from typing import Dict, List, Optional
 
-from repo_liquidity import PANEL_SHA256, PARENT_COMMIT, development, h41, h8, rca, scheduled, slr
+from repo_liquidity import PANEL_SHA256, PARENT_COMMIT, contenthash, development, h41, h8, rca, scheduled, slr
 
 ROOT = Path(__file__).resolve().parents[2]
 SNAPSHOTS = ROOT / "snapshots"
@@ -33,7 +33,19 @@ H41_MBS_EXTRACT = H41_DIR / "h41_mbs_first_print.csv"
 #: The columns of the agency-securities snapshot (#30). The change columns are the releases' weekly changes in the
 #: week average as printed, in millions of dollars; `agency_securities_change_musd` is their sum (answer 15).
 AGENCY_SECURITIES_COLUMNS = ("week_ended", "release_date", "agency_debt_change_musd", "mbs_change_musd",
-                             "agency_securities_change_musd", "url", "page_sha256")
+                             "agency_securities_change_musd", "url", "fetch_sha256", "content_sha256")
+#: The columns the agency-securities content hash covers (the values, not the URL or the fetch hash), as whole millions.
+AGENCY_CONTENT_COLUMNS = ("week_ended", "release_date", "agency_debt_change_musd", "mbs_change_musd",
+                          "agency_securities_change_musd")
+#: Said in the manifest of every snapshot that carries a fetch hash (finding #40, #89).
+HASH_NOTE = ("fetch_sha256 identifies the fetch, not the release (finding #40); content_sha256 identifies the "
+             "extracted values")
+
+
+def agency_row_content_sha256(row) -> str:
+    """The content hash of one agency-securities row (a mapping by column name), from its values alone."""
+    return contenthash.content_sha256(AGENCY_CONTENT_COLUMNS, [[row[c] for c in AGENCY_CONTENT_COLUMNS]],
+                                      {c: 0 for c in AGENCY_CONTENT_COLUMNS[2:]})
 
 #: The weekly first-print series (#26): the tracked extract each is a copy of, plus the `break_ids` column of the breaks
 #: record (#47). Its manifest carries the weeks and
@@ -93,7 +105,7 @@ def _agency_securities_bytes(agency_extract: Path, mbs_extract: Path):
 
     Both extracts are read through `h41.load_extract`, which refuses one that does not match its own manifest. A row is
     the agency-debt change plus the MBS change of the same release, so both extracts must name the same release page
-    (its URL). The `page_sha256` is the agency extract's: the archive injects per-request tokens into every page, so
+    (its URL). The `fetch_sha256` is the agency extract's: the archive injects per-request tokens into every page, so
     each fetch of one page has its own digest, and the MBS extract's differs from it. What ties the rows to one
     release is `scripts/fetch_h41.py --row agency`, which checked every week's Treasury and MBS rows on the page it
     fetched against the tracked extracts.
@@ -111,10 +123,13 @@ def _agency_securities_bytes(agency_extract: Path, mbs_extract: Path):
         if a["url"] != m["url"]:
             raise ValueError(f"the week ended {debt.week_ended}: the agency-debt and MBS rows were read from "
                              f"different releases ({a['url']} and {m['url']})")
-        lines.append(",".join((debt.week_ended.isoformat(), debt.release_date.isoformat(),
-                               str(debt.change_from_prior_week), str(backed.change_from_prior_week),
-                               str(both.change_from_prior_week), a["url"], a["page_sha256"])))
-        pages[a["url"]] = a["page_sha256"]
+        values = {"week_ended": debt.week_ended.isoformat(), "release_date": debt.release_date.isoformat(),
+                  "agency_debt_change_musd": str(debt.change_from_prior_week),
+                  "mbs_change_musd": str(backed.change_from_prior_week),
+                  "agency_securities_change_musd": str(both.change_from_prior_week)}
+        lines.append(",".join((*(values[c] for c in AGENCY_CONTENT_COLUMNS), a["url"], a["fetch_sha256"],
+                               agency_row_content_sha256(values))))
+        pages[a["url"]] = a["fetch_sha256"]
     return ("\n".join(lines) + "\n").encode("utf-8"), pages, total
 
 
@@ -136,6 +151,7 @@ def _build_agency_securities(root: Path, repo_commit: str, agency_extract: Path,
         "source_table": _relative(agency_extract),
         "source_tables": [_relative(agency_extract), _relative(mbs_extract)],
         "source_pages": pages,
+        "hash_note": HASH_NOTE,
         "parent_commit": PARENT_COMMIT,
         "parent_panel_sha256": PANEL_SHA256,
         "repo_commit": repo_commit,
@@ -350,7 +366,13 @@ def _build_weekly(series: str, table: Path, root: Path, repo_commit: str) -> dic
     data = buffer.getvalue().encode("utf-8")
     digest = hashlib.sha256(data).hexdigest()
     releases = json.loads(table.with_name(h8.RELEASES_NAME).read_text(encoding="utf-8"))
-    pages = {record["release_date"]: record["sha256"] for record in releases["releases"]}
+    pages = {record["release_date"]: record["fetch_sha256"] for record in releases["releases"]}
+    contents = {record["release_date"]: record["content_sha256"] for record in releases["releases"]}
+    derived = h8.release_content_hashes(prints)
+    for day, recorded in sorted(contents.items()):
+        if recorded != derived.get(day):
+            raise ValueError(f"{table.name}: the releases record gives the release of {day} content_sha256 {recorded}, "
+                             f"but its values in the extract hash to {derived.get(day)}")
     for item in prints:
         if pages.get(item.release_date.isoformat()) != item.release_sha256:
             raise ValueError(f"{table.name}: the week ending {item.week_ending} names a page for the release of "
@@ -373,6 +395,8 @@ def _build_weekly(series: str, table: Path, root: Path, repo_commit: str) -> dic
         "last_release": prints[-1].release_date.isoformat(),
         "source_table": str(table.relative_to(ROOT)),
         "source_pages": pages,
+        "source_content_sha256": contents,
+        "hash_note": HASH_NOTE,
         "parent_commit": PARENT_COMMIT,
         "parent_panel_sha256": PANEL_SHA256,
         "repo_commit": repo_commit,

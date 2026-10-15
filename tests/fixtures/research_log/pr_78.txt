@@ -1,0 +1,9 @@
+### 2026-10-15 [H10] step 3 · eleonorabjornberg/repo-market-liquidity#78
+- Directive: eleonorabjornberg/repo-market-liquidity#77, H10 step 3: publish the development table, with the ON RRP interaction sensitivity.
+- Step: 3 of 3 (publish the table).
+- Tier: development
+- Pins: parent 53e61af9b4175e854c196908d3c76b228c039667; panel version 1 acb77874e0ca2c9eeee1c33a229f5e12745e65bb1224088d52c391dbf54be2ab; seed 20261013; 31 onsets to 2026-09-03; method record sha256 cae658c6d9a895d4db8f6427c81a11f7310fc79377528d71806e9f209c28f126.
+- Tried: rendered the step 2 record unchanged as a generated page; re-ran the step 2 application with ON RRP as on_rrp x 1(on_rrp < 100 bn) in place of its window change, as a sensitivity (the abundant regime has 2 onsets).
+- Result: what the development table shows: under the residual bar 4 of 31 (6% to 26%), beating the null 14 of 31 (31% to 60%), both 4 of 31 (6% to 26%); reads residual dominates. Sensitivity (labelled as such): 5 of 31 (8% to 30%), 16 of 31 (37% to 66%), both 5 of 31 (8% to 30%); also reads residual dominates.
+- Against kill: the plan's rule needs more than half the episodes under the bar; the development table has 4 of 31. Development data never gives a verdict; this is not one.
+- Next: her review; registering the frozen method is her attested action.

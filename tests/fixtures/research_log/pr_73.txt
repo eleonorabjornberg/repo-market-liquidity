@@ -1,0 +1,9 @@
+### 2026-10-14 [H10] step 2 · eleonorabjornberg/repo-market-liquidity#73
+- Directive: eleonorabjornberg/repo-market-liquidity#70, H10 step 2: record her section 9d answers, then apply the declared method to the development onsets.
+- Step: 2 of 3 (apply it to every development onset, once, at a pin).
+- Tier: development
+- Pins: parent 53e61af9b4175e854c196908d3c76b228c039667; panel version 1 acb77874e0ca2c9eeee1c33a229f5e12745e65bb1224088d52c391dbf54be2ab; seed 20261013; 31 onsets to 2026-09-03.
+- Tried: the leave-neighbourhood-out regression with Shapley shares over five drivers (ON RRP included), 10,000 bootstrap draws per episode, 20 placebo windows, the reserves-only benchmark, and the N1 selection-aware null (1,000 draws, 95th percentile bar 0.234).
+- Result: under the residual bar 4 of 31 (6% to 26%); beating the null 14 of 31 (31% to 60%); both 4 of 31 (6% to 26%). Median residual share 0.78 (0.66 to 0.85); explained share above reserves alone 0.23 (0.13 to 0.37); placebo gap -0.39 (-0.62 to -0.19). The development table reads residual dominates.
+- Against kill: the plan's outcome rule needs more than half the episodes under the bar; the development table has 4 of 31. Development data never gives a verdict; this is not one.
+- Next: step 3 (publish the table) after her review; the ON RRP interaction sensitivity of answer 5.

@@ -70,7 +70,7 @@ eleonorabjornberg/repo-market-model#638 as the shared one:
 - Pins: model <sha>, panel digest <digest>, snapshot <digest or "none">
 - Tried: <one line>; variant count <n>
 - Result: <headline with its interval, or "built, nothing scored">
-- Against the goalpost or kill: <met / not met / not applicable, citing the rule's file:line>
+- Against kill: <met / not met / not applicable, citing the rule's file:line>
 - Next: <the step on either outcome>
 ````
 

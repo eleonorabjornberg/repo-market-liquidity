@@ -29,6 +29,8 @@ ROOT = Path(__file__).resolve().parents[2]
 RECORD = ROOT / "results" / "h10" / "development.json"
 #: H10 step 3 (#77): the same application with ON RRP entering as `on_rrp x 1(on_rrp < break)` (her answer 5 on #69).
 SENSITIVITY_RECORD = ROOT / "results" / "h10" / "sensitivity_onrrp_interaction.json"
+#: H10 step 3 (#86, finding #79): ON RRP as two regime-specific terms; supersedes the interaction sensitivity above.
+REGIMES_RECORD = ROOT / "results" / "h10" / "sensitivity_onrrp_regimes.json"
 STAGE_DOC = ROOT / "docs" / "stages" / "h10-step2.md"
 #: The panel the application reads: version 1, the published columns plus the built ON RRP take-up, to the development end.
 PANEL_VERSION = 1
@@ -235,8 +237,8 @@ def _work(start: int) -> dict:
     """One episode, in a worker: its attribution, the benchmark and the placebo comparison."""
     series, dates, rule, draws, placebo_windows = (_STATE[k] for k in ("series", "dates", "rule", "draws", "placebo"))
     raw_on_rrp = _STATE["raw_on_rrp"]
-    drivers = DRIVERS_WITH_ON_RRP
-    result = attribute_episode(series, dates, rule, start, draws=draws)
+    drivers = _STATE["drivers"]
+    result = attribute_episode(series, dates, rule, start, draws=draws, drivers=drivers)
     entry = {
         "onset": dates[start].isoformat(), "index": start,
         "report_day": dates[start + REPORT_DAYS].isoformat() if start + REPORT_DAYS < len(dates) else None,
@@ -260,14 +262,23 @@ def _work(start: int) -> dict:
 
 
 def build_record(rows, manifest, *, draws: int = attribution.DRAWS, null_draws: int = attribution.NULL_DRAWS,
-                 workers: int = 1, interaction: bool = False) -> dict:
+                 workers: int = 1, interaction: bool = False, regimes: bool = False) -> dict:
     """The development record: every onset attributed, missed or not attributable, the null, the counts and the splits.
 
     With `interaction` the ON RRP driver is `on_rrp x 1(on_rrp < break)` instead of its window change, everywhere (the
     fit, the Shapley shares, the placebo, the benchmark and the null), and the record is marked as a sensitivity. The regime
-    and `on_rrp_at_onset` are always read from the plain take-up, so the two records' episodes are comparable."""
+    and `on_rrp_at_onset` are always read from the plain take-up, so the two records' episodes are comparable.
+
+    With `regimes` the ON RRP driver is two drivers, `window change x 1(depleted)` and `window change x 1(abundant)`, the
+    window's regime fixed by its baseline mean ON RRP (`attribution.window_change`); the series is the plain one.
+
+    Raises:
+        ValueError: both `interaction` and `regimes` are set."""
     from repo_model.contract import ON_RRP_DEPLETION_BREAK_BN
 
+    if interaction and regimes:
+        raise ValueError("a sensitivity is either the interaction or the regime terms, not both")
+    drivers = attribution.DRIVERS_REGIME_TERMS if regimes else DRIVERS_WITH_ON_RRP
     dates = [row.date for row in rows]
     series = attribution.series_from_rows(rows, DRIVERS_WITH_ON_RRP)
     raw_on_rrp = list(series[attribution.ON_RRP])
@@ -275,9 +286,10 @@ def build_record(rows, manifest, *, draws: int = attribution.DRAWS, null_draws: 
         series = interaction_series(series, ON_RRP_DEPLETION_BREAK_BN)
     onsets = attribution.cross_check_onsets(rows)
     placebo = attribution.placebo_starts(series, onsets, attribution.PLACEBO_WINDOWS, SEED)
-    null = attribution.selection_null(series, DRIVERS_WITH_ON_RRP, draws=null_draws, seed=SEED)
+    null = attribution.selection_null(series, drivers, draws=null_draws, seed=SEED)
     with real_rule() as rule:
-        _STATE.update(series=series, dates=dates, rule=rule, draws=draws, placebo=placebo, raw_on_rrp=raw_on_rrp, **{"break": ON_RRP_DEPLETION_BREAK_BN})
+        _STATE.update(series=series, dates=dates, rule=rule, draws=draws, placebo=placebo, raw_on_rrp=raw_on_rrp, drivers=drivers,
+                      **{"break": ON_RRP_DEPLETION_BREAK_BN})
         try:
             if workers > 1:
                 with multiprocessing.get_context("fork").Pool(workers) as pool:
@@ -293,9 +305,11 @@ def build_record(rows, manifest, *, draws: int = attribution.DRAWS, null_draws: 
         entry["counted"] = entry["under_bar"] and entry["beats_null"]
     ranked = list(null.explained)
     out = {
-        "record": ("H10 step 3: sensitivity, ON RRP entering as an interaction with the depleted regime"
-                   if interaction else "H10 step 2: the declared method applied to the development onsets"),
-        "directive": "eleonorabjornberg/repo-market-liquidity#77" if interaction else "eleonorabjornberg/repo-market-liquidity#70",
+        "record": ("H10 step 3: sensitivity, ON RRP entering as two regime-specific terms" if regimes else
+                   "H10 step 3: sensitivity, ON RRP entering as an interaction with the depleted regime" if interaction
+                   else "H10 step 2: the declared method applied to the development onsets"),
+        "directive": ("eleonorabjornberg/repo-market-liquidity#86" if regimes else
+                      "eleonorabjornberg/repo-market-liquidity#77" if interaction else "eleonorabjornberg/repo-market-liquidity#70"),
         "tier": "development",
         "not_a_verdict": "Development evidence only (measurement-protocol.md section 1; repo-market-model#640). It confirms nothing.",
         "parent_commit": PARENT_COMMIT,
@@ -306,7 +320,7 @@ def build_record(rows, manifest, *, draws: int = attribution.DRAWS, null_draws: 
         "episode_source": {"onsets": "repo_model.onset.onset_flags", "cross_check": "held",
                            "cross_checked_with": "repo_model.pressure.onsets at +5 bp"},
         "settings": {
-            "drivers": list(DRIVERS_WITH_ON_RRP), "baseline_days": attribution.BASELINE_DAYS,
+            "drivers": list(drivers), "baseline_days": attribution.BASELINE_DAYS,
             "window_days": attribution.WINDOW_DAYS, "seed": SEED, "draws": draws, "level": attribution.LEVEL,
             "block_length": attribution.BLOCK_LENGTH, "placebo_windows": attribution.PLACEBO_WINDOWS,
             "null_draws": null_draws, "null_quantile": null.quantile, "report_days": REPORT_DAYS,
@@ -326,6 +340,14 @@ def build_record(rows, manifest, *, draws: int = attribution.DRAWS, null_draws: 
         out["sensitivity"] = {
             "on_rrp_term": f"on_rrp x 1(on_rrp < {ON_RRP_DEPLETION_BREAK_BN} bn)", "regime_break_bn": ON_RRP_DEPLETION_BREAK_BN,
             "replaces": "the ON RRP window change", "reported_only": "the decided driver set and the published outcome do not change",
+        }
+    if regimes:
+        out["sensitivity"] = {
+            "on_rrp_terms": [f"on_rrp window change x 1(baseline mean on_rrp < {ON_RRP_DEPLETION_BREAK_BN} bn)",
+                             f"on_rrp window change x 1(baseline mean on_rrp >= {ON_RRP_DEPLETION_BREAK_BN} bn)"],
+            "regime_break_bn": ON_RRP_DEPLETION_BREAK_BN, "regime_of_a_window": "its baseline mean ON RRP",
+            "replaces": "the ON RRP window change", "supersedes": "results/h10/sensitivity_onrrp_interaction.json",
+            "reported_only": "the decided driver set and the published outcome do not change",
         }
     return out
 
