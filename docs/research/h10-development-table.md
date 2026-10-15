@@ -1,8 +1,8 @@
 # H10: the development table
 
-<!-- generated: scripts/emit_h10_table.py from results/h10/development.json and results/h10/sensitivity_onrrp_interaction.json; never hand-edited -->
+<!-- generated: scripts/emit_h10_table.py from results/h10/development.json, results/h10/sensitivity_onrrp_interaction.json and results/h10/sensitivity_onrrp_regimes.json; never hand-edited -->
 
-**Serves:** H10 (pressure episodes can be attributed to drivers), development step 3 of the plan (`docs/research/plan.md`). Directive #77. **Development evidence, not a verdict** (`docs/decisions/measurement-protocol.md` section 1; eleonorabjornberg/repo-market-model#640): it confirms nothing, and there is no registration. Registering the frozen method is Eleonora's attested action.
+**Serves:** H10 (pressure episodes can be attributed to drivers), development step 3 of the plan (`docs/research/plan.md`). Directives #77 and #86. **Development evidence, not a verdict** (`docs/decisions/measurement-protocol.md` section 1; eleonorabjornberg/repo-market-model#640): it confirms nothing, and there is no registration. Registering the frozen method is Eleonora's attested action.
 
 ## Header
 
@@ -108,6 +108,8 @@ Fixed-coefficient shares, beside the Shapley shares above (reported only; no out
 
 ## Sensitivity: ON RRP as an interaction with the depleted regime
 
+**Superseded (15 October 2026, finding #79).** This sensitivity took the window change of a truncated level, `v if v < 100 else 0`, which gives the regressor the wrong sign in 92 of the 128 windows that straddle the $100 bn break, and it held the abundant regime's coefficient at 0 although the method record says each regime has its own. It stands as published; the corrected sensitivity is the next section, from `results/h10/sensitivity_onrrp_regimes.json`, and supersedes it.
+
 **Reported only** (her answer 5 on #69: "the interaction reported later as a sensitivity"). The method record's decided driver set is unchanged, and this sensitivity does not change the published outcome above. ON RRP enters as `on_rrp x 1(on_rrp < 100.0 bn)`, the parent's `ON_RRP_DEPLETION_BREAK_BN`, in place of its window change; everything else (window, bootstrap, seeds, placebo, benchmark, null, outcome rule) is as in the published record. The record is `results/h10/sensitivity_onrrp_interaction.json`; its null bar is 0.233.
 
 What the sensitivity shows: 5 of 31 (8% to 30%) under the residual bar, 16 of 31 (37% to 66%) beating the null, 5 of 31 (8% to 30%) both, against 4 of 31 (6% to 26%) under the residual bar, 14 of 31 (31% to 60%) beating the null, 4 of 31 (6% to 26%) both in the published record. Labelled sensitivity; it is not a result.
@@ -175,6 +177,73 @@ Published / interaction in each outcome column.
 | 2026-02-17 | depleted | -0.001 [-0.003, 0.000] | -0.005 [-0.017, 0.002] | 0.736 [0.651, 0.812] | 0.738 [0.658, 0.810] | 0.262 | no | yes |
 | 2026-03-02 | depleted | -0.003 [-0.041, 0.035] | -0.105 [-0.328, 0.048] | 0.119 [-0.372, 0.531] | 0.236 [-0.208, 0.649] | 0.764 | yes | yes |
 | 2026-04-15 | depleted | -0.001 [-0.002, 0.000] | 0.000 [-0.002, 0.002] | 0.797 [0.733, 0.854] | 0.794 [0.731, 0.850] | 0.206 | no | no |
+
+## Sensitivity: ON RRP as two regime-specific terms
+
+**Reported only** (finding #79; her ruling of 14 October 2026; directive #86). The method record's decided driver set is unchanged, and this sensitivity does not change the published outcome above. Each window's regime is fixed by its **baseline** mean ON RRP against the parent's `ON_RRP_DEPLETION_BREAK_BN` (100.0 bn); ON RRP then enters as two drivers in place of its window change, `on_rrp window change x 1(baseline mean on_rrp < 100.0 bn)` and `on_rrp window change x 1(baseline mean on_rrp >= 100.0 bn)`, each with its own coefficient. A window that straddles the break keeps the sign of its change. Everything else (window, bootstrap, seeds, placebo, benchmark, null, outcome rule) is as in the published record. The record is `results/h10/sensitivity_onrrp_regimes.json`; its null bar is 0.244.
+
+What the sensitivity shows: 3 of 31 (4% to 22%) under the residual bar, 13 of 31 (29% to 57%) beating the null, 3 of 31 (4% to 22%) both, against 4 of 31 (6% to 26%) under the residual bar, 14 of 31 (31% to 60%) beating the null, 4 of 31 (6% to 26%) both in the published record and 5 of 31 (8% to 30%) under the residual bar, 16 of 31 (37% to 66%) beating the null, 5 of 31 (8% to 30%) both in the superseded interaction sensitivity. Labelled sensitivity; it is not a result.
+
+**The abundant regime has 2 onsets**, so its coefficient rests on the fitting sample's abundant windows, not on the onsets.
+
+| Group | Episodes | Under the residual bar | Beats the null | Both (counted) | Not attributable |
+|---|---|---|---|---|---|
+| All development onsets | 31 | 3 (4% to 22%) | 13 (29% to 57%) | 3 (4% to 22%) | 0 |
+| ON RRP depleted | 29 | 3 (4% to 23%) | 11 (25% to 53%) | 3 (4% to 23%) | 0 |
+| ON RRP abundant | 2 | 0 (0% to 57%) | 2 (43% to 100%) | 0 (0% to 57%) | 0 |
+| Quarter-end onsets | 4 | 1 (6% to 64%) | 3 (36% to 94%) | 1 (6% to 64%) | 0 |
+| Other onsets | 27 | 2 (2% to 20%) | 10 (24% to 53%) | 2 (2% to 20%) | 0 |
+
+Progress markers under the regime terms:
+
+- median residual share: 0.78 (90% interval 0.68 to 0.85, n = 31);
+- explained share above reserves alone: 0.23 (90% interval 0.13 to 0.36, n = 31);
+- placebo gap: -0.39 (90% interval -0.62 to -0.20, n = 31).
+
+### Episodes whose outcome differs from the published record
+
+Published / regime terms in each outcome column.
+
+| Onset | Residual (published) | Residual (regime terms) | Under bar | Beats null |
+|---|---|---|---|---|
+| 2018-06-29 | 0.746 | 0.758 | no / no | yes / no |
+| 2019-06-17 | 0.463 | 0.508 | yes / no | yes / yes |
+
+### Per episode, beside the published figures
+
+| Onset | Regime | Depleted-term share | Abundant-term share | Residual (published) | Residual (regime terms) | Explained (regime terms) | Under bar | Beats null |
+|---|---|---|---|---|---|---|---|---|
+| 2018-05-31 | depleted | 0.001 [-0.053, 0.142] | -0.001 [-0.001, 0.000] | 0.947 [0.923, 0.967] | 0.955 [0.822, 1.009] | 0.045 | no | no |
+| 2018-06-29 | depleted | -0.004 [-0.043, 0.112] | 0.005 [-0.005, 0.013] | 0.746 [0.611, 0.853] | 0.758 [0.581, 0.867] | 0.242 | no | no |
+| 2018-11-15 | depleted | 0.008 [-0.116, 0.328] | -0.001 [-0.004, 0.001] | 0.845 [0.790, 0.893] | 0.858 [0.561, 0.974] | 0.142 | no | no |
+| 2018-11-30 | depleted | -0.000 [-0.002, 0.000] | 0.000 [-0.000, 0.000] | 0.990 [0.984, 0.996] | 0.990 [0.985, 0.997] | 0.010 | no | no |
+| 2018-12-17 | depleted | -0.001 [-0.030, 0.072] | -0.000 [-0.001, 0.000] | 0.898 [0.866, 0.925] | 0.904 [0.828, 0.941] | 0.096 | no | no |
+| 2018-12-28 | depleted | -0.000 [-0.006, 0.014] | 0.001 [-0.002, 0.003] | 0.939 [0.916, 0.961] | 0.941 [0.916, 0.962] | 0.059 | no | no |
+| 2019-01-15 | depleted | -0.010 [-0.241, 0.714] | -0.008 [-0.020, 0.002] | -0.952 [-1.662, -0.342] | -0.905 [-2.034, -0.229] | 1.905 | no | yes |
+| 2019-01-31 | depleted | -0.001 [-0.045, 0.016] | -0.001 [-0.002, 0.000] | 0.776 [0.708, 0.834] | 0.774 [0.713, 0.839] | 0.226 | no | no |
+| 2019-02-28 | depleted | -0.000 [-0.009, 0.007] | -0.000 [-0.004, 0.002] | 0.776 [0.669, 0.866] | 0.776 [0.671, 0.867] | 0.224 | no | no |
+| 2019-03-15 | depleted | 0.001 [-0.013, 0.028] | -0.001 [-0.003, 0.002] | 0.816 [0.753, 0.871] | 0.817 [0.747, 0.871] | 0.183 | no | no |
+| 2019-03-29 | depleted | 0.002 [-0.031, 0.019] | 0.006 [-0.005, 0.015] | 0.731 [0.587, 0.855] | 0.730 [0.594, 0.862] | 0.270 | no | yes |
+| 2019-05-28 | depleted | -0.002 [-0.087, 0.031] | 0.000 [-0.003, 0.004] | 0.896 [0.817, 0.962] | 0.894 [0.819, 0.996] | 0.106 | no | no |
+| 2019-06-17 | depleted | 0.041 [-0.483, 1.501] | -0.006 [-0.016, 0.004] | 0.463 [0.225, 0.672] | 0.508 [-0.917, 1.056] | 0.492 | no | yes |
+| 2019-06-25 | depleted | 0.002 [-0.058, 0.029] | 0.009 [-0.006, 0.023] | 0.516 [0.287, 0.708] | 0.514 [0.296, 0.723] | 0.486 | no | yes |
+| 2019-08-13 | depleted | 0.003 [-0.027, 0.090] | -0.001 [-0.002, -0.000] | 0.790 [0.718, 0.852] | 0.793 [0.671, 0.864] | 0.207 | no | no |
+| 2019-08-30 | depleted | -0.000 [-0.005, 0.001] | -0.001 [-0.001, 0.000] | 0.853 [0.817, 0.885] | 0.852 [0.817, 0.886] | 0.148 | no | no |
+| 2019-10-15 | depleted | 0.001 [-0.017, 0.051] | -0.000 [-0.000, 0.000] | 0.965 [0.952, 0.975] | 0.967 [0.918, 0.987] | 0.033 | no | no |
+| 2019-11-29 | depleted | -0.007 [-0.244, 0.091] | -0.001 [-0.004, 0.000] | 0.457 [0.274, 0.615] | 0.448 [0.285, 0.676] | 0.552 | yes | yes |
+| 2019-12-16 | depleted | 0.030 [-0.310, 1.113] | -0.009 [-0.031, 0.012] | 0.656 [0.286, 1.021] | 0.683 [-0.543, 1.189] | 0.317 | no | yes |
+| 2020-03-04 | depleted | 0.001 [-0.002, 0.023] | 0.002 [-0.003, 0.006] | 1.513 [1.373, 1.677] | 1.513 [1.370, 1.672] | -0.513 | no | no |
+| 2020-03-12 | depleted | 0.020 [0.004, 0.060] | -0.000 [-0.002, 0.001] | 0.988 [0.970, 1.009] | 0.974 [0.930, 0.998] | 0.026 | no | no |
+| 2024-09-30 | abundant | 0.002 [-0.031, 0.013] | 0.007 [-0.024, 0.034] | 0.517 [0.331, 0.674] | 0.517 [0.339, 0.685] | 0.483 | no | yes |
+| 2024-12-26 | abundant | 0.001 [-0.016, 0.009] | -0.015 [-0.060, 0.033] | 0.626 [0.497, 0.732] | 0.625 [0.515, 0.730] | 0.375 | no | yes |
+| 2025-09-15 | depleted | -0.032 [-0.985, 0.279] | -0.005 [-0.032, 0.021] | -0.664 [-1.275, -0.088] | -0.682 [-1.329, 0.330] | 1.682 | no | yes |
+| 2025-09-30 | depleted | -0.001 [-0.262, 0.098] | 0.012 [-0.010, 0.031] | 0.274 [-0.008, 0.509] | 0.267 [0.003, 0.610] | 0.733 | yes | yes |
+| 2025-10-15 | depleted | 0.000 [-0.003, 0.013] | 0.000 [-0.001, 0.001] | 1.115 [1.083, 1.154] | 1.116 [1.079, 1.152] | -0.116 | no | no |
+| 2025-12-15 | depleted | 0.002 [-0.038, 0.140] | -0.001 [-0.006, 0.004] | 0.849 [0.661, 1.001] | 0.854 [0.603, 1.013] | 0.146 | no | no |
+| 2025-12-26 | depleted | -0.004 [-0.063, 0.176] | 0.003 [-0.004, 0.010] | 0.542 [0.408, 0.654] | 0.555 [0.321, 0.688] | 0.445 | no | yes |
+| 2026-02-17 | depleted | -0.001 [-0.019, 0.011] | -0.001 [-0.003, 0.000] | 0.736 [0.651, 0.812] | 0.735 [0.655, 0.808] | 0.265 | no | yes |
+| 2026-03-02 | depleted | -0.009 [-0.391, 0.158] | -0.000 [-0.017, 0.013] | 0.119 [-0.372, 0.531] | 0.105 [-0.325, 0.613] | 0.895 | yes | yes |
+| 2026-04-15 | depleted | -0.000 [-0.002, 0.004] | -0.001 [-0.003, 0.000] | 0.797 [0.733, 0.854] | 0.797 [0.731, 0.851] | 0.203 | no | no |
 
 ## Note (15 October 2026): the placebo with a 2 bp rise floor
 

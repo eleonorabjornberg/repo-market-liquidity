@@ -15,7 +15,9 @@ group lines (`repo_liquidity.h8.parse_group_lines`) and keeps each week's **firs
 Written under `tests/fixtures/snapshots/h8_groups/`:
 - `h8_group_first_print.csv`: one row per week, `week_ending`, `release_date`, six values, `release_sha256`;
 - its snapshot manifest `<extract>.manifest.json`;
-- `h8_group_first_print.releases.json`: per release, its date, URL, SHA-256, size, retrieval time and the time and date the
+- `h8_group_first_print.releases.json`: per release, its date, URL, `fetch_sha256` (the SHA-256 of the page as fetched:
+  it identifies the fetch, not the release, finding #40), `content_sha256` (the hash of the values the release first
+  printed, `h8.release_content_hashes`, re-derivable from the extract alone), size, retrieval time and the time and date the
   page states (`null` where it states none), the weeks the page carries and the weeks first printed in it.
 
 Refuses, before writing: a release the index lists in range that has no snapshot, or two snapshots of one release with
@@ -40,6 +42,9 @@ from repo_model.ingest import SnapshotArtifact, load_snapshot_manifest
 from repo_liquidity import declaration, development, h8
 
 ROOT = Path(__file__).resolve().parents[1]
+#: The keys of a release record in the releases file.
+RELEASE_KEYS = ("release_date", "listed_date", "stated_release_date", "public_on", "url", "fetch_sha256",
+                "content_sha256", "byte_count", "retrieved_at", "stated_release_time", "weeks", "first_printed_weeks")
 OUTPUT = ROOT / "tests/fixtures/snapshots/h8_groups"
 
 
@@ -99,7 +104,7 @@ def cut(raw_root: Path, start: date, end: date, declared_days: int):
             "stated_release_date": None if release.stated_date is None else release.stated_date.isoformat(),
             "public_on": release.public_on.isoformat(),
             "url": artifact.url,
-            "sha256": artifact.sha256,
+            "fetch_sha256": artifact.sha256,
             "byte_count": artifact.byte_count,
             "retrieved_at": artifact.retrieved_at,
             "stated_release_time": None if release.stated_time is None
@@ -123,8 +128,13 @@ def cut(raw_root: Path, start: date, end: date, declared_days: int):
     printed = {}
     for item in prints:
         printed.setdefault(item.release_date.isoformat(), []).append(item.week_ending.isoformat())
+    contents = h8.release_content_hashes(prints)
     for record in records:
         record["first_printed_weeks"] = printed.get(record["public_on"], [])
+        record["content_sha256"] = contents.get(record["public_on"])
+    unknown = sorted(set(RELEASE_KEYS) ^ set(records[0])) if records else []
+    if unknown:
+        raise ValueError(f"a release record's keys differ from RELEASE_KEYS at {unknown}")
     extract = h8.write_extract(prints)
     manifest = SnapshotArtifact(
         source_id=h8.SOURCE_ID,
@@ -135,7 +145,7 @@ def cut(raw_root: Path, start: date, end: date, declared_days: int):
         byte_count=len(extract),
     ).as_dict()
     releases = {
-        "index": {"url": index.url, "sha256": index.sha256, "retrieved_at": index.retrieved_at},
+        "index": {"url": index.url, "fetch_sha256": index.sha256, "retrieved_at": index.retrieved_at},
         "start": start.isoformat(),
         "end": development.development_end().isoformat(),
         "releases": records,

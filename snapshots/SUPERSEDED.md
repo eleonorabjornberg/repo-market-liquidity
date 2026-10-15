@@ -33,3 +33,20 @@ two manifest notes are added.
 
 A reader that pinned the superseded digest still finds its bytes. A reader of the main measure moves to the current digest
 and filters on `measure == main`; the old file has no such column and holds State Street in the main series.
+
+## 15 October 2026: the `agency_securities` snapshot re-cut with `fetch_sha256` and `content_sha256` (#89, finding #40)
+
+The H.4.1 saved-page SHA-256 changes on every fetch (the archive injects per-request tokens), so it identifies a fetch,
+not the release. The snapshot's `page_sha256` column is relabelled `fetch_sha256`, byte-for-byte the same values, and a
+`content_sha256` column is added: the SHA-256 of the row's extracted values in the canonical form of
+`repo_liquidity.contenthash` (it re-derives from the snapshot alone). No extracted value moved: dropping the new column
+and restoring the old name gives the superseded file back, digest for digest (`tests/test_fetch_hash.py`). The `h8_groups`
+snapshot's bytes are unchanged (its digest is the same); only its manifest gained the same note and the content hash of
+each release (`source_content_sha256`).
+
+| Series | Superseded digest (file kept) | Current digest | Rows |
+|---|---|---|---|
+| `agency_securities` | `71921036e67a2f4b028caa072d773190b1be0bdeebf7e176ada37ba252fd602e` | `9a5c4eafb04e85d4676c97bfc94a047ee6a7ad384345f977fff30d3f01681e58` | 454 to 454 |
+
+A reader that pinned the superseded digest still finds its bytes, with the column named `page_sha256`. A reader that
+moves to the current digest finds `fetch_sha256` in its place and one more column, `content_sha256`.
