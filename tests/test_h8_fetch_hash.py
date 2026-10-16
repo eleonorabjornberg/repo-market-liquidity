@@ -101,7 +101,7 @@ class ContentHashTests(unittest.TestCase):
         """Data guard: a row whose `content_sha256` is not the hash of its release's values is refused.
 
         Recorded mutation (16 October 2026): in `src/repo_liquidity/h8.py`, `load_extract`'s check
-        `row["content_sha256"] != derived[...]` removed (the content hash read and never compared). This test then fails
+        `if recorded != derived[item.release_date.isoformat()]:` replaced by `if False:` (the content hash read and never compared). This test then fails
         with AssertionError: ValueError not raised.
         """
         text = EXTRACT.read_text(encoding="utf-8").splitlines(keepends=True)
