@@ -16,11 +16,15 @@ from types import SimpleNamespace
 from repo_model.splits import LookAheadError
 
 from lockbox_helper import moved_lockbox
-from repo_liquidity import PANEL_SHA256, PARENT_COMMIT, attribution, development, h10_apply, panel
+from repo_liquidity import PANEL_SHA256, attribution, development, h10_apply, panel
 from repo_liquidity.attribution import SPREAD
 
 DRIVERS = attribution.DRIVERS_WITH_ON_RRP
 RECORD = pathlib.Path(h10_apply.RECORD)
+
+#: The parent pin these records were made at (L27, #105 moved the tree to a later pin). A published record is never
+#: edited in place, so it keeps naming the pin it was made at.
+RECORD_PARENT_COMMIT = "53e61af9b4175e854c196908d3c76b228c039667"
 
 
 def episode(onset, *, status="attributed", residual=0.3, explained=0.7, beats=True, regime="depleted", quarter_end=False):
@@ -259,7 +263,7 @@ class RecordTests(unittest.TestCase):
         self.assertEqual(summary["episodes"], len(self.record["episodes"]))
 
     def test_the_record_names_its_pin_its_panel_and_its_seeds(self):
-        self.assertEqual(self.record["parent_commit"], PARENT_COMMIT)
+        self.assertEqual(self.record["parent_commit"], RECORD_PARENT_COMMIT)
         self.assertEqual(self.record["parent_panel_sha256"], PANEL_SHA256)
         self.assertEqual(self.record["panel"]["sha256"], panel.load_manifest(1)["sha256"])
         self.assertEqual(self.record["panel"]["sha256"], self.manifest["sha256"])
