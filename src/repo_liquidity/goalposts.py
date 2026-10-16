@@ -290,22 +290,35 @@ def plant(ratio: Sequence[float], event: Sequence[int], c: float, *, sigma: floa
     return [r + rng.gauss(0.0, NOISE_SD * sigma) - c * sigma * y for r, y in zip(ratio, event)]
 
 
-def calibrate(target: float, ratio: Sequence[float], state: Sequence[float], event: Sequence[int], *, sigma: float,
-              seed: int, tolerance: float = 1e-9, gain_tolerance: float = CALIBRATION_TOLERANCE) -> Optional[float]:
-    """The shift `c` whose planted estimate has the §5 gain `target` on these days, by bisection; None if unreachable.
+class CalibrationCase(NamedTuple):
+    """One series a planting is calibrated on: its columns, and the seed of its tie-breaking noise."""
+
+    ratio: Sequence[float]
+    state: Sequence[float]
+    event: Sequence[int]
+    seed: int
+
+
+def calibrate_over(target: float, cases: Sequence[CalibrationCase], *, sigma: float, tolerance: float = 1e-9,
+                   gain_tolerance: float = CALIBRATION_TOLERANCE) -> Optional[float]:
+    """The shift `c` whose planted estimates have the §5 gain `target` on average over `cases`, by bisection; None if
+    unreachable.
 
     The statistic moves in steps (a stratum with few other days moves it by whole pairs), so the bisection ends on the end
-    of its last bracket whose gain is nearer the target, and the shift is returned only if that gain is within
-    `gain_tolerance` of the target (`h7-g6.md` §5).
+    of its last bracket nearer the target, and the shift is returned only if that mean gain is within `gain_tolerance` of
+    the target (`h7-g6.md` §5).
 
     Raises:
-        ValueError: if no shift lands within `gain_tolerance` of the target.
+        ValueError: if there are no cases, or no shift lands within `gain_tolerance` of the target.
     """
+    if not cases:
+        raise ValueError("a calibration needs at least one series")
     if target == 0.0:
         return 0.0
 
     def gain(c: float) -> float:
-        return stratified_gain(plant(ratio, event, c, sigma=sigma, seed=seed), ratio, state, event).value
+        return sum(stratified_gain(plant(x.ratio, x.event, c, sigma=sigma, seed=x.seed), x.ratio, x.state, x.event).value
+                   for x in cases) / len(cases)
 
     low, high = 0.0, SHIFT_MAX
     if gain(high) < target:
@@ -324,6 +337,13 @@ def calibrate(target: float, ratio: Sequence[float], state: Sequence[float], eve
         raise ValueError(f"no shift plants the gain {target} to within {gain_tolerance}: the nearest, {best:.9g} sigma, "
                          f"is {miss:.3g} away")
     return best
+
+
+def calibrate(target: float, ratio: Sequence[float], state: Sequence[float], event: Sequence[int], *, sigma: float,
+              seed: int, tolerance: float = 1e-9, gain_tolerance: float = CALIBRATION_TOLERANCE) -> Optional[float]:
+    """`calibrate_over` one series: the shift `c` whose planted estimate has the §5 gain `target` on these days."""
+    return calibrate_over(target, [CalibrationCase(ratio, state, event, seed)], sigma=sigma, tolerance=tolerance,
+                          gain_tolerance=gain_tolerance)
 
 
 # -- windows, eras and intervals ---------------------------------------------------------------------------------------

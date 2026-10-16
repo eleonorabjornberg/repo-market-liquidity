@@ -309,6 +309,26 @@ class PowerStudyTests(unittest.TestCase):
             realised = gp.stratified_gain(gp.plant(ratio, event, c, sigma=sigma, seed=9), ratio, state, event).value
             self.assertLessEqual(abs(realised - target), gp.CALIBRATION_TOLERANCE)
 
+    def test_a_shift_calibrated_over_several_series_has_the_target_as_its_mean_gain(self):
+        """Part B (`h7-g6.md` §10): events simulated independently of R leave R no AUROC to lose, so one series' shift
+        would overshoot; the shift is calibrated so that the mean gain over reference series equals the target."""
+        cases = []
+        for k in range(6):
+            ratio, state, event, _ = _world(n=300, seed=20 + k)
+            cases.append(gp.CalibrationCase(ratio, state, event, 100 + k))
+        sigma = gp.sd(cases[0].ratio)
+        c = gp.calibrate_over(0.05, cases, sigma=sigma)
+        gains = [gp.stratified_gain(gp.plant(x.ratio, x.event, c, sigma=sigma, seed=x.seed), x.ratio, x.state,
+                                    x.event).value for x in cases]
+        self.assertAlmostEqual(sum(gains) / len(gains), 0.05, delta=gp.CALIBRATION_TOLERANCE)
+        self.assertGreater(max(gains) - min(gains), gp.CALIBRATION_TOLERANCE)
+
+    def test_one_case_calibrates_as_calibrate_does(self):
+        ratio, state, event, _ = _world()
+        sigma = gp.sd(ratio)
+        self.assertEqual(gp.calibrate_over(0.05, [gp.CalibrationCase(ratio, state, event, 9)], sigma=sigma),
+                         gp.calibrate(0.05, ratio, state, event, sigma=sigma, seed=9))
+
     def test_the_window_seed_is_the_declared_seed_plus_the_windows_first_index(self):
         self.assertEqual(gp.STUDY_SEED, 20261014)
         self.assertEqual(gp.window_seed(0), 20261014)
