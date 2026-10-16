@@ -286,6 +286,7 @@ def run_part_b(days, sigma, grid_shifts, smoke):
                 "median_of_those_that_reach": median(reached) if reached else None,
                 "p90_of_those_that_reach": reached[int(0.9 * (len(reached) - 1))] if reached else None}
 
+    fitted_on = span
     span = span[:PART_B_LENGTH]
     cases = _reference_cases(span, process, 20 if smoke else PART_B_REFERENCE_SERIES)
     shifts, realised = {}, {}
@@ -317,8 +318,8 @@ def run_part_b(days, sigma, grid_shifts, smoke):
         row["point_at_or_above_mme"] = sum(r["point"] >= gp.MME for r in everything) / len(everything)
         gains[str(target)] = row
     events = sorted(r["events"] for r in results)
-    return {"process": {"calibration_window": [span[0].day.isoformat(), span[-1].day.isoformat()], "days": len(span),
-                        "events": sum(d.event for d in span), "start": process.start, "stay": process.stay,
+    return {"process": {"calibration_window": [fitted_on[0].day.isoformat(), fitted_on[-1].day.isoformat()],
+                        "days": len(fitted_on), "events": sum(d.event for d in fitted_on), "start": process.start, "stay": process.stay,
                         "stationary": process.stationary,
                         "transitions_from_quiet": process.transitions_from_quiet,
                         "transitions_from_event": process.transitions_from_event},
