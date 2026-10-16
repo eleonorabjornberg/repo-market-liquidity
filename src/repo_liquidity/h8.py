@@ -57,7 +57,9 @@ _WHERE = {f"h8_{group}_{line}": (group, line) for group in GROUPS for line in LI
 #: The first week of the extract: the newest week of the earliest release in range (5 January 2018).
 FIRST_WEEK = date(2017, 12, 27)
 
-EXTRACT_COLUMNS = ("week_ending", "release_date") + FIELDS + ("release_sha256",)
+#: `fetch_sha256` is the SHA-256 of the release page as fetched: it identifies the fetch, not the release (finding #40; the
+#: archive injects per-request tokens). `content_sha256` identifies the values the release first printed (#101).
+EXTRACT_COLUMNS = ("week_ending", "release_date") + FIELDS + ("fetch_sha256", "content_sha256")
 EXTRACT_NAME = "h8_group_first_print.csv"
 RELEASES_NAME = "h8_group_first_print.releases.json"
 
@@ -164,7 +166,7 @@ class FirstPrint:
     week_ending: date
     release_date: date
     values: Mapping[str, float]
-    release_sha256: str
+    fetch_sha256: str
 
 
 def first_prints(releases: Iterable[Tuple[GroupRelease, str]]) -> List[FirstPrint]:
@@ -186,18 +188,21 @@ def first_prints(releases: Iterable[Tuple[GroupRelease, str]]) -> List[FirstPrin
             raise ValueError(f"H.8: {field} was first printed in different releases from {FIELDS[0]}")
     return [FirstPrint(week_ending=ref.week_ending, release_date=ref.release_date,
                        values={field: by_field[field][i].value for field in FIELDS},
-                       release_sha256=ref.release_sha256)
+                       fetch_sha256=ref.release_sha256)
             for i, ref in enumerate(reference)]
 
 
 def write_extract(prints: Iterable[FirstPrint]) -> bytes:
     """The tracked CSV: one row per week, values to one decimal as the page prints them."""
+    prints = list(prints)
+    contents = release_content_hashes(prints)
     buffer = io.StringIO(newline="")
     writer = csv.writer(buffer, lineterminator="\n")
     writer.writerow(EXTRACT_COLUMNS)
     for item in prints:
         writer.writerow((item.week_ending.isoformat(), item.release_date.isoformat())
-                        + tuple(format(item.values[field], ".1f") for field in FIELDS) + (item.release_sha256,))
+                        + tuple(format(item.values[field], ".1f") for field in FIELDS)
+                        + (item.fetch_sha256, contents[item.release_date.isoformat()]))
     return buffer.getvalue().encode("utf-8")
 
 
@@ -238,10 +243,17 @@ def load_extract(path: Path) -> List[FirstPrint]:
         reader = csv.DictReader(handle)
         if tuple(reader.fieldnames or ()) != EXTRACT_COLUMNS:
             raise ValueError(f"{path.name}: columns {reader.fieldnames} are not {list(EXTRACT_COLUMNS)}")
+        rows = list(reader)
         prints = [FirstPrint(week_ending=date.fromisoformat(row["week_ending"]),
                              release_date=date.fromisoformat(row["release_date"]),
                              values={field: float(row[field]) for field in FIELDS},
-                             release_sha256=row["release_sha256"]) for row in reader]
+                             fetch_sha256=row["fetch_sha256"]) for row in rows]
+        stated = [row["content_sha256"] for row in rows]
+    derived = release_content_hashes(prints)
+    for item, recorded in zip(prints, stated):
+        if recorded != derived[item.release_date.isoformat()]:
+            raise ValueError(f"{path.name}: the content_sha256 of the week ending {item.week_ending} is not the hash of "
+                             f"the values the release of {item.release_date} first printed")
     for before, after in zip(prints, prints[1:]):
         if after.week_ending - before.week_ending != timedelta(days=7):
             raise ValueError(f"the extract skips from {before.week_ending} to {after.week_ending}")

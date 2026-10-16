@@ -124,7 +124,7 @@ class ExtractTests(unittest.TestCase):
     def test_the_tracked_page_digests_name_the_releases_the_record_lists(self):
         listed = {record["release_date"]: record["fetch_sha256"] for record in self.releases["releases"]}
         for item in self.prints:
-            self.assertEqual(listed[item.release_date.isoformat()], item.release_sha256, item.week_ending)
+            self.assertEqual(listed[item.release_date.isoformat()], item.fetch_sha256, item.week_ending)
 
     def test_every_week_is_read_from_the_earliest_release_that_carries_it(self):
         """Data guard: a week read from a later release is a revised value, not the first print.
@@ -139,7 +139,7 @@ class ExtractTests(unittest.TestCase):
     def test_a_week_read_from_a_later_release_is_refused(self):
         moved = list(self.prints)
         item = self.prints[1]
-        moved[1] = h8.FirstPrint(item.week_ending, date(2018, 1, 19), item.values, item.release_sha256)
+        moved[1] = h8.FirstPrint(item.week_ending, date(2018, 1, 19), item.values, item.fetch_sha256)
         with self.assertRaises(ValueError):
             h8.check_first_prints(moved, self.releases)
 
