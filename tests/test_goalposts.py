@@ -204,9 +204,9 @@ class BootstrapTests(unittest.TestCase):
 
 
 class VerdictTests(unittest.TestCase):
-    def _test(self, point, lower, upper=0.2, events=20):
+    def _test(self, point, lower, upper=0.2, events=20, window_events=None):
         return gp.InformationTest(point=point, lower=lower, upper=upper, level=0.05, draws=10000, events=events,
-                                  strata=3, dropped=0)
+                                  strata=3, dropped=0, window_events=events if window_events is None else window_events)
 
     def test_supported_needs_lower_above_zero_point_at_the_mme_and_ten_events(self):
         self.assertEqual(gp.verdict(self._test(0.06, 0.01), look=2, goalposts_held=True, futility_level=0.05),
@@ -216,6 +216,13 @@ class VerdictTests(unittest.TestCase):
         self.assertNotEqual(gp.verdict(self._test(0.06, 0.0), look=2, goalposts_held=True, futility_level=0.05),
                             scoring_protocol.SUPPORTED)
         self.assertNotEqual(gp.verdict(self._test(0.06, 0.01, events=9), look=2, goalposts_held=True,
+                                       futility_level=0.05), scoring_protocol.SUPPORTED)
+
+    def test_the_event_floor_counts_the_events_in_the_window_not_those_in_usable_strata(self):
+        """Protocol §9 says "10 stress events logged" and `h7-g6.md` §4 says "events in the window" (finding #95)."""
+        self.assertEqual(gp.verdict(self._test(0.06, 0.01, events=0, window_events=10), look=2, goalposts_held=True,
+                                    futility_level=0.05), scoring_protocol.SUPPORTED)
+        self.assertNotEqual(gp.verdict(self._test(0.06, 0.01, events=30, window_events=9), look=2, goalposts_held=True,
                                        futility_level=0.05), scoring_protocol.SUPPORTED)
 
     def test_killed_by_a_goalpost_failure_or_an_upper_bound_under_the_mme(self):
@@ -237,6 +244,21 @@ class VerdictTests(unittest.TestCase):
     def test_an_upper_bound_is_required_to_judge_a_kill(self):
         with self.assertRaises(ValueError):
             gp.verdict(self._test(0.01, -0.02, upper=None), look=1, goalposts_held=True, futility_level=0.05)
+
+
+class WindowEventTests(unittest.TestCase):
+    def test_the_test_reports_the_window_events_beside_the_usable_ones(self):
+        """The 60-day window from 2019-09-17 has 60 events in the window and 0 in usable strata (finding #95): its one
+        stratum has no day without an event, so it is dropped. Both counts are reported, labelled."""
+        n = 60
+        result = gp.information_test([0.1] * n, [0.1] * n, [1.0] * n, [1] * n, look=2, seed=3, draws=200)
+        self.assertEqual((result.window_events, result.events, result.strata, result.dropped), (60, 0, 0, 1))
+
+    def test_the_two_counts_agree_when_every_stratum_is_usable(self):
+        ratio, state, event, _ = _world(n=300)
+        result = gp.information_test(ratio, ratio, state, event, look=2, seed=3, draws=200)
+        self.assertEqual(result.window_events, sum(event))
+        self.assertEqual(result.events, sum(event))
 
 
 class MissingTests(unittest.TestCase):
@@ -268,6 +290,67 @@ class PowerStudyTests(unittest.TestCase):
     def test_an_unreachable_target_is_reported_as_none(self):
         ratio, state, event, _ = _world()
         self.assertIsNone(gp.calibrate(0.9, ratio, state, event, sigma=gp.sd(ratio), seed=9))
+
+    def test_a_target_the_data_cannot_meet_to_the_declared_tolerance_is_refused(self):
+        """`h7-g6.md` §5: the calibration meets 1e-4 or refuses. Six events among 60 days move the statistic in steps of
+        about 3e-3, so no shift lands within 1e-4 of 0.0137 and a midpoint of the last bracket (the old rule) was returned."""
+        rng = random.Random(5)
+        ratio = [0.1 + 0.001 * rng.random() for _ in range(60)]
+        state = [0.0] * 60
+        event = [1 if i % 10 == 3 else 0 for i in range(60)]
+        with self.assertRaises(ValueError):
+            gp.calibrate(0.0137, ratio, state, event, sigma=gp.sd(ratio), seed=4)
+
+    def test_a_calibrated_gain_is_within_the_declared_tolerance(self):
+        ratio, state, event, _ = _world()
+        sigma = gp.sd(ratio)
+        for target in (0.02, 0.035, 0.05, 0.065, 0.1):
+            c = gp.calibrate(target, ratio, state, event, sigma=sigma, seed=9)
+            realised = gp.stratified_gain(gp.plant(ratio, event, c, sigma=sigma, seed=9), ratio, state, event).value
+            self.assertLessEqual(abs(realised - target), gp.CALIBRATION_TOLERANCE)
+
+    def test_the_window_seed_is_the_declared_seed_plus_the_windows_first_index(self):
+        self.assertEqual(gp.STUDY_SEED, 20261014)
+        self.assertEqual(gp.window_seed(0), 20261014)
+        self.assertEqual(gp.window_seed(40), 20261054)
+
+    def test_power_is_a_wilson_interval_at_the_effective_number_of_windows(self):
+        """Finding #95: 10 of 13 overlapping 250-day windows carry the information of 1.04 windows; the interval is 13%
+        to 99% and the share beneath it is 10 of 13."""
+        power = gp.power(10, 13, 250, 20)
+        self.assertAlmostEqual(power.effective, 1.04)
+        self.assertAlmostEqual(power.share, 10 / 13)
+        self.assertAlmostEqual(power.low, 0.13, places=2)
+        self.assertAlmostEqual(power.high, 0.99, places=2)
+
+    def test_power_with_no_windows_is_a_data_error(self):
+        with self.assertRaises(ValueError):
+            gp.power(0, 0, 250, 20)
+
+    def test_a_count_above_the_windows_is_a_data_error(self):
+        with self.assertRaises(ValueError):
+            gp.power(14, 13, 250, 20)
+
+    def test_the_two_state_event_process_is_fitted_from_its_transitions(self):
+        fit = gp.fit_event_process([0, 0, 1, 1, 1, 0, 1, 0])
+        self.assertEqual((fit.start, fit.stay), (2 / 3, 1 / 2))
+        self.assertEqual((fit.transitions_from_quiet, fit.transitions_from_event), (3, 4))
+        self.assertAlmostEqual(fit.stationary, (2 / 3) / (1 - 1 / 2 + 2 / 3))
+
+    def test_a_process_with_a_state_never_left_is_not_fitted(self):
+        with self.assertRaises(ValueError):
+            gp.fit_event_process([0, 0, 0, 0])
+        with self.assertRaises(ValueError):
+            gp.fit_event_process([1])
+
+    def test_the_simulated_process_has_the_fitted_long_run_share_and_is_seeded(self):
+        fit = gp.EventProcess(start=0.05, stay=0.8, transitions_from_quiet=100, transitions_from_event=100)
+        a = gp.simulate_events(fit, 20000, random.Random(1))
+        self.assertEqual(a, gp.simulate_events(fit, 20000, random.Random(1)))
+        self.assertNotEqual(a, gp.simulate_events(fit, 20000, random.Random(2)))
+        self.assertAlmostEqual(sum(a) / len(a), fit.stationary, delta=0.02)
+        stays = sum(1 for x, y in zip(a, a[1:]) if x == 1 and y == 1) / sum(a[:-1])
+        self.assertAlmostEqual(stays, 0.8, delta=0.03)
 
     def test_windows_start_every_step_and_fit_inside(self):
         self.assertEqual(gp.windows(100, 60, 20), [(0, 60), (20, 80), (40, 100)])

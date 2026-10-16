@@ -53,6 +53,10 @@ MATERIAL_USE_BN = 1.0
 NOISE_SD = 0.1
 #: The largest shift, in units of sigma, the calibration tries.
 SHIFT_MAX = 20.0
+#: `docs/stages/h7-g6.md` §4: the study's seed; a window's seed is this plus the window's first index.
+STUDY_SEED = 20261014
+#: `docs/stages/h7-g6.md` §5: a calibrated planting's realised gain is within this of its target, or the target is refused.
+CALIBRATION_TOLERANCE = 1e-4
 _CHUNK = 5000
 
 
@@ -201,6 +205,13 @@ class InformationTest:
     events: int
     strata: int
     dropped: int
+    #: The events in the window, as protocol §9 ("10 stress events logged") counts them. `events` is those in usable strata.
+    window_events: int
+
+
+def window_seed(start: int) -> int:
+    """`h7-g6.md` §4: the study's seed plus the window's first index."""
+    return STUDY_SEED + start
 
 
 def information_test(estimate: Sequence[Optional[float]], ratio: Sequence[float], state: Sequence[float],
@@ -230,7 +241,8 @@ def information_test(estimate: Sequence[Optional[float]], ratio: Sequence[float]
     gains = bootstrap_gains(estimate, ratio, state, event, indices)
     lower = float(np.quantile(gains, level))
     upper = None if futility_level is None else float(np.quantile(gains, 1.0 - futility_level))
-    return InformationTest(point.value, lower, upper, level, draws, point.events, point.strata, point.dropped)
+    return InformationTest(point.value, lower, upper, level, draws, point.events, point.strata, point.dropped,
+                           sum(event))
 
 
 def verdict(test: InformationTest, *, look: int, goalposts_held: bool, futility_level: float, mme: float = MME,
@@ -245,7 +257,7 @@ def verdict(test: InformationTest, *, look: int, goalposts_held: bool, futility_
     """
     if not goalposts_held:
         return scoring_protocol.KILLED
-    if test.lower > 0.0 and test.point >= mme and test.events >= floor:
+    if test.lower > 0.0 and test.point >= mme and test.window_events >= floor:
         return scoring_protocol.SUPPORTED
     if test.upper is None:
         raise ValueError(f"no upper bound at futility level {futility_level}: it cannot be judged against the MME")
@@ -279,8 +291,16 @@ def plant(ratio: Sequence[float], event: Sequence[int], c: float, *, sigma: floa
 
 
 def calibrate(target: float, ratio: Sequence[float], state: Sequence[float], event: Sequence[int], *, sigma: float,
-              seed: int, tolerance: float = 1e-5) -> Optional[float]:
-    """The shift `c` whose planted estimate has the §5 gain `target` on these days, by bisection; None if unreachable."""
+              seed: int, tolerance: float = 1e-9, gain_tolerance: float = CALIBRATION_TOLERANCE) -> Optional[float]:
+    """The shift `c` whose planted estimate has the §5 gain `target` on these days, by bisection; None if unreachable.
+
+    The statistic moves in steps (a stratum with few other days moves it by whole pairs), so the bisection ends on the end
+    of its last bracket whose gain is nearer the target, and the shift is returned only if that gain is within
+    `gain_tolerance` of the target (`h7-g6.md` §5).
+
+    Raises:
+        ValueError: if no shift lands within `gain_tolerance` of the target.
+    """
     if target == 0.0:
         return 0.0
 
@@ -290,7 +310,7 @@ def calibrate(target: float, ratio: Sequence[float], state: Sequence[float], eve
     low, high = 0.0, SHIFT_MAX
     if gain(high) < target:
         return None
-    for _ in range(80):
+    for _ in range(100):
         middle = 0.5 * (low + high)
         if gain(middle) < target:
             low = middle
@@ -298,7 +318,12 @@ def calibrate(target: float, ratio: Sequence[float], state: Sequence[float], eve
             high = middle
         if high - low < tolerance:
             break
-    return 0.5 * (low + high)
+    best = min((low, high), key=lambda c: abs(gain(c) - target))
+    miss = abs(gain(best) - target)
+    if miss > gain_tolerance:
+        raise ValueError(f"no shift plants the gain {target} to within {gain_tolerance}: the nearest, {best:.9g} sigma, "
+                         f"is {miss:.3g} away")
+    return best
 
 
 # -- windows, eras and intervals ---------------------------------------------------------------------------------------
@@ -333,6 +358,33 @@ def effective_windows(count: int, length: int, step: int) -> float:
     return min(float(count), count * step / length)
 
 
+class Power(NamedTuple):
+    """A supported share with its Wilson interval at the effective number of windows."""
+
+    share: float
+    low: float
+    high: float
+    effective: float
+
+
+def power(successes: int, windows_: int, length: int, step: int) -> Power:
+    """The share of `windows_` windows supported, with its 95% Wilson interval at `effective_windows`.
+
+    Windows overlap, so the interval is taken at the information they carry, not at their number (finding #95).
+
+    Raises:
+        ValueError: if there are no windows, or more successes than windows.
+    """
+    if windows_ <= 0:
+        raise ValueError(f"a power needs windows, got {windows_}")
+    if not 0 <= successes <= windows_:
+        raise ValueError(f"{successes} windows supported of {windows_}")
+    effective = effective_windows(windows_, length, step)
+    share = successes / windows_
+    low, high = wilson(share * effective, effective)
+    return Power(share, low, high, effective)
+
+
 def days_to_events(event: Sequence[int], start: int, *, floor: int = EVENT_FLOOR) -> Optional[int]:
     """The days from `start` (inclusive) until `floor` events have been logged, or None if the series ends first."""
     seen = 0
@@ -341,6 +393,49 @@ def days_to_events(event: Sequence[int], start: int, *, floor: int = EVENT_FLOOR
         if seen >= floor:
             return offset
     return None
+
+
+# -- a clustered event process (`docs/stages/h7-g6.md` §9, Part B) -----------------------------------------------------
+
+
+class EventProcess(NamedTuple):
+    """A two-state Markov chain on the daily event indicator: P(event | quiet day before) and P(event | event day before)."""
+
+    start: float
+    stay: float
+    transitions_from_quiet: int
+    transitions_from_event: int
+
+    @property
+    def stationary(self) -> float:
+        """The long-run share of event days."""
+        return self.start / (1.0 - self.stay + self.start)
+
+
+def fit_event_process(event: Sequence[int]) -> EventProcess:
+    """The chain's two probabilities as the shares of observed transitions (the maximum-likelihood fit).
+
+    Raises:
+        ValueError: if the series never leaves one of the two states (the probability is then not estimated).
+    """
+    pairs = list(zip(event, event[1:]))
+    from_quiet = [b for a, b in pairs if a == 0]
+    from_event = [b for a, b in pairs if a == 1]
+    if not from_quiet or not from_event:
+        raise ValueError(f"the event process needs a transition out of each state, got {len(from_quiet)} from a quiet "
+                         f"day and {len(from_event)} from an event day")
+    return EventProcess(sum(from_quiet) / len(from_quiet), sum(from_event) / len(from_event), len(from_quiet),
+                        len(from_event))
+
+
+def simulate_events(process: EventProcess, n: int, rng: random.Random) -> List[int]:
+    """`n` daily event indicators from the chain, the first drawn from its stationary share."""
+    out: List[int] = []
+    previous = int(rng.random() < process.stationary)
+    for _ in range(n):
+        out.append(previous)
+        previous = int(rng.random() < (process.stay if previous else process.start))
+    return out
 
 
 # -- the days the study reads ------------------------------------------------------------------------------------------
