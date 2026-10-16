@@ -48,6 +48,8 @@ PART_B_REPLICATES = 400
 PART_B_FLOOR_SERIES = 2000
 PART_B_FLOOR_DAYS = 1000
 PART_B_FLOOR_SEED = SEED + 100000
+PART_B_REFERENCE_SERIES = 200
+PART_B_REFERENCE_SEED = SEED + 200000
 
 _DATA = {}
 
@@ -109,7 +111,7 @@ def _window_task(task):
 
 def _replicate_task(k):
     """Part B (`docs/stages/h7-g6.md` §10): replicate `k`'s 250 real-R days with a simulated event series."""
-    days, sigma, shifts, smoke, process = (_DATA["span"], _DATA["sigma"], _DATA["shifts"], _DATA["smoke"],
+    days, sigma, shifts, smoke, process = (_DATA["span"], _DATA["sigma"], _DATA["shifts_b"], _DATA["smoke"],
                                           _DATA["process"])
     seed = gp.window_seed(k)
     event = gp.simulate_events(process, PART_B_LENGTH, random.Random(f"events:{seed}"))
@@ -254,7 +256,18 @@ def run(smoke):
     }
 
 
-def run_part_b(days, sigma, shifts, smoke):
+def _reference_cases(span, process, count):
+    """`docs/stages/h7-g6.md` §10: the series Part B's shifts are calibrated on, none of them a replicate."""
+    ratio, state = [d.ratio for d in span], [d.state for d in span]
+    cases = []
+    for j in range(count):
+        seed = PART_B_REFERENCE_SEED + j
+        cases.append(gp.CalibrationCase(ratio, state, gp.simulate_events(process, len(span), random.Random(f"events:{seed}")),
+                                        seed))
+    return cases
+
+
+def run_part_b(days, sigma, grid_shifts, smoke):
     """`docs/stages/h7-g6.md` §10: the clustered event process fitted to 2025-01-01 on, days to the floor, power at 250 days."""
     span = [d for d in days if d.day >= PART_B_FROM]
     if len(span) < PART_B_LENGTH:
@@ -273,7 +286,19 @@ def run_part_b(days, sigma, shifts, smoke):
                 "median_of_those_that_reach": median(reached) if reached else None,
                 "p90_of_those_that_reach": reached[int(0.9 * (len(reached) - 1))] if reached else None}
 
-    _DATA.update(span=span[:PART_B_LENGTH], process=process)
+    span = span[:PART_B_LENGTH]
+    cases = _reference_cases(span, process, 20 if smoke else PART_B_REFERENCE_SERIES)
+    shifts, realised = {}, {}
+    for target in grid_shifts:
+        c = gp.calibrate_over(target, cases, sigma=sigma)
+        if c is None:
+            realised[str(target)] = None
+            continue
+        shifts[target] = c
+        mean = sum(gp.stratified_gain(gp.plant(x.ratio, x.event, c, sigma=sigma, seed=x.seed), x.ratio, x.state,
+                                      x.event).value for x in cases) / len(cases)
+        realised[str(target)] = {"mean_gain": mean, "miss": mean - target}
+    _DATA.update(span=span, process=process, shifts_b=shifts)
     replicates = 12 if smoke else PART_B_REPLICATES
     with multiprocessing.get_context("fork").Pool(4) as pool:
         results = pool.map(_replicate_task, range(replicates), chunksize=1)
@@ -298,6 +323,8 @@ def run_part_b(days, sigma, shifts, smoke):
                         "transitions_from_quiet": process.transitions_from_quiet,
                         "transitions_from_event": process.transitions_from_event},
             "days_to_the_event_floor": to_floor,
+            "planting": {"reference_series": len(cases), "shift_in_sigma": {str(t): c for t, c in shifts.items()},
+                         "mean_gain_on_the_reference_series": realised},
             "power_at_250_days": {"first_day": span[0].day.isoformat(), "replicates": replicates, "draws":
                                   2000 if smoke else gp.draws_for(PART_B_LOOK), "replicates_at_the_event_floor": len(at_floor),
                                   "events_per_replicate": {"min": events[0], "median": median(events), "max": events[-1]},
@@ -381,7 +408,8 @@ def tables(record):
             "| Target | Shift (sigma) | Realised gain | Miss |", "|---|---|---|---|"]
     for t, c in record["planting"]["shift_in_sigma"].items():
         r = record["planting"]["realised_gain_on_the_whole_span"][t]
-        out.append(f"| {t} | {c:.6f} | {r['gain']:.6f} | {r['miss']:+.2e} |")
+        null = " (the null: tie-breaking noise only)" if float(t) == 0.0 else ""
+        out.append(f"| {t}{null} | {c:.6f} | {r['gain']:.6f} | {r['miss']:+.2e} |")
     return "\n".join(out)
 
 
@@ -406,6 +434,7 @@ def tables_part_b(record):
            "Each cell: supported share (supported/replicates; 95% Wilson interval at the replicates)", "",
            "| Gain | Every replicate | Replicates at the floor | Point at or above the MME | Mean point |",
            "|---|---|---|---|---|"]
+    planting = b["planting"]
     for g, row in w["gains"].items():
         cells = []
         for key in ("all_replicates", "replicates_at_the_floor"):
@@ -415,6 +444,12 @@ def tables_part_b(record):
                          f"{_pct(r['interval'][1])})")
         out.append(f"| {g}{' (size)' if g == '0.0' else ''} | {cells[0]} | {cells[1]} | "
                    f"{_pct(row['point_at_or_above_mme'])} | {row['mean_point']:+.4f} |")
+    out += ["", f"**Planting: mean gain on the {planting['reference_series']} reference series against the target**", "",
+            "| Target | Shift (sigma) | Mean gain | Miss |", "|---|---|---|---|"]
+    for t, c in planting["shift_in_sigma"].items():
+        r = planting["mean_gain_on_the_reference_series"][t]
+        null = " (the null)" if float(t) == 0.0 else ""
+        out.append(f"| {t}{null} | {c:.6f} | {r['mean_gain']:.6f} | {r['miss']:+.2e} |")
     return "\n".join(out)
 
 
