@@ -3,8 +3,12 @@ name: cdr-archive
 # #46 (groundwork G5 for H7m): archive the FFIEC CDR "Call Reports -- Single Period" bulk files on a schedule, because
 # the portal rebuilds each quarter from its current content and a first-filed figure is not recoverable later.
 #
-# Never pushes to main. New zips go to the release `cdr-archive` as assets (they do not expire, unlike Actions
-# artifacts), and the manifest of what was retrieved, and when, is committed to the branch `cdr-archive`.
+# Never pushes to main. New zips go to the release tagged `cdr-archive-assets` as assets (they do not expire, unlike
+# Actions artifacts), and the manifest of what was retrieved, and when, is committed to the branch `cdr-archive`.
+# Refs are always named in full (`refs/heads/cdr-archive`): the short name once resolved to a tag and every run failed
+# (#99, finding #94). The release tag differs from the branch name so that cannot recur.
+# Storage is verified (#99): after the upload every manifest entry must be a release asset with the same SHA-256 and
+# size, or the run is red (after the manifest has been committed, so the retrieval times are not lost).
 # `contents: write` is requested for this workflow only; if the repository's settings refuse it, the upload step
 # fails and the run is red (the archive then stops visibly, not silently).
 
@@ -20,44 +24,68 @@ concurrency:
   group: cdr-archive
   cancel-in-progress: false
 
+env:
+  RELEASE_TAG: cdr-archive-assets
+  BRANCH_REF: refs/heads/cdr-archive
+
 jobs:
   archive:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out main (the script)
+      - name: Check out the script (the commit this run was started on)
         run: |
           git init -q . && git remote add origin "https://github.com/${GITHUB_REPOSITORY}"
-          git -c http.extraheader="Authorization: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)" fetch -q --depth 1 origin main
+          git -c http.extraheader="Authorization: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)" fetch -q --depth 1 origin "$GITHUB_SHA"
           git checkout -q FETCH_HEAD
         env:
           GH_TOKEN: ${{ github.token }}
-      - name: Take the manifest from the archive branch, if it exists
+      - name: Take the manifest from the archive branch, if it exists, and reconcile it
         run: |
-          if git -c http.extraheader="Authorization: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)" fetch -q --depth 1 origin cdr-archive; then
+          if git -c http.extraheader="Authorization: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)" fetch -q --depth 1 origin "$BRANCH_REF"; then
             git show FETCH_HEAD:archive/cdr/manifest.json > archive/cdr/manifest.json
+          fi
+          python3 -I scripts/archive_cdr.py --reconcile archive/cdr/reconciliation.json
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - name: One-off migration, only while the release is still tagged with the branch's name (#99)
+        # The 16 Oct run created the release with the tag `cdr-archive`, which clashed with the branch. Retag the release
+        # (its assets move with it), and only once the new tag is in place delete the stray tag. A no-op afterwards.
+        run: |
+          if ! gh release view "$RELEASE_TAG" >/dev/null 2>&1 && gh release view cdr-archive >/dev/null 2>&1; then
+            gh release edit cdr-archive --tag "$RELEASE_TAG" --target "$GITHUB_SHA"
+            gh release view "$RELEASE_TAG" >/dev/null
+            git -c http.extraheader="Authorization: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)" push origin --delete refs/tags/cdr-archive
           fi
         env:
           GH_TOKEN: ${{ github.token }}
       - name: Download
         run: python3 -I scripts/archive_cdr.py --zips "$RUNNER_TEMP/zips" | tee "$RUNNER_TEMP/out.txt"
-      - name: Upload new zips to the release and commit the manifest to the archive branch
+      - name: Upload what the release lacks, verify storage, commit the manifest to the archive branch
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           AUTH="Authorization: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
-          if grep -q '^new: ' "$RUNNER_TEMP/out.txt"; then
-            gh release view cdr-archive >/dev/null 2>&1 || gh release create cdr-archive --title "CDR bulk-file archive" \
-              --notes "Zips named <quarter-end>-<sha256>.zip, as listed in archive/cdr/manifest.json on the cdr-archive branch (#46)."
-            for sha in $(sed -n 's/^new: [0-9-]* \([0-9a-f]\{64\}\) .*/\1/p' "$RUNNER_TEMP/out.txt"); do
-              gh release upload cdr-archive "$RUNNER_TEMP"/zips/*-"$sha".zip
-            done
-          fi
+          gh release view "$RELEASE_TAG" >/dev/null 2>&1 || gh release create "$RELEASE_TAG" --title "CDR bulk-file archive" \
+            --notes "Zips named <quarter-end>-<sha256>.zip, as listed in archive/cdr/manifest.json on the cdr-archive branch (#46, #99)."
+          assets() { gh api "repos/${GITHUB_REPOSITORY}/releases/tags/${RELEASE_TAG}" -q '.assets' > "$RUNNER_TEMP/assets.json"; }
+          assets
+          python3 -I scripts/archive_cdr.py --zips "$RUNNER_TEMP/zips" --plan-uploads "$RUNNER_TEMP/assets.json" | tee "$RUNNER_TEMP/plan.txt"
+          for name in $(sed -n 's/^upload: //p' "$RUNNER_TEMP/plan.txt"); do
+            gh release upload "$RELEASE_TAG" "$RUNNER_TEMP/zips/$name"
+          done
+          assets
+          rc=0
+          python3 -I scripts/archive_cdr.py --verify-release "$RUNNER_TEMP/assets.json" || rc=$?
           cp archive/cdr/manifest.json "$RUNNER_TEMP/manifest.json"
           git config user.name "cdr-archive"; git config user.email "actions@users.noreply.github.com"
           # The branch starts from main the first time and is only ever added to after that.
-          if git -c http.extraheader="$AUTH" fetch -q --depth 1 origin cdr-archive; then git checkout -q -f -B cdr-archive FETCH_HEAD; else git checkout -q -f -B cdr-archive; fi
+          if git -c http.extraheader="$AUTH" fetch -q --depth 1 origin "$BRANCH_REF"; then git checkout -q -f -B archive-work FETCH_HEAD; else git checkout -q -f -B archive-work; fi
           cp "$RUNNER_TEMP/manifest.json" archive/cdr/manifest.json
           git add archive/cdr/manifest.json
-          git diff --cached --quiet && { echo "manifest unchanged"; exit 0; }
-          git commit -q -m "Archive: CDR bulk-file manifest, $(date -u +%Y-%m-%dT%H:%MZ)"
-          git -c http.extraheader="$AUTH" push -q origin cdr-archive
+          if git diff --cached --quiet; then
+            echo "manifest unchanged"
+          else
+            git commit -q -m "Archive: CDR bulk-file manifest, $(date -u +%Y-%m-%dT%H:%MZ)"
+            git -c http.extraheader="$AUTH" push -q origin "HEAD:${BRANCH_REF}"
+          fi
+          exit $rc
