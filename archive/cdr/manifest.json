@@ -11,7 +11,18 @@
       "sha256": "e19452450909399dc104d51cddcea0db17d71d872b20f67234fedf56340c1e69",
       "size": 5483032,
       "first_retrieved_utc": "2026-10-14T04:20:06Z",
-      "last_checked_utc": "2026-10-15T11:28:32Z"
+      "last_checked_utc": "2026-10-15T11:28:32Z",
+      "status": "not_stored"
+    },
+    {
+      "quarter": "2026-03-31",
+      "url": "https://cdr.ffiec.gov/public/PWS/DownloadBulkData.aspx",
+      "file": "2026-03-31-d77f9812b402c19153379db46222bd74fdfeaa8857ad7932b2bcc56b184b635b.zip",
+      "sha256": "d77f9812b402c19153379db46222bd74fdfeaa8857ad7932b2bcc56b184b635b",
+      "size": 5483431,
+      "first_retrieved_utc": "2026-10-16T11:23:45Z",
+      "last_checked_utc": "2026-10-16T13:10:05Z",
+      "note": "retrieval time = upload time (run 38893471133)"
     },
     {
       "quarter": "2026-06-30",
@@ -21,7 +32,18 @@
       "sha256": "0a2d59ce16b5a5b756765e00364d525855019ac657e0398c96323aebfa1679fe",
       "size": 5980988,
       "first_retrieved_utc": "2026-10-14T04:20:06Z",
-      "last_checked_utc": "2026-10-15T11:28:32Z"
+      "last_checked_utc": "2026-10-15T11:28:32Z",
+      "status": "not_stored"
+    },
+    {
+      "quarter": "2026-06-30",
+      "url": "https://cdr.ffiec.gov/public/PWS/DownloadBulkData.aspx",
+      "file": "2026-06-30-1ca075adb6b197421ff333d4348e62f3175ab021898676cd63a786d3cf668c43.zip",
+      "sha256": "1ca075adb6b197421ff333d4348e62f3175ab021898676cd63a786d3cf668c43",
+      "size": 5981366,
+      "first_retrieved_utc": "2026-10-16T11:23:43Z",
+      "last_checked_utc": "2026-10-16T13:10:05Z",
+      "note": "retrieval time = upload time (run 38893471133)"
     }
   ]
 }
