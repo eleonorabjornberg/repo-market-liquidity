@@ -11,8 +11,9 @@ figures, so each (bank, quarter) value is a labelled, amended figure (`vintage =
 - **The measure.** `slr_pct = 100 * tier 1 capital / total leverage exposure`; `headroom_pp = slr_pct - requirement_pct`.
   The requirement is read from `REQUIREMENT_TABLE` (`docs/decisions/slr-requirement.md`, a draft for Eleonora): 6% for
   quarter-ends from 2018-01-01 to 2026-03-31 (the enhanced ratio at G-SIB subsidiaries) and, from 2026-04-01, a value the
-  rule leaves to each bank, so those quarters carry the ratio and **no headroom**; before 2018 the table has no entry. State
-  Street is outside the main measure and a labelled sensitivity (`measure`, Eleonora's decision on #69).
+  rule leaves to each bank, so those quarters carry the ratio and **no headroom**; before 2018 the table has no entry. All
+  nine banks are in the main measure (`measure`): State Street is read at the bank of the G-SIB, IDRSSD 35301 (Eleonora,
+  15 October 2026, replacing her decision on #69, Q2, which was made on the figures of the wrong institution).
 - **No aggregate.** Row 16 names no way to combine the nine banks; the extract is one row per bank and quarter.
 - **Availability.** A row is public from the start of the day after its latest-update date, in New York. The update
   time carries no time zone and the posting lag is not recorded, so the whole day is skipped, which is later than the
@@ -55,7 +56,9 @@ BANKS: Mapping[int, str] = {
     2182786: "Goldman Sachs Bank USA",
     1456501: "Morgan Stanley Bank, N.A.",
     2489805: "Morgan Stanley Private Bank, N.A.",
-    93619: "State Street Bank and Trust Company, N.A.",
+    # Not 93619, State Street Bank and Trust Company, N.A.: a non-depository trust subsidiary of about $65 million that
+    # PR #67 read by mistake (its tier 1 capital is close to its exposure, so its ratio was near 100%).
+    35301: "State Street Bank and Trust Company",
     541101: "The Bank of New York Mellon",
 }
 
@@ -118,10 +121,12 @@ def headroom_for(slr_pct: float, quarter_end: date, table: Optional[Sequence[Req
     return None if required is None else round(slr_pct - required, 4)
 
 
-#: Eleonora's decision on #69, Q2 (14 October 2026): State Street is outside the main measure and kept as a labelled
-#: sensitivity. Its figures stay as filed.
+#: Eleonora's decision on #69, Q2 (14 October 2026) kept State Street outside the main measure as a labelled sensitivity.
+#: Those figures were the trust subsidiary's (IDRSSD 93619), not the bank's. With the bank read (IDRSSD 35301) she put
+#: State Street in the main measure (15 October 2026), so no bank is a sensitivity. The label stays defined, so a stored
+#: row that carries it is refused by `load_extract`.
 MAIN, SENSITIVITY = "main", "sensitivity_state_street"
-SENSITIVITY_BANKS: Tuple[int, ...] = (93619,)
+SENSITIVITY_BANKS: Tuple[int, ...] = ()
 #: Row 16(e): the temporary exclusion of reserves and Treasuries ran from April 2020 to March 2021 (automatic for holding
 #: companies, elected by subsidiaries). The quarter-ends inside it, whose election status is flagged unknown.
 EXCLUSION_QUARTERS = (date(2020, 6, 30), date(2020, 9, 30), date(2020, 12, 31), date(2021, 3, 31))
