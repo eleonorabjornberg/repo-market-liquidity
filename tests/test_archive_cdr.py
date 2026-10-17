@@ -10,6 +10,7 @@ import gzip
 import hashlib
 import importlib.util
 import json
+import re
 import tempfile
 import unittest
 from datetime import date, datetime, timezone
@@ -320,6 +321,27 @@ class WorkflowRefTests(unittest.TestCase):
     def test_the_stray_tag_is_deleted_only_after_the_release_is_retagged(self):
         text = (ROOT / ".github/workflows/cdr-archive.yml").read_text()
         self.assertLess(text.index('gh release edit cdr-archive --tag'), text.index("--delete refs/tags/cdr-archive"))
+
+    def test_every_piped_step_runs_with_pipefail(self):
+        """A step that pipes `archive_cdr.py` into `tee` must fail when the script does (#111, finding #109).
+
+        GitHub's default `run` shell is `bash -e {0}`, which has no `pipefail`, so `python3 ... | tee ...` exits with
+        `tee`'s status and a failed download goes green with nothing retrieved. `shell: bash` (set once under
+        `defaults.run`) makes GitHub use `bash --noprofile --norc -eo pipefail {0}`; no step may override it.
+
+        Recorded mutation: deleting the `defaults:` block (the three lines `defaults:`, `  run:`, `    shell: bash`)
+        from cdr-archive.yml. The failing test raised AssertionError (no `defaults.run.shell: bash` found), and the
+        pipe-count check below shows the workflow does pipe.
+        """
+        text = (ROOT / ".github/workflows/cdr-archive.yml").read_text()
+        self.assertRegex(text, r"(?m)^defaults:\n  run:\n    shell: bash$")
+        self.assertEqual(re.findall(r"(?m)^\s+shell:.*$", text), ["    shell: bash"])
+        self.assertGreaterEqual(len(re.findall(r"\| tee ", text)), 2)
+
+    def test_the_readme_names_the_release_by_its_current_tag(self):
+        text = (ROOT / "archive/cdr/README.md").read_text()
+        self.assertNotRegex(text, r"release `cdr-archive`")
+        self.assertIn("`cdr-archive-assets`", text)
 
 
 if __name__ == "__main__":

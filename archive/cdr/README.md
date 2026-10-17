@@ -13,7 +13,7 @@ not replace reading 2 (latest-filed figures, labelled).
   SHA-256, an entry in `manifest.json`: quarter-end, URL, file name, SHA-256, size, `first_retrieved_utc` and
   `last_checked_utc`. An unchanged file moves only `last_checked_utc`; a new SHA-256 is a new entry.
 - `.github/workflows/cdr-archive.yml` runs it on weekdays. It never pushes to `main`: it commits the manifest to the
-  branch `cdr-archive` and uploads each new zip (`<quarter-end>-<sha256>.zip`, 6 to 8 MB) to the release `cdr-archive`
+  branch `cdr-archive` and uploads each new zip (`<quarter-end>-<sha256>.zip`, 6 to 8 MB) to the release `cdr-archive-assets`
   as an asset, which does not expire. The manifest on `main` is the state at the time of the last merge; the branch
   `cdr-archive` is the live one.
 - The zips are not tracked in git.
