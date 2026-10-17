@@ -89,6 +89,73 @@ Not settled in code; the table above leaves each open as stated.
    2020-01-01, 2020-02-26, 2020-06-01, 2023-12-28, 2024-04-01 and 2025-12-01 were not read one by one; the 2026-03-31 text
    carries the same 6.0 percent figure, and its source credit lists the amendments between.
 
+## Amendment (17 October 2026): the Federal Reserve's text for the three state member banks (finding #115, her ruling (b); directive #117)
+
+**DRAFT, for Eleonora to review and merge, like the record above. The decided text above is not rewritten; this section adds to it. No figure, table value or snapshot changes.**
+
+The record read only the OCC's text (open question 3). The Bank of New York Mellon, Goldman Sachs Bank USA and State Street Bank
+and Trust Company (IDRSSD 35301) are state member banks supervised by the Federal Reserve, so their well-capitalized standard is
+the Board's own text. It was read in the eCFR versioner as of the three dates the record uses (12 CFR 208.43 as of 2018-01-01,
+2026-03-31 and 2026-04-01; 12 CFR 217.11 as of 2026-04-01). The citations of the table, as they now stand in the code
+(`REQUIREMENT_TABLE`), are:
+
+- 2018-01-01 to 2026-03-31: 12 CFR 6.4(c)(1)(iv)(B), as added at 79 FR 24539 (May 1, 2014); state member banks: 12 CFR 208.43(b)(1)(iv)(B), as added at 79 FR 24540 (May 1, 2014)
+- 2026-04-01 on: 12 CFR 3.10(a)(1)(v) and 3.11(c)(2)(v), as amended at 90 FR 55287 and 55288 (Dec. 1, 2025); state member banks: 12 CFR 208.43(b)(1)(i)(D) and 217.11(a)(2)(v)(B), as amended at 90 FR 55289 (Dec. 1, 2025)
+
+### 2018-01-01: 12 CFR 208.43(b)(1)(iv)(B) (Regulation H, prompt corrective action, member banks)
+
+> (B) Beginning on Jan. 1, 2018, with respect to any bank that is a subsidiary of a global systemically important BHC under the
+> definition of “subsidiary” in section 217.2 of Regulation Q (12 CFR 217.2), the bank has a supplementary leverage ratio of 6.0
+> percent or greater; and
+
+Source credit: `[63 FR 37652, July 13, 1998, as amended by Reg. H, 78 FR 62283, Oct. 11, 2013; 79 FR 24540, May 1, 2014; 80 FR 49102, Aug. 14, 2015; 80 FR 70672, Nov. 16, 2015]`.
+URL: `https://www.ecfr.gov/api/versioner/v1/full/2018-01-01/title-12.xml?part=208&section=208.43`.
+
+### 2026-03-31: 12 CFR 208.43(b)(1)(i)(D)(2)
+
+> (2) Beginning on January 1, 2018, with respect to any bank that is a subsidiary of a global systemically important BHC under the
+> definition of “subsidiary” in § 217.2 of this chapter, the bank has a supplementary leverage ratio of 6.0 percent or greater; and
+
+Source credit: the 2018 credit plus `84 FR 61796, Nov. 13, 2019; 84 FR 70887, Dec. 26, 2019; 85 FR 32989, June 1, 2020`.
+URL: `https://www.ecfr.gov/api/versioner/v1/full/2026-03-31/title-12.xml?part=208&section=208.43`.
+
+### 2026-04-01: 12 CFR 208.43(b)(1)(i)(D) and 12 CFR 217.11(a)(2)(v)(B)
+
+Paragraph (D) now reads only:
+
+> (D) Leverage Measure: The bank has a leverage ratio of 5.0 percent or greater; and
+
+and 208.43(a)(1)(iv)(B) keeps the supplementary leverage ratio as a capital measure only “with respect to an advanced approaches
+bank or, if applicable, a bank that is a Category III Board-regulated institution”. The G-SIB subsidiary clause is gone. The
+leverage buffer moved to Regulation Q, 12 CFR 217.11(a)(2)(v)(B):
+
+> (B) The leverage buffer requirement of a state member bank that is a subsidiary of a global systemically important BHC is equal
+> to the lesser of 1.0 percent or 50 percent of the most recent method 1 surcharge (expressed as a percentage) that the global
+> systemically important BHC that controls the state member bank was required to calculate pursuant to § 217.403(b), subject to
+> the effective date provisions of § 217.403(d).
+
+and 217.11(f)(3)(ii) defines it: “A state member bank that is a subsidiary of a global systemically important BHC has a leverage
+buffer that is equal to the state member bank's supplementary leverage ratio minus 3 percent, calculated as of the last day of the
+previous calendar quarter.” Source credit of both sections: `90 FR 55289, Dec. 1, 2025` (217.11: `Reg. Q, 85 FR 15596, Mar. 18, 2020, as amended at 86 FR 3762, Jan. 15, 2021; 86 FR 7938, Feb. 3, 2021; 86 FR 9261, Feb. 12, 2021; 88 FR 82969, Nov. 27, 2023; 90 FR 55289, Dec. 1, 2025`).
+URLs: `https://www.ecfr.gov/api/versioner/v1/full/2026-04-01/title-12.xml?part=208&section=208.43` and `...?part=217&section=217.11`.
+
+### Do the Fed's and the OCC's standards match?
+
+| Period | OCC (above) | Federal Reserve (this amendment) | Match |
+|---|---|---|---|
+| 2018-01-01 to 2026-03-31 | 6.0% (12 CFR 6.4) | 6.0% (12 CFR 208.43) | yes |
+| 2026-04-01 on | SLR condition removed; buffer standard `min(1.0%, 50% x surcharge)` (3.11(c)(2)(v)) | SLR condition removed; leverage buffer requirement `min(1.0%, 50% x surcharge)` (217.11(a)(2)(v)(B)) | yes |
+
+They match in every period. The only difference of wording is in the 2018 and 2026-03-31 text: the Fed's clause attaches to a
+subsidiary of a G-SIB BHC, the OCC's to a subsidiary of a holding company above $700 billion in assets or $10 trillion under
+custody. Both are read as describing the subsidiaries of the U.S. G-SIBs; this amendment did not check the thresholds bank by bank.
+**No marked question arises and no figure changes.** Open question 3 is answered for the Federal Reserve only; the FDIC
+(12 CFR part 324) is not read, and which of the nine banks the FDIC supervises, if any, was not checked.
+
+*Not read:* 12 CFR 217.10 (the 3 percent minimum) as of 2026-04-01; the Fed's versions between the three dates (the 2026-03-31
+source credit lists the amendments between); the Federal Register pages (federalregister.gov was not used), so the citations
+are the source credits the eCFR prints. Fetched 17 October 2026.
+
 ## Sources
 
 Fetched 14 October 2026 from the eCFR versioner (`https://www.ecfr.gov/api/versioner/v1/full/<date>/title-12.xml`, part 6

@@ -87,8 +87,8 @@ class RequirementPeriod:
 #: headroom of a quarter with no entry is blank. Each row is quoted in `docs/decisions/slr-requirement.md`, which is
 #: DRAFT until Eleonora merges it; `RequirementTableTests` checks that the two agree.
 REQUIREMENT_TABLE: Tuple[RequirementPeriod, ...] = (
-    RequirementPeriod(date(2018, 1, 1), date(2026, 4, 1), 6.0, "12 CFR 6.4(c)(1)(iv)(B), as added at 79 FR 24539 (May 1, 2014)"),
-    RequirementPeriod(date(2026, 4, 1), None, None, "12 CFR 3.10(a)(1)(v) and 3.11(c)(2)(v), as amended at 90 FR 55287 and 55288 (Dec. 1, 2025)"),
+    RequirementPeriod(date(2018, 1, 1), date(2026, 4, 1), 6.0, "12 CFR 6.4(c)(1)(iv)(B), as added at 79 FR 24539 (May 1, 2014); state member banks: 12 CFR 208.43(b)(1)(iv)(B), as added at 79 FR 24540 (May 1, 2014)"),
+    RequirementPeriod(date(2026, 4, 1), None, None, "12 CFR 3.10(a)(1)(v) and 3.11(c)(2)(v), as amended at 90 FR 55287 and 55288 (Dec. 1, 2025); state member banks: 12 CFR 208.43(b)(1)(i)(D) and 217.11(a)(2)(v)(B), as amended at 90 FR 55289 (Dec. 1, 2025)"),
 )
 
 
