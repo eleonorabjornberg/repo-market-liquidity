@@ -23,7 +23,9 @@ import pathlib
 import statistics
 import unittest
 
-from repo_liquidity import PANEL_SHA256, PARENT_COMMIT, attribution, h10_apply, h10_publish, panel
+from repo_liquidity import PANEL_SHA256, attribution, h10_apply, h10_publish, panel
+# The pin step 3's records were made at; this record was made at it too and, published, keeps naming it (#107).
+from test_h10_step3 import RECORD_PARENT_COMMIT
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 DEVELOPMENT = ROOT / "results" / "h10" / "development.json"
@@ -80,7 +82,7 @@ class RecordTests(unittest.TestCase):
         r = self.record
         self.assertEqual(r["tier"], "development")
         self.assertIn("not_a_verdict", r)
-        self.assertEqual(r["parent_commit"], PARENT_COMMIT)
+        self.assertEqual(r["parent_commit"], RECORD_PARENT_COMMIT)
         self.assertEqual(r["parent_panel_sha256"], PANEL_SHA256)
         self.assertEqual(r["panel"], self.development["panel"])
         self.assertEqual(r["panel"]["sha256"], panel.load_manifest(1)["sha256"])
@@ -122,6 +124,8 @@ class RecordTests(unittest.TestCase):
     def test_the_floored_windows_are_recomputed_from_the_panel(self):
         rows, _ = h10_apply.load_development()
         again = h10_apply.placebo_floor_record(rows, self.development, panel.load_manifest(1))
+        # The recomputation names the live pin; the record names the pin it was made at. Everything else must agree.
+        again["parent_commit"] = RECORD_PARENT_COMMIT
         self.assertEqual(again, self.record)
 
     def test_the_page_points_to_the_record_and_is_the_one_the_script_renders(self):
