@@ -245,3 +245,31 @@ What follows from these answers for H10 step 2 (`docs/stages/h10-step2.md`): the
 five of `DRIVERS_WITH_ON_RRP`; the benchmark of section 4 (reserves alone) and the shares of section 2 are unchanged; the
 outcome counts are reported three ways (under the residual bar, beating the null, and both), and the second condition is
 the one the outcome rule reads. The text of sections 0 to 8 is unchanged.
+
+## 10. Amendment (Eleonora, 15 October 2026; finding #82): a 2 bp floor on the placebo's rise
+
+**Status: DRAFT for Eleonora's review (directive #85). In force only once she has merged it.** Sections 0 to 9 stand otherwise.
+
+**The finding.** Of the 620 placebo windows of the published record, 296 show no rise in the spread and are refused. The median
+placebo rise is 1.4 bp against 4.8 bp for the episodes, and 51% of the placebo explained shares are above 1 in absolute
+value. The published placebo gap is a ratio over denominators near zero. Its direction survives a floor; its size does not.
+
+**The rule (her ruling of 14 October 2026 on #82, relayed).**
+
+1. A placebo window counts only if its spread rise (section 1's window mean less its baseline mean) is **at least 2 bp**
+   (`attribution.PLACEBO_RISE_FLOOR_BP`). The spread is quoted in whole basis points, as the model repo's thresholds are read;
+   the rise is the unrounded difference of two window means and is compared as it is, so a rise of 1.99 bp is excluded and one
+   of 2.0 bp is kept.
+2. A window below the floor is **excluded, not refused**: it leaves the placebo's median and its share at or above the
+   episode, and the count excluded is reported with the summary (`excluded`).
+3. The placebo comparison is reported both ways, floored and unfloored, each with its distribution-free 90% interval on the
+   median. The unfloored reading is the published one and is unchanged.
+
+**What this amendment does not do.** It changes nothing else in the method: the window, the fit, the bootstrap, the Shapley
+shares, the residual bar, the null, the outcome rule and the placebo windows themselves (their number, seed and day types)
+are as before. It re-runs only the placebo, at the same pin, seeds and episodes, as a new development record,
+`results/h10/placebo_floor_2bp.json`. `results/h10/development.json` and the table published in PR #78 are unchanged. It
+scores nothing and registers nothing. The development record is not a verdict (`measurement-protocol.md` section 1).
+
+**Marked question for Eleonora.** The rise is compared unrounded. If she means the rise rounded to a whole basis point first
+(so 1.5 bp counts as 2), the floor admits a few more windows; say so and the comparison is a one-line change.
