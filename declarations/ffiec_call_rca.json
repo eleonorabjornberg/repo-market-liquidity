@@ -1,0 +1,36 @@
+{
+  "ffiec_call_rca": {
+    "access": "public",
+    "availability_provenance": {
+      "note": "Recorded 14 October 2026 for #43. The Call Bulk POR file of each quarter's bulk zip carries, per filer, the column \"Last Date/Time Submission Updated On\": the time of the LATEST submission for that quarter, with no time zone. Each (filer, quarter) value in the bulk file is the latest-filed one (docs/research/slr-headroom-due-diligence.md; data-meaning row 16, ruling 1 of 13 October 2026, reading 2), so it cannot have been public before that time. A group's figure is a sum over its members, so it is read from the start of the next New York calendar day after the SLOWEST member's latest update: a sum is public when all its terms are, and a partial sum would need a completeness threshold that is Eleonora's to set. The next-day start skips the unrecorded posting lag and covers the unstated time zone. The declared lag is the measured maximum over the 34 quarter-ends 2018-03-31 to 2026-06-30 fetched 14 October 2026 (scripts/extract_rca.py refuses any other). Figures of a group with a member last updated after the parent's development end are withheld, not read.",
+      "publication": "FFIEC Central Data Repository, public bulk download \"Call Reports -- Single Period\" (Tab Delimited), https://cdr.ffiec.gov/public/PWS/DownloadBulkData.aspx; one zip per quarter-end, rebuilt from the repository's current content, so only the latest-filed figures are served."
+    },
+    "coverage": [
+      "Schedule RC-A item 0090, balances due from Federal Reserve Banks, summed over two domestic groups (the 25 filers with the largest total assets, and every other filer that carries the item), quarterly, latest-filed vintage"
+    ],
+    "field_frequencies": {
+      "rca_large_domestic_frb_balances": "quarterly",
+      "rca_small_domestic_frb_balances": "quarterly"
+    },
+    "fields": [
+      "rca_large_domestic_frb_balances",
+      "rca_small_domestic_frb_balances"
+    ],
+    "frequency": "quarterly",
+    "identities": [],
+    "limitation": "LATEST-FILED sums, not first prints (data-meaning row 16, amended 13 October 2026): each filer's value is available only from its latest-update time, so a group's sum is available only from the day after its slowest member's, and the extract labels every row vintage = latest_filed. Schedule RC-A item 0090 (RCFD0090 consolidated, else RCON0090 domestic offices), USD thousands in the extract and USD billions in the point-in-time rows. THE GROUPS ARE AN APPROXIMATION (Eleonora's ruling of 14 October 2026 on PR #50, Q3): the large group is the 25 filers with the largest total assets (RCFD2170, else RCON2170) in the quarter's file, which is not the Board's panel of large domestically chartered commercial banks; the small group is every other filer that carries the item, which includes savings institutions the H.8 leaves out and omits every filer that does not carry the item. The item is not checked against the current FFIEC 031/041 instructions (www.ffiec.gov refuses automated requests). The foreign-related group has no anchor here: Eleonora's ruling of 14 October 2026 (option a) uses the H.8 foreign-related institutions' cash assets, labelled an approximation, and reads no FFIEC 002. The two groups are never summed here and are not reserves of the whole banking system. Phase 3 only; not in the published declaration.",
+    "provider": "Federal Financial Institutions Examination Council, Central Data Repository",
+    "release_lag": {
+      "available_time": "00:00",
+      "basis": "record_date",
+      "days": 1714,
+      "note": "Declared 14 October 2026 for #43 at the measured maximum and not above it: the longest gap from a quarter-end to the start of the day after a group's slowest member's latest update in the extract (scripts/extract_rca.py refuses any other value). An ordinary quarter is read years later than the exact reader would allow, which is staleness on the safe side, not leakage.",
+      "timezone": "America/New_York",
+      "unit": "calendar_days"
+    },
+    "reviewed_note": "Structural-zero semantics are not applicable to a regulatory balance; the empty declaration is not a finding.",
+    "structural_zeros": [],
+    "structural_zeros_reviewed": false,
+    "url": "https://cdr.ffiec.gov/public/PWS/DownloadBulkData.aspx"
+  }
+}

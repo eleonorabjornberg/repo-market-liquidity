@@ -1,0 +1,8 @@
+{
+  "byte_count": 9277,
+  "path": "ffiec_call_rca/rca_latest_filed.csv",
+  "retrieved_at": "2026-10-14T19:16:15Z",
+  "sha256": "5906389242dfb1c20726a0d66677fd83e37179049a6914023b8261829061f15f",
+  "source_id": "ffiec_call_rca",
+  "url": "https://cdr.ffiec.gov/public/PWS/DownloadBulkData.aspx"
+}

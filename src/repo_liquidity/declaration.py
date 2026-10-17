@@ -53,6 +53,9 @@ def _fields():
         # #63: the SLR headroom of the nine G-SIB depository subsidiaries, latest-filed Call Report figures
         # (`repo_liquidity.slr`), read through `snapshots/slr_headroom/`. Not built columns of any panel.
         **{field: (("ffiec_call_slr", field),) for field in _slr_fields()},
+        # #43: the RC-A anchor of the group reserves, latest-filed Call Report sums (`repo_liquidity.rca`), read through
+        # `snapshots/rca_anchor/`. Not built columns of any panel.
+        **{field: (("ffiec_call_rca", field),) for field in _rca_fields()},
         "temp_repo_take_up": (("nyfed_temp_repo", "temp_repo_take_up"),),
         "temp_repo_term_take_up": (("nyfed_temp_repo", "temp_repo_term_take_up"),),
         "temp_repo_term_outstanding": (("nyfed_temp_repo", "temp_repo_term_outstanding"),),
@@ -80,6 +83,12 @@ def _slr_fields():
     from repo_liquidity import slr
 
     return slr.FIELDS
+
+
+def _rca_fields():
+    from repo_liquidity import rca
+
+    return rca.FIELDS
 
 
 def _indicator_fields(fields):
