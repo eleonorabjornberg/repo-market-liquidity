@@ -11,12 +11,16 @@ import unittest
 from datetime import date
 from pathlib import Path
 
-from repo_liquidity import PANEL_SHA256, PARENT_COMMIT, goalposts
+from repo_liquidity import PANEL_SHA256, goalposts
 
 ROOT = Path(__file__).resolve().parents[1]
 RECORD = ROOT / "docs" / "research" / "h7m-power-study.json"
 DOC = ROOT / "docs" / "research" / "h7m-power-study.md"
 DECLARATION = ROOT / "docs" / "stages" / "h7-g6.md"
+
+#: The parent pin these records were made at (L27, #105 moved the tree to a later pin). A published record is never
+#: edited in place, so it keeps naming the pin it was made at.
+RECORD_PARENT_COMMIT = "53e61af9b4175e854c196908d3c76b228c039667"
 
 
 def _script():
@@ -32,7 +36,7 @@ class RecordTests(unittest.TestCase):
         cls.record = json.loads(RECORD.read_text(encoding="utf-8"))
 
     def test_it_was_made_at_this_trees_pins(self):
-        self.assertEqual(self.record["pins"], {"parent": PARENT_COMMIT, "panel_digest": PANEL_SHA256})
+        self.assertEqual(self.record["pins"], {"parent": RECORD_PARENT_COMMIT, "panel_digest": PANEL_SHA256})
 
     def test_it_holds_what_was_declared(self):
         script = _script()
