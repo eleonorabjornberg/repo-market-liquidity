@@ -50,3 +50,20 @@ each release (`source_content_sha256`).
 
 A reader that pinned the superseded digest still finds its bytes, with the column named `page_sha256`. A reader that
 moves to the current digest finds `fetch_sha256` in its place and one more column, `content_sha256`.
+
+## 16 October 2026: the `h8_groups` snapshot re-cut with `fetch_sha256` and `content_sha256` (#101, finding #97)
+
+#89 relabelled the H.4.1 page digest as a fetch hash and left the H.8 group extract with `release_sha256`, a name that
+says the digest identifies the release when it identifies one fetch (finding #40). The snapshot's `release_sha256` column
+is relabelled `fetch_sha256`, byte-for-byte the same values, and a `content_sha256` column is added: the SHA-256 of the
+values the row's release first printed, in the canonical form of `repo_liquidity.contenthash` (`h8.release_content_hashes`;
+it re-derives from the snapshot alone, and equals the `content_sha256` of the releases record). No extracted value moved:
+dropping the new column and restoring the old name gives the superseded file back, digest for digest
+(`tests/test_h8_fetch_hash.py`).
+
+| Series | Superseded digest (file kept) | Current digest | Rows |
+|---|---|---|---|
+| `h8_groups` | `326466ae847af5c5be0a462d0a71e6d4022fc792816a1c7f57ad1a9e8ee022fe` | `f1ff8d72ec62346948798a8cfef8c0c537e72642fae55432e4fd5aaff8530302` | 452 to 452 |
+
+A reader that pinned the superseded digest still finds its bytes, with the column named `release_sha256`. A reader that
+moves to the current digest finds `fetch_sha256` in its place and one more column, `content_sha256`, before `break_ids`.

@@ -314,7 +314,7 @@ def _build_weekly(series: str, table: Path, root: Path, repo_commit: str) -> dic
             raise ValueError(f"{table.name}: the releases record gives the release of {day} content_sha256 {recorded}, "
                              f"but its values in the extract hash to {derived.get(day)}")
     for item in prints:
-        if pages.get(item.release_date.isoformat()) != item.release_sha256:
+        if pages.get(item.release_date.isoformat()) != item.fetch_sha256:
             raise ValueError(f"{table.name}: the week ending {item.week_ending} names a page for the release of "
                              f"{item.release_date} that the releases record does not list")
     directory = root / "snapshots" / series
