@@ -67,3 +67,24 @@ dropping the new column and restoring the old name gives the superseded file bac
 
 A reader that pinned the superseded digest still finds its bytes, with the column named `release_sha256`. A reader that
 moves to the current digest finds `fetch_sha256` in its place and one more column, `content_sha256`, before `break_ids`.
+
+## 15 October 2026: the `slr_headroom` snapshot re-cut with State Street's bank (IDRSSD 35301)
+
+The extract read State Street at IDRSSD 93619, State Street Bank and Trust Company, N.A.: a non-depository trust
+subsidiary of about $65 million, whose tier 1 capital is close to its exposure. That is why its ratio was near 100% and
+22 of its quarters were refused (`tier1_exceeds_exposure`). The bank of the G-SIB is State Street Bank and Trust Company,
+IDRSSD 35301. Eleonora put it in the main measure (15 October 2026), replacing her decision on #69 (Q2), which was made on
+the trust subsidiary's figures. The `measure` column is now `main` for every row.
+
+The extract is re-cut from the bulk files retrieved on 15 October 2026, because the zips of 14 October are not kept here.
+The portal had rebuilt 14 of the 34 quarter files since then (2023-03-31 to 2026-06-30). Every figure kept in both files
+is unchanged. Nine bank-quarters of Citibank (476810) and Goldman Sachs Bank USA (2182786), 2025-06-30 to 2026-06-30, now
+carry amendments filed from 29 September to 9 October 2026, days the parent's lockbox holds, so they are withheld
+(`updated_after_development_end`). Rows: 277 less State Street's 7 and the 9 withheld, plus State Street's 34, is 295.
+
+| Series | Superseded digest (file kept) | Current digest | Rows |
+|---|---|---|---|
+| `slr_headroom` | `09c138ad385424b8ba9d705e258ac254cd0ab6ee5e93e7ba199276440ba4de27` | `013b647e6c4257a2e95e5cd939d8572dd7d006fc2cf8dfcef782d7439d83d9d9` | 277 to 295 |
+
+A reader that pinned the superseded digest still finds its bytes. They should move to the current digest: the old file's
+`sensitivity_state_street` rows are the trust subsidiary's, not State Street's.
