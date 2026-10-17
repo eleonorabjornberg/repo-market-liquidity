@@ -9,6 +9,8 @@ panel digest is `4ddc3882…`.
 
 ## Headline
 
+*Decided by Eleonora, 15 October 2026 ([ruling](https://github.com/eleonorabjornberg/repo-market-liquidity/pull/76#issuecomment-6193888675), recorded by directive #92): the decision reading of this result is "among windows at the floor" (item 3 below and the table of windows with at least 10 events). The declared reading, over all windows (items 1 and 2), is reported with it. The text and numbers below are unchanged.*
+
 1. **On the declared reading the MME of 0.05 AUROC points is not detectable at 250 days.** The power at 0.05 is 15% over
    all 67 windows, 41% in windows that start before 2021, and 6% in 2021–24. No grid gain reaches 80% on that reading.
 2. **The binding constraint is the event floor, not the days.** The 1,570 scored days hold 221 material-use events: 190
@@ -112,11 +114,17 @@ would be noisier.
 
 - **Q1. The event after 2025-12-31.** What defines it? The 2026 standing-repo take-up in `nyfed_srf` shows $9bn to $31bn
   on four dates, which the parent's module reads as zero. This is data meaning, and hers.
+  *Decided, 15 October 2026 ([ruling](https://github.com/eleonorabjornberg/repo-market-liquidity/pull/76#issuecomment-6193888675), directive #92): kept: data-meaning answer 14's event (Fed repo operations accepted ≥ $1 bn, SRF included). Labels after 2025-12-31 wait on eleonorabjornberg/repo-market-model#766; none is relabelled here.*
 - **Q2. The MME and the event floor.** The MME of 0.05 is detectable at 250 days only in windows that reach 10 events,
   and then at about 77%. Whether to keep 0.05, raise it to 0.065, or lower the floor or the bar is hers, once, before
   registration (protocol §5, §9). The study changes neither.
+  *Decided, 15 October 2026 ([ruling](https://github.com/eleonorabjornberg/repo-market-liquidity/pull/76#issuecomment-6193888675), directive #92): kept: MME 0.05, event floor 10.*
 - **Q3. Look 1.** The O'Brien–Fleming boundary gives 6.3e-5 at 60 days. The power there is at most 3% pooled (22% in the nine windows that start in 2025, with a Wilson interval from 3% to 73%).
+  *Decided, 15 October 2026 ([ruling](https://github.com/eleonorabjornberg/repo-market-liquidity/pull/76#issuecomment-6193888675), directive #92): kept: O'Brien–Fleming.*
 - **Q4. The upper bound for "killed".** The protocol gives no level; `goalposts.verdict` has no default.
+  *Decided, 15 October 2026 ([ruling](https://github.com/eleonorabjornberg/repo-market-liquidity/pull/76#issuecomment-6193888675), directive #92): the "killed" upper bound is the one-sided 95% bound, mirroring the lower bound; `goalposts.FUTILITY_LEVEL = 0.05` is `verdict`'s default.*
 - **Q5. The null and the planting** are the study's declared choices, not the protocol's.
+  *Decided, 15 October 2026 ([ruling](https://github.com/eleonorabjornberg/repo-market-liquidity/pull/76#issuecomment-6193888675), directive #92): accepted as declared study choices.*
 - **Q6. The reading rule.** The declared rule counts every window, including those that can never hold 10 events. The
   table above also gives the rate among windows at the floor. Which of the two answers "is 0.05 detectable" is hers.
+  *Decided, 15 October 2026 ([ruling](https://github.com/eleonorabjornberg/repo-market-liquidity/pull/76#issuecomment-6193888675), directive #92): the decision reading is "among windows at the floor". Both readings are reported.*
