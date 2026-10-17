@@ -20,6 +20,12 @@ on:
 permissions:
   contents: write
 
+# `shell: bash` makes GitHub run every step as `bash -eo pipefail`, so a step that pipes `archive_cdr.py` into `tee`
+# fails when the script does (#111, finding #109). The default shell has no `pipefail` and would exit with `tee`'s status.
+defaults:
+  run:
+    shell: bash
+
 concurrency:
   group: cdr-archive
   cancel-in-progress: false
