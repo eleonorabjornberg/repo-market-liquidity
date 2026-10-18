@@ -41,7 +41,7 @@ def prints(weeks=range(0, 8), large=100.0, small=50.0, foreign=80.0, step=1.0):
         values["h8_large_domestic_cash_assets"] = large + step * i
         values["h8_small_domestic_cash_assets"] = small + step * i
         values["h8_foreign_related_cash_assets"] = foreign
-        out.append(h8.FirstPrint(week_ending=w, release_date=w + timedelta(days=9), values=values, release_sha256="0" * 64))
+        out.append(h8.FirstPrint(week_ending=w, release_date=w + timedelta(days=9), values=values, fetch_sha256="0" * 64))
     return out
 
 
