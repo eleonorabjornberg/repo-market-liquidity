@@ -17,24 +17,39 @@ attested act.** Standard library only.
 
 from __future__ import annotations
 
+import functools
 import hashlib
 import json
+import subprocess
 from datetime import date
 from pathlib import Path
 from typing import List, Optional, Sequence, Tuple
 
-from repo_liquidity import PANEL_SHA256, PARENT_COMMIT, attribution, h10_apply
+from repo_liquidity import PANEL_SHA256, PARENT_COMMIT, attribution, h10_apply, parent_root
 from repo_liquidity.attribution import BASELINE_DAYS, DRIVERS_WITH_ON_RRP, WINDOW_DAYS
 from repo_liquidity.h10_apply import REPORT_DAYS
+from repo_model.contract import ON_RRP_DEPLETION_BREAK_BN
 from repo_model.splits import LookAheadError
 
 ROOT = Path(__file__).resolve().parents[2]
-#: The frozen method, in the order it is hashed: the decision record, then the two code files that carry the method and its
-#: tables. A path is shown in the digest by the name beside it, so the digest does not depend on where the checkout is.
+#: The frozen method, in the order it is hashed: the decision record, then the code files that carry the method, its tables
+#: and the live entry point (the as-of cut, the regime split and `counted`; finding #119, point 4). A path is shown in the
+#: digest by the name beside it, so the digest does not depend on where the checkout is.
 METHOD_FILES: Tuple[Tuple[str, Path], ...] = (
     ("record:docs/decisions/h10-method.md", ROOT / "docs" / "decisions" / "h10-method.md"),
     ("code:src/repo_liquidity/attribution.py", ROOT / "src" / "repo_liquidity" / "attribution.py"),
     ("code:src/repo_liquidity/h10_apply.py", ROOT / "src" / "repo_liquidity" / "h10_apply.py"),
+    ("code:src/repo_liquidity/h10_live.py", ROOT / "src" / "repo_liquidity" / "h10_live.py"),
+)
+#: The parent code a live result depends on, read from the imported `repo_model` tree and named in the digest by the pinned
+#: commit and the file: the onset rule, the pressure onsets it is cross-checked with, `InformationRule`, the contract that
+#: holds `ON_RRP_DEPLETION_BREAK_BN`, and the stationary bootstrap. Guards that only refuse a run (the lockbox) are not a part.
+PARENT_METHOD_FILES: Tuple[str, ...] = (
+    "src/repo_model/onset.py",
+    "src/repo_model/pressure.py",
+    "src/repo_model/asof.py",
+    "src/repo_model/contract.py",
+    "src/repo_model/metrics.py",
 )
 
 
@@ -65,12 +80,16 @@ def decided_constants() -> dict:
         "drivers": list(attribution.DRIVERS_WITH_ON_RRP),
         "report_days": h10_apply.REPORT_DAYS,
         "decision_time": h10_apply.DECISION_TIME.isoformat(),
+        "on_rrp_depletion_break_bn": ON_RRP_DEPLETION_BREAK_BN,
     }
 
 
 def method_parts() -> List[Tuple[str, bytes]]:
-    """The named parts the digest covers, in the fixed order they are hashed: the record, the code files, the constants."""
+    """The named parts the digest covers, in the fixed order they are hashed: the record, the code files, the parent files
+    (named by the pinned commit) and the constants."""
     parts = [(name, path.read_bytes()) for name, path in METHOD_FILES]
+    root = parent_root()
+    parts.extend((f"parent@{PARENT_COMMIT}:{relative}", (root / relative).read_bytes()) for relative in PARENT_METHOD_FILES)
     parts.append(("constants", json.dumps(decided_constants(), sort_keys=True, separators=(",", ":")).encode("utf-8")))
     return parts
 
@@ -86,6 +105,60 @@ def method_digest() -> str:
     for name, content in method_parts():
         digest.update(name.encode("utf-8") + b"\0" + str(len(content)).encode("ascii") + b"\0" + content)
     return digest.hexdigest()
+
+
+# --------------------------------------------------------------------------- the stamp: what the row was computed from
+
+
+def rows_sha256(panel_rows) -> str:
+    """The sha256 of the rows as given: each row's date, spread and values as sorted compact JSON, one per line, in order."""
+    digest = hashlib.sha256()
+    for row in panel_rows:
+        line = json.dumps([row.date.isoformat(), row.spread_bps, sorted(row.values.items())], separators=(",", ":"))
+        digest.update(line.encode("utf-8") + b"\n")
+    return digest.hexdigest()
+
+
+@functools.lru_cache(maxsize=1)
+def published_panel_rows_sha256() -> str:
+    """`rows_sha256` of the pinned published panel to the development end (`h10_apply.load_development`, which refuses a
+    rebuild that is not the manifest's)."""
+    return rows_sha256(h10_apply.load_development()[0])
+
+
+def _parent_git(*args: str) -> str:
+    return subprocess.run(["git", "-C", str(parent_root()), *args], check=True, capture_output=True, text=True).stdout.strip()
+
+
+def imported_parent_commit() -> Optional[str]:
+    """The commit of the checkout `repo_model` is imported from, read now; None if it is not a git checkout."""
+    try:
+        return _parent_git("rev-parse", "HEAD")
+    except (OSError, subprocess.CalledProcessError):
+        return None
+
+
+def imported_parent_clean() -> Optional[bool]:
+    """Whether that checkout has no modified tracked file; None if it is not a git checkout."""
+    try:
+        return _parent_git("status", "--porcelain", "--untracked-files=no") == ""
+    except (OSError, subprocess.CalledProcessError):
+        return None
+
+
+def check_parent_at_pin(allow_unpinned_parent: bool) -> Tuple[Optional[str], Optional[bool]]:
+    """The imported `repo_model` commit and whether its tree is clean, after checking they are `PARENT_COMMIT` and clean.
+
+    Raises:
+        ValueError: the imported `repo_model` is not a clean checkout of `PARENT_COMMIT` and no override is passed.
+    """
+    commit, clean = imported_parent_commit(), imported_parent_clean()
+    if not allow_unpinned_parent:
+        if commit != PARENT_COMMIT:
+            raise ValueError(f"the imported repo_model is at {commit}, not the pinned {PARENT_COMMIT}")
+        if not clean:
+            raise ValueError(f"the imported repo_model at {commit} has modified tracked files")
+    return commit, clean
 
 
 # --------------------------------------------------------------------------- the entry point
@@ -112,7 +185,7 @@ def last_public_start(rule, dates: Sequence[date], report_index: int, onset_inde
 
 
 def attribute_onset(panel_rows, rule, onset_date: date, report_date: date, *, draws: int = attribution.DRAWS,
-                    null_draws: int = attribution.NULL_DRAWS) -> dict:
+                    null_draws: int = attribution.NULL_DRAWS, allow_unpinned_parent: bool = False) -> dict:
     """Attribute one onset with the frozen method, as of the decision instant of `report_date`. A JSON-able row in the
     columns of the development table (`results/h10/development.json`), plus the method digest and the parent pin.
 
@@ -125,8 +198,10 @@ def attribute_onset(panel_rows, rule, onset_date: date, report_date: date, *, dr
         LookAheadError: a day of the rows is in a locked tier of the parent's lockbox, or an input of the onset's window was
             not public at the report instant.
         ValueError: the onset or report date is not a day of the rows; the report is before the onset or more than
-            `REPORT_DAYS` panel days after it (plan, Q7); the onset is not an onset under the parent's rule.
+            `REPORT_DAYS` panel days after it (plan, Q7); the onset is not an onset under the parent's rule; the imported
+            `repo_model` is not a clean checkout of `PARENT_COMMIT` (unless `allow_unpinned_parent`, which the row records).
     """
+    imported_commit, imported_clean = check_parent_at_pin(allow_unpinned_parent)
     rows = list(panel_rows)
     dates = [row.date for row in rows]
     attribution.check_development(dates)
@@ -150,8 +225,6 @@ def attribute_onset(panel_rows, rule, onset_date: date, report_date: date, *, dr
     result = attribution.attribute(series, onset_index, rule=rule, dates=dates[: report_index + 1], report_index=report_index,
                                    drivers=drivers, draws=draws, seed=attribution.SEED)
 
-    from repo_model.contract import ON_RRP_DEPLETION_BREAK_BN
-
     on_rrp = series[attribution.ON_RRP][onset_index]
     row = {
         "onset": onset_date.isoformat(), "index": onset_index, "report_day": report_date.isoformat(),
@@ -161,6 +234,10 @@ def attribute_onset(panel_rows, rule, onset_date: date, report_date: date, *, dr
         "under_bar": False, "beats_null": False, "counted": False,
         "method_digest": method_digest(), "parent_commit": PARENT_COMMIT, "parent_panel_sha256": PANEL_SHA256,
         "last_day_read": visible[-1].date.isoformat(),
+        "panel_rows_sha256": rows_sha256(rows),
+        "rows_are_published_panel": rows_sha256(rows) == published_panel_rows_sha256(),
+        "imported_parent_commit": imported_commit, "imported_parent_clean": imported_clean,
+        "parent_override": allow_unpinned_parent,
     }
     if result.status != "attributed":
         return row
@@ -174,6 +251,7 @@ def attribute_onset(panel_rows, rule, onset_date: date, report_date: date, *, dr
         explained_share=result.explained_share,
         explained_above_reserves=attribution.explained_above_reserves(series, onset_index, drivers),
         placebo=h10_apply.placebo_summary(placebo, result.explained_share),
+        placebo_floored=h10_apply.floored_placebo_summary(placebo, result.explained_share),
         unusable_draws=result.unusable_draws,
         under_bar=abs(result.residual_share) < attribution.RESIDUAL_BAR,
         beats_null=result.explained_share > null.bar,
