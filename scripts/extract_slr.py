@@ -137,8 +137,8 @@ def render_markdown(rows, record, sources) -> str:
               "- Each subsidiary's 2020-21 election status: the item descriptions in the bulk files are cut to about 40",
               "  characters and none names an election, so every row in the window is flagged `exclusion_status_unknown`.",
               "- Which requirement applies from 2026-04-01: row 16 does not set it, so those rows carry no headroom.",
-              "- Whether a filed ratio is credible. State Street Bank and Trust Company files total leverage exposure close to",
-              "  its tier 1 capital in several quarters (see the table above); the extract keeps the figures as filed.", ""]
+              "- Whether every IDRSSD in `slr.BANKS` is the bank meant. Only State Street's was checked, after it proved wrong:",
+              "  93619 (a trust subsidiary of about $65 million) was replaced by 35301, the bank, on 15 October 2026.", ""]
     return "\n".join(lines)
 
 

@@ -6,13 +6,19 @@ on:
     types: [opened, synchronize, reopened, edited]
   push:
     branches: [main]
+  # Re-checks named merged pull requests on the push path (`pulls`, e.g. "76,84"), without a push.
+  workflow_dispatch:
+    inputs:
+      pulls:
+        description: "Merged pull request numbers whose research-log entry is checked, comma-separated"
+        required: false
 
 permissions:
   contents: read
 
 jobs:
   unit:
-    if: github.event.action != 'edited'
+    if: github.event_name != 'workflow_dispatch' && github.event.action != 'edited'
     runs-on: ubuntu-latest
     steps:
       - name: Check out
@@ -51,12 +57,36 @@ jobs:
       - name: Check the research-log entry
         run: python3 -B scripts/check_log_entry.py --event "$GITHUB_EVENT_PATH" --repo "$GITHUB_REPOSITORY"
 
+  # L25 (#100, finding #96): the same check on the merge commit. A pull request can merge although its check last ran
+  # before the rules changed (#76 did, and the merge commit's job was skipped), so on a push to main every pull request
+  # merged in the push has its body, or its correction in docs/research/log-corrections.md, checked again at the format in
+  # force on main. A missing or invalid entry turns this job, and main, red. The bodies and changed paths are read over
+  # REST with the workflow token.
+  research-log-main:
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Check out
+        run: |
+          git init -q . && git remote add origin "https://github.com/${GITHUB_REPOSITORY}"
+          git fetch -q --depth 1 origin "${GITHUB_SHA}" && git checkout -q FETCH_HEAD
+      - name: Check the research-log entry of every pull request merged in this push
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PULLS: ${{ github.event.inputs.pulls }}
+        run: |
+          [ "$GITHUB_EVENT_NAME" = push ] && EVENT="$GITHUB_EVENT_PATH" || { EVENT="$RUNNER_TEMP/none.json"; echo '{}' > "$EVENT"; }
+          python3 -B scripts/check_log_entry.py --push-event "$EVENT" --repo "$GITHUB_REPOSITORY" --pulls "$PULLS"
+
   # L0 (#21, option (a)): the development records of Stages 1 to 6 were made at an earlier parent pin, with modules
   # since deleted in favour of the parent's (docs/decisions/deleted-duplicates.md). They are verified at the commit
   # and pin they were made from: the record commit's own full suite, after checking its record files are the bytes
   # tracked here (src/repo_liquidity/records.py). The unit job checks only that those bytes are unchanged.
   records:
-    if: github.event.action != 'edited'
+    if: github.event_name != 'workflow_dispatch' && github.event.action != 'edited'
     runs-on: ubuntu-latest
     steps:
       - name: Check out

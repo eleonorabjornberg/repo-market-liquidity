@@ -51,6 +51,7 @@ OWN_CHECK = {
     "results/h10/development.json": "tests/test_h10_step2.py",
     "results/h10/sensitivity_onrrp_interaction.json": "tests/test_h10_step3.py",
     "results/h10/sensitivity_onrrp_regimes.json": "tests/test_h10_regimes.py",
+    "results/h10/placebo_floor_2bp.json": "tests/test_h10_placebo_floor.py",
 }
 
 

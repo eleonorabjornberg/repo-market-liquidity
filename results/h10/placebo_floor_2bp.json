@@ -1,0 +1,621 @@
+{
+  "directive": "eleonorabjornberg/repo-market-liquidity#85",
+  "episodes": [
+    {
+      "explained_share": 0.052886724442381676,
+      "floored": {
+        "attributed": 2,
+        "excluded": 18,
+        "median_explained": 0.6246783631409665,
+        "share_at_or_above": 1.0,
+        "windows": 20
+      },
+      "onset": "2018-05-31",
+      "status": "attributed",
+      "unfloored": {
+        "attributed": 12,
+        "median_explained": 1.2050844558567813,
+        "share_at_or_above": 0.75,
+        "windows": 20
+      }
+    },
+    {
+      "explained_share": 0.2540922774573403,
+      "floored": {
+        "attributed": 8,
+        "excluded": 12,
+        "median_explained": 1.2653361679715511,
+        "share_at_or_above": 1.0,
+        "windows": 20
+      },
+      "onset": "2018-06-29",
+      "status": "attributed",
+      "unfloored": {
+        "attributed": 16,
+        "median_explained": 2.132704578688708,
+        "share_at_or_above": 1.0,
+        "windows": 20
+      }
+    },
+    {
+      "explained_share": 0.1545920104029551,
+      "floored": {
+        "attributed": 6,
+        "excluded": 14,
+        "median_explained": 0.47252899024546774,
+        "share_at_or_above": 0.6666666666666666,
+        "windows": 20
+      },
+      "onset": "2018-11-15",
+      "status": "attributed",
+      "unfloored": {
+        "attributed": 16,
+        "median_explained": 0.8835380311451783,
+        "share_at_or_above": 0.8125,
+        "windows": 20
+      }
+    },
+    {
+      "explained_share": 0.009734374580246485,
+      "floored": {
+        "attributed": 1,
+        "excluded": 19,
+        "median_explained": 1.0680875331043658,
+        "share_at_or_above": 1.0,
+        "windows": 20
+      },
+      "onset": "2018-11-30",
+      "status": "attributed",
+      "unfloored": {
+        "attributed": 7,
+        "median_explained": 0.5575028282468837,
+        "share_at_or_above": 0.7142857142857143,
+        "windows": 20
+      }
+    },
+    {
+      "explained_share": 0.10156370190995859,
+      "floored": {
+        "attributed": 2,
+        "excluded": 18,
+        "median_explained": 0.4367153369312633,
+        "share_at_or_above": 1.0,
+        "windows": 20
+      },
+      "onset": "2018-12-17",
+      "status": "attributed",
+      "unfloored": {
+        "attributed": 12,
+        "median_explained": 0.5891197636778482,
+        "share_at_or_above": 0.6666666666666666,
+        "windows": 20
+      }
+    },
+    {
+      "explained_share": 0.06092145753769523,
+      "floored": {
+        "attributed": 4,
+        "excluded": 16,
+        "median_explained": 0.265405037360386,
+        "share_at_or_above": 0.75,
+        "windows": 20
+      },
+      "onset": "2018-12-28",
+      "status": "attributed",
+      "unfloored": {
+        "attributed": 12,
+        "median_explained": 0.265405037360386,
+        "share_at_or_above": 0.5833333333333334,
+        "windows": 20
+      }
+    },
+    {
+      "explained_share": 1.9515365743588435,
+      "floored": {
+        "attributed": 2,
+        "excluded": 18,
+        "median_explained": 0.5765977780508291,
+        "share_at_or_above": 0.0,
+        "windows": 20
+      },
+      "onset": "2019-01-15",
+      "status": "attributed",
+      "unfloored": {
+        "attributed": 12,
+        "median_explained": 0.7532495063790685,
+        "share_at_or_above": 0.25,
+        "windows": 20
+      }
+    },
+    {
+      "explained_share": 0.22427203870964907,
+      "floored": {
+        "attributed": 6,
+        "excluded": 14,
+        "median_explained": 0.42308515139114244,
+        "share_at_or_above": 0.6666666666666666,
+        "windows": 20
+      },
+      "onset": "2019-01-31",
+      "status": "attributed",
+      "unfloored": {
+        "attributed": 9,
+        "median_explained": 0.229034593032619,
+        "share_at_or_above": 0.5555555555555556,
+        "windows": 20
+      }
+    },
+    {
+      "explained_share": 0.22373706742823388,
+      "floored": {
+        "attributed": 1,
+        "excluded": 19,
+        "median_explained": -0.26878007263816706,
+        "share_at_or_above": 0.0,
+        "windows": 20
+      },
+      "onset": "2019-02-28",
+      "status": "attributed",
+      "unfloored": {
+        "attributed": 11,
+        "median_explained": 0.6099099754311402,
+        "share_at_or_above": 0.8181818181818182,
+        "windows": 20
+      }
+    },
+    {
+      "explained_share": 0.18389616007372983,
+      "floored": {
+        "attributed": 1,
+        "excluded": 19,
+        "median_explained": 0.08952535627483012,
+        "share_at_or_above": 0.0,
+        "windows": 20
+      },
+      "onset": "2019-03-15",
+      "status": "attributed",
+      "unfloored": {
+        "attributed": 9,
+        "median_explained": 0.1884139144284697,
+        "share_at_or_above": 0.5555555555555556,
+        "windows": 20
+      }
+    },
+    {
+      "explained_share": 0.2686330482824117,
+      "floored": {
+        "attributed": 9,
+        "excluded": 11,
+        "median_explained": 0.9153857093644682,
+        "share_at_or_above": 1.0,
+        "windows": 20
+      },
+      "onset": "2019-03-29",
+      "status": "attributed",
+      "unfloored": {
+        "attributed": 17,
+        "median_explained": 2.0756261062389836,
+        "share_at_or_above": 1.0,
+        "windows": 20
+      }
+    },
+    {
+      "explained_share": 0.10355411099263342,
+      "floored": {
+        "attributed": 6,
+        "excluded": 14,
+        "median_explained": 0.39573600529000474,
+        "share_at_or_above": 0.6666666666666666,
+        "windows": 20
+      },
+      "onset": "2019-05-28",
+      "status": "attributed",
+      "unfloored": {
+        "attributed": 12,
+        "median_explained": 0.39573600529000474,
+        "share_at_or_above": 0.6666666666666666,
+        "windows": 20
+      }
+    },
+    {
+      "explained_share": 0.5373130564875523,
+      "floored": {
+        "attributed": 1,
+        "excluded": 19,
+        "median_explained": -0.058431544217546316,
+        "share_at_or_above": 0.0,
+        "windows": 20
+      },
+      "onset": "2019-06-17",
+      "status": "attributed",
+      "unfloored": {
+        "attributed": 11,
+        "median_explained": -0.058431544217546316,
+        "share_at_or_above": 0.45454545454545453,
+        "windows": 20
+      }
+    },
+    {
+      "explained_share": 0.48432859032378606,
+      "floored": {
+        "attributed": 2,
+        "excluded": 18,
+        "median_explained": 0.8376789964828585,
+        "share_at_or_above": 0.5,
+        "windows": 20
+      },
+      "onset": "2019-06-25",
+      "status": "attributed",
+      "unfloored": {
+        "attributed": 7,
+        "median_explained": 1.156242893405854,
+        "share_at_or_above": 0.5714285714285714,
+        "windows": 20
+      }
+    },
+    {
+      "explained_share": 0.2095158644908066,
+      "floored": {
+        "attributed": 7,
+        "excluded": 13,
+        "median_explained": 0.2080472291629669,
+        "share_at_or_above": 0.42857142857142855,
+        "windows": 20
+      },
+      "onset": "2019-08-13",
+      "status": "attributed",
+      "unfloored": {
+        "attributed": 14,
+        "median_explained": 0.27590850713764037,
+        "share_at_or_above": 0.5714285714285714,
+        "windows": 20
+      }
+    },
+    {
+      "explained_share": 0.14745682173023103,
+      "floored": {
+        "attributed": 1,
+        "excluded": 19,
+        "median_explained": 0.5515051705872788,
+        "share_at_or_above": 1.0,
+        "windows": 20
+      },
+      "onset": "2019-08-30",
+      "status": "attributed",
+      "unfloored": {
+        "attributed": 7,
+        "median_explained": 0.8747322981231747,
+        "share_at_or_above": 0.8571428571428571,
+        "windows": 20
+      }
+    },
+    {
+      "explained_share": 0.03503643366782495,
+      "floored": {
+        "attributed": 2,
+        "excluded": 18,
+        "median_explained": 0.5172096889895059,
+        "share_at_or_above": 1.0,
+        "windows": 20
+      },
+      "onset": "2019-10-15",
+      "status": "attributed",
+      "unfloored": {
+        "attributed": 5,
+        "median_explained": 0.11509391899356367,
+        "share_at_or_above": 0.6,
+        "windows": 20
+      }
+    },
+    {
+      "explained_share": 0.5433685812289996,
+      "floored": {
+        "attributed": 1,
+        "excluded": 19,
+        "median_explained": 0.542480038075761,
+        "share_at_or_above": 0.0,
+        "windows": 20
+      },
+      "onset": "2019-11-29",
+      "status": "attributed",
+      "unfloored": {
+        "attributed": 7,
+        "median_explained": 1.354706686128444,
+        "share_at_or_above": 0.7142857142857143,
+        "windows": 20
+      }
+    },
+    {
+      "explained_share": 0.3444983498659424,
+      "floored": {
+        "attributed": 2,
+        "excluded": 18,
+        "median_explained": 0.7965516484997308,
+        "share_at_or_above": 1.0,
+        "windows": 20
+      },
+      "onset": "2019-12-16",
+      "status": "attributed",
+      "unfloored": {
+        "attributed": 6,
+        "median_explained": 0.8764333555488951,
+        "share_at_or_above": 1.0,
+        "windows": 20
+      }
+    },
+    {
+      "explained_share": -0.5132273283455762,
+      "floored": {
+        "attributed": 2,
+        "excluded": 18,
+        "median_explained": 0.22693342583086878,
+        "share_at_or_above": 1.0,
+        "windows": 20
+      },
+      "onset": "2020-03-04",
+      "status": "attributed",
+      "unfloored": {
+        "attributed": 11,
+        "median_explained": 0.10578713994311294,
+        "share_at_or_above": 0.6363636363636364,
+        "windows": 20
+      }
+    },
+    {
+      "explained_share": 0.012153796878391389,
+      "floored": {
+        "attributed": 1,
+        "excluded": 19,
+        "median_explained": 0.9316843479266235,
+        "share_at_or_above": 1.0,
+        "windows": 20
+      },
+      "onset": "2020-03-12",
+      "status": "attributed",
+      "unfloored": {
+        "attributed": 5,
+        "median_explained": 0.9316843479266235,
+        "share_at_or_above": 1.0,
+        "windows": 20
+      }
+    },
+    {
+      "explained_share": 0.4827643026661957,
+      "floored": {
+        "attributed": 10,
+        "excluded": 10,
+        "median_explained": 0.895769075307262,
+        "share_at_or_above": 1.0,
+        "windows": 20
+      },
+      "onset": "2024-09-30",
+      "status": "attributed",
+      "unfloored": {
+        "attributed": 15,
+        "median_explained": 1.4338724209275968,
+        "share_at_or_above": 1.0,
+        "windows": 20
+      }
+    },
+    {
+      "explained_share": 0.37421746809093054,
+      "floored": {
+        "attributed": 2,
+        "excluded": 18,
+        "median_explained": 0.2933764003312097,
+        "share_at_or_above": 0.5,
+        "windows": 20
+      },
+      "onset": "2024-12-26",
+      "status": "attributed",
+      "unfloored": {
+        "attributed": 8,
+        "median_explained": 0.6675849067768229,
+        "share_at_or_above": 0.625,
+        "windows": 20
+      }
+    },
+    {
+      "explained_share": 1.663802460926126,
+      "floored": {
+        "attributed": 3,
+        "excluded": 17,
+        "median_explained": 0.9193254589854483,
+        "share_at_or_above": 0.0,
+        "windows": 20
+      },
+      "onset": "2025-09-15",
+      "status": "attributed",
+      "unfloored": {
+        "attributed": 7,
+        "median_explained": 1.5663780758597203,
+        "share_at_or_above": 0.42857142857142855,
+        "windows": 20
+      }
+    },
+    {
+      "explained_share": 0.7255820829667214,
+      "floored": {
+        "attributed": 9,
+        "excluded": 11,
+        "median_explained": 0.9153857093644682,
+        "share_at_or_above": 0.8888888888888888,
+        "windows": 20
+      },
+      "onset": "2025-09-30",
+      "status": "attributed",
+      "unfloored": {
+        "attributed": 16,
+        "median_explained": 2.132704578688708,
+        "share_at_or_above": 0.9375,
+        "windows": 20
+      }
+    },
+    {
+      "explained_share": -0.11533806827394143,
+      "floored": {
+        "attributed": 2,
+        "excluded": 18,
+        "median_explained": 0.2765135405059752,
+        "share_at_or_above": 1.0,
+        "windows": 20
+      },
+      "onset": "2025-10-15",
+      "status": "attributed",
+      "unfloored": {
+        "attributed": 11,
+        "median_explained": 0.12912045932874364,
+        "share_at_or_above": 0.6363636363636364,
+        "windows": 20
+      }
+    },
+    {
+      "explained_share": 0.15109727780676788,
+      "floored": {
+        "attributed": 4,
+        "excluded": 16,
+        "median_explained": 0.28592243805784595,
+        "share_at_or_above": 0.5,
+        "windows": 20
+      },
+      "onset": "2025-12-15",
+      "status": "attributed",
+      "unfloored": {
+        "attributed": 6,
+        "median_explained": 0.28592243805784595,
+        "share_at_or_above": 0.5,
+        "windows": 20
+      }
+    },
+    {
+      "explained_share": 0.45791454195628134,
+      "floored": {
+        "attributed": 2,
+        "excluded": 18,
+        "median_explained": 0.5748593379220832,
+        "share_at_or_above": 0.5,
+        "windows": 20
+      },
+      "onset": "2025-12-26",
+      "status": "attributed",
+      "unfloored": {
+        "attributed": 9,
+        "median_explained": 0.8781344129746156,
+        "share_at_or_above": 0.6666666666666666,
+        "windows": 20
+      }
+    },
+    {
+      "explained_share": 0.2641969023374543,
+      "floored": {
+        "attributed": 4,
+        "excluded": 16,
+        "median_explained": 0.269291145001178,
+        "share_at_or_above": 0.5,
+        "windows": 20
+      },
+      "onset": "2026-02-17",
+      "status": "attributed",
+      "unfloored": {
+        "attributed": 12,
+        "median_explained": 0.45577990761540543,
+        "share_at_or_above": 0.5833333333333334,
+        "windows": 20
+      }
+    },
+    {
+      "explained_share": 0.8808031636930966,
+      "floored": {
+        "attributed": 4,
+        "excluded": 16,
+        "median_explained": 0.6056075968453626,
+        "share_at_or_above": 0.25,
+        "windows": 20
+      },
+      "onset": "2026-03-02",
+      "status": "attributed",
+      "unfloored": {
+        "attributed": 11,
+        "median_explained": 0.5940794839410592,
+        "share_at_or_above": 0.2727272727272727,
+        "windows": 20
+      }
+    },
+    {
+      "explained_share": 0.20252814231355398,
+      "floored": {
+        "attributed": 5,
+        "excluded": 15,
+        "median_explained": 0.22272151340871607,
+        "share_at_or_above": 0.6,
+        "windows": 20
+      },
+      "onset": "2026-04-15",
+      "status": "attributed",
+      "unfloored": {
+        "attributed": 11,
+        "median_explained": 0.3212056823827901,
+        "share_at_or_above": 0.6363636363636364,
+        "windows": 20
+      }
+    }
+  ],
+  "last_day_read": "2026-09-03",
+  "not_a_verdict": "Development evidence only (measurement-protocol.md section 1; repo-market-model#640). It confirms nothing.",
+  "panel": {
+    "first": "2018-04-03",
+    "last": "2026-09-03",
+    "rows": 2104,
+    "sha256": "acb77874e0ca2c9eeee1c33a229f5e12745e65bb1224088d52c391dbf54be2ab",
+    "version": 1
+  },
+  "parent_commit": "53e61af9b4175e854c196908d3c76b228c039667",
+  "parent_panel_sha256": "4ddc3882cd6d406b11e1088f8ff6195e16dde175a0ad6818abe40dd5bdac8999",
+  "readings": {
+    "floored": {
+      "attributed_windows": 112,
+      "median_placebo_gap": {
+        "interval": [
+          -0.39185160877991665,
+          -0.020193371095162088
+        ],
+        "median": -0.20448357982269078,
+        "n": 31
+      },
+      "windows": 620,
+      "windows_excluded": 508
+    },
+    "unfloored": {
+      "attributed_windows": 324,
+      "median_placebo_gap": {
+        "interval": [
+          -0.6190144682886891,
+          -0.19158300527795113
+        ],
+        "median": -0.3861729080029064,
+        "n": 31
+      },
+      "windows": 620
+    }
+  },
+  "record": "H10 step 3 amendment: the placebo comparison with and without a 2 bp placebo rise floor",
+  "settings": {
+    "baseline_days": 5,
+    "drivers": [
+      "treasury_settlement",
+      "tga",
+      "reserve_balances",
+      "quarter_end",
+      "on_rrp"
+    ],
+    "placebo_rise_floor_bp": 2.0,
+    "placebo_windows": 20,
+    "seed": 20261013,
+    "window_days": 5
+  },
+  "source_record": {
+    "path": "results/h10/development.json",
+    "sha256": "21fa38197d75822024a121106510a6b340cb842ddd2cbf5c643226e34b8dd8af"
+  },
+  "tier": "development"
+}
