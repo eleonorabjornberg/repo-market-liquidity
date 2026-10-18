@@ -81,6 +81,11 @@ eleonorabjornberg/repo-market-model#638 as the shared one:
 - **This repo's check.** `scripts/check_log_entry.py` runs in `tests.yml` on `pull_request` and reads the PR body from
   the event payload. A PR that adds or changes `results/`, `docs/stages/`, a snapshot or a decision record must carry
   one fenced `research-log` block in the format, with a tag from {H7, H10} and the PR's own number.
+- **The same check on `main`** (#100, finding #96). The `research-log-main` job in `tests.yml` runs on every push to
+  `main` and checks each PR merged in that push again, from its body read over REST, at the format in force on `main`.
+  A missing or invalid entry turns `main` red. A merged entry that was wrong is corrected without editing the PR, in
+  `docs/research/log-corrections.md`, which the check reads instead of the body. The format has no tag for process work
+  (its tags are the plan's hypotheses), so a process PR keeps the tag of the hypothesis it serves.
 - **The model repo's half.** After merge, the entry is copied verbatim into the model repo's `log.md` by that repo's
   next log PR, and its `check_research_log.py` validates the heading there. Each day, this repo's orchestrator checks
   that every merged result PR here has its entry in the model repo's log, and raises any gap through the model

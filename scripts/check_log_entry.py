@@ -22,15 +22,25 @@ repository's plan (H7, H10), and the heading cites this pull request's own numbe
 `pull_request` event payload (`$GITHUB_EVENT_PATH`), so no API call is made. The changed paths are read from git, as
 the difference between the merge commit and its first parent, or from `--changed-files`.
 
+On the push to main the same rule is applied to every pull request merged in the push (#100, finding #96): a pull request
+can merge although its check last ran before the rules changed, and the merge commit's job was skipped. The merged
+pull requests are found through the commits of the push, and each body and its changed paths are read over REST with the
+workflow token. A missing or invalid entry makes the job, and so main, red. A merged entry that was wrong is corrected
+without editing the pull request: `docs/research/log-corrections.md` holds a block under `## Corrects the entry of #N
+(<link to the finding>)`, and the check reads it instead of the body.
+
 Usage (CI): python3 scripts/check_log_entry.py --event "$GITHUB_EVENT_PATH" --repo "$GITHUB_REPOSITORY"
+            python3 scripts/check_log_entry.py --push-event "$GITHUB_EVENT_PATH" --repo "$GITHUB_REPOSITORY" [--pulls 76,84]
 """
 
 import argparse
 import datetime as dt
 import json
 import re
+import os
 import subprocess
 import sys
+import urllib.request
 from pathlib import Path
 
 #: The hypotheses of this repository's plan (`docs/research/plan.md`).
@@ -45,6 +55,8 @@ GROUNDWORK_FORMAT = "### YYYY-MM-DD [H#] groundwork G<n> · owner/repo#n"
 HEADING = re.compile(r"^### (?P<date>\d{4}-\d{2}-\d{2}) \[(?P<tag>H\d+)\] "
                      r"(?:step (?P<step>\d+)|groundwork (?P<groundwork>G[1-9]\d*)) · "
                      r"(?P<repo>[\w.-]+/[\w.-]+)#(?P<number>\d+)$")
+CORRECTIONS = Path(__file__).resolve().parents[1] / "docs" / "research" / "log-corrections.md"
+CORRECTS = re.compile(r"^## Corrects the entry of #(?P<number>\d+) \((?P<link>https://github\.com/\S+/issues/\d+)\)\s*$")
 FENCE = re.compile(r"^(`{3,}|~{3,})\s*(?P<info>[^`\s]*)\s*$")
 
 
@@ -141,18 +153,131 @@ def run(pull_request, repo, changed):
     return check_body(pull_request.get("body") or "", pull_request["number"], repo)
 
 
+def parse_corrections(text):
+    """{pull request number: the lines of its corrected entry} from `log-corrections.md`.
+
+    Each `## Corrects the entry of #N (<link to the finding>)` section carries exactly one `research-log` block, and a
+    pull request is corrected once. A section that breaks this raises ValueError."""
+    sections, current = {}, None
+    for line in (text or "").splitlines():
+        if line.startswith("## "):
+            match = CORRECTS.match(line)
+            if not match:
+                raise ValueError(f"{line!r} is not '## Corrects the entry of #N (https://github.com/<repo>/issues/M)'")
+            number = int(match["number"])
+            if number in sections:
+                raise ValueError(f"#{number} is corrected twice")
+            current = sections[number] = []
+        elif current is not None:
+            current.append(line)
+    corrections = {}
+    for number, lines in sections.items():
+        blocks = research_log_blocks("\n".join(lines))
+        if len(blocks) != 1 or blocks[0] is None:
+            raise ValueError(f"the correction of #{number} needs exactly one closed {INFO} block, not {len(blocks)}")
+        corrections[number] = blocks[0]
+    return corrections
+
+
+def check_merged(pull_request, repo, changed, corrections):
+    """The errors of a merged pull request: its body's entry, or the correction that stands in for it."""
+    if not needs_entry(changed):
+        return []
+    number = pull_request["number"]
+    if number in corrections:
+        return [f"correction of #{number}: {e}" for e in check_entry(corrections[number], number, repo)]
+    return check_body(pull_request.get("body") or "", number, repo)
+
+
+def merged_pull_requests(event, repo, fetch):
+    """The pull requests whose merge commit is one of the commits of this push, oldest first."""
+    after, before = event["after"], event.get("before") or ""
+    if before.strip("0"):
+        shas = [c["sha"] for c in fetch(f"repos/{repo}/compare/{before}...{after}").get("commits", [])]
+    else:
+        shas = [after]
+    found = []
+    for sha in shas or [after]:
+        for pull in fetch(f"repos/{repo}/commits/{sha}/pulls?per_page=100"):
+            if pull.get("merge_commit_sha") == sha and pull.get("merged_at") and pull["number"] not in [
+                    p["number"] for p in found]:
+                found.append(pull)
+    return found
+
+
+def pull_request_files(repo, number, fetch):
+    """The paths a pull request changed, read page by page."""
+    paths, page = [], 1
+    while True:
+        files = fetch(f"repos/{repo}/pulls/{number}/files?per_page=100&page={page}")
+        paths += [f["filename"] for f in files]
+        if len(files) < 100:
+            return paths
+        page += 1
+
+
+def check_pulls(pulls, repo, fetch, corrections):
+    errors = []
+    for pull in pulls:
+        for error in check_merged(pull, repo, pull_request_files(repo, pull["number"], fetch), corrections):
+            errors.append(f"#{pull['number']}: {error}")
+    return errors
+
+
+def run_push(event, repo, fetch, corrections):
+    """The errors of every pull request merged in this push."""
+    return check_pulls(merged_pull_requests(event, repo, fetch), repo, fetch, corrections)
+
+
+def run_numbers(numbers, repo, fetch, corrections):
+    """The errors of these merged pull requests, whatever push they came in."""
+    pulls = []
+    for number in numbers:
+        pull = fetch(f"repos/{repo}/pulls/{number}")
+        if not pull.get("merged_at"):
+            raise ValueError(f"#{number} is not merged")
+        pulls.append(pull)
+    return check_pulls(pulls, repo, fetch, corrections)
+
+
+def github(path):
+    """GET https://api.github.com/<path> with the workflow token (GH_TOKEN)."""
+    request = urllib.request.Request("https://api.github.com/" + path, headers={
+        "Authorization": "Bearer " + os.environ["GH_TOKEN"], "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28"})
+    with urllib.request.urlopen(request, timeout=60) as response:
+        return json.load(response)
+
+
 def changed_from_git():
     """The paths the merge commit changes against its first parent (the base branch)."""
     out = subprocess.run(["git", "diff", "--name-only", "HEAD^1", "HEAD"], check=True, capture_output=True, text=True)
     return [line for line in out.stdout.splitlines() if line]
 
 
-def main(argv=None):
+def main(argv=None, fetch=github):
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--event", required=True, help="the event payload ($GITHUB_EVENT_PATH)")
+    parser.add_argument("--event", help="the pull_request event payload ($GITHUB_EVENT_PATH)")
+    parser.add_argument("--push-event", help="the push event payload: check every pull request merged in the push")
+    parser.add_argument("--pulls", help="comma-separated merged pull request numbers to check as well (with --push-event)")
+    parser.add_argument("--corrections", default=str(CORRECTIONS), help="the corrections file")
     parser.add_argument("--repo", required=True, help="owner/repo ($GITHUB_REPOSITORY)")
     parser.add_argument("--changed-files", help="a file listing the changed paths, one per line (default: from git)")
     args = parser.parse_args(argv)
+    if bool(args.event) == bool(args.push_event):
+        parser.error("give exactly one of --event and --push-event")
+    if args.push_event:
+        path = Path(args.corrections)
+        corrections = parse_corrections(path.read_text(encoding="utf-8")) if path.exists() else {}
+        push = json.loads(Path(args.push_event).read_text(encoding="utf-8"))
+        errors = run_push(push, args.repo, fetch, corrections) if push.get("after") else []
+        numbers = [int(n) for n in (args.pulls or "").replace(" ", "").split(",") if n]
+        errors += run_numbers(numbers, args.repo, fetch, corrections)
+        for error in errors:
+            print(f"research-log: {error}", file=sys.stderr)
+        if not errors:
+            print("research-log: every pull request merged in the push has a valid entry or needs none")
+        return 1 if errors else 0
     event = json.loads(Path(args.event).read_text(encoding="utf-8"))
     if not isinstance(event.get("pull_request"), dict):
         raise ValueError(f"{args.event} is not a pull_request event payload")

@@ -13,7 +13,7 @@ group lines (`repo_liquidity.h8.parse_group_lines`) and keeps each week's **firs
     PYTHONPATH=src python3 scripts/extract_h8_groups.py --raw-root RAW --check
 
 Written under `tests/fixtures/snapshots/h8_groups/`:
-- `h8_group_first_print.csv`: one row per week, `week_ending`, `release_date`, six values, `release_sha256`;
+- `h8_group_first_print.csv`: one row per week, `week_ending`, `release_date`, six values, `fetch_sha256`, `content_sha256`;
 - its snapshot manifest `<extract>.manifest.json`;
 - `h8_group_first_print.releases.json`: per release, its date, URL, `fetch_sha256` (the SHA-256 of the page as fetched:
   it identifies the fetch, not the release, finding #40), `content_sha256` (the hash of the values the release first

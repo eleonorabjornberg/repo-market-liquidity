@@ -260,10 +260,11 @@ def _build_slr(table: Path, root: Path, repo_commit: str) -> dict:
         "vintage_note": ("Latest-filed Call Report figures, amended since their first filing, not first prints: each "
                          "(bank, quarter) value is available only from the day after its latest-update time. "
                          "docs/decisions/data-meaning.md row 16 (ruling of 13 October 2026, reading 2)."),
-        "measure_note": ("The `measure` column is `main` for eight banks and `sensitivity_state_street` for State Street Bank "
-                         "and Trust Company, N.A. (IDRSSD 93619): outside the main measure and a labelled sensitivity, its "
-                         "figures as filed in the extract (Eleonora's decision on repo-market-liquidity#69, 14 October 2026, "
-                         "Q2; recorded for #71). A reader of the main measure must filter on `measure == main`."),
+        "measure_note": ("The `measure` column is `main` for all nine banks. State Street is read at the bank of the G-SIB, "
+                         "State Street Bank and Trust Company (IDRSSD 35301), and is in the main measure (Eleonora, 15 "
+                         "October 2026). This replaces her decision on repo-market-liquidity#69 (Q2, 14 October 2026), "
+                         "made on the figures of State Street Bank and Trust Company, N.A. (IDRSSD 93619), a trust "
+                         "subsidiary read by mistake. A reader of the main measure still filters on `measure == main`."),
         "requirement_note": ("`requirement_pct` and `headroom_pp` follow the requirement table of "
                              "docs/decisions/slr-requirement.md (a draft until Eleonora merges it): 6.0% for quarter-ends "
                              "2018-01-01 to 2026-03-31, and no value from 2026-04-01, where the rule is bank-specific."),
@@ -314,7 +315,7 @@ def _build_weekly(series: str, table: Path, root: Path, repo_commit: str) -> dic
             raise ValueError(f"{table.name}: the releases record gives the release of {day} content_sha256 {recorded}, "
                              f"but its values in the extract hash to {derived.get(day)}")
     for item in prints:
-        if pages.get(item.release_date.isoformat()) != item.release_sha256:
+        if pages.get(item.release_date.isoformat()) != item.fetch_sha256:
             raise ValueError(f"{table.name}: the week ending {item.week_ending} names a page for the release of "
                              f"{item.release_date} that the releases record does not list")
     directory = root / "snapshots" / series

@@ -1,5 +1,9 @@
 # SLR headroom (#27): due diligence on first-print availability
 
+> **Correction (15 October 2026).** The State Street lines below are for IDRSSD 93619, State Street Bank and Trust
+> Company, N.A., a trust subsidiary of about $65 million, not the bank of the G-SIB (IDRSSD 35301). They are kept as
+> run. The extract reads 35301 (`snapshots/SUPERSEDED.md`, 15 October 2026).
+
 **Status: step 1 of #27, written first. It finds that the first-filed figures Nicholas's answer 16(d) asks for cannot be
 recovered from any public source this repository can reach. Nothing past this step is built.** Hypothesis and step: H7m,
 groundwork G5 (candidate D, `docs/stages/stage-6.md`). No score.

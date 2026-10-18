@@ -10,7 +10,7 @@
 - **Panel:** version 1, digest `acb77874e0ca2c9eeee1c33a229f5e12745e65bb1224088d52c391dbf54be2ab`, 2104 rows, 2018-04-03 to 2026-09-03 (the last day read: 2026-09-03).
 - **Seeds and draws:** seed 20261013; 10000 bootstrap draws per episode; the selection-aware null 1000 draws at the 95% quantile (bar 0.234); 20 placebo windows per episode.
 - **Record read, byte for byte:** `results/h10/development.json`, sha256 `21fa38197d75822024a121106510a6b340cb842ddd2cbf5c643226e34b8dd8af` (H10 step 2, #70, PR #73). It is not re-fitted or re-run for this page.
-- **The method:** `docs/decisions/h10-method.md`, sha256 `cae658c6d9a895d4db8f6427c81a11f7310fc79377528d71806e9f209c28f126`. This is the digest to register; the commit is named in the pull request.
+- **The method:** `docs/decisions/h10-method.md`, sha256 `642fe092ca6d553fb5e12e263162869b096fa19e6cb7bb46c79c43cbc0fb67a9`. This is the digest to register; the commit is named in the pull request.
 
 ## What the development table shows
 
@@ -244,6 +244,13 @@ Published / regime terms in each outcome column.
 | 2026-02-17 | depleted | -0.001 [-0.019, 0.011] | -0.001 [-0.003, 0.000] | 0.736 [0.651, 0.812] | 0.735 [0.655, 0.808] | 0.265 | no | yes |
 | 2026-03-02 | depleted | -0.009 [-0.391, 0.158] | -0.000 [-0.017, 0.013] | 0.119 [-0.372, 0.531] | 0.105 [-0.325, 0.613] | 0.895 | yes | yes |
 | 2026-04-15 | depleted | -0.000 [-0.002, 0.004] | -0.001 [-0.003, 0.000] | 0.797 [0.733, 0.854] | 0.797 [0.731, 0.851] | 0.203 | no | no |
+
+## Note (15 October 2026): the placebo with a 2 bp rise floor
+
+**Development evidence, not a verdict.** A new record, `results/h10/placebo_floor_2bp.json` (sha256 `4d3ee5cdfcc9d12f45b3c8f1c72b706e0cb71fd6c7df1983f1715b03651458ae`, directive #85), re-runs only the placebo of the published record at the same pin, seeds and episodes, with and without the floor of the draft amendment in section 10 of the method record. The step 2 record above is unchanged.
+
+- unfloored (the published reading): placebo gap -0.39 (90% interval -0.62 to -0.19, n = 31), 620 placebo windows, 324 attributable;
+- floored (a placebo window needs a rise of at least 2 bp): placebo gap -0.20 (90% interval -0.39 to -0.02, n = 31), 508 of 620 windows excluded, 112 attributable.
 
 ## What this page does not do
 

@@ -22,7 +22,7 @@ from repo_liquidity import declaration, development, slr
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 DIRECTORY = ROOT / "tests" / "fixtures" / "snapshots" / "slr_headroom"
 EXTRACT = DIRECTORY / slr.EXTRACT_NAME
-JPM, STATE_STREET = 852218, 93619
+JPM, STATE_STREET, STATE_STREET_TRUST_NA = 852218, 35301, 93619
 NEW_YORK = slr.NEW_YORK
 
 
@@ -140,7 +140,12 @@ class ExtractTests(unittest.TestCase):
         self.assertTrue(all(not development.is_locked(r.latest_update.date()) for r in self.rows))
         self.assertEqual([(h["quarter_end"], h["idrssd"]) for h in self.coverage["holes"]
                           if h["reason"] == "updated_after_development_end"],
-                         [("2026-03-31", 1456501), ("2026-06-30", 1456501)])
+                         # The bulk files of 15 October 2026 carry amendments that Citibank (476810) and Goldman Sachs
+                         # Bank USA (2182786) filed from 29 September to 9 October; the files of 14 October did not yet.
+                         [("2025-06-30", 476810), ("2025-09-30", 476810), ("2025-09-30", 2182786),
+                          ("2025-12-31", 476810), ("2025-12-31", 2182786), ("2026-03-31", 476810),
+                          ("2026-03-31", 1456501), ("2026-03-31", 2182786), ("2026-06-30", 476810),
+                          ("2026-06-30", 1456501), ("2026-06-30", 2182786)])
 
     def test_the_computed_ratio_agrees_with_the_one_the_banks_reported(self):
         self.assertFalse([h for h in self.coverage["holes"] if h["reason"] == "ratio_differs_from_reported"])
@@ -422,52 +427,53 @@ class RequirementTableTests(unittest.TestCase):
             self.assertIn(period.citation, text)
 
 
-class StateStreetSensitivityTests(unittest.TestCase):
-    """State Street is outside the main measure and a labelled sensitivity (#71, Q2; her decision on #69).
+class StateStreetTests(unittest.TestCase):
+    """State Street is the G-SIB bank (IDRSSD 35301) and is in the main measure (Eleonora, 15 October 2026).
 
-    Recorded mutations. (1) In `slr.observations`, pass every row instead of `[row for row in rows if row.measure == MAIN]`:
-    `test_the_main_measure_never_contains_state_street` fails with AssertionError (State Street's series is in the main
-    observations). (2) In `slr.Row.measure`, return `MAIN` for every bank: `setUpClass` fails with ValueError from
-    `load_extract` (the stored `measure` `sensitivity_state_street` is not what the figures give).
+    PR #67 read IDRSSD 93619, State Street Bank and Trust Company, N.A.: a non-depository trust subsidiary of about $65
+    million whose tier 1 capital is close to its total exposure, so its ratio was near 100%. The bank of the G-SIB is
+    State Street Bank and Trust Company, IDRSSD 35301. With the right bank there is nothing to keep apart, so her ruling
+    on #69 (Q2, 14 October 2026) is replaced: State Street is in the main measure.
+
+    Recorded mutations. (1) Put IDRSSD 93619 back in `slr.BANKS` in place of 35301: `test_state_street_is_the_g_sib_bank`
+    fails with AssertionError. (2) Set `slr.SENSITIVITY_BANKS` back to `(35301,)`: `setUpClass` fails with ValueError from
+    `load_extract` (the stored `measure` `main` is not what the figures give).
     """
 
     @classmethod
     def setUpClass(cls):
         cls.rows = slr.load_extract(EXTRACT)
 
-    def test_the_main_measure_never_contains_state_street(self):
-        main = [r for r in self.rows if r.measure == slr.MAIN]
-        self.assertTrue(main)
-        self.assertNotIn(STATE_STREET, {r.idrssd for r in main})
-        for field in slr.FIELDS:
+    def test_state_street_is_the_g_sib_bank(self):
+        self.assertIn(STATE_STREET, slr.BANKS)
+        self.assertNotIn(STATE_STREET_TRUST_NA, slr.BANKS)
+        self.assertEqual(slr.BANKS[STATE_STREET], "State Street Bank and Trust Company")
+
+    def test_state_street_is_in_the_main_measure(self):
+        ours = [r for r in self.rows if r.idrssd == STATE_STREET]
+        self.assertTrue(ours)
+        self.assertEqual({r.measure for r in ours}, {slr.MAIN})
+        for field in ("slr_tier1_capital", "slr_total_leverage_exposure", "slr_ratio"):
             series = {o.series_id for o in slr.observations(self.rows, field, source_sha="0" * 64)}
-            self.assertNotIn(f"{field}:{STATE_STREET}", series, field)
+            self.assertIn(f"{field}:{STATE_STREET}", series, field)
 
-    def test_the_sensitivity_series_is_state_street_and_labelled(self):
-        sensitivity = [r for r in self.rows if r.measure == slr.SENSITIVITY]
-        self.assertTrue(sensitivity)
-        self.assertEqual({r.idrssd for r in sensitivity}, {STATE_STREET})
+    def test_there_is_no_sensitivity_series(self):
+        self.assertEqual([r for r in self.rows if r.measure != slr.MAIN], [])
         for field in slr.FIELDS:
-            observations = slr.sensitivity_observations(self.rows, field, source_sha="0" * 64)
-            self.assertTrue(observations or field == "slr_headroom")
-            self.assertTrue(all(o.series_id == f"sensitivity_{field}:{STATE_STREET}" for o in observations))
+            self.assertEqual(slr.sensitivity_observations(self.rows, field, source_sha="0" * 64), [])
 
-    def test_its_figures_stay_as_filed(self):
-        with EXTRACT.open(encoding="utf-8", newline="") as handle:
-            filed = [r for r in csv.DictReader(handle) if int(r["idrssd"]) == STATE_STREET]
-        self.assertEqual(len(filed), len([r for r in self.rows if r.idrssd == STATE_STREET]))
-        self.assertEqual({r["measure"] for r in filed}, {slr.SENSITIVITY})
-        for item, row in zip(filed, [r for r in self.rows if r.idrssd == STATE_STREET]):
-            self.assertEqual(int(item["tier1_capital_kusd"]), row.tier1_capital_kusd)
-            self.assertEqual(int(item["total_leverage_exposure_kusd"]), row.total_leverage_exposure_kusd)
+    def test_every_kept_ratio_is_a_bank_ratio(self):
+        """A G-SIB bank's ratio is a few percent; the trust company's was near 100%. 20% is far above any bank's."""
+        for row in self.rows:
+            self.assertLess(row.slr_pct, 20.0, (row.institution, row.quarter_end))
 
-    def test_a_row_labelled_main_for_state_street_is_refused(self):
+    def test_a_row_labelled_sensitivity_is_refused(self):
         path = pathlib.Path(tempfile.mkdtemp())
         self.addCleanup(shutil.rmtree, path)
         for name in (slr.EXTRACT_NAME, slr.EXTRACT_NAME + ".manifest.json"):
             shutil.copy(DIRECTORY / name, path / name)
         target = path / slr.EXTRACT_NAME
-        data = target.read_bytes().replace(b",sensitivity_state_street,", b",main,", 1)
+        data = target.read_bytes().replace(b",main,", b",sensitivity_state_street,", 1)
         self.assertNotEqual(data, target.read_bytes())
         target.write_bytes(data)
         import hashlib

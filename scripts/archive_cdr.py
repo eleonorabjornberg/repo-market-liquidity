@@ -2,6 +2,8 @@
 """Archive the FFIEC CDR "Call Reports -- Single Period" bulk files, with the time each was retrieved (#46).
 
     python3 -I scripts/archive_cdr.py --manifest archive/cdr/manifest.json --zips /path/to/zips [--quarters 2]
+    python3 -I scripts/archive_cdr.py --zips DIR --plan-uploads ASSETS.json   # which zips the release still lacks
+    python3 -I scripts/archive_cdr.py --verify-release ASSETS.json             # exit 1 unless every entry is stored
 
 The CDR rebuilds every quarter's bulk file from its current content, so a first-filed figure cannot be recovered later
 (`docs/research/slr-headroom-due-diligence.md`). This script downloads the latest `--quarters` quarter-ends listed on the
@@ -13,6 +15,12 @@ post the download) and keeps what it was served:
 - `manifest.json` gets, per distinct SHA-256 of a quarter, one entry: quarter, URL, file name, SHA-256, size,
   `first_retrieved_utc` and `last_checked_utc`. An unchanged file moves only `last_checked_utc`; a new SHA-256 is a new
   entry, and earlier entries are never rewritten otherwise.
+
+Storage is verified, not assumed (#99): `ASSETS.json` is the release's asset list (`name`, `size`, `digest`), and a manifest
+entry counts as stored only if an asset of its file name has its size and its SHA-256. An entry marked
+`"status": "not_stored"` is a gap that cannot be filled (the bytes are lost) and is kept, never deleted. `--reconcile`
+applies `archive/cdr/reconciliation.json` once to adopt zips the release holds that no manifest recorded, and to mark lost
+ones.
 
 A file is available from its `first_retrieved_utc`, never earlier (`archive/cdr/README.md`). Needs network access to
 cdr.ffiec.gov. Standard library only. Nothing is scored.
@@ -141,12 +149,97 @@ def archive(source, manifest_path, zips_dir, now, quarters=2):
     return new
 
 
+def _entries_to_store(manifest):
+    return [e for e in manifest["entries"] if e.get("status") != "not_stored"]
+
+
+def _by_name(assets):
+    return {a["name"]: a for a in assets}
+
+
+def _asset_matches(asset, entry):
+    return asset["size"] == entry["size"] and asset.get("digest") == "sha256:" + entry["sha256"]
+
+
+def release_gaps(manifest, assets):
+    """The manifest entries the release does not hold with the same size and SHA-256, as messages. Empty means stored."""
+    named, gaps = _by_name(assets), []
+    for entry in _entries_to_store(manifest):
+        asset = named.get(entry["file"])
+        if asset is None:
+            gaps.append(f"{entry['file']}: not in the release")
+        elif asset["size"] != entry["size"]:
+            gaps.append(f"{entry['file']}: release size {asset['size']} != manifest size {entry['size']}")
+        elif asset.get("digest") != "sha256:" + entry["sha256"]:
+            gaps.append(f"{entry['file']}: release digest {asset.get('digest')} != manifest sha256 {entry['sha256']}")
+    return gaps
+
+
+def uploads_needed(manifest, assets, zips_dir):
+    """File names to upload: entries the release lacks, whose bytes are stored locally under their name. A hash already in
+    the manifest is uploaded all the same. Raises ValueError if the bytes are gone, are not their name, or an asset of the
+    name exists with other bytes (an upload never overwrites)."""
+    named, todo = _by_name(assets), []
+    for entry in _entries_to_store(manifest):
+        asset = named.get(entry["file"])
+        if asset is not None:
+            if not _asset_matches(asset, entry):
+                raise ValueError(f"the release holds {entry['file']} with other bytes; it is never overwritten")
+            continue
+        path = zips_dir / entry["file"]
+        if not path.exists():
+            raise ValueError(f"{entry['file']} is in the manifest but neither in the release nor stored locally: lost")
+        data = path.read_bytes()
+        if hashlib.sha256(data).hexdigest() != entry["sha256"] or len(data) != entry["size"]:
+            raise ValueError(f"{path.name} is stored with bytes that are not its name; it is not uploaded")
+        todo.append(entry["file"])
+    return todo
+
+
+def reconcile(manifest, record):
+    """Apply a reconciliation record in place: add the adopted entries not yet there and mark the lost ones `not_stored`.
+    Idempotent. Never deletes an entry."""
+    known = {e["sha256"]: e for e in manifest["entries"]}
+    for entry in record["adopted"]:
+        if entry["sha256"] not in known:
+            manifest["entries"].append(dict(entry))
+            known[entry["sha256"]] = manifest["entries"][-1]
+    for sha in record["not_stored"]:
+        if sha not in known:
+            raise ValueError(f"{sha} is marked not_stored but is not in the manifest")
+        known[sha]["status"] = "not_stored"
+    manifest["entries"].sort(key=lambda e: (e["quarter"], e["first_retrieved_utc"]))
+    return manifest
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     parser.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
-    parser.add_argument("--zips", type=Path, required=True, help="where the zips are stored (not tracked)")
+    parser.add_argument("--zips", type=Path, help="where the zips are stored (not tracked)")
     parser.add_argument("--quarters", type=int, default=2)
+    parser.add_argument("--reconcile", type=Path, help="apply this reconciliation record to the manifest first")
+    parser.add_argument("--plan-uploads", type=Path, metavar="ASSETS", help="print `upload: <file>` for each zip the release lacks")
+    parser.add_argument("--verify-release", type=Path, metavar="ASSETS", help="exit 1 unless the release holds every entry")
     args = parser.parse_args(argv)
+    if args.reconcile:
+        manifest = _load(args.manifest)
+        reconcile(manifest, json.loads(args.reconcile.read_text()))
+        args.manifest.write_text(json.dumps(manifest, indent=2) + "\n")
+        return 0
+    if args.verify_release:
+        gaps = release_gaps(_load(args.manifest), json.loads(args.verify_release.read_text()))
+        for gap in gaps:
+            print(f"gap: {gap}")
+        print("every manifest entry is stored in the release" if not gaps else f"{len(gaps)} manifest entries are not stored")
+        return 1 if gaps else 0
+    if args.plan_uploads:
+        if not args.zips:
+            parser.error("--plan-uploads needs --zips")
+        for name in uploads_needed(_load(args.manifest), json.loads(args.plan_uploads.read_text()), args.zips):
+            print(f"upload: {name}")
+        return 0
+    if not args.zips:
+        parser.error("--zips is required")
     new = archive(Portal(), args.manifest, args.zips, datetime.now(timezone.utc), quarters=args.quarters)
     for entry in new:
         print(f"new: {entry['quarter']} {entry['sha256']} {entry['size']} bytes retrieved {entry['first_retrieved_utc']}")

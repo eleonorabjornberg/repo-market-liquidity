@@ -1,8 +1,8 @@
 {
-  "byte_count": 58187,
+  "byte_count": 87580,
   "path": "frb_h8_groups/h8_group_first_print.csv",
   "retrieved_at": "2026-10-13T15:34:42.815476+00:00",
-  "sha256": "1069af546ca0c5d3d69190b680dbc617557d3bbac0798f6a1e12d155f9f1f7f9",
+  "sha256": "7ce0c50560be8cf3f96012897759c12a9da030032f756c8734386573958b682e",
   "source_id": "frb_h8_groups",
   "url": "https://www.federalreserve.gov/releases/h8/"
 }

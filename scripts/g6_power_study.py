@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 """H7m, groundwork G6: the power study for goalpost 3 (`docs/stages/h7-g6.md`, declared before any number).
 
-    PYTHONPATH=src python3 scripts/g6_power_study.py            # writes docs/research/h7m-power-study.json
+This is the second record (directive #106; `docs/stages/h7-g6.md` §9 and §10). The first is archived in
+`archive/h7m-power-study-1/`.
+
+    PYTHONPATH=src python3 scripts/g6_power_study.py            # writes docs/research/h7m-power-study-2.json
     PYTHONPATH=src python3 scripts/g6_power_study.py --smoke    # three windows per length, 2,000 draws, prints only
+    PYTHONPATH=src python3 scripts/g6_power_study.py --tables   # prints the markdown tables of the recorded study
 
 The estimate is R plus a planted signal. No candidate (A, B, step 1's estimator, C) is scored. Development evidence only.
 """
@@ -16,7 +20,7 @@ import sys
 import tempfile
 import time as clock
 from collections import defaultdict
-from datetime import datetime, time
+from datetime import date, datetime, time
 from pathlib import Path
 from statistics import median
 
@@ -30,10 +34,22 @@ from repo_model.metrics import stationary_bootstrap_indices  # noqa: E402
 
 from repo_liquidity import PANEL_SHA256, PARENT_COMMIT, goalposts as gp, h7_estimator, panel, parent_root  # noqa: E402
 
-SEED = 20261014
+SEED = gp.STUDY_SEED
 STEP = 20
 GRID = (0.0, 0.02, 0.035, 0.05, 0.065, 0.08, 0.10, 0.125, 0.15)
 POWER_TARGET = 0.80
+RECORD = RESULTS / "h7m-power-study-2.json"
+
+#: `docs/stages/h7-g6.md` §10 (Part B), declared before any run of it.
+PART_B_FROM = date(2025, 1, 1)
+PART_B_LENGTH = 250
+PART_B_LOOK = 2
+PART_B_REPLICATES = 400
+PART_B_FLOOR_SERIES = 2000
+PART_B_FLOOR_DAYS = 1000
+PART_B_FLOOR_SEED = SEED + 100000
+PART_B_REFERENCE_SERIES = 200
+PART_B_REFERENCE_SEED = SEED + 200000
 
 _DATA = {}
 
@@ -61,29 +77,68 @@ def load():
                       "repo_operation_coverage_end": coverage_end.isoformat(), "assemble": summary}
 
 
+def _supported(test):
+    """§4 and `docs/stages/h7-g6.md` §9 point 1: the lower bound above 0, the point at the MME, 10 events in the window."""
+    return bool(test.lower > 0.0 and test.point >= gp.MME and test.window_events >= gp.EVENT_FLOOR)
+
+
+def _outcome(test):
+    return {"point": test.point, "lower": test.lower, "window_events": test.window_events, "usable_events": test.events,
+            "strata": test.strata, "dropped": test.dropped, "supported": _supported(test)}
+
+
+def _test(estimate, ratio, state, event, *, look, seed, indices):
+    smoke = _DATA["smoke"]
+    return gp.information_test(estimate, ratio, state, event, look=look if not smoke or look else 1, seed=seed,
+                               indices=indices)
+
+
 def _window_task(task):
     length, look, start = task
     labelled, sigma, shifts, smoke = _DATA["labelled"], _DATA["sigma"], _DATA["shifts"], _DATA["smoke"]
     days = labelled[start:start + length]
     ratio, state, event = [d.ratio for d in days], [d.state for d in days], [d.event for d in days]
-    seed = SEED + start * 10 + look
+    seed = gp.window_seed(start)
     draws = 2000 if smoke else gp.draws_for(look)
     rng = random.Random(seed)
     indices = [stationary_bootstrap_indices(length, gp.BLOCK_LENGTH, rng) for _ in range(draws)]
     out = {}
     for target, c in shifts.items():
         estimate = gp.plant(ratio, event, c, sigma=sigma, seed=seed)
-        test = gp.information_test(estimate, ratio, state, event, look=look, seed=seed, indices=indices) if not smoke \
-            else gp.information_test(estimate, ratio, state, event, look=1 if look == 0 else look, seed=seed, indices=indices)
-        out[target] = {"point": test.point, "lower": test.lower, "events": test.events, "strata": test.strata,
-                       "dropped": test.dropped,
-                       "supported": bool(test.lower > 0.0 and test.point >= gp.MME and test.events >= gp.EVENT_FLOOR)}
+        out[target] = _outcome(_test(estimate, ratio, state, event, look=look, seed=seed, indices=indices))
     return {"length": length, "start": start, "first_day": days[0].day.isoformat(), "events": sum(event), "results": out}
 
 
-def _share(rows, key):
-    n = len(rows)
-    return sum(r[key] for r in rows) / n if n else None
+def _replicate_task(k):
+    """Part B (`docs/stages/h7-g6.md` §10): replicate `k`'s 250 real-R days with a simulated event series."""
+    days, sigma, shifts, smoke, process = (_DATA["span"], _DATA["sigma"], _DATA["shifts_b"], _DATA["smoke"],
+                                          _DATA["process"])
+    seed = gp.window_seed(k)
+    event = gp.simulate_events(process, PART_B_LENGTH, random.Random(f"events:{seed}"))
+    ratio, state = [d.ratio for d in days], [d.state for d in days]
+    draws = 2000 if smoke else gp.draws_for(PART_B_LOOK)
+    rng = random.Random(seed)
+    indices = [stationary_bootstrap_indices(PART_B_LENGTH, gp.BLOCK_LENGTH, rng) for _ in range(draws)]
+    out = {}
+    for target, c in shifts.items():
+        estimate = gp.plant(ratio, event, c, sigma=sigma, seed=seed)
+        out[target] = _outcome(_test(estimate, ratio, state, event, look=PART_B_LOOK, seed=seed, indices=indices))
+    return {"replicate": k, "events": sum(event), "results": out}
+
+
+def _reading(supported, count, length, step):
+    """A supported count with its share, interval and effective windows (`goalposts.power`); None where nothing is counted."""
+    if not count:
+        return {"supported": supported, "windows": 0, "share": None, "interval": None, "effective_windows": None}
+    p = gp.power(supported, count, length, step)
+    return {"supported": supported, "windows": count, "share": p.share, "interval": [p.low, p.high],
+            "effective_windows": p.effective}
+
+
+def _smallest_at_80(row, key):
+    power = {float(t): g[key]["share"] for t, g in row["gains"].items()}
+    reaching = [t for t, p in sorted(power.items()) if t > 0 and p is not None and p >= POWER_TARGET]
+    return power, (reaching[0] if reaching else None)
 
 
 def run(smoke):
@@ -98,7 +153,8 @@ def run(smoke):
             realised[str(target)] = None
             continue
         shifts[target] = c
-        realised[str(target)] = gp.stratified_gain(gp.plant(ratio, event, c, sigma=sigma, seed=SEED), ratio, state, event).value
+        gain = gp.stratified_gain(gp.plant(ratio, event, c, sigma=sigma, seed=SEED), ratio, state, event).value
+        realised[str(target)] = {"gain": gain, "miss": gain - target}
     _DATA.update(labelled=days, sigma=sigma, shifts=shifts, smoke=smoke)
 
     tasks = []
@@ -112,6 +168,10 @@ def run(smoke):
     def era_of(w):
         return gp.era(days[w["start"]].day)
 
+    def spread(values):
+        values = sorted(values)
+        return {"min": values[0], "median": median(values), "max": values[-1]}
+
     table = []
     for length in gp.LOOKS:
         mine = [w for w in windows if w["length"] == length]
@@ -120,23 +180,23 @@ def run(smoke):
             if not group:
                 table.append({"length": length, "era": scope, "windows": 0})
                 continue
-            n_eff = gp.effective_windows(len(group), length, STEP)
-            events = sorted(w["events"] for w in group)
-            row = {"length": length, "era": scope, "windows": len(group), "effective_windows": n_eff,
-                   "events_per_window": {"min": events[0], "median": median(events), "max": events[-1]},
-                   "windows_at_the_event_floor": sum(e >= gp.EVENT_FLOOR for e in events), "gains": {}}
+            at_floor = [w for w in group if w["events"] >= gp.EVENT_FLOOR]
+            row = {"length": length, "era": scope, "windows": len(group),
+                   "effective_windows": gp.effective_windows(len(group), length, STEP),
+                   "events_per_window": spread([w["events"] for w in group]),
+                   "usable_events_per_window": spread([next(iter(w["results"].values()))["usable_events"] for w in group]),
+                   "windows_at_the_event_floor": len(at_floor),
+                   "effective_windows_at_the_event_floor": gp.effective_windows(len(at_floor), length, STEP),
+                   "gains": {}}
             for target in shifts:
                 results = [w["results"][target] for w in group]
-                supported = sum(r["supported"] for r in results)
-                detected = sum(r["lower"] > 0.0 for r in results)
-                at_mme = sum(r["point"] >= gp.MME for r in results)
-                testable = [r for r in results if r["events"] >= gp.EVENT_FLOOR]
-                low, high = gp.wilson(supported * n_eff / len(group), n_eff)
+                floor_results = [w["results"][target] for w in at_floor]
                 row["gains"][str(target)] = {
-                    "supported": supported / len(group), "supported_interval": [low, high],
-                    "lower_above_zero": detected / len(group), "point_at_or_above_mme": at_mme / len(group),
-                    "supported_among_windows_at_the_event_floor": (sum(r["supported"] for r in testable) / len(testable)
-                                                                   if testable else None),
+                    "all_windows": _reading(sum(r["supported"] for r in results), len(results), length, STEP),
+                    "windows_at_the_floor": _reading(sum(r["supported"] for r in floor_results), len(floor_results),
+                                                     length, STEP),
+                    "lower_above_zero": sum(r["lower"] > 0.0 for r in results) / len(results),
+                    "point_at_or_above_mme": sum(r["point"] >= gp.MME for r in results) / len(results),
                     "mean_point": sum(r["point"] for r in results) / len(results)}
             table.append(row)
 
@@ -144,12 +204,16 @@ def run(smoke):
     for scope in ("pooled",) + gp.ERAS:
         row = next((r for r in table if r["length"] == gp.LOOKS[-1] and r["era"] == scope), None)
         if not row or not row["windows"]:
-            detectable[scope] = {"mme_power": None, "smallest_grid_gain_at_80": None}
+            detectable[scope] = None
             continue
-        power = {float(t): g["supported"] for t, g in row["gains"].items()}
-        reaching = [t for t, p in sorted(power.items()) if t > 0 and p >= POWER_TARGET]
-        detectable[scope] = {"mme_power": power.get(gp.MME), "mme_detectable": power.get(gp.MME, 0) >= POWER_TARGET,
-                             "smallest_grid_gain_at_80": reaching[0] if reaching else None}
+        entry = {}
+        for key in ("all_windows", "windows_at_the_floor"):
+            power, smallest = _smallest_at_80(row, key)
+            mme = row["gains"][str(gp.MME)][key]
+            entry[key] = {"mme_power": power.get(gp.MME), "mme_interval": mme["interval"], "windows": mme["windows"],
+                          "mme_detectable": None if power.get(gp.MME) is None else power[gp.MME] >= POWER_TARGET,
+                          "smallest_grid_gain_at_80": smallest}
+        detectable[scope] = entry
 
     floors = defaultdict(list)
     for start in range(0, len(days), STEP):
@@ -162,9 +226,11 @@ def run(smoke):
                            "median": median(reached) if reached else None,
                            "p90": reached[int(0.9 * (len(reached) - 1))] if reached else None}
 
+    part_b = run_part_b(days, sigma, shifts, smoke)
+
     return {
-        "what": "H7m G6: power of goalpost 3 on development data, by replay of R plus a planted signal "
-                "(docs/stages/h7-g6.md). No candidate is scored. Development evidence, never a verdict.",
+        "what": "H7m G6, second record: power of goalpost 3 on development data, by replay of R plus a planted signal "
+                "(docs/stages/h7-g6.md §9 and §10). No candidate is scored. Development evidence, never a verdict.",
         "smoke": smoke,
         "pins": {"parent": PARENT_COMMIT, "panel_digest": PANEL_SHA256},
         "provenance": provenance,
@@ -172,26 +238,113 @@ def run(smoke):
                  "events": sum(event), "dropped": labelled.dropped,
                  "events_by_era": {e: sum(d.event for d in days if gp.era(d.day) == e) for e in gp.ERAS},
                  "days_by_era": {e: sum(gp.era(d.day) == e for d in days) for e in gp.ERAS}},
-        "declaration": {"seed": SEED, "step": STEP, "grid": list(GRID), "lengths": list(gp.LOOKS),
+        "declaration": {"seed": SEED, "seed_rule": "20261014 + the window's first index", "step": STEP,
+                        "grid": list(GRID), "lengths": list(gp.LOOKS),
                         "draws": {str(n): (2000 if smoke else gp.draws_for(i)) for i, n in enumerate(gp.LOOKS)},
                         "nominal_levels": {str(n): gp.nominal_level(i) for i, n in enumerate(gp.LOOKS)},
                         "block_length": gp.BLOCK_LENGTH, "mme": gp.MME, "event_floor": gp.EVENT_FLOOR,
+                        "event_floor_counts": "events in the window",
+                        "calibration_tolerance": gp.CALIBRATION_TOLERANCE,
                         "noise_sd_in_sigma": gp.NOISE_SD, "sigma": sigma},
         "planting": {"shift_in_sigma": {str(t): c for t, c in shifts.items()}, "realised_gain_on_the_whole_span": realised},
         "power": table,
         "detectable_at_250_days": detectable,
         "days_to_the_event_floor": to_floor,
+        "part_b": part_b,
         "windows": windows,
         "seconds": round(clock.time() - began, 1),
     }
+
+
+def _reference_cases(span, process, count):
+    """`docs/stages/h7-g6.md` §10: the series Part B's shifts are calibrated on, none of them a replicate."""
+    ratio, state = [d.ratio for d in span], [d.state for d in span]
+    cases = []
+    for j in range(count):
+        seed = PART_B_REFERENCE_SEED + j
+        cases.append(gp.CalibrationCase(ratio, state, gp.simulate_events(process, len(span), random.Random(f"events:{seed}")),
+                                        seed))
+    return cases
+
+
+def run_part_b(days, sigma, grid_shifts, smoke):
+    """`docs/stages/h7-g6.md` §10: the clustered event process fitted to 2025-01-01 on, days to the floor, power at 250 days."""
+    span = [d for d in days if d.day >= PART_B_FROM]
+    if len(span) < PART_B_LENGTH:
+        raise ValueError(f"{len(span)} labelled days from {PART_B_FROM}, fewer than the {PART_B_LENGTH} Part B needs")
+    process = gp.fit_event_process([d.event for d in span])
+    series = 50 if smoke else PART_B_FLOOR_SERIES
+    reaching = []
+    for k in range(series):
+        simulated = gp.simulate_events(process, PART_B_FLOOR_DAYS, random.Random(PART_B_FLOOR_SEED + k))
+        reaching.append(gp.days_to_events(simulated, 0))
+    reached = sorted(v for v in reaching if v is not None)
+    to_floor = {"series": series, "days_per_series": PART_B_FLOOR_DAYS, "never_reached": series - len(reached),
+                "share_never_reached": (series - len(reached)) / series,
+                "share_reached_within_250": sum(v <= 250 for v in reached) / series,
+                "mean_of_those_that_reach": sum(reached) / len(reached) if reached else None,
+                "median_of_those_that_reach": median(reached) if reached else None,
+                "p90_of_those_that_reach": reached[int(0.9 * (len(reached) - 1))] if reached else None}
+
+    fitted_on = span
+    span = span[:PART_B_LENGTH]
+    cases = _reference_cases(span, process, 20 if smoke else PART_B_REFERENCE_SERIES)
+    shifts, realised = {}, {}
+    for target in grid_shifts:
+        c = gp.calibrate_over(target, cases, sigma=sigma)
+        if c is None:
+            realised[str(target)] = None
+            continue
+        shifts[target] = c
+        mean = sum(gp.stratified_gain(gp.plant(x.ratio, x.event, c, sigma=sigma, seed=x.seed), x.ratio, x.state,
+                                      x.event).value for x in cases) / len(cases)
+        realised[str(target)] = {"mean_gain": mean, "miss": mean - target}
+    _DATA.update(span=span, process=process, shifts_b=shifts)
+    replicates = 12 if smoke else PART_B_REPLICATES
+    with multiprocessing.get_context("fork").Pool(4) as pool:
+        results = pool.map(_replicate_task, range(replicates), chunksize=1)
+    at_floor = [r for r in results if r["events"] >= gp.EVENT_FLOOR]
+    gains = {}
+    for target in shifts:
+        everything = [r["results"][target] for r in results]
+        floor = [r["results"][target] for r in at_floor]
+        row = {}
+        for key, group in (("all_replicates", everything), ("replicates_at_the_floor", floor)):
+            supported = sum(r["supported"] for r in group)
+            low, high = gp.wilson(supported, len(group)) if group else (None, None)
+            row[key] = {"supported": supported, "replicates": len(group),
+                        "share": supported / len(group) if group else None, "interval": [low, high]}
+        row["mean_point"] = sum(r["point"] for r in everything) / len(everything)
+        row["point_at_or_above_mme"] = sum(r["point"] >= gp.MME for r in everything) / len(everything)
+        gains[str(target)] = row
+    events = sorted(r["events"] for r in results)
+    return {"process": {"calibration_window": [fitted_on[0].day.isoformat(), fitted_on[-1].day.isoformat()],
+                        "days": len(fitted_on), "events": sum(d.event for d in fitted_on), "start": process.start, "stay": process.stay,
+                        "stationary": process.stationary,
+                        "transitions_from_quiet": process.transitions_from_quiet,
+                        "transitions_from_event": process.transitions_from_event},
+            "days_to_the_event_floor": to_floor,
+            "planting": {"reference_series": len(cases), "shift_in_sigma": {str(t): c for t, c in shifts.items()},
+                         "mean_gain_on_the_reference_series": realised},
+            "power_at_250_days": {"first_day": span[0].day.isoformat(), "replicates": replicates, "draws":
+                                  2000 if smoke else gp.draws_for(PART_B_LOOK), "replicates_at_the_event_floor": len(at_floor),
+                                  "events_per_replicate": {"min": events[0], "median": median(events), "max": events[-1]},
+                                  "gains": gains}}
 
 
 def _pct(value):
     return "n/a" if value is None else f"{100 * value:.0f}%"
 
 
+def _cell(reading):
+    if reading["share"] is None:
+        return "none"
+    low, high = reading["interval"]
+    return f"{_pct(reading['share'])} ({reading['supported']}/{reading['windows']}; {_pct(low)}–{_pct(high)})"
+
+
 def tables(record):
-    """The markdown tables of `docs/research/h7m-power-study.md`, copied from the record and never recomputed."""
+    """The markdown tables of `docs/research/h7m-power-study-2.md`, copied from the record and never recomputed."""
     out = []
     days = record["days"]
     out += ["| Era (of the day) | Scored days | Events |", "|---|---|---|"]
@@ -199,48 +352,105 @@ def tables(record):
     out += [f"| all | {days['scored']} | {days['events']} |", ""]
     gains = [str(g) for g in record["declaration"]["grid"]]
     for length in gp.LOOKS:
-        out += [f"**{length}-day windows** (power = share of windows supported; 95% Wilson interval at the effective "
-                f"number of windows)", "",
-                "| Era of the first day | Windows (effective) | Events per window (min / median / max) | Windows with "
-                "at least 10 events | " + " | ".join(f"gain {g}" for g in gains) + " |",
-                "|---|---|---|---|" + "---|" * len(gains)]
-        for row in record["power"]:
-            if row["length"] != length:
-                continue
-            if not row["windows"]:
-                out.append(f"| {row['era']} | 0 | none | none |" + " none |" * len(gains))
-                continue
-            e = row["events_per_window"]
-            cells = []
-            for g in gains:
-                v = row["gains"][g]
-                low, high = v["supported_interval"]
-                cells.append(f"{_pct(v['supported'])} ({_pct(low)}–{_pct(high)})")
-            out.append(f"| {row['era']} | {row['windows']} ({row['effective_windows']:.1f}) | {e['min']} / "
-                       f"{e['median']:g} / {e['max']} | {row['windows_at_the_event_floor']} | " + " | ".join(cells) + " |")
-        out.append("")
-    out += ["**Among the windows with at least 10 events** (supported share; pooled over eras)", "",
-            "| Window | Windows at the floor | " + " | ".join(f"gain {g}" for g in gains) + " |",
-            "|---|---|" + "---|" * len(gains)]
-    for length in gp.LOOKS:
-        row = next(r for r in record["power"] if r["length"] == length and r["era"] == "pooled")
-        out.append(f"| {length} days | {row['windows_at_the_event_floor']} of {row['windows']} | " + " | ".join(
-            _pct(row["gains"][g]["supported_among_windows_at_the_event_floor"]) for g in gains) + " |")
-    out += ["", "**Size and the mean statistic at gain 0** (pooled)", "",
-            "| Window | Supported | Lower bound above 0 | Point at or above the MME | Mean point |", "|---|---|---|---|---|"]
+        for key, name, count in (("all_windows", "every window", "windows"),
+                                 ("windows_at_the_floor", "windows at the floor (10 events in the window)",
+                                  "windows_at_the_event_floor")):
+            out += [f"**{length}-day windows, {name}.** Each cell: supported share (supported/windows; 95% Wilson "
+                    f"interval at the effective number of windows)", "",
+                    "| Era of the first day | Windows (effective) | Events in the window (min / median / max) | "
+                    "Events in usable strata (min / median / max) | " + " | ".join(f"gain {g}" for g in gains) + " |",
+                    "|---|---|---|---|" + "---|" * len(gains)]
+            for row in record["power"]:
+                if row["length"] != length:
+                    continue
+                if not row["windows"]:
+                    out.append(f"| {row['era']} | 0 | none | none |" + " none |" * len(gains))
+                    continue
+                e, u = row["events_per_window"], row["usable_events_per_window"]
+                if key == "all_windows":
+                    shown = f"{row['windows']} ({row['effective_windows']:.2f})"
+                else:
+                    shown = f"{row['windows_at_the_event_floor']} of {row['windows']} " \
+                            f"({row['effective_windows_at_the_event_floor']:.2f})"
+                out.append(f"| {row['era']} | {shown} | {e['min']} / {e['median']:g} / {e['max']} | {u['min']} / "
+                           f"{u['median']:g} / {u['max']} | " + " | ".join(_cell(row["gains"][g][key]) for g in gains) + " |")
+            out.append("")
+    out += ["**Size** (the supported share at gain 0, pooled over eras; the two readings side by side)", "",
+            "| Window | Every window | Windows at the floor | Lower bound above 0 (every window) | Point at or above "
+            "the MME (every window) | Mean point (every window) |", "|---|---|---|---|---|---|"]
     for length in gp.LOOKS:
         v = next(r for r in record["power"] if r["length"] == length and r["era"] == "pooled")["gains"]["0.0"]
-        out.append(f"| {length} days | {_pct(v['supported'])} | {_pct(v['lower_above_zero'])} | "
-                   f"{_pct(v['point_at_or_above_mme'])} | {v['mean_point']:+.4f} |")
-    out += ["", "**Days to 10 events** (from every 20th scored day; era of the start)", "",
+        out.append(f"| {length} days | {_cell(v['all_windows'])} | {_cell(v['windows_at_the_floor'])} | "
+                   f"{_pct(v['lower_above_zero'])} | {_pct(v['point_at_or_above_mme'])} | {v['mean_point']:+.4f} |")
+    out += ["", "**Days to 10 events** (observed, from every 20th scored day; era of the start)", "",
             "| Era | Starts | Never reach 10 | Median days | 90th percentile |", "|---|---|---|---|---|"]
     for e, v in record["days_to_the_event_floor"].items():
-        out.append(f"| {e} | {v['starts']} | {v['never_reached']} | {v['median']:g} | {v['p90']} |")
-    out += ["", "**The MME at 250 days**", "", "| Scope | Power at 0.05 | Detectable (80%) | Smallest grid gain at 80% |",
-            "|---|---|---|---|"]
+        out.append(f"| {e} | {v['starts']} | {v['never_reached']} | "
+                   f"{'none' if v['median'] is None else format(v['median'], 'g')} | {v['p90']} |")
+    out += ["", "**The MME at 250 days** (power at gain 0.05, both readings)", "",
+            "| Scope | Every window | Detectable (80%) | Smallest grid gain at 80% | Windows at the floor | Detectable (80%) "
+            "| Smallest grid gain at 80% |", "|---|---|---|---|---|---|---|"]
     for scope, v in record["detectable_at_250_days"].items():
-        out.append(f"| {scope} | {_pct(v.get('mme_power'))} | {v.get('mme_detectable', 'n/a')} | "
-                   f"{v.get('smallest_grid_gain_at_80') or 'none on the grid'} |")
+        if v is None:
+            out.append(f"| {scope} | none | none | none | none | none | none |")
+            continue
+        cells = []
+        for key in ("all_windows", "windows_at_the_floor"):
+            r = v[key]
+            if r["mme_power"] is None:
+                cells += ["none", "none", "none"]
+                continue
+            low, high = r["mme_interval"]
+            cells += [f"{_pct(r['mme_power'])} ({_pct(low)}–{_pct(high)}; {r['windows']} windows)", str(r["mme_detectable"]),
+                      str(r["smallest_grid_gain_at_80"] or "none on the grid")]
+        out.append(f"| {scope} | " + " | ".join(cells) + " |")
+    out += ["", "**Planting: realised gain on the whole span against the target** (tolerance "
+            f"{record['declaration']['calibration_tolerance']:g})", "",
+            "| Target | Shift (sigma) | Realised gain | Miss |", "|---|---|---|---|"]
+    for t, c in record["planting"]["shift_in_sigma"].items():
+        r = record["planting"]["realised_gain_on_the_whole_span"][t]
+        null = " (the null: tie-breaking noise only)" if float(t) == 0.0 else ""
+        out.append(f"| {t}{null} | {c:.6f} | {r['gain']:.6f} | {r['miss']:+.2e} |")
+    return "\n".join(out)
+
+
+def tables_part_b(record):
+    """The markdown tables of Part B (`docs/stages/h7-g6.md` §10), copied from the record and never recomputed."""
+    b = record["part_b"]
+    p, f, w = b["process"], b["days_to_the_event_floor"], b["power_at_250_days"]
+    out = ["| Process fitted to | Labelled days | Events | P(event, after a quiet day) | P(event, after an event day) | "
+           "Long-run share | Transitions from quiet / event |", "|---|---|---|---|---|---|---|",
+           f"| {p['calibration_window'][0]} to {p['calibration_window'][1]} | {p['days']} | {p['events']} | "
+           f"{p['start']:.4f} | {p['stay']:.4f} | {p['stationary']:.4f} | {p['transitions_from_quiet']} / "
+           f"{p['transitions_from_event']} |", "",
+           f"**Days until 10 events are logged**, from day 0 ({f['series']} simulated series of {f['days_per_series']} days)", "",
+           "| Never reach 10 | Reach 10 within 250 days | Mean (of those that reach) | Median (of those that reach) | "
+           "90th percentile (of those that reach) |", "|---|---|---|---|---|",
+           f"| {_pct(f['share_never_reached'])} ({f['never_reached']} of {f['series']}) | "
+           f"{_pct(f['share_reached_within_250'])} | {f['mean_of_those_that_reach']:.1f} | "
+           f"{f['median_of_those_that_reach']:g} | {f['p90_of_those_that_reach']} |", "",
+           f"**Power at 250 days** ({w['replicates']} replicates from {w['first_day']}, {w['draws']:,} draws; events per "
+           f"replicate {w['events_per_replicate']['min']} / {w['events_per_replicate']['median']:g} / "
+           f"{w['events_per_replicate']['max']}; {w['replicates_at_the_event_floor']} replicates hold at least 10). "
+           "Each cell: supported share (supported/replicates; 95% Wilson interval at the replicates)", "",
+           "| Gain | Every replicate | Replicates at the floor | Point at or above the MME | Mean point |",
+           "|---|---|---|---|---|"]
+    planting = b["planting"]
+    for g, row in w["gains"].items():
+        cells = []
+        for key in ("all_replicates", "replicates_at_the_floor"):
+            r = row[key]
+            cells.append("none" if r["share"] is None else
+                         f"{_pct(r['share'])} ({r['supported']}/{r['replicates']}; {_pct(r['interval'][0])}–"
+                         f"{_pct(r['interval'][1])})")
+        out.append(f"| {g}{' (size)' if g == '0.0' else ''} | {cells[0]} | {cells[1]} | "
+                   f"{_pct(row['point_at_or_above_mme'])} | {row['mean_point']:+.4f} |")
+    out += ["", f"**Planting: mean gain on the {planting['reference_series']} reference series against the target**", "",
+            "| Target | Shift (sigma) | Mean gain | Miss |", "|---|---|---|---|"]
+    for t, c in planting["shift_in_sigma"].items():
+        r = planting["mean_gain_on_the_reference_series"][t]
+        null = " (the null)" if float(t) == 0.0 else ""
+        out.append(f"| {t}{null} | {c:.6f} | {r['mean_gain']:.6f} | {r['miss']:+.2e} |")
     return "\n".join(out)
 
 
@@ -250,17 +460,21 @@ def main(argv=None):
     parser.add_argument("--tables", action="store_true", help="print the markdown tables of the recorded study")
     args = parser.parse_args(argv)
     if args.tables:
-        print(tables(json.loads((RESULTS / "h7m-power-study.json").read_text(encoding="utf-8"))))
+        record = json.loads(RECORD.read_text(encoding="utf-8"))
+        print(tables(record))
+        print("\n<!-- part b -->\n")
+        print(tables_part_b(record))
         return 0
     record = run(args.smoke)
     if args.smoke:
         print(json.dumps({k: record[k] for k in ("days", "planting", "detectable_at_250_days", "days_to_the_event_floor",
-                                                  "seconds")}, indent=1, default=str))
+                                                  "part_b", "seconds")}, indent=1, default=str))
+        print(tables(record))
+        print(tables_part_b(record))
         return 0
     RESULTS.mkdir(parents=True, exist_ok=True)
-    out = RESULTS / "h7m-power-study.json"
-    out.write_text(json.dumps(record, indent=1, default=str) + "\n", encoding="utf-8")
-    print(out, hashlib.sha256(out.read_bytes()).hexdigest())
+    RECORD.write_text(json.dumps(record, indent=1, default=str) + "\n", encoding="utf-8")
+    print(RECORD, hashlib.sha256(RECORD.read_bytes()).hexdigest())
     return 0
 
 

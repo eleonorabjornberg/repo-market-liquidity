@@ -29,7 +29,7 @@ import pathlib
 import unittest
 from datetime import date
 
-from repo_liquidity import PANEL_SHA256, PARENT_COMMIT, attribution, development, h10_apply, h10_publish, panel
+from repo_liquidity import PANEL_SHA256, attribution, development, h10_apply, h10_publish, panel
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 DEVELOPMENT = ROOT / "results" / "h10" / "development.json"
@@ -38,6 +38,10 @@ PAGE = ROOT / "docs" / "research" / "h10-development-table.md"
 #: The published step 2 record is never edited in place: its bytes are pinned here (merged in PR #73).
 DEVELOPMENT_SHA256 = "21fa38197d75822024a121106510a6b340cb842ddd2cbf5c643226e34b8dd8af"
 DRIVERS = attribution.DRIVERS_WITH_ON_RRP
+
+#: The parent pin these records were made at (L27, #105 moved the tree to a later pin). A published record is never
+#: edited in place, so it keeps naming the pin it was made at.
+RECORD_PARENT_COMMIT = "53e61af9b4175e854c196908d3c76b228c039667"
 
 
 class InteractionSeriesTests(unittest.TestCase):
@@ -162,7 +166,7 @@ class RecordTests(unittest.TestCase):
         a, b = self.development, self.sensitivity
         self.assertEqual([e["onset"] for e in b["episodes"]], [e["onset"] for e in a["episodes"]])
         self.assertEqual([e["regime"] for e in b["episodes"]], [e["regime"] for e in a["episodes"]])
-        self.assertEqual(b["parent_commit"], PARENT_COMMIT)
+        self.assertEqual(b["parent_commit"], RECORD_PARENT_COMMIT)
         self.assertEqual(b["parent_panel_sha256"], PANEL_SHA256)
         self.assertEqual(b["panel"], a["panel"])
         self.assertEqual(b["panel"]["sha256"], panel.load_manifest(1)["sha256"])

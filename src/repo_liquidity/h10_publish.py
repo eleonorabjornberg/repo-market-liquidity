@@ -143,12 +143,34 @@ def _regime_sections(development: dict, interaction: dict, regimes: dict) -> Lis
     return out
 
 
+def _floor_note(floor: dict, floor_sha256: str) -> List[str]:
+    """The dated note on the 2 bp placebo floor (#85), from its record alone."""
+    u, f = floor["readings"]["unfloored"], floor["readings"]["floored"]
+    return [
+        "## Note (15 October 2026): the placebo with a 2 bp rise floor",
+        "",
+        "**Development evidence, not a verdict.** A new record, `results/h10/placebo_floor_2bp.json` "
+        f"(sha256 `{floor_sha256}`, directive #85), re-runs only the placebo of the published record at the same pin, seeds and "
+        "episodes, with and without the floor of the draft amendment in section 10 of the method record. The step 2 record above is "
+        "unchanged.",
+        "",
+        f"- unfloored (the published reading): placebo gap {_marker(u['median_placebo_gap'])}, {u['windows']} placebo windows, "
+        f"{u['attributed_windows']} attributable;",
+        f"- floored (a placebo window needs a rise of at least {floor['settings']['placebo_rise_floor_bp']:g} bp): placebo gap "
+        f"{_marker(f['median_placebo_gap'])}, {f['windows_excluded']} of {f['windows']} windows excluded, "
+        f"{f['attributed_windows']} attributable.",
+        "",
+    ]
+
+
 def render(development: dict, sensitivity: dict, *, development_sha256: str, method_sha256: str,
-           regimes: Optional[dict] = None) -> str:
+           regimes: Optional[dict] = None, placebo_floor: Optional[dict] = None,
+           placebo_floor_sha256: Optional[str] = None) -> str:
     """The page, from the records alone.
 
     With `regimes` (the sensitivity with two regime-specific terms, #86) the interaction sensitivity carries a dated note
-    that this record supersedes it, and the page gains a section for the new record.
+    that this record supersedes it, and the page gains a section for the new record. With `placebo_floor` (the placebo
+    with a 2 bp rise floor, #85) the page gains a dated note on it.
 
     Raises:
         ValueError: the second record is not a sensitivity, or does not cover the same episodes as the first.
@@ -241,8 +263,10 @@ def render(development: dict, sensitivity: dict, *, development_sha256: str, met
     else:
         out.append("None: every episode has the same outcome under both.")
     out += ["", "### Per episode, beside the published figures", "", _sensitivity_table(development, sensitivity),
-            *(_regime_sections(development, sensitivity, regimes) if regimes is not None else []),
-            "## What this page does not do", "",
+            *(_regime_sections(development, sensitivity, regimes) if regimes is not None else [])]
+    if placebo_floor is not None:
+        out += _floor_note(placebo_floor, placebo_floor_sha256)
+    out += ["## What this page does not do", "",
             "It states no verdict, registers nothing, scores no forecast, publishes no figure of the model repo and changes nothing "
             "in it. Registration of the frozen method is her attested action (plan, H10, \"Registration\").", ""]
     return "\n".join(out)
@@ -253,5 +277,8 @@ def render_tracked() -> str:
     development = json.loads(h10_apply.RECORD.read_text(encoding="utf-8"))
     sensitivity = json.loads(h10_apply.SENSITIVITY_RECORD.read_text(encoding="utf-8"))
     regimes = json.loads(h10_apply.REGIMES_RECORD.read_text(encoding="utf-8")) if h10_apply.REGIMES_RECORD.is_file() else None
+    floor = h10_apply.PLACEBO_FLOOR_RECORD
     return render(development, sensitivity, development_sha256=_digest(h10_apply.RECORD), method_sha256=_digest(METHOD),
-                  regimes=regimes)
+                  regimes=regimes,
+                  placebo_floor=json.loads(floor.read_text(encoding="utf-8")) if floor.is_file() else None,
+                  placebo_floor_sha256=_digest(floor) if floor.is_file() else None)
