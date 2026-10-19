@@ -56,6 +56,9 @@ def _fields():
         # #43: the RC-A anchor of the group reserves, latest-filed Call Report sums (`repo_liquidity.rca`), read through
         # `snapshots/rca_anchor/`. Not built columns of any panel.
         **{field: (("ffiec_call_rca", field),) for field in _rca_fields()},
+        # #132: the NY Fed's reserve demand elasticity, an external check on H7m goalposts 1 and 3 (`repo_liquidity.rde`),
+        # read through `snapshots/rde/`. Not built columns of any panel.
+        **{field: (("nyfed_rde", field),) for field in _rde_fields()},
         "temp_repo_take_up": (("nyfed_temp_repo", "temp_repo_take_up"),),
         "temp_repo_term_take_up": (("nyfed_temp_repo", "temp_repo_term_take_up"),),
         "temp_repo_term_outstanding": (("nyfed_temp_repo", "temp_repo_term_outstanding"),),
@@ -89,6 +92,12 @@ def _rca_fields():
     from repo_liquidity import rca
 
     return rca.FIELDS
+
+
+def _rde_fields():
+    from repo_liquidity import rde
+
+    return rde.FIELDS
 
 
 def _indicator_fields(fields):
