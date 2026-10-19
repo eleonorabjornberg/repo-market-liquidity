@@ -138,14 +138,12 @@ class ExtractTests(unittest.TestCase):
 
     def test_no_row_is_read_from_a_day_the_lockbox_holds(self):
         self.assertTrue(all(not development.is_locked(r.latest_update.date()) for r in self.rows))
+        # The bulk files of 15 October 2026 carry amendments that Citibank (476810) and Goldman Sachs Bank USA (2182786)
+        # filed from 29 September to 9 October. Their earlier filings stand (#123, #120), so only Morgan Stanley Bank's
+        # two bank-quarters, amended on 10 September with no earlier filing kept, stay withheld.
         self.assertEqual([(h["quarter_end"], h["idrssd"]) for h in self.coverage["holes"]
                           if h["reason"] == "updated_after_development_end"],
-                         # The bulk files of 15 October 2026 carry amendments that Citibank (476810) and Goldman Sachs
-                         # Bank USA (2182786) filed from 29 September to 9 October; the files of 14 October did not yet.
-                         [("2025-06-30", 476810), ("2025-09-30", 476810), ("2025-09-30", 2182786),
-                          ("2025-12-31", 476810), ("2025-12-31", 2182786), ("2026-03-31", 476810),
-                          ("2026-03-31", 1456501), ("2026-03-31", 2182786), ("2026-06-30", 476810),
-                          ("2026-06-30", 1456501), ("2026-06-30", 2182786)])
+                         [("2026-03-31", 1456501), ("2026-06-30", 1456501)])
 
     def test_the_computed_ratio_agrees_with_the_one_the_banks_reported(self):
         self.assertFalse([h for h in self.coverage["holes"] if h["reason"] == "ratio_differs_from_reported"])
@@ -165,7 +163,9 @@ class ExtractTests(unittest.TestCase):
 
     def test_the_sources_are_the_34_stored_zips_by_digest(self):
         self.assertEqual(len(self.sources["zips"]), 34)
-        self.assertEqual({r.source_zip_sha256 for r in self.rows} - {z["sha256"] for z in self.sources["zips"]}, set())
+        restored = set(self.sources.get("restored", {}).get("source_zips", ()))
+        self.assertEqual({r.source_zip_sha256 for r in self.rows} - {z["sha256"] for z in self.sources["zips"]}, restored)
+        self.assertEqual({r.source_zip_sha256 for r in self.rows if r.restored_from}, restored)
         for item in self.sources["zips"]:
             self.assertEqual(item["file"], f"{item['quarter_end']}-{item['sha256']}.zip")
 
