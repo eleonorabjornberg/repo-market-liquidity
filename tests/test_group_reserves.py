@@ -273,8 +273,9 @@ class LabelTests(unittest.TestCase):
             self.assertEqual(sens[end]["share"], share)
             self.assertEqual(sens[end]["rows"], self.coverage["rows"])
 
-    def test_no_module_of_the_package_reads_the_series_but_its_builder(self):
-        """Nothing scored or registered uses it: no other module under `src/` or `scripts/` imports it."""
+    def test_no_module_of_the_package_reads_the_series_but_its_builder_and_candidate_c(self):
+        """Nothing scored or registered uses it: no other module under `src/` or `scripts/` imports it. The one reader besides the
+        builder is candidate C's unscored estimator (#41, `docs/stages/h7-step2.md`), which scores nothing."""
         readers = []
         for base in (ROOT / "src", ROOT / "scripts"):
             for path in base.rglob("*.py"):
@@ -283,7 +284,7 @@ class LabelTests(unittest.TestCase):
                 text = path.read_text(encoding="utf-8")
                 if re.search(r"^\s*(from|import)\b.*\bgroup_reserves\b", text, re.M):
                     readers.append(str(path.relative_to(ROOT)))
-        self.assertEqual(readers, [])
+        self.assertEqual(readers, [str(pathlib.Path("src") / "repo_liquidity" / "h7_candidate_c.py")])
 
 
 class LoadGuardTests(unittest.TestCase):
