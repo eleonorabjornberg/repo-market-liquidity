@@ -427,6 +427,22 @@ class RequirementTableTests(unittest.TestCase):
             self.assertIn(period.citation, text)
 
 
+    def test_the_citations_name_the_feds_text_beside_the_occs_and_the_record_quotes_it(self):
+        """The three state member banks are read under the Fed's text (finding #115, ruling (b); #117).
+
+        Recorded mutation: in `slr.REQUIREMENT_TABLE`, drop "12 CFR 208.43(b)(1)(iv)(B)" from the first citation;
+        this test fails with AssertionError ('12 CFR 208.43(b)(1)(iv)(B)' not found in the citation).
+        """
+        text = " ".join((ROOT / "docs" / "decisions" / "slr-requirement.md").read_text(encoding="utf-8").replace("> ", "").split())
+        first, second = slr.REQUIREMENT_TABLE
+        self.assertIn("12 CFR 208.43(b)(1)(iv)(B)", first.citation)
+        self.assertIn("217.11(a)(2)(v)(B)", second.citation)
+        for quoted in ("the bank has a supplementary leverage ratio of 6.0 percent or greater",
+                       "(D) Leverage Measure: The bank has a leverage ratio of 5.0 percent or greater; and",
+                       "equal to the lesser of 1.0 percent or 50 percent of the most recent method 1 surcharge"):
+            self.assertIn(quoted, text)
+
+
 class StateStreetTests(unittest.TestCase):
     """State Street is the G-SIB bank (IDRSSD 35301) and is in the main measure (Eleonora, 15 October 2026).
 
