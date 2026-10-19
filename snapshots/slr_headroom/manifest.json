@@ -15,11 +15,12 @@
     "headroom_pp",
     "exclusion_status",
     "measure",
-    "source_zip_sha256"
+    "source_zip_sha256",
+    "restored_from"
   ],
   "coverage": {
     "path": "tests/fixtures/snapshots/slr_headroom/slr_latest_filed.coverage.json",
-    "sha256": "4e873c388f46841ae24577d66b39b1b7a0f3d1a706f0a0bd7be77fdc527c3db0"
+    "sha256": "7286e56498201b630bdb9e548a7dffde7cd2a164d783232847d29f004aee52f4"
   },
   "first_quarter": "2018-03-31",
   "last_quarter": "2026-06-30",
@@ -27,12 +28,25 @@
   "measure_note": "The `measure` column is `main` for all nine banks. State Street is read at the bank of the G-SIB, State Street Bank and Trust Company (IDRSSD 35301), and is in the main measure (Eleonora, 15 October 2026). This replaces her decision on repo-market-liquidity#69 (Q2, 14 October 2026), made on the figures of State Street Bank and Trust Company, N.A. (IDRSSD 93619), a trust subsidiary read by mistake. A reader of the main measure still filters on `measure == main`.",
   "parent_commit": "8fd2cf8c72e7d5c6e81c509651b684b690054a6f",
   "parent_panel_sha256": "4ddc3882cd6d406b11e1088f8ff6195e16dde175a0ad6818abe40dd5bdac8999",
-  "path": "snapshots/slr_headroom/013b647e6c4257a2e95e5cd939d8572dd7d006fc2cf8dfcef782d7439d83d9d9.csv",
-  "repo_commit": "12785751b8af73dff5a6e475c61c0754e29c6bb5",
+  "path": "snapshots/slr_headroom/4e9f87b518b3106ec5dc7d709f19e7f365e499c969fa5cb7ba9201e66f37e817.csv",
+  "repo_commit": "5fb0daa04b8535dc41179e458254686a03421d7f",
   "requirement_note": "`requirement_pct` and `headroom_pp` follow the requirement table of docs/decisions/slr-requirement.md (a draft until Eleonora merges it): 6.0% for quarter-ends 2018-01-01 to 2026-03-31, and no value from 2026-04-01, where the rule is bank-specific.",
-  "rows": 295,
+  "restored_rows": {
+    "note": "Filings made on or before the development end that a later amendment replaced in the bulk files (Eleonora's ruling of 19 October 2026 on finding #120; #123). Each row carries its own `available_from` and `source_zip_sha256` as stored in the superseded snapshot, and names it in `restored_from`. Their zips are lost (finding #94), so they are not in `source_zips`.",
+    "rows": 9,
+    "source_zips": {
+      "0a2d59ce16b5a5b756765e00364d525855019ac657e0398c96323aebfa1679fe": "2026-06-30",
+      "66d9881a82c4e7391acfe7b75fa2ada5c6fcbd8fb8325a71025b50fd62db6097": "2025-12-31",
+      "99ab95739eb89f0c0468cd79005e6d822fb4d37ba6a628dcec4f369d614e0494": "2025-06-30",
+      "e19452450909399dc104d51cddcea0db17d71d872b20f67234fedf56340c1e69": "2026-03-31",
+      "ed25c77ee6e6b312345347a65fd15ebe62a9ca9b84126dd50a39ccbb59840149": "2025-09-30"
+    },
+    "superseded_path": "snapshots/slr_headroom/09c138ad385424b8ba9d705e258ac254cd0ab6ee5e93e7ba199276440ba4de27.csv",
+    "superseded_sha256": "09c138ad385424b8ba9d705e258ac254cd0ab6ee5e93e7ba199276440ba4de27"
+  },
+  "rows": 304,
   "series": "slr_headroom",
-  "sha256": "013b647e6c4257a2e95e5cd939d8572dd7d006fc2cf8dfcef782d7439d83d9d9",
+  "sha256": "4e9f87b518b3106ec5dc7d709f19e7f365e499c969fa5cb7ba9201e66f37e817",
   "source_table": "tests/fixtures/snapshots/slr_headroom/slr_latest_filed.csv",
   "source_zips": {
     "2018-03-31": "a9be30d444f7a2dd4d43db96d2a8bc56eb8deac28387617b7bcb46482742f87c",
