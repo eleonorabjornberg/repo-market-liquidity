@@ -237,9 +237,16 @@ class VerdictTests(unittest.TestCase):
                          scoring_protocol.INCONCLUSIVE)
         self.assertEqual(gp.verdict(test, look=2, goalposts_held=True, futility_level=0.05), scoring_protocol.NOT_SHOWN)
 
-    def test_the_futility_level_has_no_default(self):
-        with self.assertRaises(TypeError):
-            gp.verdict(self._test(0.06, 0.01), look=2, goalposts_held=True)
+    def test_the_futility_level_defaults_to_the_one_sided_95_percent_bound(self):
+        """Q4, decided by Eleonora on 15 Oct 2026: the "killed" bound mirrors the lower bound at one-sided 95%.
+
+        Recorded mutation: `FUTILITY_LEVEL = 0.05` -> `0.1` in goalposts.py; the test failed with AssertionError.
+        """
+        self.assertEqual(gp.FUTILITY_LEVEL, 0.05)
+        self.assertEqual(gp.verdict(self._test(0.01, -0.02, upper=0.04), look=1, goalposts_held=True),
+                         scoring_protocol.KILLED)
+        with self.assertRaisesRegex(ValueError, "futility level 0.05"):
+            gp.verdict(self._test(0.01, -0.02, upper=None), look=1, goalposts_held=True)
 
     def test_an_upper_bound_is_required_to_judge_a_kill(self):
         with self.assertRaises(ValueError):
