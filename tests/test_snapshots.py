@@ -79,7 +79,8 @@ class TrackedSnapshotTests(unittest.TestCase):
 
 #: The column that dates a row in each published series: when the row became public.
 PUBLICATION_COLUMN = {"on_rrp_rate": "announcement_date", "srf_rate": "announcement_date",
-                      "runoff_caps": "announcement_date", "agency_securities": "release_date",
+                      "runoff_caps": "announcement_date", "announced_pace": "announcement_date",
+                      "agency_securities": "release_date",
                       "h8_groups": "release_date", "slr_headroom": "latest_update",
                       "rca_anchor": "latest_update"}
 

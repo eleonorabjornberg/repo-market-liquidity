@@ -22,7 +22,8 @@ from datetime import date
 from pathlib import Path
 from typing import Dict, List, Optional
 
-from repo_liquidity import PANEL_SHA256, PARENT_COMMIT, contenthash, development, h41, h8, rca, scheduled, slr
+from repo_liquidity import (PANEL_SHA256, PARENT_COMMIT, announced_pace, contenthash, development, h41, h8, rca, scheduled,
+                            slr)
 
 ROOT = Path(__file__).resolve().parents[2]
 SNAPSHOTS = ROOT / "snapshots"
@@ -72,11 +73,14 @@ SERIES: Dict[str, Path] = {
     "on_rrp_rate": scheduled.ON_RRP_RATE_TABLE,
     "srf_rate": scheduled.SRF_TABLE,
     "runoff_caps": scheduled.CAPS_TABLE,
+    "announced_pace": announced_pace.PACE_TABLE,
     "agency_securities": H41_AGENCY_EXTRACT,
     **WEEKLY,
     "slr_headroom": SLR_EXTRACT,
     "rca_anchor": RCA_EXTRACT,
 }
+#: The tracked tables a derived series is computed from, named in its manifest by digest (#125).
+INPUTS: Dict[str, tuple] = {"announced_pace": (scheduled.CAPS_TABLE, announced_pace.PURCHASES_TABLE)}
 _HEX40 = re.compile(r"^[0-9a-f]{40}$")
 
 
@@ -213,6 +217,14 @@ def build(series: str, root: Path = ROOT, *, repo_commit: str, agency_extract: O
         if not page.exists():
             raise ValueError(f"{table.name}: the saved page {row['page']} is missing")
         pages[row["page"]] = hashlib.sha256(page.read_bytes()).hexdigest()
+    if series == "announced_pace":
+        # The pages that give a purchase row its dates, beside the ones that give its amounts (#125).
+        for purchase in announced_pace.load_purchases():
+            if purchase.also_page:
+                also = scheduled.NOTES / "pages" / purchase.also_page
+                if not also.exists():
+                    raise ValueError(f"{table.name}: the saved page {purchase.also_page} is missing")
+                pages[purchase.also_page] = hashlib.sha256(also.read_bytes()).hexdigest()
     directory = root / "snapshots" / series
     directory.mkdir(parents=True, exist_ok=True)
     relative = f"snapshots/{series}/{digest}.csv"
@@ -228,6 +240,8 @@ def build(series: str, root: Path = ROOT, *, repo_commit: str, agency_extract: O
         "last_effective": rows[-1]["effective_date"],
         "source_table": str(table.relative_to(ROOT)),
         "source_table_sha256": hashlib.sha256(source).hexdigest(),
+        **({"source_inputs": {path.name: hashlib.sha256(path.read_bytes()).hexdigest() for path in INPUTS[series]}}
+           if series in INPUTS else {}),
         "locked_rows_omitted": omitted,
         "source_pages": pages,
         "parent_commit": PARENT_COMMIT,
