@@ -6,7 +6,7 @@
 latest-update date and never earlier. They are not first prints.
 
 - Quarters: 2018-03-31 to 2026-06-30 (34).
-- Nine G-SIB depository subsidiaries: 306 bank-quarters, 295 rows in the extract.
+- Nine G-SIB depository subsidiaries: 306 bank-quarters, 304 rows in the extract.
 - Nothing past the parent's development end (2026-09-03): a figure last updated on a later day
   is withheld.
 
@@ -14,9 +14,10 @@ latest-update date and never earlier. They are not first prints.
 
 | reason | count | row kept |
 |---|---|---|
+| `earlier_filing_stands` | 9 | yes |
 | `exclusion_status_unknown` | 36 | yes |
-| `requirement_not_set` | 6 | yes |
-| `updated_after_development_end` | 11 | no |
+| `requirement_not_set` | 8 | yes |
+| `updated_after_development_end` | 2 | no |
 
 ## Every hole and refusal (filer, quarter, why)
 
@@ -58,37 +59,39 @@ latest-update date and never earlier. They are not first prints.
 | 2021-03-31 | Morgan Stanley Bank, N.A. (1456501) | `exclusion_status_unknown` | yes | inside the April 2020 to March 2021 exclusion window (row 16(e)); the subsidiary's election is not in the bulk file |
 | 2021-03-31 | Goldman Sachs Bank USA (2182786) | `exclusion_status_unknown` | yes | inside the April 2020 to March 2021 exclusion window (row 16(e)); the subsidiary's election is not in the bulk file |
 | 2021-03-31 | Morgan Stanley Private Bank, N.A. (2489805) | `exclusion_status_unknown` | yes | inside the April 2020 to March 2021 exclusion window (row 16(e)); the subsidiary's election is not in the bulk file |
-| 2025-06-30 | Citibank, N.A. (476810) | `updated_after_development_end` | no | last updated 2026-09-29T15:16:53, on a day the parent's lockbox holds |
-| 2025-09-30 | Citibank, N.A. (476810) | `updated_after_development_end` | no | last updated 2026-09-29T15:19:22, on a day the parent's lockbox holds |
-| 2025-09-30 | Goldman Sachs Bank USA (2182786) | `updated_after_development_end` | no | last updated 2026-10-09T14:28:17, on a day the parent's lockbox holds |
-| 2025-12-31 | Citibank, N.A. (476810) | `updated_after_development_end` | no | last updated 2026-10-02T14:59:00, on a day the parent's lockbox holds |
-| 2025-12-31 | Goldman Sachs Bank USA (2182786) | `updated_after_development_end` | no | last updated 2026-10-09T15:52:54, on a day the parent's lockbox holds |
-| 2026-03-31 | Citibank, N.A. (476810) | `updated_after_development_end` | no | last updated 2026-10-02T15:01:00, on a day the parent's lockbox holds |
+| 2025-06-30 | Citibank, N.A. (476810) | `earlier_filing_stands` | yes | last updated 2026-06-30T17:24:07, before the development end; a later amendment is withheld, and this filing is read from the superseded snapshot 09c138ad385424b8ba9d705e258ac254cd0ab6ee5e93e7ba199276440ba4de27 |
+| 2025-09-30 | Citibank, N.A. (476810) | `earlier_filing_stands` | yes | last updated 2026-06-30T17:30:22, before the development end; a later amendment is withheld, and this filing is read from the superseded snapshot 09c138ad385424b8ba9d705e258ac254cd0ab6ee5e93e7ba199276440ba4de27 |
+| 2025-09-30 | Goldman Sachs Bank USA (2182786) | `earlier_filing_stands` | yes | last updated 2025-11-04T11:41:51, before the development end; a later amendment is withheld, and this filing is read from the superseded snapshot 09c138ad385424b8ba9d705e258ac254cd0ab6ee5e93e7ba199276440ba4de27 |
+| 2025-12-31 | Citibank, N.A. (476810) | `earlier_filing_stands` | yes | last updated 2026-07-07T17:59:49, before the development end; a later amendment is withheld, and this filing is read from the superseded snapshot 09c138ad385424b8ba9d705e258ac254cd0ab6ee5e93e7ba199276440ba4de27 |
+| 2025-12-31 | Goldman Sachs Bank USA (2182786) | `earlier_filing_stands` | yes | last updated 2026-02-04T14:29:55, before the development end; a later amendment is withheld, and this filing is read from the superseded snapshot 09c138ad385424b8ba9d705e258ac254cd0ab6ee5e93e7ba199276440ba4de27 |
+| 2026-03-31 | Citibank, N.A. (476810) | `earlier_filing_stands` | yes | last updated 2026-07-07T18:00:29, before the development end; a later amendment is withheld, and this filing is read from the superseded snapshot 09c138ad385424b8ba9d705e258ac254cd0ab6ee5e93e7ba199276440ba4de27 |
 | 2026-03-31 | Morgan Stanley Bank, N.A. (1456501) | `updated_after_development_end` | no | last updated 2026-09-10T14:23:48, on a day the parent's lockbox holds |
-| 2026-03-31 | Goldman Sachs Bank USA (2182786) | `updated_after_development_end` | no | last updated 2026-10-09T16:15:23, on a day the parent's lockbox holds |
+| 2026-03-31 | Goldman Sachs Bank USA (2182786) | `earlier_filing_stands` | yes | last updated 2026-05-04T18:42:28, before the development end; a later amendment is withheld, and this filing is read from the superseded snapshot 09c138ad385424b8ba9d705e258ac254cd0ab6ee5e93e7ba199276440ba4de27 |
 | 2026-06-30 | State Street Bank and Trust Company (35301) | `requirement_not_set` | yes | the requirement table (docs/decisions/slr-requirement.md) has no value for this quarter; headroom is blank |
 | 2026-06-30 | Wells Fargo Bank, N.A. (451965) | `requirement_not_set` | yes | the requirement table (docs/decisions/slr-requirement.md) has no value for this quarter; headroom is blank |
-| 2026-06-30 | Citibank, N.A. (476810) | `updated_after_development_end` | no | last updated 2026-10-02T15:01:22, on a day the parent's lockbox holds |
+| 2026-06-30 | Citibank, N.A. (476810) | `earlier_filing_stands` | yes | last updated 2026-08-04T16:01:08, before the development end; a later amendment is withheld, and this filing is read from the superseded snapshot 09c138ad385424b8ba9d705e258ac254cd0ab6ee5e93e7ba199276440ba4de27 |
+| 2026-06-30 | Citibank, N.A. (476810) | `requirement_not_set` | yes | the requirement table (docs/decisions/slr-requirement.md) has no value for this quarter; headroom is blank |
 | 2026-06-30 | Bank of America, N.A. (480228) | `requirement_not_set` | yes | the requirement table (docs/decisions/slr-requirement.md) has no value for this quarter; headroom is blank |
 | 2026-06-30 | The Bank of New York Mellon (541101) | `requirement_not_set` | yes | the requirement table (docs/decisions/slr-requirement.md) has no value for this quarter; headroom is blank |
 | 2026-06-30 | JPMorgan Chase Bank, N.A. (852218) | `requirement_not_set` | yes | the requirement table (docs/decisions/slr-requirement.md) has no value for this quarter; headroom is blank |
 | 2026-06-30 | Morgan Stanley Bank, N.A. (1456501) | `updated_after_development_end` | no | last updated 2026-09-10T14:24:14, on a day the parent's lockbox holds |
-| 2026-06-30 | Goldman Sachs Bank USA (2182786) | `updated_after_development_end` | no | last updated 2026-10-09T16:18:44, on a day the parent's lockbox holds |
+| 2026-06-30 | Goldman Sachs Bank USA (2182786) | `earlier_filing_stands` | yes | last updated 2026-08-04T16:26:02, before the development end; a later amendment is withheld, and this filing is read from the superseded snapshot 09c138ad385424b8ba9d705e258ac254cd0ab6ee5e93e7ba199276440ba4de27 |
+| 2026-06-30 | Goldman Sachs Bank USA (2182786) | `requirement_not_set` | yes | the requirement table (docs/decisions/slr-requirement.md) has no value for this quarter; headroom is blank |
 | 2026-06-30 | Morgan Stanley Private Bank, N.A. (2489805) | `requirement_not_set` | yes | the requirement table (docs/decisions/slr-requirement.md) has no value for this quarter; headroom is blank |
 
 ## The filed ratio, by bank (computed, in percent; no aggregate)
 
 | filer | quarters | min | max | latest quarter |
 |---|---|---|---|---|
-| JPMorgan Chase Bank, N.A. (852218) | 34 | 6.15 | 7.29 | 2026-06-30 (6.15) |
-| Bank of America, N.A. (480228) | 34 | 5.91 | 7.30 | 2026-06-30 (5.91) |
-| Citibank, N.A. (476810) | 29 | 6.56 | 7.25 | 2025-03-31 (7.25) |
-| Wells Fargo Bank, N.A. (451965) | 34 | 6.54 | 7.46 | 2026-06-30 (6.54) |
-| Goldman Sachs Bank USA (2182786) | 30 | 6.36 | 8.92 | 2025-06-30 (7.60) |
-| Morgan Stanley Bank, N.A. (1456501) | 32 | 7.35 | 9.18 | 2025-12-31 (7.58) |
-| Morgan Stanley Private Bank, N.A. (2489805) | 34 | 6.48 | 10.30 | 2026-06-30 (6.48) |
 | State Street Bank and Trust Company (35301) | 34 | 6.50 | 8.52 | 2026-06-30 (6.83) |
+| Wells Fargo Bank, N.A. (451965) | 34 | 6.54 | 7.46 | 2026-06-30 (6.54) |
+| Citibank, N.A. (476810) | 34 | 6.17 | 7.25 | 2026-06-30 (6.17) |
+| Bank of America, N.A. (480228) | 34 | 5.91 | 7.30 | 2026-06-30 (5.91) |
 | The Bank of New York Mellon (541101) | 34 | 6.24 | 8.59 | 2026-06-30 (7.08) |
+| JPMorgan Chase Bank, N.A. (852218) | 34 | 6.15 | 7.29 | 2026-06-30 (6.15) |
+| Morgan Stanley Bank, N.A. (1456501) | 32 | 7.35 | 9.18 | 2025-12-31 (7.58) |
+| Goldman Sachs Bank USA (2182786) | 34 | 5.57 | 8.92 | 2026-06-30 (5.57) |
+| Morgan Stanley Private Bank, N.A. (2489805) | 34 | 6.48 | 10.30 | 2026-06-30 (6.48) |
 
 ## Not checked
 

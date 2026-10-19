@@ -252,7 +252,9 @@ def _build_slr(table: Path, root: Path, repo_commit: str) -> dict:
     coverage = table.with_name(slr.COVERAGE_NAME)
     used = {row.source_zip_sha256 for row in rows}
     pages = {item["quarter_end"]: item["sha256"] for item in sources["zips"]}
-    unknown = sorted(used - set(pages.values()))
+    restored_record = sources.get("restored")
+    listed = set(pages.values()) | set(restored_record["source_zips"] if restored_record else ())
+    unknown = sorted(used - listed)
     if unknown:
         raise ValueError(f"{table.name}: a row names the zip {unknown[0]}, which the sources record does not list")
     directory = root / "snapshots" / "slr_headroom"
@@ -282,6 +284,15 @@ def _build_slr(table: Path, root: Path, repo_commit: str) -> dict:
         "last_update": max(row.latest_update for row in rows).isoformat(),
         "source_table": str(table.relative_to(ROOT)),
         "source_zips": pages,
+        **({"restored_rows": {
+            "rows": sum(1 for row in rows if row.restored_from),
+            "superseded_sha256": restored_record["superseded_sha256"],
+            "superseded_path": restored_record["superseded_path"],
+            "note": ("Filings made on or before the development end that a later amendment replaced in the bulk files "
+                     "(Eleonora's ruling of 19 October 2026 on finding #120; #123). Each row carries its own "
+                     "`available_from` and `source_zip_sha256` as stored in the superseded snapshot, and names it in "
+                     "`restored_from`. Their zips are lost (finding #94), so they are not in `source_zips`."),
+            "source_zips": restored_record["source_zips"]}} if restored_record else {}),
         "source_zips_record": str(table.with_name(slr.SOURCES_NAME).relative_to(ROOT)),
         "coverage": {"path": str(coverage.relative_to(ROOT)), "sha256": hashlib.sha256(coverage.read_bytes()).hexdigest()},
         "parent_commit": PARENT_COMMIT,

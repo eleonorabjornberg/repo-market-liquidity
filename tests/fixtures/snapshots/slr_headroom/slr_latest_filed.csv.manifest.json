@@ -1,8 +1,8 @@
 {
-  "byte_count": 67806,
+  "byte_count": 70668,
   "path": "ffiec_call_slr/slr_latest_filed.csv",
   "retrieved_at": "2026-10-15T19:21:26Z",
-  "sha256": "013b647e6c4257a2e95e5cd939d8572dd7d006fc2cf8dfcef782d7439d83d9d9",
+  "sha256": "4e9f87b518b3106ec5dc7d709f19e7f365e499c969fa5cb7ba9201e66f37e817",
   "source_id": "ffiec_call_slr",
   "url": "https://cdr.ffiec.gov/public/PWS/DownloadBulkData.aspx"
 }

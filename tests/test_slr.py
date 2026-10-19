@@ -501,5 +501,131 @@ class StateStreetTests(unittest.TestCase):
             slr.load_extract(target)
 
 
+SUPERSEDED_SHA = "09c138ad385424b8ba9d705e258ac254cd0ab6ee5e93e7ba199276440ba4de27"
+SUPERSEDED = ROOT / "snapshots" / "slr_headroom" / f"{SUPERSEDED_SHA}.csv"
+PREVIOUS_SHA = "013b647e6c4257a2e95e5cd939d8572dd7d006fc2cf8dfcef782d7439d83d9d9"
+PREVIOUS = ROOT / "snapshots" / "slr_headroom" / f"{PREVIOUS_SHA}.csv"
+CITIBANK, GOLDMAN = 476810, 2182786
+
+
+class RestoreStandingTests(unittest.TestCase):
+    """#123 (finding #120): a filing made on or before the development end stands when it is amended after it.
+
+    Eleonora's ruling of 19 October 2026 on #120: the as-of rows for Citibank and Goldman Sachs Bank USA, filed before
+    2026-09-04, "stand as the latest filed as of the development end". An amendment filed after the development end does
+    not remove them; the amendment itself stays withheld.
+    """
+
+    QUARTER = date(2025, 12, 31)
+
+    def row(self, update, idrssd=JPM):
+        return slr.Row(self.QUARTER, idrssd, slr.BANKS.get(idrssd, "bank"), update, "RCFA", 70, 1000, None, "1" * 64)
+
+    def withheld(self, row):
+        return {"quarter_end": row.quarter_end.isoformat(), "idrssd": row.idrssd, "institution": row.institution,
+                "reason": "updated_after_development_end", "row_kept": False, "detail": "amended in the blind tier"}
+
+    def at(self, days_from_end):
+        return datetime.combine(development.development_end() + timedelta(days=days_from_end), datetime.min.time()) + timedelta(hours=9)
+
+    def test_a_filing_before_the_end_stands_when_an_amendment_comes_after_it(self):
+        """Leakage guard: only a filing already public at the development end is restored.
+
+        Recorded mutation (19 October 2026): in `repo_liquidity.slr.restore_standing`, the test
+        `candidate.available_from.date() <= end` replaced by `True`. This test then fails: the filing that becomes
+        available on the first locked day is restored too (`AssertionError: Lists differ`).
+        """
+        before = self.row(self.at(-30), CITIBANK)
+        last_day = self.row(self.at(-1), GOLDMAN)
+        too_late = self.row(self.at(0), JPM)  # updated on the last readable day, so public only on the first locked one
+        amended = [self.row(self.at(5), b) for b in (CITIBANK, GOLDMAN, JPM)]
+        rows, holes = slr.restore_standing([], [self.withheld(r) for r in amended], [before, last_day, too_late],
+                                           SUPERSEDED_SHA)
+        self.assertEqual([(r.idrssd, r.latest_update, r.restored_from) for r in rows],
+                         [(b.idrssd, b.latest_update, SUPERSEDED_SHA) for b in (before, last_day)])
+        self.assertEqual([(h["idrssd"], h["reason"]) for h in holes], [(JPM, "updated_after_development_end")])
+
+    def test_only_a_withheld_bank_quarter_is_restored(self):
+        old = self.row(self.at(-30), CITIBANK)
+        kept = slr.Row(self.QUARTER, CITIBANK, "Citibank, N.A.", self.at(-29), "RCFA", 71, 1000, None, "2" * 64)
+        rows, holes = slr.restore_standing([kept], [], [old], SUPERSEDED_SHA)
+        self.assertEqual(rows, [kept])
+        self.assertEqual(holes, [])
+
+    def test_a_bank_that_is_not_one_of_the_nine_is_not_restored(self):
+        trust = self.row(self.at(-30), STATE_STREET_TRUST_NA)
+        rows, _ = slr.restore_standing([], [self.withheld(self.row(self.at(5), STATE_STREET_TRUST_NA))], [trust], SUPERSEDED_SHA)
+        self.assertEqual(rows, [])
+
+    def test_a_snapshot_that_is_not_the_bytes_its_name_says_is_refused(self):
+        tmp = pathlib.Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, tmp)
+        copy = tmp / SUPERSEDED.name
+        copy.write_bytes(SUPERSEDED.read_bytes().replace(b"Citibank", b"Citybank", 1))
+        with self.assertRaises(ValueError):
+            slr.read_superseded(copy)
+
+
+class RestoredRowsTests(unittest.TestCase):
+    """#123: the nine restored rows are in the extract, each from the superseded snapshot, and no other row moved."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.rows = slr.load_extract(EXTRACT)
+        cls.restored = [r for r in cls.rows if r.restored_from]
+        key = lambda r: (int(r["idrssd"]), r["quarter_end"])
+        with SUPERSEDED.open(encoding="utf-8", newline="") as handle:
+            cls.superseded = {key(r): r for r in csv.DictReader(handle)}
+        with PREVIOUS.open(encoding="utf-8", newline="") as handle:
+            cls.previous = list(csv.DictReader(handle))
+        with EXTRACT.open(encoding="utf-8", newline="") as handle:
+            cls.stored = {key(r): r for r in csv.DictReader(handle)}
+
+    def test_nine_rows_are_restored_for_citibank_and_goldman_sachs(self):
+        self.assertEqual(len(self.restored), 9)
+        self.assertEqual({r.restored_from for r in self.restored}, {SUPERSEDED_SHA})
+        expected = sorted([(CITIBANK, q) for q in ("2025-06-30", "2025-09-30", "2025-12-31", "2026-03-31", "2026-06-30")]
+                          + [(GOLDMAN, q) for q in ("2025-09-30", "2025-12-31", "2026-03-31", "2026-06-30")])
+        self.assertEqual(sorted((r.idrssd, r.quarter_end.isoformat()) for r in self.restored), expected)
+
+    def test_each_restored_row_is_the_superseded_row_with_its_own_availability_and_source(self):
+        for row in self.restored:
+            old = self.superseded[(row.idrssd, row.quarter_end.isoformat())]
+            stored = self.stored[(row.idrssd, row.quarter_end.isoformat())]
+            for column in slr.EXTRACT_COLUMNS[:-1]:
+                self.assertEqual(stored[column], old[column], (row.institution, row.quarter_end, column))
+            self.assertLessEqual(row.available_from.date(), development.development_end())
+
+    def test_the_extract_is_the_previous_snapshot_plus_the_restored_rows_and_nothing_else_moved(self):
+        self.assertEqual(len(self.rows), len(self.previous) + len(self.restored))
+        for old in self.previous:
+            stored = self.stored[(int(old["idrssd"]), old["quarter_end"])]
+            self.assertEqual({c: stored[c] for c in slr.EXTRACT_COLUMNS[:-1]}, {c: old[c] for c in slr.EXTRACT_COLUMNS[:-1]})
+            self.assertEqual(stored["restored_from"], "")
+
+    def test_the_snapshot_holds_every_row_of_the_extract(self):
+        manifest = json.loads((ROOT / "snapshots" / "slr_headroom" / "manifest.json").read_text(encoding="utf-8"))
+        self.assertEqual(manifest["rows"], len(self.rows))
+        self.assertEqual((ROOT / manifest["path"]).read_bytes(), EXTRACT.read_bytes())
+        self.assertEqual(manifest["restored_rows"]["rows"], len(self.restored))
+        self.assertEqual(manifest["restored_rows"]["superseded_sha256"], SUPERSEDED_SHA)
+
+    def test_a_restored_row_naming_a_malformed_snapshot_is_refused(self):
+        import hashlib
+        tmp = pathlib.Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, tmp)
+        for name in (slr.EXTRACT_NAME, slr.EXTRACT_NAME + ".manifest.json"):
+            shutil.copy(DIRECTORY / name, tmp / name)
+        target = tmp / slr.EXTRACT_NAME
+        data = target.read_bytes().replace(SUPERSEDED_SHA.encode(), b"not-a-digest", 1)
+        target.write_bytes(data)
+        manifest = tmp / (slr.EXTRACT_NAME + ".manifest.json")
+        record = json.loads(manifest.read_text(encoding="utf-8"))
+        record["sha256"] = hashlib.sha256(data).hexdigest()
+        manifest.write_text(json.dumps(record), encoding="utf-8")
+        with self.assertRaises(ValueError):
+            slr.load_extract(target)
+
+
 if __name__ == "__main__":
     unittest.main()

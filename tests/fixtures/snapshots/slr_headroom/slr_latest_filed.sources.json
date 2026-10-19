@@ -2,6 +2,19 @@
   "development_end": "2026-09-03",
   "format": "Tab Delimited",
   "product": "Call Reports -- Single Period",
+  "restored": {
+    "note": "Filings made on or before the development end that a later amendment replaced in the bulk files; read from the superseded snapshot, whose stored zips are lost (finding #94).",
+    "rows": 9,
+    "source_zips": {
+      "0a2d59ce16b5a5b756765e00364d525855019ac657e0398c96323aebfa1679fe": "2026-06-30",
+      "66d9881a82c4e7391acfe7b75fa2ada5c6fcbd8fb8325a71025b50fd62db6097": "2025-12-31",
+      "99ab95739eb89f0c0468cd79005e6d822fb4d37ba6a628dcec4f369d614e0494": "2025-06-30",
+      "e19452450909399dc104d51cddcea0db17d71d872b20f67234fedf56340c1e69": "2026-03-31",
+      "ed25c77ee6e6b312345347a65fd15ebe62a9ca9b84126dd50a39ccbb59840149": "2025-09-30"
+    },
+    "superseded_path": "snapshots/slr_headroom/09c138ad385424b8ba9d705e258ac254cd0ab6ee5e93e7ba199276440ba4de27.csv",
+    "superseded_sha256": "09c138ad385424b8ba9d705e258ac254cd0ab6ee5e93e7ba199276440ba4de27"
+  },
   "url": "https://cdr.ffiec.gov/public/PWS/DownloadBulkData.aspx",
   "vintage": "latest_filed",
   "zips": [
