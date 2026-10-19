@@ -1,0 +1,61 @@
+{
+  "break_weeks": 13,
+  "first_public_at": "2018-01-05T16:15:00-05:00",
+  "first_week": "2017-12-27",
+  "holes": [],
+  "last_week": "2026-08-19",
+  "levels_reading_negative_weeks": 344,
+  "other_bn": {
+    "max": 367.719316,
+    "median": 270.41672300000005,
+    "min": 119.894492
+  },
+  "other_negative_weeks": 0,
+  "other_share": 0.086,
+  "other_share_basis": "retrospective_calibration_not_point_in_time",
+  "other_share_source": "Median of the residual 'other depository institutions' divided by H.4.1 reserves over the 211 H.8 weeks from 2022-08-10 to 2026-08-19 on which the retired anchored build (latest-filed Call Report RC-A item 0090, moved by the H.8 and with the break refusal switched off) could be computed: median 0.0862, range -0.009 to 0.163 (docs/research/rca-fed-balances-due-diligence.md, section 7). A full-sample constant from latest-filed data, so a retrospective calibration, not point-in-time; the value is rounded to 0.086 and is Eleonora's to confirm or replace.",
+  "reasons": {},
+  "rows": 452,
+  "rows_by_year": {
+    "2017": 1,
+    "2018": 52,
+    "2019": 52,
+    "2020": 53,
+    "2021": 52,
+    "2022": 52,
+    "2023": 52,
+    "2024": 52,
+    "2025": 53,
+    "2026": 33
+  },
+  "sensitivity": {
+    "high": {
+      "foreign_related_median_bn": 970.454,
+      "large_domestic_median_bn": 1191.16,
+      "residual_median_bn": 512.534,
+      "rows": 452,
+      "share": 0.163,
+      "small_domestic_median_bn": 402.519
+    },
+    "low": {
+      "foreign_related_median_bn": 1169.879,
+      "large_domestic_median_bn": 1435.938,
+      "residual_median_bn": -28.299,
+      "rows": 452,
+      "share": -0.009,
+      "small_domestic_median_bn": 485.234
+    },
+    "main": {
+      "foreign_related_median_bn": 1059.732,
+      "large_domestic_median_bn": 1300.741,
+      "rows": 452,
+      "share": 0.086,
+      "small_domestic_median_bn": 439.548
+    }
+  },
+  "sensitivity_shares": [
+    -0.009,
+    0.163
+  ],
+  "weeks": 452
+}

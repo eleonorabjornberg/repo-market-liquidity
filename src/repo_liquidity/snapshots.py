@@ -22,7 +22,7 @@ from datetime import date
 from pathlib import Path
 from typing import Dict, List, Optional
 
-from repo_liquidity import PANEL_SHA256, PARENT_COMMIT, contenthash, development, h41, h8, scheduled, slr
+from repo_liquidity import PANEL_SHA256, PARENT_COMMIT, contenthash, development, h41, h8, rca, scheduled, slr
 
 ROOT = Path(__file__).resolve().parents[2]
 SNAPSHOTS = ROOT / "snapshots"
@@ -59,6 +59,12 @@ WEEKLY: Dict[str, Path] = {
 SLR_DIR = ROOT / "tests" / "fixtures" / "snapshots" / "slr_headroom"
 SLR_EXTRACT = SLR_DIR / slr.EXTRACT_NAME
 
+#: The RC-A anchor of the group reserves (#43): the tracked latest-filed extract of the two domestic groups, published as it
+#: stands (every row labelled `vintage = latest_filed`; row 16 of `docs/decisions/data-meaning.md`). The weekly
+#: group-reserves series does not read it (her ruling of 14 October 2026, option (i)) and is tracked, not published.
+RCA_DIR = ROOT / "tests" / "fixtures" / "snapshots" / "rca_anchor"
+RCA_EXTRACT = RCA_DIR / rca.EXTRACT_NAME
+
 #: The published series and the tracked table each is built from. The three FOMC series are copies of their tables;
 #: `agency_securities` is computed from two H.4.1 first-print extracts (see `build`); the weekly series are copies of
 #: their extracts.
@@ -69,6 +75,7 @@ SERIES: Dict[str, Path] = {
     "agency_securities": H41_AGENCY_EXTRACT,
     **WEEKLY,
     "slr_headroom": SLR_EXTRACT,
+    "rca_anchor": RCA_EXTRACT,
 }
 _HEX40 = re.compile(r"^[0-9a-f]{40}$")
 
@@ -192,6 +199,8 @@ def build(series: str, root: Path = ROOT, *, repo_commit: str, agency_extract: O
         return _build_weekly(series, table, root, repo_commit)
     if series == "slr_headroom":
         return _build_slr(table, root, repo_commit)
+    if series == "rca_anchor":
+        return _build_rca(table, root, repo_commit)
     if series == "agency_securities":
         return _build_agency_securities(root, repo_commit, agency_extract or table, H41_MBS_EXTRACT)
     scheduled._verified_rows(table)
@@ -280,6 +289,57 @@ def _build_slr(table: Path, root: Path, repo_commit: str) -> dict:
         "repo_commit": repo_commit,
     }
     manifest_path("slr_headroom", root).write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return manifest
+
+
+def _build_rca(table: Path, root: Path, repo_commit: str) -> dict:
+    """The snapshot of the RC-A anchor extract: its bytes, labelled as amended (latest-filed) sums.
+
+    The extract is read through `rca.load_extract`, which refuses one that does not match its manifest, is not labelled
+    `latest_filed`, or holds a group with a member updated on a day the parent's lockbox holds. The manifest says in words
+    that the figures are not first prints and the groups an approximation, names the stored zips by digest, and points at
+    the coverage record (which carries how stale the anchor is).
+    """
+    rows = rca.load_extract(table)
+    data = table.read_bytes()
+    digest = hashlib.sha256(data).hexdigest()
+    sources = json.loads(table.with_name(rca.SOURCES_NAME).read_text(encoding="utf-8"))
+    coverage = table.with_name(rca.COVERAGE_NAME)
+    used = {row.source_zip_sha256 for row in rows}
+    pages = {item["quarter_end"]: item["sha256"] for item in sources["zips"]}
+    unknown = sorted(used - set(pages.values()))
+    if unknown:
+        raise ValueError(f"{table.name}: a row names the zip {unknown[0]}, which the sources record does not list")
+    directory = root / "snapshots" / "rca_anchor"
+    directory.mkdir(parents=True, exist_ok=True)
+    relative = f"snapshots/rca_anchor/{digest}.csv"
+    (root / relative).write_bytes(data)
+    manifest = {
+        "series": "rca_anchor",
+        "path": relative,
+        "sha256": digest,
+        "columns": list(rca.EXTRACT_COLUMNS),
+        "rows": len(rows),
+        "vintage": rca.VINTAGE,
+        "vintage_note": ("Latest-filed Call Report sums, amended since their first filing, not first prints: each group's "
+                         "figure is available only from the day after its slowest member's latest-update time. "
+                         "docs/decisions/data-meaning.md row 16 (ruling of 13 October 2026, reading 2)."),
+        "groups_note": ("The groups are an approximation (ruling of 14 October 2026 on PR #50, Q3): the 25 filers with the "
+                        "largest total assets stand in for the Board's panel of large domestic banks; the small group is every "
+                        "other filer that carries RC-A item 0090. The foreign-related group has no anchor: its weekly level is "
+                        "the H.8 foreign-related cash assets, an approximation (ruling of 14 October 2026, option a)."),
+        "first_quarter": min(row.quarter_end for row in rows).isoformat(),
+        "last_quarter": max(row.quarter_end for row in rows).isoformat(),
+        "last_update": max(row.latest_update for row in rows).isoformat(),
+        "source_table": str(table.relative_to(ROOT)),
+        "source_zips": pages,
+        "source_zips_record": str(table.with_name(rca.SOURCES_NAME).relative_to(ROOT)),
+        "coverage": {"path": str(coverage.relative_to(ROOT)), "sha256": hashlib.sha256(coverage.read_bytes()).hexdigest()},
+        "parent_commit": PARENT_COMMIT,
+        "parent_panel_sha256": PANEL_SHA256,
+        "repo_commit": repo_commit,
+    }
+    manifest_path("rca_anchor", root).write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return manifest
 
 

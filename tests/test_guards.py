@@ -13,12 +13,13 @@ from datetime import date, datetime, time, timedelta
 from repo_model.asof import KIND_SCHEDULED, InformationRule
 from repo_model.splits import LookAheadError, SplitError
 
-from repo_liquidity import declaration, h41, h8, panel, slr
+from repo_liquidity import declaration, h41, h8, panel, rca, slr
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 EXTRACT = ROOT / "tests" / "fixtures" / "snapshots" / "h41" / "h41_treasury_first_print.csv"
 MBS_EXTRACT = ROOT / "tests" / "fixtures" / "snapshots" / "h41" / "h41_mbs_first_print.csv"
 SLR_EXTRACT = ROOT / "tests" / "fixtures" / "snapshots" / "slr_headroom" / slr.EXTRACT_NAME
+RCA_EXTRACT = ROOT / "tests" / "fixtures" / "snapshots" / "rca_anchor" / rca.EXTRACT_NAME
 AGENCY_EXTRACT = ROOT / "tests" / "fixtures" / "snapshots" / "h41" / "h41_agency_first_print.csv"
 
 
@@ -115,9 +116,9 @@ class EndToEndTests(unittest.TestCase):
 
     def test_every_phase3_column_passes_the_parent_guards_on_every_row(self):
         dates = [row.date for row in self.rows]
-        # The SLR fields (#63) are declared at a worst-case lag of years, so the panel's first rows have none; their own
-        # test below holds them to the same guards.
-        features = [name for name in declaration.FIELDS if name not in slr.FIELDS]
+        # The SLR (#63) and RC-A anchor (#43) fields are declared at a worst-case lag of years, so the panel's first rows
+        # have none; their own tests below hold them to the same guards.
+        features = [name for name in declaration.FIELDS if name not in slr.FIELDS and name not in rca.FIELDS]
         with declaration.phase3_declaration():
             rule = InformationRule(declaration.registry(), features, decision_time=time(16, 0))
             skipped = []
@@ -261,14 +262,14 @@ class EndToEndTests(unittest.TestCase):
             with self.assertRaises(StaleReadError):
                 rule.check(dates, moved)
 
-    def _slr_read(self, feature, offset, index=1500):
+    def _slr_read(self, feature, offset, index=1500, module=slr, extract=SLR_EXTRACT):
         """The information set for an SLR field at a row in 2024, and the same with its read moved by `offset` rows.
 
         The unmoved read must be the latest row whose quarter-end plus the extract's own measured worst-case lag (not
         the declaration's number) is at or before the decision instant, so the declared lag cannot drift from the data.
         """
         dates = [row.date for row in self.rows]
-        worst = slr.worst_case_lag_days(slr.load_extract(SLR_EXTRACT))
+        worst = module.worst_case_lag_days(module.load_extract(extract))
         with declaration.phase3_declaration():
             rule = InformationRule(declaration.registry(), [feature], decision_time=time(16, 0))
             info = rule.information_set(dates, index)
@@ -320,6 +321,46 @@ class EndToEndTests(unittest.TestCase):
         for feature in slr.FIELDS:
             with self.subTest(feature=feature):
                 rule, dates, moved = self._slr_read(feature, -1)
+                with self.assertRaises(StaleReadError):
+                    rule.check(dates, moved)
+
+    def test_every_rca_column_passes_the_parent_guards_on_every_row(self):
+        """#43: the two RC-A anchor fields, read at every row of the panel under `ffiec_call_rca`'s declaration."""
+        dates = [row.date for row in self.rows]
+        with declaration.phase3_declaration():
+            rule = InformationRule(declaration.registry(), list(rca.FIELDS), decision_time=time(16, 0))
+            skipped = []
+            for index in range(len(dates)):
+                try:
+                    info = rule.information_set(dates, index)
+                except SplitError:
+                    skipped.append(index)
+                    continue
+                self.assertLessEqual(set(rca.FIELDS), {r.feature for r in info.reads})
+                rule.check(dates, info)
+        self.assertEqual(skipped, list(range(len(skipped))))
+        self.assertLess(len(skipped), len(dates))
+
+    def test_an_rca_read_moved_one_row_later_is_leakage(self):
+        """Leakage guard for the RC-A anchor fields (#43): a figure is read at the row its declared lag allows, and a read
+        one row later is refused.
+
+        Recorded mutation (14 October 2026): in `declarations/ffiec_call_rca.json`, `release_lag.days` changed from 1714
+        to 1700. This test then fails with AssertionError: 338 != 328 (the unmoved read is ten rows later than the extract's
+        own worst-case lag puts it), in both subtests.
+        """
+        for feature in rca.FIELDS:
+            with self.subTest(feature=feature):
+                rule, dates, moved = self._slr_read(feature, +1, module=rca, extract=RCA_EXTRACT)
+                with self.assertRaises(LookAheadError):
+                    rule.check(dates, moved)
+
+    def test_an_rca_read_moved_one_row_earlier_is_stale(self):
+        from repo_model.asof import StaleReadError
+
+        for feature in rca.FIELDS:
+            with self.subTest(feature=feature):
+                rule, dates, moved = self._slr_read(feature, -1, module=rca, extract=RCA_EXTRACT)
                 with self.assertRaises(StaleReadError):
                     rule.check(dates, moved)
 

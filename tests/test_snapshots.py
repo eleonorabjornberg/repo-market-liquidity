@@ -80,7 +80,8 @@ class TrackedSnapshotTests(unittest.TestCase):
 #: The column that dates a row in each published series: when the row became public.
 PUBLICATION_COLUMN = {"on_rrp_rate": "announcement_date", "srf_rate": "announcement_date",
                       "runoff_caps": "announcement_date", "agency_securities": "release_date",
-                      "h8_groups": "release_date", "slr_headroom": "latest_update"}
+                      "h8_groups": "release_date", "slr_headroom": "latest_update",
+                      "rca_anchor": "latest_update"}
 
 
 class LockedTierTests(unittest.TestCase):
@@ -247,6 +248,29 @@ class SlrHeadroomSnapshotTests(unittest.TestCase):
 
     def test_the_snapshot_holds_no_figure_updated_in_a_locked_tier(self):
         manifest = snapshots.load_manifest("slr_headroom")
+        self.assertFalse(development.is_locked(date.fromisoformat(manifest["last_update"][:10])))
+
+
+class RcaAnchorSnapshotTests(unittest.TestCase):
+    """#43: the RC-A anchor snapshot says what the figures and the groups are, and what it was built from."""
+
+    def test_the_manifest_labels_the_figures_as_amended_and_the_groups_as_an_approximation(self):
+        manifest = snapshots.load_manifest("rca_anchor")
+        self.assertEqual(manifest["vintage"], "latest_filed")
+        self.assertIn("not first prints", manifest["vintage_note"])
+        self.assertIn("slowest member", manifest["vintage_note"])
+        self.assertIn("approximation", manifest["groups_note"])
+        self.assertEqual({row["vintage"] for row in snapshots.read("rca_anchor")}, {"latest_filed"})
+
+    def test_the_manifest_names_the_zips_and_the_coverage_record_by_digest(self):
+        manifest = snapshots.load_manifest("rca_anchor")
+        self.assertEqual(len(manifest["source_zips"]), 34)
+        coverage = ROOT / manifest["coverage"]["path"]
+        self.assertEqual(hashlib.sha256(coverage.read_bytes()).hexdigest(), manifest["coverage"]["sha256"])
+        self.assertEqual(manifest["first_quarter"], "2018-03-31")
+
+    def test_the_snapshot_holds_no_figure_updated_in_a_locked_tier(self):
+        manifest = snapshots.load_manifest("rca_anchor")
         self.assertFalse(development.is_locked(date.fromisoformat(manifest["last_update"][:10])))
 
 
