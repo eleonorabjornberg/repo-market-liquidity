@@ -188,8 +188,9 @@ class GuardTests(unittest.TestCase):
         Recorded mutation (19 October 2026): in `announced_pace._in_force`, `known = [row for row in rows if
         row.announced_at <= instant and row.effective <= day]` changed to `known = [row for row in rows if
         row.effective <= day]`. `read` then selects the unannounced row and its `check_read` raises LookAheadError, so
-        `test_every_unannounced_row_is_refused` fails with LookAheadError: the pace announced 2019-10-11T23:59:00 is read at
-        2019-10-11T23:58:00.
+        `test_every_unannounced_row_is_refused` fails with LookAheadError: the pace announced 2017-09-20 14:00:00 is read at
+        2017-09-20 13:59:00, before it was public (also `test_the_newest_announced_row_is_read` and
+        `test_a_later_announcement_never_moves_an_earlier_reading`).
         """
         rows = announced_pace.load_announced_pace()
         from repo_model.splits import LookAheadError
@@ -216,7 +217,8 @@ class GuardTests(unittest.TestCase):
         Recorded mutation (19 October 2026): in `announced_pace._in_force`, `return max(known, key=lambda row:
         (row.effective, row.announced_at))` changed to `return known[0]`. `read` then returns the oldest admissible row
         and its `check_read` raises StaleReadError, so `test_the_newest_announced_row_is_read` fails with StaleReadError:
-        the pace effective 2017-10-01 is read on 2019-10-16, after the pace effective 2019-10-15 was announced.
+        the pace effective 2017-10-01 is read on 2018-01-01, after the pace effective 2018-01-01 was announced (also
+        `test_every_unannounced_row_is_refused`).
         """
         from repo_model.asof import StaleReadError
 
