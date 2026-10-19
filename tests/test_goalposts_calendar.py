@@ -9,11 +9,12 @@ calendar is re-implemented. A missing value in either column is a data error, ne
 discarded:
 
 * the missing-column guard, `if coupons is None or quarter_end is None: raise ValueError(...)` in `calendar_flags`,
-  replaced by `if False: raise ValueError(...)` (so a hole reads as a zero): `test_a_hole_in_a_calendar_column_is_a_data_error`
-  failed with `AssertionError: ValueError not raised`.
-* the lag in the fit, `previous = event[:-1]` in `fit_calendar_process`, replaced by `previous = event[1:]` (the design
-  then reads the day it predicts, the look-ahead the declaration forbids): `test_the_fit_reads_the_previous_day_never_the_day_itself`
-  failed with `AssertionError` (the fitted slope on the previous day was not the alternating series' -ve value).
+  replaced by `if False:` (the guard removed): `test_a_hole_in_a_calendar_column_is_a_data_error` errored with
+  `TypeError: float() argument must be a string or a real number, not 'NoneType'` instead of raising `ValueError`.
+* the lag in the fit, `previous, today = event[:-1], event[1:]` in `fit_calendar_process`, replaced by
+  `previous, today = event[1:], event[1:]` (the design then reads the day it predicts, the look-ahead the declaration
+  forbids): `test_the_fit_reads_the_previous_day_never_the_day_itself` failed with
+  `AssertionError: 8.182100780480217 not less than -2.0`.
 
 Written first, and watched failing: before `calendar_flags` existed this module did not import:
 `AttributeError: module 'repo_liquidity.goalposts' has no attribute 'calendar_flags'`.
