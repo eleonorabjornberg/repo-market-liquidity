@@ -22,7 +22,7 @@ from datetime import date
 from pathlib import Path
 from typing import Dict, List, Optional
 
-from repo_liquidity import PANEL_SHA256, PARENT_COMMIT, contenthash, development, h41, h8, rca, scheduled, slr
+from repo_liquidity import PANEL_SHA256, PARENT_COMMIT, contenthash, development, h41, h8, rca, rde, scheduled, slr
 
 ROOT = Path(__file__).resolve().parents[2]
 SNAPSHOTS = ROOT / "snapshots"
@@ -65,6 +65,11 @@ SLR_EXTRACT = SLR_DIR / slr.EXTRACT_NAME
 RCA_DIR = ROOT / "tests" / "fixtures" / "snapshots" / "rca_anchor"
 RCA_EXTRACT = RCA_DIR / rca.EXTRACT_NAME
 
+#: The NY Fed's reserve demand elasticity (#132): the tracked extract, published as it stands (every row labelled
+#: `vintage = latest_release:<date>`). An external check on H7m, reported and never deciding.
+RDE_DIR = ROOT / "tests" / "fixtures" / "snapshots" / "rde"
+RDE_EXTRACT = RDE_DIR / rde.EXTRACT_NAME
+
 #: The published series and the tracked table each is built from. The three FOMC series are copies of their tables;
 #: `agency_securities` is computed from two H.4.1 first-print extracts (see `build`); the weekly series are copies of
 #: their extracts.
@@ -76,6 +81,7 @@ SERIES: Dict[str, Path] = {
     **WEEKLY,
     "slr_headroom": SLR_EXTRACT,
     "rca_anchor": RCA_EXTRACT,
+    "rde": RDE_EXTRACT,
 }
 _HEX40 = re.compile(r"^[0-9a-f]{40}$")
 
@@ -201,6 +207,8 @@ def build(series: str, root: Path = ROOT, *, repo_commit: str, agency_extract: O
         return _build_slr(table, root, repo_commit)
     if series == "rca_anchor":
         return _build_rca(table, root, repo_commit)
+    if series == "rde":
+        return _build_rde(table, root, repo_commit)
     if series == "agency_securities":
         return _build_agency_securities(root, repo_commit, agency_extract or table, H41_MBS_EXTRACT)
     scheduled._verified_rows(table)
@@ -340,6 +348,55 @@ def _build_rca(table: Path, root: Path, repo_commit: str) -> dict:
         "repo_commit": repo_commit,
     }
     manifest_path("rca_anchor", root).write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return manifest
+
+
+def _build_rde(table: Path, root: Path, repo_commit: str) -> dict:
+    """The snapshot of the RDE extract: its bytes, labelled as the latest release's figures.
+
+    The extract is read through `rde.load_extract`, which refuses one that does not match its manifest, carries a
+    derived column the values do not give, or holds a row whose assigned release is on a day the parent's lockbox holds.
+    The manifest says in words that the figures are not first prints and the check is not deciding, names the stored
+    workbooks by digest, and points at the coverage record.
+    """
+    rows = rde.load_extract(table)
+    data = table.read_bytes()
+    digest = hashlib.sha256(data).hexdigest()
+    captures = json.loads(table.with_name(rde.CAPTURES_NAME).read_text(encoding="utf-8"))
+    coverage = table.with_name(rde.COVERAGE_NAME)
+    pages = {item["release_date"]: item["sha256"] for item in captures["captures"]}
+    unknown = sorted({row.fetch_sha256 for row in rows} - set(pages.values()))
+    if unknown:
+        raise ValueError(f"{table.name}: a row names the workbook {unknown[0]}, which the captures record does not list")
+    directory = root / "snapshots" / "rde"
+    directory.mkdir(parents=True, exist_ok=True)
+    relative = f"snapshots/rde/{digest}.csv"
+    (root / relative).write_bytes(data)
+    manifest = {
+        "series": "rde",
+        "path": relative,
+        "sha256": digest,
+        "columns": list(rde.EXTRACT_COLUMNS),
+        "rows": len(rows),
+        "vintage": rows[0].vintage,
+        "vintage_note": ("The latest release's figures, which may differ from the first print: the Fed serves only its "
+                         "latest workbook, so earlier releases are not recoverable. Each estimate is read as public from "
+                         "the release repo_liquidity.rde.release_for assigns it, never before the launch on 2024-10-17."),
+        "role_note": ("An external check on H7m goalposts 1 and 3, reported and never deciding (Eleonora, 19 October 2026); "
+                      "R and S stay the deciding benchmarks, and nothing reads this series into a goalpost or a score."),
+        "hash_note": rde.HASH_NOTE,
+        "first_estimate": rows[0].estimate_date.isoformat(),
+        "last_estimate": rows[-1].estimate_date.isoformat(),
+        "last_read_from": rows[-1].available_from.isoformat(),
+        "source_table": str(table.relative_to(ROOT)),
+        "source_workbooks": pages,
+        "source_workbooks_record": str(table.with_name(rde.CAPTURES_NAME).relative_to(ROOT)),
+        "coverage": {"path": str(coverage.relative_to(ROOT)), "sha256": hashlib.sha256(coverage.read_bytes()).hexdigest()},
+        "parent_commit": PARENT_COMMIT,
+        "parent_panel_sha256": PANEL_SHA256,
+        "repo_commit": repo_commit,
+    }
+    manifest_path("rde", root).write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return manifest
 
 

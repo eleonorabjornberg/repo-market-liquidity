@@ -1,0 +1,42 @@
+{
+  "nyfed_rde": {
+    "access": "public",
+    "availability_provenance": {
+      "note": "Recorded 19 October 2026 for #132, on Eleonora's ruling of the same day (Lens B of repo-market-model#958): the New York Fed publishes the reserve demand elasticity monthly, on the third Thursday at about 10:00 New York time, and has done so since the launch on Thursday 17 October 2024. The stored release (fetched 19 October 2026) says on its cover sheet \"Updated on October 5 for release on October 15\"; Thursday 15 October 2026 is the third Thursday of October. The 10:00 time is the ruling's, not a time the Fed states on the page or in the workbook (not checked). The workbook does not say which release first carried an estimate, so repo_liquidity.rde reads an estimate as public at the first such release at least 10 days (the gap on the cover sheet) after its estimate date. The table starts at the estimate the launch release headlined (2024-10-02); the back history before it is not in the table. The declared lag is the measured maximum of that rule over the rows read (scripts/extract_rde.py refuses any other).",
+      "publication": "Federal Reserve Bank of New York, Reserve Demand Elasticity, https://www.newyorkfed.org/research/reserve-demand-elasticity ; the Chart Data workbook at https://www.newyorkfed.org/medialibrary/Research/Interactives/Data/elasticity/download-data ; launch press release of 17 October 2024, https://www.newyorkfed.org/newsevents/news/research/2024/20241017"
+    },
+    "coverage": [
+      "the NY Fed's estimate of the elasticity of the federal funds rate to reserves, with its 95% (2.5th to 97.5th percentile) and 68% (16th to 84th) intervals, about weekly estimate dates, latest-release vintage"
+    ],
+    "field_frequencies": {
+      "rde_elasticity": "weekly",
+      "rde_lower_68": "weekly",
+      "rde_lower_95": "weekly",
+      "rde_upper_68": "weekly",
+      "rde_upper_95": "weekly"
+    },
+    "fields": [
+      "rde_elasticity",
+      "rde_lower_95",
+      "rde_upper_95",
+      "rde_lower_68",
+      "rde_upper_68"
+    ],
+    "frequency": "weekly",
+    "identities": [],
+    "limitation": "An EXTERNAL CHECK on H7m goalposts 1 and 3: reported, never deciding (Eleonora, 19 October 2026); R and S stay the deciding benchmarks and nothing here is wired into a goalpost or a score. LATEST-RELEASE figures: the page serves only its latest workbook, so each value is the one in the release labelled in the vintage column, which may differ from the first print; earlier releases are not recoverable. The elasticity is the slope of the reserve demand curve, a pure number that is negative in the ample and scarce regions; the 50th percentile is the main estimate and a positive value is noise around zero. The estimate dates are about weekly (the sheet has no fixed weekday). The table starts at the estimate the launch release headlined (2024-10-02); the 633 earlier estimates (2010-01-20 to 2024-09-20) are the back history the launch carried, not a point-in-time series, and are left out. The declared lag is read per panel row by the parent's rule at the measured worst case; repo_liquidity.rde.read is the exact, row-by-row reader. Estimates whose assigned release is after the parent's development end are withheld. Whether the RDE's definition of scarce reserves matches H7's kink is not checked. Phase 3 only; not in the published declaration.",
+    "provider": "Federal Reserve Bank of New York",
+    "release_lag": {
+      "available_time": "10:00",
+      "basis": "record_date",
+      "days": 44,
+      "note": "Declared 19 October 2026 for #132 at the measured maximum and not above it: the longest gap from an estimate date to the day it is read as public under repo_liquidity.rde.release_for over the rows in the table (scripts/extract_rde.py refuses any other value). An ordinary estimate is read at the first third-Thursday release at least 10 days after its date, so the lag is between 10 and 44 days; reading every estimate at the worst case is staleness on the safe side, not leakage.",
+      "timezone": "America/New_York",
+      "unit": "calendar_days"
+    },
+    "reviewed_note": "Structural-zero semantics are not applicable to an estimated elasticity; the empty declaration is not a finding.",
+    "structural_zeros": [],
+    "structural_zeros_reviewed": false,
+    "url": "https://www.newyorkfed.org/research/reserve-demand-elasticity"
+  }
+}

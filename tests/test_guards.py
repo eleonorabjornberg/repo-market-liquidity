@@ -13,13 +13,14 @@ from datetime import date, datetime, time, timedelta
 from repo_model.asof import KIND_SCHEDULED, InformationRule
 from repo_model.splits import LookAheadError, SplitError
 
-from repo_liquidity import declaration, h41, h8, panel, rca, slr
+from repo_liquidity import declaration, h41, h8, panel, rca, rde, slr
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 EXTRACT = ROOT / "tests" / "fixtures" / "snapshots" / "h41" / "h41_treasury_first_print.csv"
 MBS_EXTRACT = ROOT / "tests" / "fixtures" / "snapshots" / "h41" / "h41_mbs_first_print.csv"
 SLR_EXTRACT = ROOT / "tests" / "fixtures" / "snapshots" / "slr_headroom" / slr.EXTRACT_NAME
 RCA_EXTRACT = ROOT / "tests" / "fixtures" / "snapshots" / "rca_anchor" / rca.EXTRACT_NAME
+RDE_EXTRACT = ROOT / "tests" / "fixtures" / "snapshots" / "rde" / rde.EXTRACT_NAME
 AGENCY_EXTRACT = ROOT / "tests" / "fixtures" / "snapshots" / "h41" / "h41_agency_first_print.csv"
 
 
@@ -116,9 +117,10 @@ class EndToEndTests(unittest.TestCase):
 
     def test_every_phase3_column_passes_the_parent_guards_on_every_row(self):
         dates = [row.date for row in self.rows]
-        # The SLR (#63) and RC-A anchor (#43) fields are declared at a worst-case lag of years, so the panel's first rows
-        # have none; their own tests below hold them to the same guards.
-        features = [name for name in declaration.FIELDS if name not in slr.FIELDS and name not in rca.FIELDS]
+        # The SLR (#63), RC-A anchor (#43) and RDE (#132) fields are declared at a worst-case lag of years, so the panel's
+        # first rows have none; their own tests below hold them to the same guards.
+        features = [name for name in declaration.FIELDS
+                    if name not in slr.FIELDS and name not in rca.FIELDS and name not in rde.FIELDS]
         with declaration.phase3_declaration():
             rule = InformationRule(declaration.registry(), features, decision_time=time(16, 0))
             skipped = []
@@ -262,13 +264,15 @@ class EndToEndTests(unittest.TestCase):
             with self.assertRaises(StaleReadError):
                 rule.check(dates, moved)
 
-    def _slr_read(self, feature, offset, index=1500, module=slr, extract=SLR_EXTRACT):
+    def _slr_read(self, feature, offset, index=1500, module=slr, extract=SLR_EXTRACT, moment=time.min):
         """The information set for an SLR field at a row in 2024, and the same with its read moved by `offset` rows.
+        `index` None is the panel's last row, and `moment` is the declared time of day (the RDE's is 10:00).
 
         The unmoved read must be the latest row whose quarter-end plus the extract's own measured worst-case lag (not
         the declaration's number) is at or before the decision instant, so the declared lag cannot drift from the data.
         """
         dates = [row.date for row in self.rows]
+        index = len(dates) - 1 if index is None else index
         worst = module.worst_case_lag_days(module.load_extract(extract))
         with declaration.phase3_declaration():
             rule = InformationRule(declaration.registry(), [feature], decision_time=time(16, 0))
@@ -277,7 +281,7 @@ class EndToEndTests(unittest.TestCase):
             reads = [r for r in info.reads if r.feature == feature]
             self.assertEqual(len(reads), 1)
             deadline = rule.decision_instant(dates, index)
-            expected = max(p for p in range(index) if datetime.combine(dates[p] + timedelta(days=worst), time.min) <= deadline)
+            expected = max(p for p in range(index) if datetime.combine(dates[p] + timedelta(days=worst), moment) <= deadline)
             self.assertEqual(reads[0].row, expected, feature)
             moved = info._replace(reads=tuple(r._replace(row=r.row + offset) if r.feature == feature else r
                                               for r in info.reads))
@@ -361,6 +365,50 @@ class EndToEndTests(unittest.TestCase):
         for feature in rca.FIELDS:
             with self.subTest(feature=feature):
                 rule, dates, moved = self._slr_read(feature, -1, module=rca, extract=RCA_EXTRACT)
+                with self.assertRaises(StaleReadError):
+                    rule.check(dates, moved)
+
+    def test_every_rde_column_passes_the_parent_guards_on_every_row(self):
+        """#132: the five RDE fields, read at every row of the panel under `nyfed_rde`'s declaration."""
+        dates = [row.date for row in self.rows]
+        with declaration.phase3_declaration():
+            rule = InformationRule(declaration.registry(), list(rde.FIELDS), decision_time=time(16, 0))
+            skipped = []
+            for index in range(len(dates)):
+                try:
+                    info = rule.information_set(dates, index)
+                except SplitError:
+                    skipped.append(index)
+                    continue
+                self.assertLessEqual(set(rde.FIELDS), {r.feature for r in info.reads})
+                rule.check(dates, info)
+        # The worst-case lag is years (the back history is read from the launch): the rows before the first estimate is
+        # declared public have none, and the panel's last rows have some.
+        self.assertEqual(skipped, list(range(len(skipped))))
+        self.assertLess(len(skipped), len(dates))
+
+    def test_an_rde_read_moved_one_row_later_is_leakage(self):
+        """Leakage guard for the RDE fields (#132): an estimate is read at the row its declared lag allows (10:00 New York
+        on the day the lag ends), and a read one row later is refused.
+
+        Recorded mutation (19 October 2026): in `declarations/nyfed_rde.json`, `release_lag.days` changed from 44 to
+        30. This test then fails with AssertionError: 2080 != 2070 : rde_elasticity (the unmoved read is ten rows later
+        than the extract's own worst-case lag puts it), for each field in turn.
+        """
+        for feature in rde.FIELDS:
+            with self.subTest(feature=feature):
+                rule, dates, moved = self._slr_read(feature, +1, index=None, module=rde, extract=RDE_EXTRACT,
+                                                    moment=time(10, 0))
+                with self.assertRaises(LookAheadError):
+                    rule.check(dates, moved)
+
+    def test_an_rde_read_moved_one_row_earlier_is_stale(self):
+        from repo_model.asof import StaleReadError
+
+        for feature in rde.FIELDS:
+            with self.subTest(feature=feature):
+                rule, dates, moved = self._slr_read(feature, -1, index=None, module=rde, extract=RDE_EXTRACT,
+                                                    moment=time(10, 0))
                 with self.assertRaises(StaleReadError):
                     rule.check(dates, moved)
 

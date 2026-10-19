@@ -46,6 +46,7 @@ def main(argv=None) -> int:
     for series in chosen:
         manifest = snapshots.build(series, repo_commit=commit)
         last = manifest.get("last_announced") or (f"last week {manifest['last_week']}" if "last_week" in manifest
+                                                  else f"last estimate {manifest['last_estimate']}" if "last_estimate" in manifest
                                                   else f"last quarter {manifest['last_quarter']}")
         print(f"{series}: {manifest['sha256']} ({manifest['rows']} rows, {last})")
     return 0
