@@ -290,7 +290,7 @@ class RdeSnapshotTests(unittest.TestCase):
                          {"2026-10-15": "59b9f49d21ac09ef385de933813775ee302f4b4c232d103e5699c1377ffeed43"})
         coverage = ROOT / manifest["coverage"]["path"]
         self.assertEqual(hashlib.sha256(coverage.read_bytes()).hexdigest(), manifest["coverage"]["sha256"])
-        self.assertEqual(manifest["first_estimate"], "2024-10-02")
+        self.assertEqual(manifest["first_estimate"], "2024-10-09")
 
     def test_the_snapshot_holds_no_estimate_read_from_a_locked_tier_or_before_the_launch(self):
         from repo_liquidity import rde
