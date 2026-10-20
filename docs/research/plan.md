@@ -147,6 +147,7 @@ in step 5,** under the protocol's §5 statistic, and are never cited from Stage 
 - G5. **SLR headroom** (candidate D): #27 merged. It waits on Nicholas's question 16 on #1.
 - G6. A power study for the information goalpost on development data. How many confirmation days, and how many stress
   events, detect the MME? Runs before registration.
+- G7. **The announced balance-sheet pace**: runoff caps less announced reserve-management purchases, MBS reinvestment at 0 (Eleonora, 19 October 2026; #125).
 
 **Development steps (never a verdict)**
 1. **Estimand and as-of estimator.** This is the recreated model eleonorabjornberg/repo-market-model#644. Define

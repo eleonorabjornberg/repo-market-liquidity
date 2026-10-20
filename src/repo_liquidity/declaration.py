@@ -42,6 +42,9 @@ def _fields():
         "runoff_cap_treasury_bn": (("fomc_runoff_caps", "runoff_cap_treasury_bn"),),
         "runoff_cap_mbs_bn": (("fomc_runoff_caps", "runoff_cap_mbs_bn"),),
         "soma_mbs_weekly_change": (("frb_h41_mbs", "soma_mbs_weekly_change"),),
+        # #125: the announced balance-sheet pace, read through `snapshots/announced_pace/`
+        # (`repo_liquidity.announced_pace`). Scheduled, and not built columns of any panel.
+        **{field: (("fomc_announced_pace", field),) for field in _announced_pace_fields()},
         # #30, answer 15 of `docs/decisions/data-meaning.md`. Not built columns of any panel; read through
         # `snapshots/agency_securities/`. "Agency securities" is agency debt plus MBS from the same release.
         "soma_agency_debt_weekly_change": (("frb_h41_agency", "soma_agency_debt_weekly_change"),),
@@ -74,6 +77,10 @@ def _fields():
         "sofr_p1": (("nyfed_sofr", "SOFR_p1"),),
         "sofr_p99": (("nyfed_sofr", "SOFR_p99"),),
     }
+
+
+def _announced_pace_fields():
+    return ("announced_pace_signed_bn", "announced_pace_treasury_purchases_bn", "announced_pace_mbs_purchases_bn")
 
 
 def _h8_fields():
