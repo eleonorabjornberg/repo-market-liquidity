@@ -63,6 +63,17 @@ episode only on days that have headroom (section 3), so **D may be unfitted for 
 the refit then serves no estimate. That is a property of the input, not of this step, and it is the reason section 5's
 out-of-sample test may have nothing to fit on. Step 5 reports it.
 
+**Measured from the snapshot's `available_from` column alone (no panel day is scored, no figure is a result).** The first
+quarter for which all nine banks have a row public is the one ended 2018-03-31, public from 2021-12-18; the next, ended
+2018-06-30, from 2023-03-10; the quarters ended 2021-03-31 to 2024-06-30 from 2025-08-29 to 2025-10-01; the quarter ended
+2024-12-31 from 2026-06-27. So **no day of the first episode (to 2020-03-13) reads any complete quarter**, and D cannot be fitted
+on that episode alone in real time (the out-of-sample test of section 5 has nothing to fit). A decision on 2025-01-02 reads the
+quarter ended 2020-12-31, and one on 2025-12-31 the quarter ended 2024-09-30, years old. The quarters ended 2026-03-31 and
+2026-06-30 are incomplete (Morgan Stanley Bank, N.A. was amended on 2026-09-10, after the development end, and is withheld), and
+2026-06-30 has no requirement in any case, so the last quarter D can read at the development end is the one ended 2025-12-31.
+This follows from ruling 1 of 13 October 2026 (the latest-filed vintage) and the day-after rule, and is reported as a finding
+for her (see the pull request); nothing here changes either ruling.
+
 ## 3. The fit
 
 The parameters are fitted so that `D_D`, through Stage 2's curve form, best explains the corridor position in the scarce
