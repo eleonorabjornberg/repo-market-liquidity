@@ -13,7 +13,7 @@ requires-python = ">=3.11,<3.12"
 # The parent, pinned to one commit (repo-market-model main at the time this repository was set up).
 # Moving the pin is a reviewed change (docs/decisions/dependencies.md).
 dependencies = [
-  "repo-market-model @ git+https://github.com/eleonorabjornberg/repo-market-model@8fd2cf8c72e7d5c6e81c509651b684b690054a6f",
+  "repo-market-model @ git+https://github.com/eleonorabjornberg/repo-market-model@08ff67e27bc3d7e357491cf8e1da59793702b3fb",
 ]
 
 # Stage 3 (docs/decisions/dependencies.md, statsmodels approved 6 October 2026): pinned exactly, with the
