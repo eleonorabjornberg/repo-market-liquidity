@@ -291,52 +291,52 @@
       "row_kept": true
     },
     {
-      "detail": "last updated 2026-09-29T15:16:53, on a day the parent's lockbox holds",
+      "detail": "last updated 2026-06-30T17:24:07, before the development end; a later amendment is withheld, and this filing is read from the superseded snapshot 09c138ad385424b8ba9d705e258ac254cd0ab6ee5e93e7ba199276440ba4de27",
       "idrssd": 476810,
       "institution": "Citibank, N.A.",
       "quarter_end": "2025-06-30",
-      "reason": "updated_after_development_end",
-      "row_kept": false
+      "reason": "earlier_filing_stands",
+      "row_kept": true
     },
     {
-      "detail": "last updated 2026-09-29T15:19:22, on a day the parent's lockbox holds",
+      "detail": "last updated 2026-06-30T17:30:22, before the development end; a later amendment is withheld, and this filing is read from the superseded snapshot 09c138ad385424b8ba9d705e258ac254cd0ab6ee5e93e7ba199276440ba4de27",
       "idrssd": 476810,
       "institution": "Citibank, N.A.",
       "quarter_end": "2025-09-30",
-      "reason": "updated_after_development_end",
-      "row_kept": false
+      "reason": "earlier_filing_stands",
+      "row_kept": true
     },
     {
-      "detail": "last updated 2026-10-09T14:28:17, on a day the parent's lockbox holds",
+      "detail": "last updated 2025-11-04T11:41:51, before the development end; a later amendment is withheld, and this filing is read from the superseded snapshot 09c138ad385424b8ba9d705e258ac254cd0ab6ee5e93e7ba199276440ba4de27",
       "idrssd": 2182786,
       "institution": "Goldman Sachs Bank USA",
       "quarter_end": "2025-09-30",
-      "reason": "updated_after_development_end",
-      "row_kept": false
+      "reason": "earlier_filing_stands",
+      "row_kept": true
     },
     {
-      "detail": "last updated 2026-10-02T14:59:00, on a day the parent's lockbox holds",
+      "detail": "last updated 2026-07-07T17:59:49, before the development end; a later amendment is withheld, and this filing is read from the superseded snapshot 09c138ad385424b8ba9d705e258ac254cd0ab6ee5e93e7ba199276440ba4de27",
       "idrssd": 476810,
       "institution": "Citibank, N.A.",
       "quarter_end": "2025-12-31",
-      "reason": "updated_after_development_end",
-      "row_kept": false
+      "reason": "earlier_filing_stands",
+      "row_kept": true
     },
     {
-      "detail": "last updated 2026-10-09T15:52:54, on a day the parent's lockbox holds",
+      "detail": "last updated 2026-02-04T14:29:55, before the development end; a later amendment is withheld, and this filing is read from the superseded snapshot 09c138ad385424b8ba9d705e258ac254cd0ab6ee5e93e7ba199276440ba4de27",
       "idrssd": 2182786,
       "institution": "Goldman Sachs Bank USA",
       "quarter_end": "2025-12-31",
-      "reason": "updated_after_development_end",
-      "row_kept": false
+      "reason": "earlier_filing_stands",
+      "row_kept": true
     },
     {
-      "detail": "last updated 2026-10-02T15:01:00, on a day the parent's lockbox holds",
+      "detail": "last updated 2026-07-07T18:00:29, before the development end; a later amendment is withheld, and this filing is read from the superseded snapshot 09c138ad385424b8ba9d705e258ac254cd0ab6ee5e93e7ba199276440ba4de27",
       "idrssd": 476810,
       "institution": "Citibank, N.A.",
       "quarter_end": "2026-03-31",
-      "reason": "updated_after_development_end",
-      "row_kept": false
+      "reason": "earlier_filing_stands",
+      "row_kept": true
     },
     {
       "detail": "last updated 2026-09-10T14:23:48, on a day the parent's lockbox holds",
@@ -347,12 +347,12 @@
       "row_kept": false
     },
     {
-      "detail": "last updated 2026-10-09T16:15:23, on a day the parent's lockbox holds",
+      "detail": "last updated 2026-05-04T18:42:28, before the development end; a later amendment is withheld, and this filing is read from the superseded snapshot 09c138ad385424b8ba9d705e258ac254cd0ab6ee5e93e7ba199276440ba4de27",
       "idrssd": 2182786,
       "institution": "Goldman Sachs Bank USA",
       "quarter_end": "2026-03-31",
-      "reason": "updated_after_development_end",
-      "row_kept": false
+      "reason": "earlier_filing_stands",
+      "row_kept": true
     },
     {
       "detail": "the requirement table (docs/decisions/slr-requirement.md) has no value for this quarter; headroom is blank",
@@ -371,12 +371,20 @@
       "row_kept": true
     },
     {
-      "detail": "last updated 2026-10-02T15:01:22, on a day the parent's lockbox holds",
+      "detail": "last updated 2026-08-04T16:01:08, before the development end; a later amendment is withheld, and this filing is read from the superseded snapshot 09c138ad385424b8ba9d705e258ac254cd0ab6ee5e93e7ba199276440ba4de27",
       "idrssd": 476810,
       "institution": "Citibank, N.A.",
       "quarter_end": "2026-06-30",
-      "reason": "updated_after_development_end",
-      "row_kept": false
+      "reason": "earlier_filing_stands",
+      "row_kept": true
+    },
+    {
+      "detail": "the requirement table (docs/decisions/slr-requirement.md) has no value for this quarter; headroom is blank",
+      "idrssd": 476810,
+      "institution": "Citibank, N.A.",
+      "quarter_end": "2026-06-30",
+      "reason": "requirement_not_set",
+      "row_kept": true
     },
     {
       "detail": "the requirement table (docs/decisions/slr-requirement.md) has no value for this quarter; headroom is blank",
@@ -411,12 +419,20 @@
       "row_kept": false
     },
     {
-      "detail": "last updated 2026-10-09T16:18:44, on a day the parent's lockbox holds",
+      "detail": "last updated 2026-08-04T16:26:02, before the development end; a later amendment is withheld, and this filing is read from the superseded snapshot 09c138ad385424b8ba9d705e258ac254cd0ab6ee5e93e7ba199276440ba4de27",
       "idrssd": 2182786,
       "institution": "Goldman Sachs Bank USA",
       "quarter_end": "2026-06-30",
-      "reason": "updated_after_development_end",
-      "row_kept": false
+      "reason": "earlier_filing_stands",
+      "row_kept": true
+    },
+    {
+      "detail": "the requirement table (docs/decisions/slr-requirement.md) has no value for this quarter; headroom is blank",
+      "idrssd": 2182786,
+      "institution": "Goldman Sachs Bank USA",
+      "quarter_end": "2026-06-30",
+      "reason": "requirement_not_set",
+      "row_kept": true
     },
     {
       "detail": "the requirement table (docs/decisions/slr-requirement.md) has no value for this quarter; headroom is blank",
@@ -464,9 +480,10 @@
     "2026-06-30"
   ],
   "reasons": {
+    "earlier_filing_stands": 9,
     "exclusion_status_unknown": 36,
-    "requirement_not_set": 6,
-    "updated_after_development_end": 11
+    "requirement_not_set": 8,
+    "updated_after_development_end": 2
   },
-  "rows": 295
+  "rows": 304
 }

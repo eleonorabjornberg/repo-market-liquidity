@@ -108,3 +108,21 @@ The median width of the daily 90% interval is under **3 points of bank assets**.
 2. The prospective logging hook in the model repo (plan, Q4).
 3. The power study (§9).
 4. The auditor's check that 1–3 match this text.
+
+## 14. Amendment (19 October 2026): section 2's cite of the stress event
+
+**Status: a draft for Eleonora's review (directive #124; finding #75, point 1). In force once she merges it.** It is a
+correction of a reproduced error under section 12(b). It changes no rule, threshold or definition, and section 2 above is left
+as written.
+
+- **Superseded cite:** `repo_model/fed_liquidity.py:163`, in section 2's "Stress event on T". At the pin (`8fd2cf8`) that line
+  is the closing brace of a mapping, not the event. The parent defines no event column there.
+- **Where the event is defined.** The meaning is `docs/decisions/data-meaning.md` answer 14: a day with Fed repo operations
+  accepted of `fed_repo_accepted >= 1.0` (USD billions), term repos counted as an amount outstanding over their term. This
+  repository states the rule in one place, `repo_liquidity.goalposts.is_material_use` (`MATERIAL_USE_BN = 1.0`). Section 2 is
+  read with that cite in place of the superseded one.
+- **Labels now run through 2026-09-03** (the development end), since PR #107 (directive #105; finding #75, point 2).
+- **What it does not do.** It does not change what the event is, the $1bn bar, the benchmarks, the goalposts or any score. The
+  cites to `scarcity.py:161` and `scarcity.py:194` are unchanged and still resolve.
+- **A guard against the next stale cite:** `tests/test_protocol_cites.py` checks that every `file.py:line` cite of the parent in
+  this record opens a `def` or `class` at the pin, and that the event's replacement exists.

@@ -88,3 +88,20 @@ carry amendments filed from 29 September to 9 October 2026, days the parent's lo
 
 A reader that pinned the superseded digest still finds its bytes. They should move to the current digest: the old file's
 `sensitivity_state_street` rows are the trust subsidiary's, not State Street's.
+
+## 19 October 2026: the `slr_headroom` snapshot re-cut with nine restored filings (#123, finding #120)
+
+Nine bank-quarters of Citibank (476810) and Goldman Sachs Bank USA (2182786), 2025-06-30 to 2026-06-30, were withheld
+because the bulk files now carry amendments filed from 29 September to 9 October 2026, days the parent's lockbox holds.
+Eleonora ruled on finding #120 (19 October 2026) that the filings made before 2026-09-04 "stand as the latest filed as of
+the development end". The nine rows are read from the superseded snapshot `09c138ad385424b8ba9d705e258ac254cd0ab6ee5e93e7ba199276440ba4de27`,
+each with its own `available_from` and source hash as stored there, and the new column `restored_from` names that
+snapshot. Their source zips are lost (finding #94). The snapshot's other 295 rows have the same values as in the file they
+replace; only the new, blank `restored_from` column is added. Rows: 295 plus 9, is 304.
+
+| Series | Superseded digest (file kept) | Current digest | Rows |
+|---|---|---|---|
+| `slr_headroom` | `013b647e6c4257a2e95e5cd939d8572dd7d006fc2cf8dfcef782d7439d83d9d9` | `4e9f87b518b3106ec5dc7d709f19e7f365e499c969fa5cb7ba9201e66f37e817` | 295 to 304 |
+
+A reader that pinned the superseded digest still finds its bytes. A reader that moves to the current digest finds nine more
+rows and the `restored_from` column; the 295 earlier rows are unchanged.

@@ -82,7 +82,7 @@ PUBLICATION_COLUMN = {"on_rrp_rate": "announcement_date", "srf_rate": "announcem
                       "runoff_caps": "announcement_date", "announced_pace": "announcement_date",
                       "agency_securities": "release_date",
                       "h8_groups": "release_date", "slr_headroom": "latest_update",
-                      "rca_anchor": "latest_update"}
+                      "rca_anchor": "latest_update", "rde": "available_from"}
 
 
 class LockedTierTests(unittest.TestCase):
@@ -273,6 +273,34 @@ class RcaAnchorSnapshotTests(unittest.TestCase):
     def test_the_snapshot_holds_no_figure_updated_in_a_locked_tier(self):
         manifest = snapshots.load_manifest("rca_anchor")
         self.assertFalse(development.is_locked(date.fromisoformat(manifest["last_update"][:10])))
+
+
+class RdeSnapshotTests(unittest.TestCase):
+    """#132: the RDE snapshot says what the figures are, that the check is not deciding, and what it was built from."""
+
+    def test_the_manifest_labels_the_figures_as_the_latest_release_and_the_check_as_not_deciding(self):
+        manifest = snapshots.load_manifest("rde")
+        self.assertEqual(manifest["vintage"], "latest_release:2026-10-15")
+        self.assertIn("first print", manifest["vintage_note"])
+        self.assertIn("never deciding", manifest["role_note"])
+        self.assertEqual({row["vintage"] for row in snapshots.read("rde")}, {manifest["vintage"]})
+
+    def test_the_manifest_names_the_workbook_and_the_coverage_record_by_digest(self):
+        manifest = snapshots.load_manifest("rde")
+        self.assertEqual(manifest["source_workbooks"],
+                         {"2026-10-15": "59b9f49d21ac09ef385de933813775ee302f4b4c232d103e5699c1377ffeed43"})
+        coverage = ROOT / manifest["coverage"]["path"]
+        self.assertEqual(hashlib.sha256(coverage.read_bytes()).hexdigest(), manifest["coverage"]["sha256"])
+        self.assertEqual(manifest["first_estimate"], "2024-10-02")
+
+    def test_the_snapshot_holds_no_estimate_read_from_a_locked_tier_or_before_the_launch(self):
+        from repo_liquidity import rde
+
+        manifest = snapshots.load_manifest("rde")
+        self.assertFalse(development.is_locked(date.fromisoformat(manifest["last_read_from"][:10])))
+        for row in snapshots.read("rde"):
+            self.assertGreaterEqual(row["available_from"], "2024-10-17T10:00:00")
+        self.assertEqual(list(snapshots.read("rde")[0]), list(rde.EXTRACT_COLUMNS))
 
 
 if __name__ == "__main__":

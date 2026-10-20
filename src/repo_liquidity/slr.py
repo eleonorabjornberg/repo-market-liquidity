@@ -21,6 +21,11 @@ figures, so each (bank, quarter) value is a labelled, amended figure (`vintage =
   lag, as for the H.8 groups; `read` is the exact, row-by-row reader.
 - **Nothing past the development tier.** A figure last updated on a day the parent's lockbox holds is withheld and
   listed in the coverage record; the loader refuses an extract that contains one (`LookAheadError`).
+- **A filing that stands** (Eleonora's ruling of 19 October 2026 on finding #120, #123). The row read for a bank-quarter
+  is the latest filed with `available_from` on or before the development end. An amendment filed after it is withheld
+  as above, and does not remove the earlier filing. The bulk files hold only the latest figures, so the earlier
+  filing is read from the superseded snapshot that kept it (`restore_standing`); the row says which one in
+  `restored_from`.
 
 Standard library only (the parent's `repo_model` is imported for the lockbox, the exception classes and the point-in-time
 row).
@@ -34,7 +39,7 @@ import io
 import json
 import re
 import zipfile
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import date, datetime, time, timedelta
 from pathlib import Path
 from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
@@ -137,14 +142,16 @@ FIELDS: Tuple[str, ...] = ("slr_tier1_capital", "slr_total_leverage_exposure", "
 EXTRACT_COLUMNS: Tuple[str, ...] = (
     "quarter_end", "idrssd", "institution", "vintage", "latest_update", "available_from", "column_form",
     "tier1_capital_kusd", "total_leverage_exposure_kusd", "reported_slr_pct", "slr_pct", "requirement_pct",
-    "headroom_pp", "exclusion_status", "measure", "source_zip_sha256")
+    "headroom_pp", "exclusion_status", "measure", "source_zip_sha256", "restored_from")
 EXTRACT_NAME = "slr_latest_filed.csv"
 SOURCES_NAME = "slr_latest_filed.sources.json"
 COVERAGE_NAME = "slr_latest_filed.coverage.json"
 
 #: Why a (bank, quarter) is missing from the extract, or kept with a column blank or flagged.
 REFUSALS = ("not_a_filer", "item_blank", "updated_after_development_end", "tier1_exceeds_exposure")
-KEPT_WITH_NOTE = ("requirement_not_set", "exclusion_status_unknown", "ratio_differs_from_reported")
+KEPT_WITH_NOTE = ("requirement_not_set", "exclusion_status_unknown", "ratio_differs_from_reported",
+                  "earlier_filing_stands")
+_HEX64 = re.compile(r"^[0-9a-f]{64}$")
 
 
 @dataclass(frozen=True)
@@ -160,6 +167,8 @@ class Row:
     total_leverage_exposure_kusd: int
     reported_slr_pct: Optional[float]
     source_zip_sha256: str
+    #: The SHA-256 of the superseded snapshot this row was restored from (#123), or "" for a row read from a bulk zip.
+    restored_from: str = ""
 
     @property
     def slr_pct(self) -> float:
@@ -305,12 +314,78 @@ def withhold_locked(rows: Iterable[Row]) -> Tuple[List[Row], List[dict]]:
     return kept, holes
 
 
+def read_superseded(path: Path) -> Tuple[str, List[Row]]:
+    """A superseded `slr_headroom` snapshot (`snapshots/slr_headroom/<sha256>.csv`): its digest and the rows of the nine banks.
+
+    A row of another institution (the trust subsidiary the first cut read as State Street) is not returned. The file is
+    never edited; its bytes must be the ones its name says.
+
+    Raises:
+        ValueError: if the file's bytes do not hash to the digest in its name, or a row is not labelled `latest_filed`.
+    """
+    data = path.read_bytes()
+    digest = hashlib.sha256(data).hexdigest()
+    if path.stem != digest:
+        raise ValueError(f"{path.name} is not the bytes its name says ({digest})")
+    rows: List[Row] = []
+    for item in csv.DictReader(io.StringIO(data.decode("utf-8"), newline="")):
+        if item["vintage"] != VINTAGE:
+            raise ValueError(f"{path.name}: {item['institution']} {item['quarter_end']} is labelled {item['vintage']!r}")
+        if int(item["idrssd"]) not in BANKS:
+            continue
+        rows.append(Row(quarter_end=date.fromisoformat(item["quarter_end"]), idrssd=int(item["idrssd"]),
+                        institution=item["institution"], latest_update=datetime.fromisoformat(item["latest_update"]),
+                        column_form=item["column_form"], tier1_capital_kusd=int(item["tier1_capital_kusd"]),
+                        total_leverage_exposure_kusd=int(item["total_leverage_exposure_kusd"]),
+                        reported_slr_pct=float(item["reported_slr_pct"]) if item["reported_slr_pct"] else None,
+                        source_zip_sha256=item["source_zip_sha256"]))
+    return digest, rows
+
+
+def restore_standing(rows: Iterable[Row], holes: Iterable[dict], superseded: Iterable[Row],
+                     superseded_sha256: str) -> Tuple[List[Row], List[dict]]:
+    """The rows with each withheld bank-quarter replaced by the filing that stood at the development end, and the holes left.
+
+    A bank-quarter whose current figure was last updated after the development end is withheld
+    (`updated_after_development_end`). If `superseded` holds a filing of it whose `available_from` is on or before the
+    development end, that filing stands (Eleonora's ruling of 19 October 2026 on #120) and is returned as a row with
+    `restored_from` set; its hole is dropped. A filing that became available after the development end is never
+    restored, and a bank-quarter that is not withheld keeps its row.
+
+    Raises:
+        ValueError: if `superseded_sha256` is not a SHA-256 digest.
+    """
+    if not _HEX64.match(superseded_sha256):
+        raise ValueError(f"restored_from must be a SHA-256 digest, got {superseded_sha256!r}")
+    end = development.development_end()
+    earlier = {(row.idrssd, row.quarter_end): row for row in superseded if row.idrssd in BANKS}
+    kept = list(rows)
+    left: List[dict] = []
+    for hole in holes:
+        key = (hole["idrssd"], date.fromisoformat(hole["quarter_end"]))
+        candidate = earlier.get(key)
+        if (hole["reason"] == "updated_after_development_end" and candidate is not None and end is not None
+                and candidate.available_from.date() <= end):
+            kept.append(replace(candidate, restored_from=superseded_sha256))
+        else:
+            left.append(hole)
+    return kept, left
+
+
 def notes(rows: Iterable[Row]) -> List[dict]:
-    """The holes in a kept row's columns: no requirement set, exclusion status unknown, ratio differs from the reported."""
+    """The holes in a kept row's columns: no requirement set, exclusion status unknown, ratio differs from the reported.
+
+    A row restored from a superseded snapshot (#123) also carries a note, so the coverage record lists it.
+    """
     out = []
     for row in rows:
         base = {"quarter_end": row.quarter_end.isoformat(), "idrssd": row.idrssd, "institution": row.institution,
                 "row_kept": True}
+        if row.restored_from:
+            out.append({**base, "reason": "earlier_filing_stands",
+                        "detail": f"last updated {row.latest_update.isoformat()}, before the development end; a later "
+                                  f"amendment is withheld, and this filing is read from the superseded snapshot "
+                                  f"{row.restored_from}"})
         if row.requirement_pct is None:
             out.append({**base, "reason": "requirement_not_set",
                         "detail": "the requirement table (docs/decisions/slr-requirement.md) has no value for this quarter; headroom is blank"})
@@ -342,7 +417,7 @@ def write_extract(rows: Iterable[Row]) -> bytes:
                          row.latest_update.isoformat(), row.available_from.isoformat(), row.column_form,
                          row.tier1_capital_kusd, row.total_leverage_exposure_kusd, _fmt(row.reported_slr_pct),
                          _fmt(row.slr_pct), _fmt(row.requirement_pct), _fmt(row.headroom_pp), row.exclusion_status,
-                         row.measure, row.source_zip_sha256))
+                         row.measure, row.source_zip_sha256, row.restored_from))
     return buffer.getvalue().encode("utf-8")
 
 
@@ -374,7 +449,7 @@ def load_extract(path: Path) -> List[Row]:
                   column_form=item["column_form"], tier1_capital_kusd=int(item["tier1_capital_kusd"]),
                   total_leverage_exposure_kusd=int(item["total_leverage_exposure_kusd"]),
                   reported_slr_pct=float(item["reported_slr_pct"]) if item["reported_slr_pct"] else None,
-                  source_zip_sha256=item["source_zip_sha256"])
+                  source_zip_sha256=item["source_zip_sha256"], restored_from=item["restored_from"])
         key = (row.quarter_end, row.idrssd)
         if key in seen:
             raise ValueError(f"{path.name}: {row.institution} {row.quarter_end} is listed twice")
@@ -387,6 +462,9 @@ def load_extract(path: Path) -> List[Row]:
             if item[column] != expected:
                 raise ValueError(f"{path.name}: {row.institution} {row.quarter_end} stores {column} {item[column]!r}, "
                                  f"the figures give {expected!r}")
+        if row.restored_from and not _HEX64.match(row.restored_from):
+            raise ValueError(f"{path.name}: {row.institution} {row.quarter_end} is restored from {row.restored_from!r}, "
+                             f"which is not a snapshot digest")
         if development.is_locked(row.latest_update.date()):
             raise LookAheadError(f"{row.institution} {row.quarter_end} was last updated {row.latest_update}, on a day "
                                  f"the parent's lockbox holds")

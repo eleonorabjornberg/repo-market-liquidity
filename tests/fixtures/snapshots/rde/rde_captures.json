@@ -1,0 +1,17 @@
+{
+  "captures": [
+    {
+      "estimates": 720,
+      "file": "rde-2026-10-15-59b9f49d21ac09ef385de933813775ee302f4b4c232d103e5699c1377ffeed43.xlsx",
+      "first_estimate": "2010-01-20",
+      "last_estimate": "2026-10-05",
+      "release_date": "2026-10-15",
+      "retrieved_utc": "2026-10-19T19:35:11Z",
+      "sha256": "59b9f49d21ac09ef385de933813775ee302f4b4c232d103e5699c1377ffeed43",
+      "size": 112793,
+      "update_date": "2026-10-05"
+    }
+  ],
+  "page": "https://www.newyorkfed.org/research/reserve-demand-elasticity",
+  "url": "https://www.newyorkfed.org/medialibrary/Research/Interactives/Data/elasticity/download-data"
+}
