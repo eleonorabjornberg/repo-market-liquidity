@@ -35,6 +35,8 @@ def meetings_at(as_of: datetime, calendar: Optional[Sequence[Meeting]] = None) -
         ValueError: if `as_of` is not a naive wall-clock datetime.
         LookAheadError: if a meeting that reached the result was not public at `as_of`.
     """
+    if not isinstance(as_of, datetime) or as_of.tzinfo is not None:
+        raise ValueError("as_of is a naive America/New_York wall-clock datetime")
     meetings = load() if calendar is None else calendar
     seen = [meeting for meeting in meetings if visible_at(meeting, as_of)]
     return tuple(require_public(meeting, as_of) for meeting in seen)

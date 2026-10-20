@@ -12,6 +12,7 @@ Standard library only.
 
 import gzip
 import html
+import pathlib
 import re
 import unittest
 from datetime import date, datetime, timedelta
@@ -104,7 +105,7 @@ class PointInTimeTests(unittest.TestCase):
     def test_the_module_does_not_carry_a_calendar_of_its_own(self):
         """Never re-implement the calendar: `fomc` holds no meeting date."""
         source = fomc.__file__
-        text = open(source, encoding="utf-8").read()
+        text = pathlib.Path(source).read_text(encoding="utf-8")
         self.assertIsNone(re.search(r"\b20[12]\d-\d\d-\d\d\b", text))
         self.assertIsNone(re.search(r"\bdate\(20[12]\d,", text))
 
@@ -122,8 +123,9 @@ class CrossCheckTests(unittest.TestCase):
         The page is a cross-check only; the parent's calendar is what is read. A meeting on one and not the other, or
         with other days, fails this test, naming it.
 
-        Recorded mutation (20 October 2026): in `board_page_meetings`, `int(first)` changed to `int(first) + 1`. This
-        test then fails with AssertionError (the sets differ, naming every 2024 and 2025 meeting).
+        Recorded mutation (20 October 2026): in `board_page_meetings`, `finish = start.replace(day=int(last))`
+        changed to `int(last) - 1`. This test then fails with AssertionError (the sets differ, naming every two-day meeting
+        of 2024 and 2025 within one month).
         """
         parent = {(m.start, m.end) for m in fomc.load()
                   if m.kind == "scheduled" and m.cancelled_at is None
@@ -134,16 +136,18 @@ class CrossCheckTests(unittest.TestCase):
         self.assertEqual(sorted(parent ^ page), [], "meetings on one calendar only (parent ^ page)")
 
     def test_after_the_development_end_the_two_calendars_are_compared_too(self):
-        """Informational extension of the same check to the later meetings the page lists (2026, 2027)."""
+        """The same check for the later meetings the saved page lists (2026 and 2027; it has no section for 2028)."""
+        last_year = max(start.year for start, _ in board_page_meetings())
         parent = {(m.start, m.end) for m in fomc.load()
-                  if m.kind == "scheduled" and m.cancelled_at is None and m.start > live.LAST_DEVELOPMENT_DAY}
+                  if m.kind == "scheduled" and m.cancelled_at is None
+                  and live.LAST_DEVELOPMENT_DAY < m.start and m.start.year <= last_year}
         page = {pair for pair in board_page_meetings() if pair[0] > live.LAST_DEVELOPMENT_DAY}
         self.assertEqual(sorted(parent ^ page), [])
 
     def test_the_statement_dates_of_the_log_guard_are_the_second_days(self):
         """`live`'s statement calendar (this repository's) is the second day of each parent meeting from 2026."""
         parent = {m.end for m in fomc.load() if m.kind == "scheduled" and m.cancelled_at is None
-                  and m.start >= date(2026, 1, 1)}
+                  and date(2026, 1, 1) <= m.start <= date(2027, 12, 31)}
         ours = {s.instant.date() for s in live.load_fomc_calendar()}
         self.assertEqual(sorted(ours - parent), [])
 
