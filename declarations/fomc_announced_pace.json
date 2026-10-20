@@ -1,0 +1,48 @@
+{
+  "fomc_announced_pace": {
+    "access": "public",
+    "coverage": [
+      "monthly net purchases of Treasury securities and agency MBS announced by the FOMC and the Desk, and the signed balance-sheet pace (runoff caps less purchases), from announcement statements"
+    ],
+    "field_frequencies": {
+      "announced_pace_mbs_purchases_bn": "business_daily",
+      "announced_pace_signed_bn": "business_daily",
+      "announced_pace_treasury_purchases_bn": "business_daily"
+    },
+    "fields": [
+      "announced_pace_mbs_purchases_bn",
+      "announced_pace_signed_bn",
+      "announced_pace_treasury_purchases_bn"
+    ],
+    "frequency": "event",
+    "identities": [],
+    "limitation": "Not a built panel column and read by no estimator or score (#125). Published as snapshots/announced_pace/ and read through repo_liquidity.announced_pace. One row per announcement of a cap (from fomc_runoff_caps, never re-entered) or of purchases, in USD billions a month. The signed pace is the Treasury and MBS runoff caps minus the announced net purchases: positive drains, negative adds reserves. Reserve management purchases and net asset purchases enter; reinvestment of principal payments does not, because it holds reserves constant, so MBS paydowns above the MBS cap that are reinvested in Treasuries enter at 0 (marked question Q1 of #125). A cap is a maximum and the amounts are stated plans ('at least', 'approximately'), not realized purchases (frb_h41_treasury, frb_h41_mbs). Where no monthly amount was announced the row is unquantified and its purchases and signed pace are empty: the March 2020 plan and the months after the first schedule of December 2025, whose later monthly amounts are published only on the Desk's operational-details page with no saved dated copy (marked question Q2). Three effective dates are conventions, not stated dates: mid-November and mid-December 2021 (the 15th) and the end of net purchases in early March 2022 (the 14th), and the first schedule of December 2025 is taken to cover thirty days. Each row says which in effective_basis. A Desk statement states no time, so its row is read from 23:59 on its date; a Board statement is read at the minute it states. Each row's amounts and dates are quoted phrases of the saved page, checked by tests/test_announced_pace.py.",
+    "provider": "Board of Governors of the Federal Reserve System",
+    "release_lag": {
+      "available_time": "23:59",
+      "basis": "record_date",
+      "days": 0,
+      "note": "Not read: all fields are scheduled (scheduled_availability).",
+      "timezone": "America/New_York",
+      "unit": "calendar_days"
+    },
+    "reviewed_note": "No structural zeros: a pace of 0 is a stated policy, and an unquantified row is empty, not zero.",
+    "scheduled_availability": {
+      "available_time": "16:00",
+      "basis": "announced_before_ref_date",
+      "days": 1,
+      "evidence": "Keyed on the announcement time, as fomc_runoff_caps. tests/test_announced_pace.py checks that every row is announced before the day it takes effect, that each row's amounts and dates appear in its saved page, that a decision instant before an announcement never reads it (LookAheadError) and never reads an older row than the newest announced (StaleReadError).",
+      "fields": [
+        "announced_pace_mbs_purchases_bn",
+        "announced_pace_signed_bn",
+        "announced_pace_treasury_purchases_bn"
+      ],
+      "note": "16:00 is the decision time of every Phase 3 run.",
+      "timezone": "America/New_York",
+      "unit": "business_days"
+    },
+    "structural_zeros": [],
+    "structural_zeros_reviewed": true,
+    "url": "https://www.newyorkfed.org/markets/opolicy"
+  }
+}
