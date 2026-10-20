@@ -21,7 +21,7 @@
       "sha256": "d77f9812b402c19153379db46222bd74fdfeaa8857ad7932b2bcc56b184b635b",
       "size": 5483431,
       "first_retrieved_utc": "2026-10-16T11:23:45Z",
-      "last_checked_utc": "2026-10-19T13:13:58Z",
+      "last_checked_utc": "2026-10-20T11:35:30Z",
       "note": "retrieval time = upload time (run 38893471133)"
     },
     {
@@ -42,7 +42,7 @@
       "sha256": "1ca075adb6b197421ff333d4348e62f3175ab021898676cd63a786d3cf668c43",
       "size": 5981366,
       "first_retrieved_utc": "2026-10-16T11:23:43Z",
-      "last_checked_utc": "2026-10-19T13:13:58Z",
+      "last_checked_utc": "2026-10-20T11:35:30Z",
       "note": "retrieval time = upload time (run 38893471133)"
     }
   ]
