@@ -28,7 +28,7 @@ instant and effective on or before the day, the newest of them.
 - **Enters:** reserve management purchases and net asset purchases, as announced ("approximately", "at least").
 - **Does not enter:** reinvestment of principal payments, which holds reserves constant. This includes the reinvestment of
   agency paydowns into Treasury bills since December 2025 (the Dec 2025 note's last directive line), so MBS paydowns above
-  the MBS cap that are reinvested in Treasuries enter at 0. This is **marked question Q1**.
+  the MBS cap that are reinvested in Treasuries enter at 0. **Decided by Eleonora, 19 October 2026** ([ruling on #130](https://github.com/eleonorabjornberg/repo-market-liquidity/issues/130#issuecomment-6278307470)): MBS reinvestment counts as 0 (reserve-neutral) in the signed pace.
 - **Unquantified:** a row where no monthly amount was announced has empty purchases and signed pace, and a reader gets
   `None`. These are the March 2020 plan (at least $500 billion and $200 billion "over coming months", then "in the amounts
   needed") and the months after the first schedule of December 2025, whose later monthly amounts the Desk publishes on its

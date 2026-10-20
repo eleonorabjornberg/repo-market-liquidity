@@ -14,7 +14,7 @@ or before it and is effective on or before the day (the parent's scheduled-avail
 
 **What enters the purchases.** Reserve management and net asset purchases enter; reinvestment of principal payments
 does not, because it holds reserves constant. MBS paydowns above the MBS cap that the Fed reinvests in Treasuries
-therefore enter at 0 (marked question Q1 of #125).
+therefore enter at 0 (decided by Eleonora, 19 October 2026, ruling on #130).
 
 **Where no monthly amount was announced** the row is `unquantified` and its purchases and signed pace are empty: the
 March 2020 plan ("at least $500 billion ... over coming months", then "in the amounts needed"), and the months after
