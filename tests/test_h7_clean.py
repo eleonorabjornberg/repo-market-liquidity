@@ -370,6 +370,12 @@ class TrainingDayTests(_FitCase):
         return h.training_days(self.days, cutoff, flags, left, self.series, lambda x: x.week is not None, episodes=EPISODES,
                                min_scarce=MIN_SCARCE)
 
+    def test_the_refit_records_how_many_counted_days_were_dropped(self):
+        fit = h.refit_c(self.days, self.days[-1].day, self.flags_dropping([20, 21, 22]), CORRIDOR, self.series, replications=0,
+                        episodes=EPISODES, min_scarce=MIN_SCARCE)
+        self.assertEqual(fit.record["dropped"], 3)
+        self.assertEqual(fit.pairs, len(self.days) - 3)
+
     def test_a_flagged_day_is_not_a_training_day(self):
         sample, labels = self.sample(self.flags_dropping([20, 21, 22]), self.days[-1].day)
         self.assertEqual(len(sample), len(self.days) - 3)

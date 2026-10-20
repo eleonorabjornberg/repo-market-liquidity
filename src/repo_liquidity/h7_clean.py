@@ -431,6 +431,14 @@ def training_days(days: Sequence, cutoff: date, flags: Mapping[date, Flags], lef
     return sorted(chosen, key=lambda x: x.day), tuple(labels)
 
 
+def _dropped(days, cutoff, left_side, series, usable, episodes, labels, sample) -> int:
+    """How many days of the counted episodes, on or before the cutoff, the exclusion set took out of the sample."""
+    spans = [(first, last) for label, first, last in episodes if label in labels]
+    inside = [x for x in days if x.day <= cutoff and usable(x) and _left(left_side, series, x) is not None
+              and any(first <= x.day <= last for first, last in spans)]
+    return len(inside) - len(sample)
+
+
 # -- candidate C ------------------------------------------------------------------------------------------------------
 
 
@@ -475,8 +483,7 @@ def refit_c(days: Sequence[c.DayC], cutoff: date, flags: Mapping[date, Flags], l
         if x.day > cutoff:
             raise LookAheadError(f"the shares for the refit at {cutoff} would be fitted on {x.day}, after its cutoff")
     breaks = tuple(sorted({x.week.week_ending for x in sample if x.week.break_week}))
-    dropped = sum(1 for x in days if x.day <= cutoff and x.week is not None and _left(left_side, series, x) is not None
-                  ) - len(sample)
+    dropped = _dropped(days, cutoff, left_side, series, lambda x: x.week is not None, episodes, labels, sample)
     if not sample:
         return c.RefitC(cutoff, None, False, None, None, None, None, 0, labels, None, breaks, (),
                         _record(Combined(NO_EPISODE, None, None, None), dropped=dropped))
@@ -522,7 +529,7 @@ def refit_d(days: Sequence[d.DayD], cutoff: date, flags: Mapping[date, Flags], l
         if x.day > cutoff:
             raise LookAheadError(f"the parameters for the refit at {cutoff} would be fitted on {x.day}, after its cutoff")
     breaks = tuple(sorted({x.week.week_ending for x in sample if x.week.break_week}))
-    dropped = sum(1 for x in days if x.day <= cutoff and _usable_d(x) and _left(left_side, series, x) is not None) - len(sample)
+    dropped = _dropped(days, cutoff, left_side, series, _usable_d, episodes, labels, sample)
     if not sample:
         return d.RefitD(cutoff, None, False, None, None, None, None, 0, labels, None, breaks, (),
                         _record(Combined(NO_EPISODE, None, None, None), dropped=dropped))
