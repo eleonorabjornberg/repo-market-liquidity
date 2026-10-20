@@ -589,6 +589,25 @@ class BuildDaysTests(unittest.TestCase):
             k.build_days(bare, self.rule, publications=[], notes=[], label_fn=lambda day: None)
 
 
+class ScriptTests(unittest.TestCase):
+    def test_the_run_exits_2_and_reads_nothing_while_the_parent_has_no_turn_label(self):
+        import subprocess
+        import sys
+        from pathlib import Path
+
+        try:
+            import repo_model.turn_days  # noqa: F401
+        except ImportError:
+            pass
+        else:
+            self.skipTest("the parent has turn_days: the run is possible")
+        script = Path(__file__).resolve().parents[1] / "scripts" / "h7_kink_run.py"
+        done = subprocess.run([sys.executable, "-B", str(script)], capture_output=True, text=True,
+                              env={**__import__("os").environ, "PYTHONDONTWRITEBYTECODE": "1"})
+        self.assertEqual(done.returncode, 2)
+        self.assertIn("#149", done.stderr)
+
+
 class LeakageTests(unittest.TestCase):
     def _signature_days(self):
         return _pairs(420)
