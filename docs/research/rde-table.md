@@ -6,20 +6,20 @@ nothing scored, nothing wired into a goalpost. **Reported, never deciding**: R a
 
 - Vintage: `latest_release:2026-10-15`. The page serves only its latest release, so each value is the one in that
   release, not necessarily the one first printed; earlier releases are not recoverable here.
-- Rows: 80 estimate dates, 2024-10-02 to 2026-08-06. Read as
-  public from 2024-10-17 (the launch) to 2026-08-20, at 10:00
-  New York time on a third Thursday.
-- Left out, the back history the launch carried: 633 estimate dates, 2010-01-20 to 2024-09-20. They stay in the stored workbook.
+- Rows: 79 estimate dates, 2024-10-09 to 2026-08-06. Read as
+  public from 2024-10-17 (the launch) to 2026-08-20, at 12:00
+  New York time on the third Thursday, or on the first business day after an FOMC blackout that holds it.
+- Published apart, the back history the launch carried: 634 estimate dates, 2010-01-20 to 2024-10-02, in `rde_history.csv`, labelled "history, not public before 2024-10-17", outside the declaration and read by nothing.
 - Withheld, because their assigned release falls after the development end (2026-09-03):
   7 estimate dates (2026-08-13 to 2026-10-05).
 - Worst-case lag, estimate date to the day it is read as public: 44 calendar days:
-  an estimate waits for the first release at least 10 days after its date.
+  an estimate waits for the first release whose data is as of its date or later.
 
 ## Where the estimates sit
 
 | period | estimates | median of the main estimate | with the 95% interval wholly below zero | positive |
 |---|---|---|---|---|
-| 2024-10 to 2024-12 | 11 | -0.105 | 0 | 0 |
+| 2024-10 to 2024-12 | 10 | -0.105 | 0 | 0 |
 | 2025 | 43 | -0.136 | 0 | 11 |
 | 2026 to the development end | 26 | -0.010 | 0 | 12 |
 
@@ -49,11 +49,14 @@ The last estimate read is 2026-08-06: -0.356 [-0.754, 0.051], read as public fro
 ## Not checked
 
 - Whether the RDE's definition of scarce reserves matches H7's kink.
-- Which release first carried each estimate: the workbook does not say, so the availability is the rule in
-  `repo_liquidity.rde` (the first third-Thursday release at least 10 days after the estimate date), checked on
-  the one release stored (cover sheet: updated 5 October, released 15 October 2026).
-- The release time of 10:00 and the third Thursday in months where that day is a holiday: taken from the
-  ruling, not from a Fed statement; the stored release's own date (Thursday 15 October 2026) is the third Thursday.
+- Which release first carried each estimate: the workbook does not say. The rule in `repo_liquidity.rde` uses the
+  two recorded data-as-of dates (the launch release, 11 October 2024; the stored release, 5 October 2026) and,
+  for any other release, an assumed 10 days before its third Thursday: a declared conservative
+  lag, not a source (a marked question for Eleonora).
+- The release time: "around 10:00 A.M." in the launch press release of 17 October 2024; availability is declared
+  at 12:00, the conservative reading. The FOMC meetings behind the blackout fallback are read from this repository's
+  saved Board calendar page, because the parent holds no meeting calendar at the pin; a notation vote (22 August
+  2025) is not counted as a meeting.
 - Revisions: the values are those of the latest release (see above).
 - Whether the Oct 2026 re-estimate of earlier dates uses data from after the estimate date. The product is
   described as real-time by construction; the staff report was not read for this.

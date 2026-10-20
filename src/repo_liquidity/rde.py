@@ -12,17 +12,25 @@ section 5; the protocol does not change, and nothing here is wired into a goalpo
   one in the latest stored release, labelled `vintage = latest_release:<release date>`; if the Fed has revised an
   estimate since its first release, the first print is not recoverable here. A later fetch is stored beside this one and
   never replaces it (`scripts/extract_rde.py capture`).
-- **Availability** (the ruling of 19 October 2026): a release is public on the third Thursday of the month at 10:00
-  New York time, and never before the product's launch on 2024-10-17. The workbook does not say which release first
-  carried an estimate, so a row is read as public at the first such release on or after its estimate date plus
-  `UPDATE_TO_RELEASE_DAYS` (the 10 days between the cover sheet's "updated on" and "release on" dates in the stored
-  release: 5 and 15 October 2026). That is later than the truth for most rows, which is staleness on the safe side, not
-  leakage.
+- **Availability** (the ruling of 19 October 2026, with the launch press release of 17 October 2024 as its source: "The RDE
+  will be updated around 10:00 A.M. Eastern Time on the third Thursday of each month, or on the first business day
+  following a Federal Open Market Committee blackout period if the third Thursday of the month falls within the blackout
+  period"). A release is public from 12:00 New York time, the conservative reading of "around 10:00", on the third
+  Thursday, or when that day is inside an FOMC blackout (the second Saturday before a meeting through the day after it)
+  on the first business day after the blackout, and never before the launch on 2024-10-17. The meetings are read from the
+  Board's calendar page saved in this repository (`live.CALENDAR_PAGE`); the parent holds no meeting calendar at the pin
+  (finding filed with the pull request). An estimate for date d is public at the first release whose data-as-of date is on
+  or after d. Two as-of dates are recorded: Friday 11 October 2024 for the launch release (its press release: "include data
+  as of Friday, October 11, 2024") and Monday 5 October 2026 for the release of 15 October 2026 (the stored workbook's cover
+  sheet, "Updated on October 5 for release on October 15"). A release with no recorded as-of date is assumed to carry data
+  as of `UNRECORDED_AS_OF_LAG_DAYS` before its third Thursday, the larger of the two recorded gaps (6 and 10 days). That is
+  later than the truth for most estimates, which is staleness on the safe side, not leakage (a marked question for
+  Eleonora on the pull request).
 - **The table starts at the launch.** The table (the extract and the declaration) holds the estimates from the one the
-  launch release headlined, the latest dated at least `UPDATE_TO_RELEASE_DAYS` before it (2024-10-02), onward. The
-  estimates dated earlier (2010-01-20 to 2024-09-25) are the back history the launch carried: they stay in the stored
-  workbook and are counted in the coverage record, but they are not a point-in-time series (all would be "public" on one
-  day), and a declared lag covering them, years long, would leave the panel nothing to read.
+  launch release headlined (the latest dated on or before its as-of date, 2024-10-09) onward. The estimates dated earlier
+  are the back history the launch carried: they are published apart as a labelled series (`HISTORY_LABEL`, outside the
+  declaration and read by nothing), because they are not a point-in-time series (all would be "public" on one day), and a
+  declared lag covering them, years long, would leave the panel nothing to read.
 - **Nothing past the development tier.** A row whose assigned release falls on a day the parent's lockbox holds is
   withheld and listed in the coverage record; the loader refuses an extract that holds one (`LookAheadError`).
 
@@ -32,6 +40,7 @@ Standard library only (the parent's `repo_model` is imported for the exception c
 from __future__ import annotations
 
 import csv
+import gzip
 import hashlib
 import io
 import json
@@ -40,12 +49,13 @@ import zipfile
 from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta
 from decimal import Decimal
+from functools import lru_cache
 from pathlib import Path
 from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 from xml.etree import ElementTree
 from zoneinfo import ZoneInfo
 
-from repo_liquidity import contenthash, development
+from repo_liquidity import contenthash, development, live
 
 SOURCE_ID = "nyfed_rde"
 URL = "https://www.newyorkfed.org/medialibrary/Research/Interactives/Data/elasticity/download-data"
@@ -54,10 +64,17 @@ NEW_YORK = ZoneInfo("America/New_York")
 
 #: The third Thursday of October 2024, the day the Fed launched the product (press release of 17 October 2024).
 LAUNCH_DATE = date(2024, 10, 17)
-RELEASE_TIME = time(10, 0)
+#: The release press release says "around 10:00 A.M."; availability is declared at 12:00, the conservative reading (the
+#: ruling of 19 October 2026). It is still before the 16:00 decision.
+RELEASE_TIME = time(12, 0)
 LAUNCH = datetime.combine(LAUNCH_DATE, RELEASE_TIME, tzinfo=NEW_YORK)
-#: From the stored release's cover sheet: "Updated on October 5 for release on October 15" (2026).
-UPDATE_TO_RELEASE_DAYS = 10
+#: The releases whose data-as-of date is recorded, by their third Thursday: the launch ("The first RDE estimates, released
+#: today, include data as of Friday, October 11, 2024") and the stored workbook's ("Updated on October 5 for release on
+#: October 15", 2026).
+AS_OF_RECORDED = {date(2024, 10, 17): date(2024, 10, 11), date(2026, 10, 15): date(2026, 10, 5)}
+#: A release with no recorded as-of date is read as carrying data as of this many days before its third Thursday: the larger
+#: of the two recorded gaps (6 days at the launch, 10 in October 2026). A declared conservative lag, not a source.
+UNRECORDED_AS_OF_LAG_DAYS = 10
 
 VINTAGE_PREFIX = "latest_release"
 SHEET = "chart data"
@@ -73,6 +90,12 @@ EXTRACT_COLUMNS: Tuple[str, ...] = (
     "elasticity_p16", "elasticity_p84", "sign", "interval_excludes_zero_95", "fetch_sha256", "content_sha256")
 VALUE_COLUMNS = EXTRACT_COLUMNS[3:8]
 CONTENT_COLUMNS = ("estimate_date",) + VALUE_COLUMNS
+#: The estimates before the launch release's headline, apart from the table (the ruling of 19 October 2026).
+HISTORY_LABEL = "history, not public before 2024-10-17"
+HISTORY_COLUMNS: Tuple[str, ...] = ("estimate_date", "series", "elasticity_p50", "elasticity_p2_5", "elasticity_p97_5",
+                                    "elasticity_p16", "elasticity_p84", "fetch_sha256", "content_sha256")
+HISTORY_NAME = "rde_history.csv"
+VALUE_COLUMNS_HISTORY = HISTORY_COLUMNS[2:7]
 EXTRACT_NAME = "rde_estimates.csv"
 CAPTURES_NAME = "rde_captures.json"
 COVERAGE_NAME = "rde_estimates.coverage.json"
@@ -92,29 +115,104 @@ def third_thursday(year: int, month: int) -> date:
     return first + timedelta(days=(3 - first.weekday()) % 7 + 14)
 
 
+@lru_cache(maxsize=None)
+def fomc_meetings() -> Tuple[Tuple[date, date], ...]:
+    """The scheduled FOMC meetings (first day, last day) in the Board's calendar page saved in this repository.
+
+    A row whose dates are not two days of a meeting (a notation vote, such as 22 August 2025) is not a meeting.
+
+    Raises:
+        ValueError: if the saved page does not match its manifest, or holds no meeting.
+    """
+    page = live.CALENDAR_PAGE
+    manifest = json.loads(page.with_name(page.name + ".manifest.json").read_text(encoding="utf-8"))
+    raw = page.read_bytes()
+    if hashlib.sha256(raw).hexdigest() != manifest["sha256"]:
+        raise ValueError(f"{page.name} does not match its manifest")
+    parts = re.split(r'<a id="\d+">(\d{4}) FOMC Meetings</a>', gzip.decompress(raw).decode("utf-8"))
+    meetings = []
+    for year, body in zip(parts[1::2], parts[2::2]):
+        for month, days in re.findall(r'fomc-meeting__month[^>]*><strong>([^<]+)</strong>.*?fomc-meeting__date[^>]*>([^<]+)<',
+                                      body, re.S):
+            match = re.fullmatch(r"(\d+)-(\d+)\*?", days.strip())
+            if match is None:
+                continue
+            names = [name.strip() for name in month.split("/")]
+            first_month, last_month = _month_number(names[0]), _month_number(names[-1])
+            meetings.append((date(int(year), first_month, int(match.group(1))), date(int(year), last_month, int(match.group(2)))))
+    if not meetings:
+        raise ValueError(f"{page.name} holds no FOMC meeting")
+    return tuple(sorted(meetings))
+
+
+def _month_number(name: str) -> int:
+    for number, full in enumerate(_MONTHS, start=1):
+        if full.startswith(name[:3]):
+            return number
+    raise ValueError(f"{name!r} is not a month")
+
+
+def blackout(first_day: date, last_day: date) -> Tuple[date, date]:
+    """The FOMC blackout of a meeting: from the second Saturday before its first day through the day after its last."""
+    saturday = first_day - timedelta(days=(first_day.weekday() - 5) % 7 or 7)
+    return saturday - timedelta(days=7), last_day + timedelta(days=1)
+
+
+def nominal_release_day(year: int, month: int) -> date:
+    """The third Thursday, the release day before the blackout fallback."""
+    return third_thursday(year, month)
+
+
+def release_day(year: int, month: int) -> date:
+    """The day the month's release is public: its third Thursday, or, when that day is inside an FOMC blackout, the first
+    business day after the blackout (the launch press release of 17 October 2024).
+
+    Raises:
+        ValueError: if the saved FOMC calendar does not cover the year, so a blackout could be missed.
+    """
+    from repo_model.data import next_business_day
+
+    covered = {first.year for first, _ in fomc_meetings()}
+    if year not in covered:
+        raise ValueError(f"the saved FOMC calendar covers {min(covered)} to {max(covered)}, not enough to place the "
+                         f"release of {year}-{month:02d}")
+    nominal = nominal_release_day(year, month)
+    for first, last in fomc_meetings():
+        start, end = blackout(first, last)
+        if start <= nominal <= end:
+            return next_business_day(end, 1)
+    return nominal
+
+
+def as_of_date(year: int, month: int) -> date:
+    """The day the month's release carries data as of: the recorded one, or `UNRECORDED_AS_OF_LAG_DAYS` before its third
+    Thursday."""
+    nominal = nominal_release_day(year, month)
+    return AS_OF_RECORDED.get(nominal, nominal - timedelta(days=UNRECORDED_AS_OF_LAG_DAYS))
+
+
 def release_for(estimate_date: date) -> datetime:
     """The release at which the estimate dated `estimate_date` is read as public (see the module note).
 
-    The first third-Thursday 10:00 New York release on or after the estimate date plus `UPDATE_TO_RELEASE_DAYS`, and
+    The first release whose data is as of the estimate's date or later, at 12:00 New York time on its release day, and
     never before the launch.
     """
-    earliest = estimate_date + timedelta(days=UPDATE_TO_RELEASE_DAYS)
-    year, month = earliest.year, earliest.month
-    while third_thursday(year, month) < earliest:
+    year, month = max((estimate_date.year, estimate_date.month), (LAUNCH_DATE.year, LAUNCH_DATE.month))
+    while as_of_date(year, month) < estimate_date:
         year, month = (year + 1, 1) if month == 12 else (year, month + 1)
-    return max(datetime.combine(third_thursday(year, month), RELEASE_TIME, tzinfo=NEW_YORK), LAUNCH)
+    return datetime.combine(release_day(year, month), RELEASE_TIME, tzinfo=NEW_YORK)
 
 
 def launch_headline(estimate_dates: Iterable[date]) -> date:
-    """The estimate the launch release headlined: the latest dated at least `UPDATE_TO_RELEASE_DAYS` before the launch.
+    """The estimate the launch release headlined: the latest dated on or before the launch release's as-of date.
 
     Raises:
         ValueError: if no estimate is dated that early.
     """
-    cutoff = LAUNCH_DATE - timedelta(days=UPDATE_TO_RELEASE_DAYS)
+    cutoff = AS_OF_RECORDED[LAUNCH_DATE]
     earlier = [day for day in estimate_dates if day <= cutoff]
     if not earlier:
-        raise ValueError(f"no estimate is dated on or before {cutoff}, ten days before the launch")
+        raise ValueError(f"no estimate is dated on or before {cutoff}, the launch release's data date")
     return max(earlier)
 
 
@@ -263,9 +361,9 @@ def parse_workbook(payload: bytes) -> Tuple[List[Tuple[date, Tuple[Decimal, ...]
         raise ValueError(f"the RDE cover sheet's dates are not read: {match.group(0)!r}") from error
     if updated != estimates[-1][0]:
         raise ValueError(f"the cover sheet says updated {updated}; the last estimate is dated {estimates[-1][0]}")
-    if released != third_thursday(released.year, released.month) or (released - updated).days != UPDATE_TO_RELEASE_DAYS:
-        raise ValueError(f"the cover sheet's release on {released} is not the third Thursday, "
-                         f"{UPDATE_TO_RELEASE_DAYS} days after the update")
+    if released != release_day(released.year, released.month):
+        raise ValueError(f"the cover sheet's release on {released} is not the release day of its month "
+                         f"({release_day(released.year, released.month)}, the third Thursday or the day the blackout ends)")
     return estimates, {"update_date": updated, "release_date": released}
 
 
@@ -346,6 +444,48 @@ def load_extract(path: Path) -> List[Row]:
         if development.is_locked(row.available_from.date()):
             raise LookAheadError(f"{row.estimate_date} is read from {row.available_from}, on a day the parent's "
                                  f"lockbox holds")
+        rows.append(row)
+    return rows
+
+
+def write_history(rows: Iterable[Row]) -> bytes:
+    """The tracked CSV of the estimates before the table: labelled, with no availability column, oldest first."""
+    buffer = io.StringIO(newline="")
+    writer = csv.writer(buffer, lineterminator="\n")
+    writer.writerow(HISTORY_COLUMNS)
+    for row in sorted(rows, key=lambda r: r.estimate_date):
+        writer.writerow((row.estimate_date.isoformat(), HISTORY_LABEL, *(f"{value:.{PLACES}f}" for value in row.values),
+                         row.fetch_sha256, row.content_sha256))
+    return buffer.getvalue().encode("utf-8")
+
+
+def load_history(path: Path) -> List[Row]:
+    """The history series, checked against its manifest and the rules that built it. Nothing reads it as of an instant.
+
+    Raises:
+        ValueError: if the bytes do not match the manifest, the columns are not `HISTORY_COLUMNS`, a row is not labelled
+            `HISTORY_LABEL`, a date is listed twice or out of order, or a stored content hash is not what the values give.
+    """
+    manifest = json.loads(path.with_name(path.name + ".manifest.json").read_text(encoding="utf-8"))
+    digest = hashlib.sha256(path.read_bytes()).hexdigest()
+    if digest != manifest["sha256"]:
+        raise ValueError(f"{path.name} does not match its manifest ({digest} != {manifest['sha256']})")
+    with path.open(encoding="utf-8", newline="") as handle:
+        reader = csv.DictReader(handle)
+        if tuple(reader.fieldnames or ()) != HISTORY_COLUMNS:
+            raise ValueError(f"{path.name}: columns {reader.fieldnames} are not {list(HISTORY_COLUMNS)}")
+        stored = list(reader)
+    rows: List[Row] = []
+    for item in stored:
+        if item["series"] != HISTORY_LABEL:
+            raise ValueError(f"{path.name}: {item['estimate_date']} is labelled {item['series']!r}, not {HISTORY_LABEL!r}")
+        row = Row(date.fromisoformat(item["estimate_date"]), HISTORY_LABEL,
+                  *(Decimal(item[column]) for column in VALUE_COLUMNS_HISTORY), item["fetch_sha256"])
+        if rows and row.estimate_date <= rows[-1].estimate_date:
+            raise ValueError(f"{path.name}: {row.estimate_date} is listed twice or out of order")
+        if item["content_sha256"] != row.content_sha256:
+            raise ValueError(f"{path.name}: {row.estimate_date} stores content_sha256 {item['content_sha256']!r}, the values "
+                             f"give {row.content_sha256!r}")
         rows.append(row)
     return rows
 

@@ -147,6 +147,7 @@ in step 5,** under the protocol's §5 statistic, and are never cited from Stage 
 - G5. **SLR headroom** (candidate D): #27 merged. It waits on Nicholas's question 16 on #1.
 - G6. A power study for the information goalpost on development data. How many confirmation days, and how many stress
   events, detect the MME? Runs before registration.
+- G8. **The NY Fed reserve demand elasticity**: an external check on H7m goalposts 1 and 3, reported, never deciding (Eleonora, 19 October 2026; #132).
 
 **Development steps (never a verdict)**
 1. **Estimand and as-of estimator.** This is the recreated model eleonorabjornberg/repo-market-model#644. Define
