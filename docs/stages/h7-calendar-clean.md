@@ -252,3 +252,24 @@ days, so protocol §12 is not touched. The answers to the marked questions of se
 each refit's training residuals beside goalpost 2, because a block of 10 that is too short would make the 90% interval too
 narrow (Lens C measured about 108 days post-2020 for the model's score series). The bootstrap stays as declared (mean block 10,
 section 2(a)). "Whether a longer block is needed is her call, on that figure."
+
+## 10. Amendment of 21 October 2026: the episode floor is read on all days (option (a)), before any fit
+
+Quoting Eleonora's ruling, relayed by the orchestrating session on PR #150
+(<https://github.com/eleonorabjornberg/repo-market-liquidity/pull/150#issuecomment-6326672451>): "option (a) on the episode
+floor. Whether an episode counts is decided on all days, under the declared rule of at least 60 scarce days, the same for every
+variant. The fit then uses that episode's calendar-clean days only. 2025 therefore counts for every variant (77 scarce days),
+and the clean variants fit on its 55 clean days."
+
+Where this section and section 2(a) ("The counted-episode rule is taken over the clean days") or section 9 differ, this section
+decides:
+
+- **Eligibility is read on all days, the same as the baseline.** An episode counts at a cutoff when it has at least 60 days with
+  the all-banks ratio below 13% among the days that have a group week and a left side, dropped or not. The rule is the same for
+  every variant (CV1 to CV4) and for the baseline.
+- **The clean variants (CV1 to CV3) fit on the counted episodes' clean days.** The dropped days of a counted episode leave the fit
+  and the bootstrap; they do not decide whether the episode counts. CV4 fits every day of a counted episode, as before.
+- A refit with no counted episode is not fitted, as before. The training sample size of each variant at each refit is reported.
+
+Nothing has been fitted on real days, so protocol §12 is not touched.
+
