@@ -94,10 +94,15 @@ def build_rows():
 def _rule():
     from datetime import time
 
-    from repo_model import measurement_fields, scarcity
+    from repo_model import scarcity
     from repo_model.asof import InformationRule
 
-    return InformationRule(measurement_fields.load_registry(), scarcity.LEGS, decision_time=time(16, 0), horizon=1)
+    from repo_liquidity import declaration
+
+    # Phase 3's registry, as `h7_kink.flag_rule` and `demand_curve` use: the legs include `bank_total_assets` (the D1 overlay),
+    # which the parent's bare registry does not classify at the pin.
+    with declaration.phase3_declaration():
+        return InformationRule(declaration.registry(), scarcity.LEGS, decision_time=time(16, 0), horizon=1)
 
 
 def _cutoffs(days, limit):
@@ -298,7 +303,7 @@ def main(argv=None):
     for r in table:
         print(f"  regime {r.regime}: {r.width} bp, {r.first} to {r.last}, {r.days} days", flush=True)
     # The table is derived over every day, the 25 bp regime before the training start included; the run's list starts after it.
-    after = [r for r in table if r.last > k.TRAIN_AFTER]
+    after = k.after_training_start(table)
     try:
         k.check_expected(after)
     except ValueError as error:

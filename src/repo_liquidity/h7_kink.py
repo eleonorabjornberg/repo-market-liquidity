@@ -294,6 +294,12 @@ def regime_table(widths: Mapping[date, Width]) -> List[Run]:
     return [Run(r, v[0], v[1], v[2], v[3]) for r, v in sorted(runs.items())]
 
 
+def after_training_start(table: Sequence[Run]) -> List[Run]:
+    """The regimes of `table` that run past the training start (section 7(i)): the 25 bp regime ends on it and is left out, as it
+    is from every fit (`training_days` takes only days after it)."""
+    return [r for r in table if r.last > TRAIN_AFTER]
+
+
 def check_expected(table: Sequence[Run], expected: Sequence[int] = EXPECTED_WIDTHS) -> None:
     """Section 2(c): the table must be the list expected in the number of regimes and in every width.
 

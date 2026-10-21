@@ -56,18 +56,20 @@ that send a run to the Mac (`needs-mac`).
 
 ## Readings this implementation took (none changes what the declaration says; Eleonora may overrule any)
 
+Readings (3), (4) and (7) are **Eleonora's**, accepted by her on 21 October 2026 (ruling on repo-market-liquidity#154, relayed by the orchestrating session). The others stand as read until she rules.
+
 1. **The refit dates and the window**, as the #147 run: the first refit at 2020-03-13, then every 21 observation days, on rows to
    `demand_curve.LAST_DAY` (2025-12-31). The declaration says "the same refit dates" without naming them.
 2. **The number of draws:** 2000, as Stage 2 and Stage 6.
-3. **Feasibility.** The parent skips a kink whose unconstrained least-squares slope is negative. For squares this is kept. For
+3. **Feasibility** (accepted by Eleonora, 21 October 2026). The parent skips a kink whose unconstrained least-squares slope is negative. For squares this is kept. For
    absolute deviation the slope is constrained to `b >= 0` and every kink with spread in the hinge is a candidate, so on data with no
    kink the many kinks that fit alike tie and the refit is "not identified" (the #54 case), rather than "no candidate".
-4. **IORB as known at the decision instant** is the previous row's `iorb` plus the announced change, not the scored row's own
+4. **IORB as known at the decision instant** (accepted by Eleonora, 21 October 2026) is the previous row's `iorb` plus the announced change, not the scored row's own
    `iorb` (the value realised on that day), because the regime is read at announcement.
 5. **A day with no regime** (no ON RRP rate public) leaves the regime variants only, and is counted in the record.
 6. **The baseline** is the parent's `fit_level` result on the same pairs (a test checks equality); the baseline column in the
    comparison is trained from after 2018-06-13 like the variants.
-7. **The kill** is reported as its two clauses and not combined: the second ("the clean-day kink's interval is wider than the raw
+7. **The kill** (accepted by Eleonora, 21 October 2026) is reported as its two clauses and not combined: the second ("the clean-day kink's interval is wider than the raw
    one's") is given per clean variant; how they read together is protocol §7's choice rule.
 8. **Bootstrap draws that do not fit** (too few pairs, a regime short of 50, not identified) are left out of the interval, as the
    parent's `refit` leaves out a draw that did not fit.

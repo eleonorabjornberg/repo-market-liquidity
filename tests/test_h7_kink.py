@@ -435,6 +435,20 @@ class RegimeTests(unittest.TestCase):
 
 
 class PairTests(unittest.TestCase):
+    def test_the_25_bp_regime_is_in_the_printed_table_and_in_no_fit_or_expected_list(self):
+        """The table is derived over every day, so it prints 25, 20, 15, 10, 15 bp; the 25 bp regime ends on the training start, is
+        left out of the list the run checks (20, 15, 10, 15), and `training_days` takes none of its days for any variant."""
+        table = [k.Run(0, 25, date(2018, 1, 2), date(2018, 6, 13), 110), k.Run(1, 20, date(2018, 6, 14), date(2020, 3, 15), 450),
+                 k.Run(2, 15, date(2020, 3, 16), date(2021, 6, 15), 300), k.Run(3, 10, date(2021, 6, 16), date(2023, 12, 13), 600),
+                 k.Run(4, 15, date(2023, 12, 14), date(2025, 12, 31), 500)]
+        after = k.after_training_start(table)
+        self.assertEqual([r.width for r in table], [25, 20, 15, 10, 15])
+        self.assertEqual([r.width for r in after], [20, 15, 10, 15])
+        k.check_expected(after)
+        days = [k.KDay(d, 0.1, 1.0, 1.0, 0, True) for d in (date(2018, 6, 12), date(2018, 6, 13), date(2018, 6, 14))]
+        for variant in k.VARIANTS + (k.BASELINE,):
+            self.assertEqual([p.day for p in k.training_days(days, date(2018, 12, 31), variant)], [date(2018, 6, 14)], variant.id)
+
     def test_no_pair_is_scored_on_or_before_the_training_start(self):
         days = [k.KDay(d, 0.1, 1.0, 1.0, 0, True) for d in (date(2018, 6, 12), date(2018, 6, 13), date(2018, 6, 14), date(2018, 6, 15))]
         pairs = k.training_days(days, date(2018, 12, 31), k.BASELINE)
@@ -650,6 +664,23 @@ class BuildRowsTests(unittest.TestCase):
         self.assertEqual(pins["panel_version"], h10_apply.PANEL_VERSION)
         self.assertEqual(pins["panel_sha256"], panel.load_manifest(h10_apply.PANEL_VERSION)["sha256"])
         self.assertTrue(rows)
+
+
+    def test_the_information_rule_constructs_at_the_pin_under_phase_3s_registry(self):
+        """`_rule()` builds the rule on `declaration.registry()`, as `h7_kink.flag_rule` does (#151).
+
+        Before the fix it used the parent's bare registry, and at 08ff67e the parent's `InformationRule` raised
+        `repo_model.contract.UndeclaredFeatureError: feature 'bank_total_assets' is not in contract.FEATURE_FIELDS, ...` (the
+        leg is Phase 3's D1 overlay), which stopped the Mac run after `build_rows` (reproduced at 1a0abe2).
+        """
+        import importlib.util
+        from pathlib import Path
+
+        script = Path(__file__).resolve().parents[1] / "scripts" / "h7_kink_run.py"
+        spec = importlib.util.spec_from_file_location("h7_kink_run", script)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        self.assertIsNotNone(module._rule())
 
 
 if __name__ == "__main__":
