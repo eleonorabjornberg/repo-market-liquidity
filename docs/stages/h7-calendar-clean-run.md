@@ -11,13 +11,13 @@ edited by hand.
 
 ## The command
 
-**Not runnable yet.** The exclusion set's third clause reads the parent's `repo_model.turn_days.turn_label` (Q1), which exists
-only at a pin later than 8fd2cf8, and the pin move is PR #155 (a draft, hers). At the pin of this tree `read_flags` raises
-`ValueError` ("repo_model.turn_days is absent at the pin of this tree") before anything is fitted. The command, once #155 has
-merged into this branch (and `PYTHONPATH` names the parent at the new pin):
+**Runnable at the pin of 08ff67e** (`PARENT_COMMIT`, after #155). The exclusion set's third clause reads the parent's
+`repo_model.turn_days.turn_label` (Q1), which exists from that pin on. The rows are measurement panel version 4 (version 1's
+build at 08ff67e: the same columns, only `srf_take_up` differs, `docs/stages/panel-v4.md`); version 1 is refused at this pin.
+It goes to Eleonora's Mac, from the 5 pm batch (`needs-mac`):
 
 ```
-PYTHONPATH=src:<repo-market-model at the new pin>/src \
+PYTHONPATH=src:<repo-market-model at 08ff67e>/src \
   python3 -B scripts/h7_calendar_clean.py --replications 2000 --workers 8
 ```
 

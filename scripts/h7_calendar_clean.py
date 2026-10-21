@@ -10,7 +10,7 @@ record `results/h7/calendar-clean.json` and the Markdown printed from it, `docs/
 ever edited by hand. `--render` prints the page again from the tracked record, and `--render --check` exits 1 if the tracked
 page is not what the record renders to.
 
-* Rows: the measurement panel version 1 from the tracked fixtures (its digest is checked), with the parent's opt-in `effr`
+* Rows: the measurement panel version 4 (panel-v4.md) from the tracked fixtures (its digest is checked), with the parent's opt-in `effr`
   column, to `demand_curve.LAST_DAY`, as Stage 6's refits ran. Every scored day is read through the parent's rule, which
   refuses a locked day (`lockbox.require_unlocked`).
 * Refits: the first at the first episode's last day, 2020-03-13, then every 21 observation days, as Stages 3c and 6. A refit
@@ -20,7 +20,7 @@ page is not what the record renders to.
   against 3 points) are read for each estimator and each variant is set beside its own baseline. Beside goalpost 2 the record
   gives each refit's Politis-White block length of its training residuals (reported only: the bootstrap's mean block stays 10).
   Development evidence only: no verdict, no locked day, no goalpost 3, nothing scored against the stress events (that is step 5).
-* The exclusion set reads the parent's `turn_days.turn_label` (Q1), which exists only at a pin later than 8fd2cf8: at the
+* The exclusion set reads the parent's `turn_days.turn_label` (Q1), which exists from the pin of 08ff67e on: at the
   pin of 8fd2cf8 the run stops with a `ValueError` before fitting anything.
 * Each variant's work is kept in `<output>.parts/<variant>.json` when it finishes, and a rerun reuses it (`--force` redoes it).
 

@@ -42,7 +42,7 @@ class RecordTests(unittest.TestCase):
 
     def test_it_was_made_at_this_pin_and_panel(self):
         self.assertEqual(self.record["pins"]["parent_commit"], PARENT_COMMIT)
-        self.assertEqual(self.record["pins"]["panel_sha256"], panel.load_manifest(1)["sha256"])
+        self.assertEqual(self.record["pins"]["panel_sha256"], panel.load_manifest(4)["sha256"])
 
     def test_it_read_no_locked_day(self):
         last = date.fromisoformat(self.record["window_end"])
