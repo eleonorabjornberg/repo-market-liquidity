@@ -205,9 +205,9 @@ allows a remedy only on those terms, and asks that it say so.
    `iorb_in_force`. Its `features_read` reports `spread_bps` for the labels, so the parent's
    `_check_fitter_stayed_inside` covers everything the curve reads.
 
-## Result (7 October 2026): not shown
+## Result (7 October 2026): not shown. Provisional until re-run (21 October 2026)
 
-Scored once under the plan and its amendment, development evidence only, to 2025-12-31. Records:
+Scored once under the plan and its amendment, development evidence only, to 2025-12-31. **Provisional until re-run (Eleonora, 21 October 2026, #149):** the model B fitter trained on one-step pairs, which read `treasury_settlement` a day off (calendar first); it now trains on direct pairs, and the records below are not edited. The re-run is a later line on #24. Records:
 `results/stage4/comparison.json` (primary), `results/stage4/brier.json` (secondary) and
 `results/stage4/curve_pass.json`. The Brier record was scored at commit `eaee930`. The primary was first scored at `c07d681`, then re-scored after the exceedance code landed, at `7e89020`; the two runs agree origin by origin. `7e89020` differs from `eaee930` only by the Brier record, so both scored records stand on the same code. Each carries its commit, a clean tree, the parent pin and both panel digests. No
 record is published.

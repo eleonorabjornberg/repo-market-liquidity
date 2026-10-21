@@ -33,7 +33,7 @@ def compute():
 
     with tempfile.TemporaryDirectory() as tmp:
         path = Path(tmp) / "phase3_panel.csv"
-        manifest = panel.build(path)
+        manifest = panel.build(path, version=1)
         rows_cache = load_daily_panel(path)
         days = dc.sample(rows_cache)
     splits = load_split_declaration(parent_root() / "metadata" / "evaluation_splits.json")

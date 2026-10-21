@@ -82,7 +82,7 @@ def _main(pool):
     anchor, stage2_sha = anchored.load_anchor()
     with tempfile.TemporaryDirectory() as tmp:
         path = Path(tmp) / "panel.csv"
-        manifest = panel.build(path)
+        manifest = panel.build(path, version=1)
         rows = load_daily_panel(path)
     observations = anchored.assemble(rows)
     tgcr_observations = anchored.assemble(rows, rate="tgcr")

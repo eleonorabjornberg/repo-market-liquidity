@@ -268,7 +268,7 @@ class PanelTests(unittest.TestCase):
     def setUpClass(cls):
         cls.tmp = tempfile.TemporaryDirectory()
         path = pathlib.Path(cls.tmp.name) / "phase3_panel.csv"
-        panel.build(path, version=1)
+        panel.build(path, version=4)
         from repo_model.data import load_daily_panel
 
         cls.rows = [r for r in load_daily_panel(path) if r.date <= development.development_end()]

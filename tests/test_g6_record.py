@@ -26,6 +26,8 @@ ARCHIVE = ROOT / "archive" / "h7m-power-study-1"
 #: The parent pin the first record was made at (L27, #105 moved the tree to a later pin). A published record is never
 #: edited in place, so it keeps naming the pin it was made at.
 FIRST_RECORD_PARENT_COMMIT = "53e61af9b4175e854c196908d3c76b228c039667"
+#: The pin the second record was made at (8fd2cf8, L27). The tree moved on (#149, parent #1038); the record keeps its pin.
+SECOND_RECORD_PARENT_COMMIT = "8fd2cf8c72e7d5c6e81c509651b684b690054a6f"
 FIRST_RECORD_SHA256 = {
     "h7m-power-study.json": "5a44c9a00955ea8c90b5ee5f2ce772bd143cc9aa9b5abf3f256bc143dfe3a0b9",
     "h7m-power-study.md": "0e0c1cc68e6f0423ba497fd0be5ed7da9a42b3aa09af282a909ff20ad06f2597",
@@ -44,8 +46,10 @@ class RecordTests(unittest.TestCase):
     def setUpClass(cls):
         cls.record = json.loads(RECORD.read_text(encoding="utf-8"))
 
-    def test_it_was_made_at_this_trees_pins(self):
-        self.assertEqual(self.record["pins"], {"parent": PARENT_COMMIT, "panel_digest": PANEL_SHA256})
+    def test_it_was_made_at_the_pins_it_names(self):
+        """The record names the pin it was made at (8fd2cf8), not this tree's: a published record is never edited in
+        place (#149 moved `PARENT_COMMIT`). The panel digest is the parent's published one, unchanged across the move."""
+        self.assertEqual(self.record["pins"], {"parent": SECOND_RECORD_PARENT_COMMIT, "panel_digest": PANEL_SHA256})
 
     def test_it_holds_what_was_declared(self):
         script = _script()
