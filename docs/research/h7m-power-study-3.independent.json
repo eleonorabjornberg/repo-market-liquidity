@@ -1,0 +1,1618 @@
+{
+ "what": "H7m G6, third record: Part B re-declared with a calendar-tied event process, fresh seeds and power-raising options (docs/stages/h7-g6.md \u00a711). No candidate is scored. Development evidence, never a verdict.",
+ "smoke": false,
+ "pins": {
+  "parent": "8fd2cf8c72e7d5c6e81c509651b684b690054a6f",
+  "panel_digest": "4ddc3882cd6d406b11e1088f8ff6195e16dde175a0ad6818abe40dd5bdac8999"
+ },
+ "provenance": {
+  "panel_sha256": "acb77874e0ca2c9eeee1c33a229f5e12745e65bb1224088d52c391dbf54be2ab",
+  "panel_rows": 2104,
+  "panel_last_day": "2026-09-03",
+  "repo_operation_coverage_end": "2026-09-03",
+  "assemble": {
+   "dates_with_an_operation": 1739,
+   "dates_with_a_non_zero_take_up": 270,
+   "dates_read_as_missing": 0,
+   "rate_spread_missing_iorb": 0
+  }
+ },
+ "days": {
+  "scored": 1739,
+  "first": "2019-09-17",
+  "last": "2026-09-03",
+  "events": 225
+ },
+ "declaration": {
+  "seed": 2026101900,
+  "seed_rule": "2026101900 + the replicate's index; +100000 days to the floor; +200000 reference series",
+  "grid": [
+   0.0,
+   0.02,
+   0.035,
+   0.05,
+   0.065,
+   0.08,
+   0.1,
+   0.125,
+   0.15
+  ],
+  "lengths": [
+   250,
+   500,
+   750
+  ],
+  "baseline_length": 250,
+  "tests": [
+   "section5",
+   "calendar_strata"
+  ],
+  "processes": [
+   "independent",
+   "two_state",
+   "calendar"
+  ],
+  "look": 2,
+  "draws": 10000,
+  "nominal_level": 0.0482414793805519,
+  "block_length": 10,
+  "mme": 0.05,
+  "event_floor": 10,
+  "event_floor_counts": "events in the window",
+  "replicates": 400,
+  "reference_series": 200,
+  "floor_series": 2000,
+  "floor_days": 1000,
+  "ridge": 1.0,
+  "calibration_tolerance": 0.0001,
+  "noise_sd_in_sigma": 0.1,
+  "sigma": 0.023703978619843347
+ },
+ "processes": {
+  "independent": {
+   "fit": {
+    "calendar_window": [
+     "2025-01-02",
+     "2026-09-03"
+    ],
+    "days": 418,
+    "events": 34,
+    "share": 0.08133971291866028
+   },
+   "days_to_the_event_floor": {
+    "series": 2000,
+    "days_per_series": 1000,
+    "never_reached": 0,
+    "share_never_reached": 0.0,
+    "share_reached_within_250": 0.9965,
+    "mean_of_those_that_reach": 123.66,
+    "median_of_those_that_reach": 120.0,
+    "p90_of_those_that_reach": 174
+   },
+   "cells": {
+    "250": {
+     "length": 250,
+     "first_day": "2025-01-02",
+     "last_day": "2026-01-02",
+     "days": 250,
+     "planting": {
+      "reference_series": 200,
+      "shift_in_sigma": {
+       "0.0": 0.0,
+       "0.02": 0.007569463923573494,
+       "0.035": 0.01623673364520073,
+       "0.05": 0.024375958018936217,
+       "0.065": 0.032846229150891304,
+       "0.08": 0.041199037223123014,
+       "0.1": 0.05206170026212931,
+       "0.125": 0.06640456442255527,
+       "0.15": 0.0809619267238304
+      },
+      "mean_gain_on_the_reference_series": {
+       "0.0": {
+        "mean_gain": 0.005638575421933557,
+        "miss": 0.005638575421933557
+       },
+       "0.02": {
+        "mean_gain": 0.019999452554465672,
+        "miss": -5.474455343282281e-07
+       },
+       "0.035": {
+        "mean_gain": 0.03500078497307022,
+        "miss": 7.849730702183533e-07
+       },
+       "0.05": {
+        "mean_gain": 0.05000302979782643,
+        "miss": 3.029797826424596e-06
+       },
+       "0.065": {
+        "mean_gain": 0.06499936396947714,
+        "miss": -6.360305228603202e-07
+       },
+       "0.08": {
+        "mean_gain": 0.07999816974267049,
+        "miss": -1.8302573295131408e-06
+       },
+       "0.1": {
+        "mean_gain": 0.09999758117994866,
+        "miss": -2.418820051350301e-06
+       },
+       "0.125": {
+        "mean_gain": 0.12500013010154168,
+        "miss": 1.301015416788065e-07
+       },
+       "0.15": {
+        "mean_gain": 0.1500018556461228,
+        "miss": 1.8556461228169674e-06
+       }
+      }
+     },
+     "replicates": 400,
+     "replicates_at_the_event_floor": 399,
+     "events_per_replicate": {
+      "min": 9,
+      "median": 20.0,
+      "max": 32
+     },
+     "tests": {
+      "section5": {
+       "gains": {
+        "0.0": {
+         "all_replicates": {
+          "supported": 22,
+          "replicates": 400,
+          "share": 0.055,
+          "interval": [
+           0.03659849414955068,
+           0.08186744780797323
+          ]
+         },
+         "replicates_at_the_floor": {
+          "supported": 22,
+          "replicates": 399,
+          "share": 0.05513784461152882,
+          "interval": [
+           0.036690926909731955,
+           0.0820690908916843
+          ]
+         },
+         "mean_point": 0.0016448465043830277,
+         "point_at_or_above_mme": 0.1925,
+         "mean_strata": 3.8825,
+         "mean_dropped": 0.1175
+        },
+        "0.02": {
+         "all_replicates": {
+          "supported": 32,
+          "replicates": 400,
+          "share": 0.08,
+          "interval": [
+           0.05723575041013351,
+           0.11075457683067555
+          ]
+         },
+         "replicates_at_the_floor": {
+          "supported": 32,
+          "replicates": 399,
+          "share": 0.08020050125313283,
+          "interval": [
+           0.057380661464511123,
+           0.1110266792776704
+          ]
+         },
+         "mean_point": 0.015142201936021229,
+         "point_at_or_above_mme": 0.2575,
+         "mean_strata": 3.8825,
+         "mean_dropped": 0.1175
+        },
+        "0.035": {
+         "all_replicates": {
+          "supported": 54,
+          "replicates": 400,
+          "share": 0.135,
+          "interval": [
+           0.10496299061600528,
+           0.1719809842480312
+          ]
+         },
+         "replicates_at_the_floor": {
+          "supported": 54,
+          "replicates": 399,
+          "share": 0.13533834586466165,
+          "interval": [
+           0.10522998526438898,
+           0.17240146594747618
+          ]
+         },
+         "mean_point": 0.031130375355489504,
+         "point_at_or_above_mme": 0.3625,
+         "mean_strata": 3.8825,
+         "mean_dropped": 0.1175
+        },
+        "0.05": {
+         "all_replicates": {
+          "supported": 88,
+          "replicates": 400,
+          "share": 0.22,
+          "interval": [
+           0.1821738927340146,
+           0.2631529920931915
+          ]
+         },
+         "replicates_at_the_floor": {
+          "supported": 88,
+          "replicates": 399,
+          "share": 0.22055137844611528,
+          "interval": [
+           0.18264026601263242,
+           0.2637920831978347
+          ]
+         },
+         "mean_point": 0.045938123495850636,
+         "point_at_or_above_mme": 0.455,
+         "mean_strata": 3.8825,
+         "mean_dropped": 0.1175
+        },
+        "0.065": {
+         "all_replicates": {
+          "supported": 131,
+          "replicates": 400,
+          "share": 0.3275,
+          "interval": [
+           0.2833400429179013,
+           0.37494169862743104
+          ]
+         },
+         "replicates_at_the_floor": {
+          "supported": 131,
+          "replicates": 399,
+          "share": 0.3283208020050125,
+          "interval": [
+           0.2840711227397534,
+           0.3758447151160044
+          ]
+         },
+         "mean_point": 0.06124006459264921,
+         "point_at_or_above_mme": 0.585,
+         "mean_strata": 3.8825,
+         "mean_dropped": 0.1175
+        },
+        "0.08": {
+         "all_replicates": {
+          "supported": 171,
+          "replicates": 400,
+          "share": 0.4275,
+          "interval": [
+           0.3799345878043344,
+           0.47644469487413854
+          ]
+         },
+         "replicates_at_the_floor": {
+          "supported": 171,
+          "replicates": 399,
+          "share": 0.42857142857142855,
+          "interval": [
+           0.38092257214356434,
+           0.4775825574752545
+          ]
+         },
+         "mean_point": 0.07639064483690647,
+         "point_at_or_above_mme": 0.67,
+         "mean_strata": 3.8825,
+         "mean_dropped": 0.1175
+        },
+        "0.1": {
+         "all_replicates": {
+          "supported": 219,
+          "replicates": 400,
+          "share": 0.5475,
+          "interval": [
+           0.49850112055362783,
+           0.5955952114846139
+          ]
+         },
+         "replicates_at_the_floor": {
+          "supported": 219,
+          "replicates": 399,
+          "share": 0.5488721804511278,
+          "interval": [
+           0.49981172036000265,
+           0.5970005593744897
+          ]
+         },
+         "mean_point": 0.09572676141586989,
+         "point_at_or_above_mme": 0.815,
+         "mean_strata": 3.8825,
+         "mean_dropped": 0.1175
+        },
+        "0.125": {
+         "all_replicates": {
+          "supported": 294,
+          "replicates": 400,
+          "share": 0.735,
+          "interval": [
+           0.6896629392432349,
+           0.7758662824196457
+          ]
+         },
+         "replicates_at_the_floor": {
+          "supported": 294,
+          "replicates": 399,
+          "share": 0.7368421052631579,
+          "interval": [
+           0.6915235411454995,
+           0.7776436606447322
+          ]
+         },
+         "mean_point": 0.12023129822869844,
+         "point_at_or_above_mme": 0.9175,
+         "mean_strata": 3.8825,
+         "mean_dropped": 0.1175
+        },
+        "0.15": {
+         "all_replicates": {
+          "supported": 342,
+          "replicates": 400,
+          "share": 0.855,
+          "interval": [
+           0.8171167606818923,
+           0.8861295103407572
+          ]
+         },
+         "replicates_at_the_floor": {
+          "supported": 342,
+          "replicates": 399,
+          "share": 0.8571428571428571,
+          "interval": [
+           0.8193968092306789,
+           0.8880775426752263
+          ]
+         },
+         "mean_point": 0.14526176383357473,
+         "point_at_or_above_mme": 0.9675,
+         "mean_strata": 3.8825,
+         "mean_dropped": 0.1175
+        }
+       }
+      },
+      "calendar_strata": {
+       "gains": {
+        "0.0": {
+         "all_replicates": {
+          "supported": 16,
+          "replicates": 400,
+          "share": 0.04,
+          "interval": [
+           0.024769063069711758,
+           0.06398224771784103
+          ]
+         },
+         "replicates_at_the_floor": {
+          "supported": 16,
+          "replicates": 399,
+          "share": 0.040100250626566414,
+          "interval": [
+           0.024831514863576386,
+           0.0641401091733807
+          ]
+         },
+         "mean_point": 0.001250704512414805,
+         "point_at_or_above_mme": 0.175,
+         "mean_strata": 5.7525,
+         "mean_dropped": 9.2475
+        },
+        "0.02": {
+         "all_replicates": {
+          "supported": 27,
+          "replicates": 400,
+          "share": 0.0675,
+          "interval": [
+           0.04680146916375965,
+           0.09642666543540682
+          ]
+         },
+         "replicates_at_the_floor": {
+          "supported": 27,
+          "replicates": 399,
+          "share": 0.06766917293233082,
+          "interval": [
+           0.046919821060727285,
+           0.0966638582110716
+          ]
+         },
+         "mean_point": 0.01471443867703407,
+         "point_at_or_above_mme": 0.2525,
+         "mean_strata": 5.7525,
+         "mean_dropped": 9.2475
+        },
+        "0.035": {
+         "all_replicates": {
+          "supported": 43,
+          "replicates": 400,
+          "share": 0.1075,
+          "interval": [
+           0.08079372047159449,
+           0.14167343058082826
+          ]
+         },
+         "replicates_at_the_floor": {
+          "supported": 43,
+          "replicates": 399,
+          "share": 0.10776942355889724,
+          "interval": [
+           0.08099877387654152,
+           0.1420206221004818
+          ]
+         },
+         "mean_point": 0.030588314032452605,
+         "point_at_or_above_mme": 0.38,
+         "mean_strata": 5.7525,
+         "mean_dropped": 9.2475
+        },
+        "0.05": {
+         "all_replicates": {
+          "supported": 66,
+          "replicates": 400,
+          "share": 0.165,
+          "interval": [
+           0.13184503236772813,
+           0.2045282048362506
+          ]
+         },
+         "replicates_at_the_floor": {
+          "supported": 66,
+          "replicates": 399,
+          "share": 0.16541353383458646,
+          "interval": [
+           0.1321811880005682,
+           0.2050270507402153
+          ]
+         },
+         "mean_point": 0.044887636085661174,
+         "point_at_or_above_mme": 0.455,
+         "mean_strata": 5.7525,
+         "mean_dropped": 9.2475
+        },
+        "0.065": {
+         "all_replicates": {
+          "supported": 101,
+          "replicates": 400,
+          "share": 0.2525,
+          "interval": [
+           0.21241694139207157,
+           0.29729164430340527
+          ]
+         },
+         "replicates_at_the_floor": {
+          "supported": 101,
+          "replicates": 399,
+          "share": 0.2531328320802005,
+          "interval": [
+           0.21296202382058183,
+           0.29801184521288004
+          ]
+         },
+         "mean_point": 0.059943788800971044,
+         "point_at_or_above_mme": 0.5625,
+         "mean_strata": 5.7525,
+         "mean_dropped": 9.2475
+        },
+        "0.08": {
+         "all_replicates": {
+          "supported": 141,
+          "replicates": 400,
+          "share": 0.3525,
+          "interval": [
+           0.30728664659675226,
+           0.4005194802318652
+          ]
+         },
+         "replicates_at_the_floor": {
+          "supported": 141,
+          "replicates": 399,
+          "share": 0.3533834586466165,
+          "interval": [
+           0.3080810043659634,
+           0.4014821564305596
+          ]
+         },
+         "mean_point": 0.07483479748526659,
+         "point_at_or_above_mme": 0.6575,
+         "mean_strata": 5.7525,
+         "mean_dropped": 9.2475
+        },
+        "0.1": {
+         "all_replicates": {
+          "supported": 189,
+          "replicates": 400,
+          "share": 0.4725,
+          "interval": [
+           0.4240692032756731,
+           0.5214539729127131
+          ]
+         },
+         "replicates_at_the_floor": {
+          "supported": 189,
+          "replicates": 399,
+          "share": 0.47368421052631576,
+          "interval": [
+           0.42517619738325485,
+           0.5226941135289416
+          ]
+         },
+         "mean_point": 0.09375679006115631,
+         "point_at_or_above_mme": 0.785,
+         "mean_strata": 5.7525,
+         "mean_dropped": 9.2475
+        },
+        "0.125": {
+         "all_replicates": {
+          "supported": 264,
+          "replicates": 400,
+          "share": 0.66,
+          "interval": [
+           0.6122516850900368,
+           0.7047043807229885
+          ]
+         },
+         "replicates_at_the_floor": {
+          "supported": 264,
+          "replicates": 399,
+          "share": 0.6616541353383458,
+          "interval": [
+           0.6138831862928078,
+           0.7063420466751282
+          ]
+         },
+         "mean_point": 0.11875224653225347,
+         "point_at_or_above_mme": 0.9075,
+         "mean_strata": 5.7525,
+         "mean_dropped": 9.2475
+        },
+        "0.15": {
+         "all_replicates": {
+          "supported": 319,
+          "replicates": 400,
+          "share": 0.7975,
+          "interval": [
+           0.7553739799055185,
+           0.833966204965575
+          ]
+         },
+         "replicates_at_the_floor": {
+          "supported": 319,
+          "replicates": 399,
+          "share": 0.7994987468671679,
+          "interval": [
+           0.7574411294620842,
+           0.835844379680061
+          ]
+         },
+         "mean_point": 0.14352298777957556,
+         "point_at_or_above_mme": 0.965,
+         "mean_strata": 5.7525,
+         "mean_dropped": 9.2475
+        }
+       }
+      }
+     }
+    },
+    "500": {
+     "length": 500,
+     "first_day": "2024-09-03",
+     "last_day": "2026-09-03",
+     "days": 500,
+     "planting": {
+      "reference_series": 200,
+      "shift_in_sigma": {
+       "0.0": 0.0,
+       "0.02": 0.008579210261814296,
+       "0.035": 0.016096073668450117,
+       "0.05": 0.023678969591856003,
+       "0.065": 0.03136086976155639,
+       "0.08": 0.039119087159633636,
+       "0.1": 0.04955816373694688,
+       "0.125": 0.06267048884183168,
+       "0.15": 0.07614980393555015
+      },
+      "mean_gain_on_the_reference_series": {
+       "0.0": {
+        "mean_gain": 0.0030706263557822673,
+        "miss": 0.0030706263557822673
+       },
+       "0.02": {
+        "mean_gain": 0.019999408418123244,
+        "miss": -5.915818767562864e-07
+       },
+       "0.035": {
+        "mean_gain": 0.03499939060989346,
+        "miss": -6.093901065429286e-07
+       },
+       "0.05": {
+        "mean_gain": 0.049999417242940575,
+        "miss": -5.827570594280074e-07
+       },
+       "0.065": {
+        "mean_gain": 0.06499957082107283,
+        "miss": -4.2917892717486694e-07
+       },
+       "0.08": {
+        "mean_gain": 0.08000001005059057,
+        "miss": 1.0050590568133622e-08
+       },
+       "0.1": {
+        "mean_gain": 0.10000048922300081,
+        "miss": 4.892230008046727e-07
+       },
+       "0.125": {
+        "mean_gain": 0.12500027288300777,
+        "miss": 2.728830077736166e-07
+       },
+       "0.15": {
+        "mean_gain": 0.1500003223585105,
+        "miss": 3.223585104961124e-07
+       }
+      }
+     },
+     "replicates": 400,
+     "replicates_at_the_event_floor": 400,
+     "events_per_replicate": {
+      "min": 23,
+      "median": 40.0,
+      "max": 57
+     },
+     "tests": {
+      "section5": {
+       "gains": {
+        "0.0": {
+         "all_replicates": {
+          "supported": 16,
+          "replicates": 400,
+          "share": 0.04,
+          "interval": [
+           0.024769063069711758,
+           0.06398224771784103
+          ]
+         },
+         "replicates_at_the_floor": {
+          "supported": 16,
+          "replicates": 400,
+          "share": 0.04,
+          "interval": [
+           0.024769063069711758,
+           0.06398224771784103
+          ]
+         },
+         "mean_point": 0.00019577258775483293,
+         "point_at_or_above_mme": 0.08,
+         "mean_strata": 3.9775,
+         "mean_dropped": 0.0225
+        },
+        "0.02": {
+         "all_replicates": {
+          "supported": 35,
+          "replicates": 400,
+          "share": 0.0875,
+          "interval": [
+           0.06358691021150324,
+           0.11926073261429136
+          ]
+         },
+         "replicates_at_the_floor": {
+          "supported": 35,
+          "replicates": 400,
+          "share": 0.0875,
+          "interval": [
+           0.06358691021150324,
+           0.11926073261429136
+          ]
+         },
+         "mean_point": 0.017265292324912453,
+         "point_at_or_above_mme": 0.21,
+         "mean_strata": 3.9775,
+         "mean_dropped": 0.0225
+        },
+        "0.035": {
+         "all_replicates": {
+          "supported": 68,
+          "replicates": 400,
+          "share": 0.17,
+          "interval": [
+           0.13636898220196564,
+           0.20990913205867007
+          ]
+         },
+         "replicates_at_the_floor": {
+          "supported": 68,
+          "replicates": 400,
+          "share": 0.17,
+          "interval": [
+           0.13636898220196564,
+           0.20990913205867007
+          ]
+         },
+         "mean_point": 0.03216478780173291,
+         "point_at_or_above_mme": 0.3225,
+         "mean_strata": 3.9775,
+         "mean_dropped": 0.0225
+        },
+        "0.05": {
+         "all_replicates": {
+          "supported": 123,
+          "replicates": 400,
+          "share": 0.3075,
+          "interval": [
+           0.2642873977313039,
+           0.3543748355874003
+          ]
+         },
+         "replicates_at_the_floor": {
+          "supported": 123,
+          "replicates": 400,
+          "share": 0.3075,
+          "interval": [
+           0.2642873977313039,
+           0.3543748355874003
+          ]
+         },
+         "mean_point": 0.04716893885700789,
+         "point_at_or_above_mme": 0.4625,
+         "mean_strata": 3.9775,
+         "mean_dropped": 0.0225
+        },
+        "0.065": {
+         "all_replicates": {
+          "supported": 189,
+          "replicates": 400,
+          "share": 0.4725,
+          "interval": [
+           0.4240692032756731,
+           0.5214539729127131
+          ]
+         },
+         "replicates_at_the_floor": {
+          "supported": 189,
+          "replicates": 400,
+          "share": 0.4725,
+          "interval": [
+           0.4240692032756731,
+           0.5214539729127131
+          ]
+         },
+         "mean_point": 0.0623288246703539,
+         "point_at_or_above_mme": 0.6225,
+         "mean_strata": 3.9775,
+         "mean_dropped": 0.0225
+        },
+        "0.08": {
+         "all_replicates": {
+          "supported": 247,
+          "replicates": 400,
+          "share": 0.6175,
+          "interval": [
+           0.5689692933715043,
+           0.6637953174599363
+          ]
+         },
+         "replicates_at_the_floor": {
+          "supported": 247,
+          "replicates": 400,
+          "share": 0.6175,
+          "interval": [
+           0.5689692933715043,
+           0.6637953174599363
+          ]
+         },
+         "mean_point": 0.07754177907355678,
+         "point_at_or_above_mme": 0.7575,
+         "mean_strata": 3.9775,
+         "mean_dropped": 0.0225
+        },
+        "0.1": {
+         "all_replicates": {
+          "supported": 328,
+          "replicates": 400,
+          "share": 0.82,
+          "interval": [
+           0.7793624469518832,
+           0.8545496846741669
+          ]
+         },
+         "replicates_at_the_floor": {
+          "supported": 328,
+          "replicates": 400,
+          "share": 0.82,
+          "interval": [
+           0.7793624469518832,
+           0.8545496846741669
+          ]
+         },
+         "mean_point": 0.09772817799976957,
+         "point_at_or_above_mme": 0.9025,
+         "mean_strata": 3.9775,
+         "mean_dropped": 0.0225
+        },
+        "0.125": {
+         "all_replicates": {
+          "supported": 373,
+          "replicates": 400,
+          "share": 0.9325,
+          "interval": [
+           0.9035733345645931,
+           0.9531985308362403
+          ]
+         },
+         "replicates_at_the_floor": {
+          "supported": 373,
+          "replicates": 400,
+          "share": 0.9325,
+          "interval": [
+           0.9035733345645931,
+           0.9531985308362403
+          ]
+         },
+         "mean_point": 0.12266081093523941,
+         "point_at_or_above_mme": 0.97,
+         "mean_strata": 3.9775,
+         "mean_dropped": 0.0225
+        },
+        "0.15": {
+         "all_replicates": {
+          "supported": 391,
+          "replicates": 400,
+          "share": 0.9775,
+          "interval": [
+           0.9577973424412419,
+           0.988118416469505
+          ]
+         },
+         "replicates_at_the_floor": {
+          "supported": 391,
+          "replicates": 400,
+          "share": 0.9775,
+          "interval": [
+           0.9577973424412419,
+           0.988118416469505
+          ]
+         },
+         "mean_point": 0.1478290772425429,
+         "point_at_or_above_mme": 0.99,
+         "mean_strata": 3.9775,
+         "mean_dropped": 0.0225
+        }
+       }
+      },
+      "calendar_strata": {
+       "gains": {
+        "0.0": {
+         "all_replicates": {
+          "supported": 13,
+          "replicates": 400,
+          "share": 0.0325,
+          "interval": [
+           0.01908984237880045,
+           0.0548041528237668
+          ]
+         },
+         "replicates_at_the_floor": {
+          "supported": 13,
+          "replicates": 400,
+          "share": 0.0325,
+          "interval": [
+           0.01908984237880045,
+           0.0548041528237668
+          ]
+         },
+         "mean_point": -0.0003763767603515582,
+         "point_at_or_above_mme": 0.1,
+         "mean_strata": 8.0125,
+         "mean_dropped": 6.9875
+        },
+        "0.02": {
+         "all_replicates": {
+          "supported": 32,
+          "replicates": 400,
+          "share": 0.08,
+          "interval": [
+           0.05723575041013351,
+           0.11075457683067555
+          ]
+         },
+         "replicates_at_the_floor": {
+          "supported": 32,
+          "replicates": 400,
+          "share": 0.08,
+          "interval": [
+           0.05723575041013351,
+           0.11075457683067555
+          ]
+         },
+         "mean_point": 0.01689064044378022,
+         "point_at_or_above_mme": 0.215,
+         "mean_strata": 8.0125,
+         "mean_dropped": 6.9875
+        },
+        "0.035": {
+         "all_replicates": {
+          "supported": 60,
+          "replicates": 400,
+          "share": 0.15,
+          "interval": [
+           0.11834499530337544,
+           0.18831361073063213
+          ]
+         },
+         "replicates_at_the_floor": {
+          "supported": 60,
+          "replicates": 400,
+          "share": 0.15,
+          "interval": [
+           0.11834499530337544,
+           0.18831361073063213
+          ]
+         },
+         "mean_point": 0.031446648610952824,
+         "point_at_or_above_mme": 0.32,
+         "mean_strata": 8.0125,
+         "mean_dropped": 6.9875
+        },
+        "0.05": {
+         "all_replicates": {
+          "supported": 103,
+          "replicates": 400,
+          "share": 0.2575,
+          "interval": [
+           0.21709827513471777,
+           0.302515187617416
+          ]
+         },
+         "replicates_at_the_floor": {
+          "supported": 103,
+          "replicates": 400,
+          "share": 0.2575,
+          "interval": [
+           0.21709827513471777,
+           0.302515187617416
+          ]
+         },
+         "mean_point": 0.046533475345581596,
+         "point_at_or_above_mme": 0.4725,
+         "mean_strata": 8.0125,
+         "mean_dropped": 6.9875
+        },
+        "0.065": {
+         "all_replicates": {
+          "supported": 167,
+          "replicates": 400,
+          "share": 0.4175,
+          "interval": [
+           0.37018126768159904,
+           0.46638826088355984
+          ]
+         },
+         "replicates_at_the_floor": {
+          "supported": 167,
+          "replicates": 400,
+          "share": 0.4175,
+          "interval": [
+           0.37018126768159904,
+           0.46638826088355984
+          ]
+         },
+         "mean_point": 0.06155746836404423,
+         "point_at_or_above_mme": 0.615,
+         "mean_strata": 8.0125,
+         "mean_dropped": 6.9875
+        },
+        "0.08": {
+         "all_replicates": {
+          "supported": 227,
+          "replicates": 400,
+          "share": 0.5675,
+          "interval": [
+           0.5185345773355028,
+           0.6151812629293671
+          ]
+         },
+         "replicates_at_the_floor": {
+          "supported": 227,
+          "replicates": 400,
+          "share": 0.5675,
+          "interval": [
+           0.5185345773355028,
+           0.6151812629293671
+          ]
+         },
+         "mean_point": 0.07695662751847716,
+         "point_at_or_above_mme": 0.7575,
+         "mean_strata": 8.0125,
+         "mean_dropped": 6.9875
+        },
+        "0.1": {
+         "all_replicates": {
+          "supported": 303,
+          "replicates": 400,
+          "share": 0.7575,
+          "interval": [
+           0.7131775779269679,
+           0.7969235904908692
+          ]
+         },
+         "replicates_at_the_floor": {
+          "supported": 303,
+          "replicates": 400,
+          "share": 0.7575,
+          "interval": [
+           0.7131775779269679,
+           0.7969235904908692
+          ]
+         },
+         "mean_point": 0.09670798366646702,
+         "point_at_or_above_mme": 0.8825,
+         "mean_strata": 8.0125,
+         "mean_dropped": 6.9875
+        },
+        "0.125": {
+         "all_replicates": {
+          "supported": 353,
+          "replicates": 400,
+          "share": 0.8825,
+          "interval": [
+           0.8472450357843669,
+           0.9104780590498961
+          ]
+         },
+         "replicates_at_the_floor": {
+          "supported": 353,
+          "replicates": 400,
+          "share": 0.8825,
+          "interval": [
+           0.8472450357843669,
+           0.9104780590498961
+          ]
+         },
+         "mean_point": 0.12151923166079463,
+         "point_at_or_above_mme": 0.955,
+         "mean_strata": 8.0125,
+         "mean_dropped": 6.9875
+        },
+        "0.15": {
+         "all_replicates": {
+          "supported": 383,
+          "replicates": 400,
+          "share": 0.9575,
+          "interval": [
+           0.9329979456752499,
+           0.9732983050088689
+          ]
+         },
+         "replicates_at_the_floor": {
+          "supported": 383,
+          "replicates": 400,
+          "share": 0.9575,
+          "interval": [
+           0.9329979456752499,
+           0.9732983050088689
+          ]
+         },
+         "mean_point": 0.14638622886950647,
+         "point_at_or_above_mme": 0.99,
+         "mean_strata": 8.0125,
+         "mean_dropped": 6.9875
+        }
+       }
+      }
+     }
+    },
+    "750": {
+     "length": 750,
+     "first_day": "2023-09-01",
+     "last_day": "2026-09-03",
+     "days": 750,
+     "planting": {
+      "reference_series": 200,
+      "shift_in_sigma": {
+       "0.0": 0.0,
+       "0.02": 0.014035320491530001,
+       "0.035": 0.024255175958387554,
+       "0.05": 0.03451072669122368,
+       "0.065": 0.0449144362937659,
+       "0.08": 0.05530222202651203,
+       "0.1": 0.06940870604012161,
+       "0.125": 0.08760630968026817,
+       "0.15": 0.10625443246681243
+      },
+      "mean_gain_on_the_reference_series": {
+       "0.0": {
+        "mean_gain": -0.0005808048899326604,
+        "miss": -0.0005808048899326604
+       },
+       "0.02": {
+        "mean_gain": 0.019999870376889814,
+        "miss": -1.2962311018646644e-07
+       },
+       "0.035": {
+        "mean_gain": 0.03500022151876663,
+        "miss": 2.2151876662851455e-07
+       },
+       "0.05": {
+        "mean_gain": 0.0499997159477748,
+        "miss": -2.840522251995603e-07
+       },
+       "0.065": {
+        "mean_gain": 0.06500019599695883,
+        "miss": 1.9599695882943635e-07
+       },
+       "0.08": {
+        "mean_gain": 0.07999973578771521,
+        "miss": -2.6421228478679115e-07
+       },
+       "0.1": {
+        "mean_gain": 0.09999991113135448,
+        "miss": -8.886864552581919e-08
+       },
+       "0.125": {
+        "mean_gain": 0.12500007328668922,
+        "miss": 7.328668921724457e-08
+       },
+       "0.15": {
+        "mean_gain": 0.1500001597500754,
+        "miss": 1.5975007541801922e-07
+       }
+      }
+     },
+     "replicates": 400,
+     "replicates_at_the_event_floor": 400,
+     "events_per_replicate": {
+      "min": 42,
+      "median": 60.0,
+      "max": 81
+     },
+     "tests": {
+      "section5": {
+       "gains": {
+        "0.0": {
+         "all_replicates": {
+          "supported": 9,
+          "replicates": 400,
+          "share": 0.0225,
+          "interval": [
+           0.011881583530495034,
+           0.04220265755875813
+          ]
+         },
+         "replicates_at_the_floor": {
+          "supported": 9,
+          "replicates": 400,
+          "share": 0.0225,
+          "interval": [
+           0.011881583530495034,
+           0.04220265755875813
+          ]
+         },
+         "mean_point": 0.0006056978128352184,
+         "point_at_or_above_mme": 0.0225,
+         "mean_strata": 3.99,
+         "mean_dropped": 0.01
+        },
+        "0.02": {
+         "all_replicates": {
+          "supported": 44,
+          "replicates": 400,
+          "share": 0.11,
+          "interval": [
+           0.08296867911910685,
+           0.1444509104616444
+          ]
+         },
+         "replicates_at_the_floor": {
+          "supported": 44,
+          "replicates": 400,
+          "share": 0.11,
+          "interval": [
+           0.08296867911910685,
+           0.1444509104616444
+          ]
+         },
+         "mean_point": 0.021354904716821624,
+         "point_at_or_above_mme": 0.1125,
+         "mean_strata": 3.99,
+         "mean_dropped": 0.01
+        },
+        "0.035": {
+         "all_replicates": {
+          "supported": 112,
+          "replicates": 400,
+          "share": 0.28,
+          "interval": [
+           0.23825142339704647,
+           0.32593398611004404
+          ]
+         },
+         "replicates_at_the_floor": {
+          "supported": 112,
+          "replicates": 400,
+          "share": 0.28,
+          "interval": [
+           0.23825142339704647,
+           0.32593398611004404
+          ]
+         },
+         "mean_point": 0.036328631285607565,
+         "point_at_or_above_mme": 0.2825,
+         "mean_strata": 3.99,
+         "mean_dropped": 0.01
+        },
+        "0.05": {
+         "all_replicates": {
+          "supported": 204,
+          "replicates": 400,
+          "share": 0.51,
+          "interval": [
+           0.46114904250821503,
+           0.558660711605099
+          ]
+         },
+         "replicates_at_the_floor": {
+          "supported": 204,
+          "replicates": 400,
+          "share": 0.51,
+          "interval": [
+           0.46114904250821503,
+           0.558660711605099
+          ]
+         },
+         "mean_point": 0.05132002155787303,
+         "point_at_or_above_mme": 0.525,
+         "mean_strata": 3.99,
+         "mean_dropped": 0.01
+        },
+        "0.065": {
+         "all_replicates": {
+          "supported": 301,
+          "replicates": 400,
+          "share": 0.7525,
+          "interval": [
+           0.7079392288053334,
+           0.7922570625558467
+          ]
+         },
+         "replicates_at_the_floor": {
+          "supported": 301,
+          "replicates": 400,
+          "share": 0.7525,
+          "interval": [
+           0.7079392288053334,
+           0.7922570625558467
+          ]
+         },
+         "mean_point": 0.06643242726532225,
+         "point_at_or_above_mme": 0.765,
+         "mean_strata": 3.99,
+         "mean_dropped": 0.01
+        },
+        "0.08": {
+         "all_replicates": {
+          "supported": 364,
+          "replicates": 400,
+          "share": 0.91,
+          "interval": [
+           0.8779172124152713,
+           0.9342827062306055
+          ]
+         },
+         "replicates_at_the_floor": {
+          "supported": 364,
+          "replicates": 400,
+          "share": 0.91,
+          "interval": [
+           0.8779172124152713,
+           0.9342827062306055
+          ]
+         },
+         "mean_point": 0.08122837281208474,
+         "point_at_or_above_mme": 0.91,
+         "mean_strata": 3.99,
+         "mean_dropped": 0.01
+        },
+        "0.1": {
+         "all_replicates": {
+          "supported": 392,
+          "replicates": 400,
+          "share": 0.98,
+          "interval": [
+           0.96103658423074,
+           0.9898316132083353
+          ]
+         },
+         "replicates_at_the_floor": {
+          "supported": 392,
+          "replicates": 400,
+          "share": 0.98,
+          "interval": [
+           0.96103658423074,
+           0.9898316132083353
+          ]
+         },
+         "mean_point": 0.10135319656251986,
+         "point_at_or_above_mme": 0.98,
+         "mean_strata": 3.99,
+         "mean_dropped": 0.01
+        },
+        "0.125": {
+         "all_replicates": {
+          "supported": 400,
+          "replicates": 400,
+          "share": 1.0,
+          "interval": [
+           0.9904877056657034,
+           0.9999999999999999
+          ]
+         },
+         "replicates_at_the_floor": {
+          "supported": 400,
+          "replicates": 400,
+          "share": 1.0,
+          "interval": [
+           0.9904877056657034,
+           0.9999999999999999
+          ]
+         },
+         "mean_point": 0.1264170658032551,
+         "point_at_or_above_mme": 1.0,
+         "mean_strata": 3.99,
+         "mean_dropped": 0.01
+        },
+        "0.15": {
+         "all_replicates": {
+          "supported": 400,
+          "replicates": 400,
+          "share": 1.0,
+          "interval": [
+           0.9904877056657034,
+           0.9999999999999999
+          ]
+         },
+         "replicates_at_the_floor": {
+          "supported": 400,
+          "replicates": 400,
+          "share": 1.0,
+          "interval": [
+           0.9904877056657034,
+           0.9999999999999999
+          ]
+         },
+         "mean_point": 0.1514149057372277,
+         "point_at_or_above_mme": 1.0,
+         "mean_strata": 3.99,
+         "mean_dropped": 0.01
+        }
+       }
+      },
+      "calendar_strata": {
+       "gains": {
+        "0.0": {
+         "all_replicates": {
+          "supported": 9,
+          "replicates": 400,
+          "share": 0.0225,
+          "interval": [
+           0.011881583530495034,
+           0.04220265755875813
+          ]
+         },
+         "replicates_at_the_floor": {
+          "supported": 9,
+          "replicates": 400,
+          "share": 0.0225,
+          "interval": [
+           0.011881583530495034,
+           0.04220265755875813
+          ]
+         },
+         "mean_point": 0.0007373792397057817,
+         "point_at_or_above_mme": 0.0275,
+         "mean_strata": 8.575,
+         "mean_dropped": 6.425
+        },
+        "0.02": {
+         "all_replicates": {
+          "supported": 48,
+          "replicates": 400,
+          "share": 0.12,
+          "interval": [
+           0.09171539075382554,
+           0.15551395294023979
+          ]
+         },
+         "replicates_at_the_floor": {
+          "supported": 48,
+          "replicates": 400,
+          "share": 0.12,
+          "interval": [
+           0.09171539075382554,
+           0.15551395294023979
+          ]
+         },
+         "mean_point": 0.021307571656875787,
+         "point_at_or_above_mme": 0.135,
+         "mean_strata": 8.575,
+         "mean_dropped": 6.425
+        },
+        "0.035": {
+         "all_replicates": {
+          "supported": 112,
+          "replicates": 400,
+          "share": 0.28,
+          "interval": [
+           0.23825142339704647,
+           0.32593398611004404
+          ]
+         },
+         "replicates_at_the_floor": {
+          "supported": 112,
+          "replicates": 400,
+          "share": 0.28,
+          "interval": [
+           0.23825142339704647,
+           0.32593398611004404
+          ]
+         },
+         "mean_point": 0.036282951571842734,
+         "point_at_or_above_mme": 0.29,
+         "mean_strata": 8.575,
+         "mean_dropped": 6.425
+        },
+        "0.05": {
+         "all_replicates": {
+          "supported": 203,
+          "replicates": 400,
+          "share": 0.5075,
+          "interval": [
+           0.45866859619769573,
+           0.5561887193872896
+          ]
+         },
+         "replicates_at_the_floor": {
+          "supported": 203,
+          "replicates": 400,
+          "share": 0.5075,
+          "interval": [
+           0.45866859619769573,
+           0.5561887193872896
+          ]
+         },
+         "mean_point": 0.05127936484562034,
+         "point_at_or_above_mme": 0.53,
+         "mean_strata": 8.575,
+         "mean_dropped": 6.425
+        },
+        "0.065": {
+         "all_replicates": {
+          "supported": 294,
+          "replicates": 400,
+          "share": 0.735,
+          "interval": [
+           0.6896629392432349,
+           0.7758662824196457
+          ]
+         },
+         "replicates_at_the_floor": {
+          "supported": 294,
+          "replicates": 400,
+          "share": 0.735,
+          "interval": [
+           0.6896629392432349,
+           0.7758662824196457
+          ]
+         },
+         "mean_point": 0.0662219281699179,
+         "point_at_or_above_mme": 0.745,
+         "mean_strata": 8.575,
+         "mean_dropped": 6.425
+        },
+        "0.08": {
+         "all_replicates": {
+          "supported": 353,
+          "replicates": 400,
+          "share": 0.8825,
+          "interval": [
+           0.8472450357843669,
+           0.9104780590498961
+          ]
+         },
+         "replicates_at_the_floor": {
+          "supported": 353,
+          "replicates": 400,
+          "share": 0.8825,
+          "interval": [
+           0.8472450357843669,
+           0.9104780590498961
+          ]
+         },
+         "mean_point": 0.0808651680588045,
+         "point_at_or_above_mme": 0.8975,
+         "mean_strata": 8.575,
+         "mean_dropped": 6.425
+        },
+        "0.1": {
+         "all_replicates": {
+          "supported": 391,
+          "replicates": 400,
+          "share": 0.9775,
+          "interval": [
+           0.9577973424412419,
+           0.988118416469505
+          ]
+         },
+         "replicates_at_the_floor": {
+          "supported": 391,
+          "replicates": 400,
+          "share": 0.9775,
+          "interval": [
+           0.9577973424412419,
+           0.988118416469505
+          ]
+         },
+         "mean_point": 0.1008759116990932,
+         "point_at_or_above_mme": 0.9775,
+         "mean_strata": 8.575,
+         "mean_dropped": 6.425
+        },
+        "0.125": {
+         "all_replicates": {
+          "supported": 400,
+          "replicates": 400,
+          "share": 1.0,
+          "interval": [
+           0.9904877056657034,
+           0.9999999999999999
+          ]
+         },
+         "replicates_at_the_floor": {
+          "supported": 400,
+          "replicates": 400,
+          "share": 1.0,
+          "interval": [
+           0.9904877056657034,
+           0.9999999999999999
+          ]
+         },
+         "mean_point": 0.1256646134251611,
+         "point_at_or_above_mme": 1.0,
+         "mean_strata": 8.575,
+         "mean_dropped": 6.425
+        },
+        "0.15": {
+         "all_replicates": {
+          "supported": 400,
+          "replicates": 400,
+          "share": 1.0,
+          "interval": [
+           0.9904877056657034,
+           0.9999999999999999
+          ]
+         },
+         "replicates_at_the_floor": {
+          "supported": 400,
+          "replicates": 400,
+          "share": 1.0,
+          "interval": [
+           0.9904877056657034,
+           0.9999999999999999
+          ]
+         },
+         "mean_point": 0.15048578132878032,
+         "point_at_or_above_mme": 1.0,
+         "mean_strata": 8.575,
+         "mean_dropped": 6.425
+        }
+       }
+      }
+     }
+    }
+   }
+  }
+ },
+ "seconds": 720.8
+}

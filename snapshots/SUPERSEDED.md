@@ -105,3 +105,18 @@ replace; only the new, blank `restored_from` column is added. Rows: 295 plus 9, 
 
 A reader that pinned the superseded digest still finds its bytes. A reader that moves to the current digest finds nine more
 rows and the `restored_from` column; the 295 earlier rows are unchanged.
+
+## 20 October 2026: the `rde` snapshot re-cut for Eleonora's ruling of 19 October (#139, finding #136)
+
+PR #134 merged before her ruling on the reserve demand elasticity. The re-cut applies it: availability at 12:00 New York time, a
+third Thursday inside an FOMC blackout moved to the first business day after it (six releases of the table, and 17 September
+2026), an estimate public at the first release whose data is as of its date or later, and the table starting at the estimate
+the launch release headlined (2024-10-09, one row later than before). The 634 earlier estimates are published apart as
+`history-<digest>.csv`, labelled "history, not public before 2024-10-17", outside the declaration.
+
+| Series | Superseded digest (file kept) | Current digest | Rows |
+|---|---|---|---|
+| `rde` | `6edafdc786e9b99d8e43f540a52083ed843a086a43209d3df3bfd207023d9e80` | `bc6f395a61b5b83c7fce36de3623e3e05f807f1f30cce5731c7d2743a81c85f2` | 80 to 79 |
+
+A reader that pinned the superseded digest still finds its bytes; they read estimates up to a day before their release and must
+move to the current digest.

@@ -397,6 +397,12 @@ def _build_rde(table: Path, root: Path, repo_commit: str) -> dict:
     directory.mkdir(parents=True, exist_ok=True)
     relative = f"snapshots/rde/{digest}.csv"
     (root / relative).write_bytes(data)
+    history_table = table.with_name(rde.HISTORY_NAME)
+    history = rde.load_history(history_table)
+    history_data = history_table.read_bytes()
+    history_digest = hashlib.sha256(history_data).hexdigest()
+    history_relative = f"snapshots/rde/history-{history_digest}.csv"
+    (root / history_relative).write_bytes(history_data)
     manifest = {
         "series": "rde",
         "path": relative,
@@ -406,7 +412,20 @@ def _build_rde(table: Path, root: Path, repo_commit: str) -> dict:
         "vintage": rows[0].vintage,
         "vintage_note": ("The latest release's figures, which may differ from the first print: the Fed serves only its "
                          "latest workbook, so earlier releases are not recoverable. Each estimate is read as public from "
-                         "the release repo_liquidity.rde.release_for assigns it, never before the launch on 2024-10-17."),
+                         "the release repo_liquidity.rde.release_for assigns it (12:00 New York time on the third Thursday, or on the first "
+                         "business day after an FOMC blackout that holds it), never before the launch on 2024-10-17."),
+        "history": {
+            "path": history_relative,
+            "sha256": history_digest,
+            "columns": list(rde.HISTORY_COLUMNS),
+            "rows": len(history),
+            "label": rde.HISTORY_LABEL,
+            "first_estimate": history[0].estimate_date.isoformat(),
+            "last_estimate": history[-1].estimate_date.isoformat(),
+            "source_table": str(history_table.relative_to(ROOT)),
+            "note": ("The estimates before the table, published apart (the ruling of 19 October 2026): not a point-in-time "
+                     "series, outside the declaration and read by nothing. They carry no availability."),
+        },
         "role_note": ("An external check on H7m goalposts 1 and 3, reported and never deciding (Eleonora, 19 October 2026); "
                       "R and S stay the deciding benchmarks, and nothing reads this series into a goalpost or a score."),
         "hash_note": rde.HASH_NOTE,

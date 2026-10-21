@@ -509,3 +509,138 @@ def labelled_days(days: Sequence[Day], accepted: Mapping[date, Optional[float]],
         else:
             out.append(LabelledDay(d.day, int(is_material_use(amount)), d.ratio, d.state))
     return Labelled(out, dropped)
+
+
+# -- the third record's calendar (`docs/stages/h7-g6.md` §11) -----------------------------------------------------------
+
+#: §11.3: coupons settling on or before this day of the month are the mid-month settlement, after it the month-end one.
+MID_MONTH_LAST_DAY = 20
+
+#: §11.3: the ridge on the five slopes of the calendar-tied process (none on the intercept).
+RIDGE = 1.0
+
+#: §11.3: the fit stops when no coefficient moves by more than this, or after this many steps (an error).
+FIT_TOLERANCE = 1e-10
+FIT_STEPS = 100
+
+#: The panel columns the flags are read from: the ones the parent's `repo_model.risk_dates` reads for its scheduled days.
+COUPONS_COLUMN = "treasury_settlement_coupons"
+QUARTER_END_COLUMN = "quarter_end"
+
+
+class Calendar(NamedTuple):
+    """The calendar flags of one day (§11.3), each 0 or 1. A year-end is also a quarter-end."""
+
+    coupon_mid: int
+    coupon_end: int
+    quarter_end: int
+    year_end: int
+
+
+def calendar_flags(day: date, values: Mapping[str, Optional[float]]) -> Calendar:
+    """The flags of `day` from the parent's panel row `values`.
+
+    Raises:
+        ValueError: if a calendar column is missing or empty (a hole is a data error, never a zero).
+    """
+    coupons, quarter_end = values.get(COUPONS_COLUMN), values.get(QUARTER_END_COLUMN)
+    if coupons is None or quarter_end is None:
+        raise ValueError(f"{day}: a calendar column is missing ({COUPONS_COLUMN}={coupons}, {QUARTER_END_COLUMN}={quarter_end})")
+    settles = float(coupons) > 0.0
+    quarter = float(quarter_end) == 1.0
+    return Calendar(int(settles and day.day <= MID_MONTH_LAST_DAY), int(settles and day.day > MID_MONTH_LAST_DAY),
+                    int(quarter), int(quarter and day.month == 12))
+
+
+def calendar_class(flags: Calendar) -> int:
+    """§11.4 option (ii): 3 for a quarter-end, else 2 for a month-end settlement, else 1 for a mid-month one, else 0."""
+    if flags.quarter_end:
+        return 3
+    if flags.coupon_end:
+        return 2
+    return 1 if flags.coupon_mid else 0
+
+
+def calendar_strata(state: Sequence[float], flags: Sequence[Calendar]) -> List[float]:
+    """The scarcity state crossed with the calendar class (§11.4 option (ii)), one value per stratum.
+
+    Raises:
+        ValueError: if the columns differ in length.
+    """
+    if len(state) != len(flags):
+        raise ValueError(f"{len(state)} states but {len(flags)} calendar rows")
+    return [10.0 * s + calendar_class(f) for s, f in zip(state, flags)]
+
+
+def independent_process(event: Sequence[int]) -> EventProcess:
+    """§11.3 process 1: every day an event with the observed share, so `start == stay` and there is no memory.
+
+    Raises:
+        ValueError: if the series has no event or no quiet day.
+    """
+    events = sum(event)
+    if not event or events == 0 or events == len(event):
+        raise ValueError(f"the independent process needs both event and quiet days, got {events} events in {len(event)} days")
+    share = events / len(event)
+    return EventProcess(share, share, len(event) - events, events)
+
+
+class CalendarProcess(NamedTuple):
+    """§11.3 process 3: `logit P(E_t) = b0 + b1 E(t-1) + b2 coupon_mid + b3 coupon_end + b4 quarter_end + b5 year_end`."""
+
+    coefficients: Tuple[float, ...]
+    #: The observed share of event days in the fitting window: the state before day 0 is drawn from it.
+    share: float
+    days: int
+    events: int
+    ridge: float
+    #: The consecutive pairs the fit used.
+    pairs: int
+
+    def probability(self, previous: int, flags: Calendar) -> float:
+        b = self.coefficients
+        z = b[0] + b[1] * previous + b[2] * flags.coupon_mid + b[3] * flags.coupon_end + b[4] * flags.quarter_end \
+            + b[5] * flags.year_end
+        return 1.0 / (1.0 + math.exp(-z))
+
+
+def fit_calendar_process(event: Sequence[int], flags: Sequence[Calendar], *, ridge: float = RIDGE) -> CalendarProcess:
+    """The penalised maximum-likelihood fit of §11.3, by Newton's method from zero, on the pairs `(t-1, t)`.
+
+    Raises:
+        ValueError: if the columns differ in length, the penalty is negative, the series has no event or no quiet day,
+            or the fit has not converged after `FIT_STEPS` steps.
+    """
+    if len(event) != len(flags):
+        raise ValueError(f"{len(event)} event days but {len(flags)} calendar rows")
+    if ridge < 0.0:
+        raise ValueError(f"the ridge penalty cannot be negative, got {ridge}")
+    events = sum(event)
+    if len(event) < 2 or events == 0 or events == len(event):
+        raise ValueError(f"the calendar-tied process needs both event and quiet days, got {events} events in {len(event)} days")
+    previous, today = event[:-1], event[1:]
+    design = np.array([[1.0, p, f.coupon_mid, f.coupon_end, f.quarter_end, f.year_end]
+                       for p, f in zip(previous, flags[1:])], dtype=float)
+    y = np.asarray(today, dtype=float)
+    penalised = np.array([0.0, 1.0, 1.0, 1.0, 1.0, 1.0]) * ridge
+    beta = np.zeros(design.shape[1])
+    for _ in range(FIT_STEPS):
+        p = 1.0 / (1.0 + np.exp(-(design @ beta)))
+        gradient = design.T @ (p - y) + 2.0 * penalised * beta
+        hessian = (design * (p * (1.0 - p))[:, None]).T @ design + 2.0 * np.diag(penalised)
+        step = np.linalg.pinv(hessian) @ gradient
+        beta = beta - step
+        if float(np.max(np.abs(step))) <= FIT_TOLERANCE:
+            return CalendarProcess(tuple(float(b) for b in beta), events / len(event), len(event), events, ridge,
+                                   len(today))
+    raise ValueError(f"the calendar-tied fit has not converged after {FIT_STEPS} steps (separated data needs a penalty)")
+
+
+def simulate_calendar_events(process: CalendarProcess, flags: Sequence[Calendar], rng: random.Random) -> List[int]:
+    """One event indicator per day of `flags`, the state before day 0 drawn from the window's observed share (§11.3)."""
+    out: List[int] = []
+    previous = int(rng.random() < process.share)
+    for day_flags in flags:
+        previous = int(rng.random() < process.probability(previous, day_flags))
+        out.append(previous)
+    return out

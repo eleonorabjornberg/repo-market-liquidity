@@ -8,6 +8,15 @@ This is the second record (directive #106; `docs/stages/h7-g6.md` §9 and §10).
     PYTHONPATH=src python3 scripts/g6_power_study.py --smoke    # three windows per length, 2,000 draws, prints only
     PYTHONPATH=src python3 scripts/g6_power_study.py --tables   # prints the markdown tables of the recorded study
 
+The third record (directive #126; `docs/stages/h7-g6.md` §11) re-declares Part B with a calendar-tied event process, fresh seeds
+and power-raising options. It runs on Eleonora's Mac, never in the cloud, and never as a smoke run on the real days:
+
+    PYTHONPATH=src python3 scripts/g6_power_study.py --third --process independent   # docs/research/h7m-power-study-3.independent.json
+    PYTHONPATH=src python3 scripts/g6_power_study.py --third --process two_state
+    PYTHONPATH=src python3 scripts/g6_power_study.py --third --process calendar
+    PYTHONPATH=src python3 scripts/g6_power_study.py --third --assemble              # writes docs/research/h7m-power-study-3.json
+    PYTHONPATH=src python3 scripts/g6_power_study.py --third --tables                # prints the markdown tables of the third record
+
 The estimate is R plus a planted signal. No candidate (A, B, step 1's estimator, C) is scored. Development evidence only.
 """
 
@@ -51,11 +60,28 @@ PART_B_FLOOR_SEED = SEED + 100000
 PART_B_REFERENCE_SERIES = 200
 PART_B_REFERENCE_SEED = SEED + 200000
 
+#: `docs/stages/h7-g6.md` §11, declared before any number of the third record. The base no earlier record used (§11.2).
+THIRD_SEED = 2026101900
+THIRD_RECORD = RESULTS / "h7m-power-study-3.json"
+THIRD_LENGTHS = (250, 500, 750)
+THIRD_PROCESSES = ("independent", "two_state", "calendar")
+THIRD_TESTS = ("section5", "calendar_strata")
+THIRD_REPLICATES = 400
+THIRD_REFERENCE = 200
+THIRD_FLOOR_SERIES = 2000
+THIRD_FLOOR_DAYS = 1000
+THIRD_LOOK = 2
+THIRD_FROM = PART_B_FROM
+
 _DATA = {}
 
 
-def load():
-    """The labelled days: R and S through the as-of rule, the event from the parent's `fed_liquidity`."""
+def load(calendar=None):
+    """The labelled days: R and S through the as-of rule, the event from the parent's `fed_liquidity`.
+
+    A dict passed as `calendar` is filled with each panel day's `goalposts.Calendar` (`docs/stages/h7-g6.md` §11.3), for
+    each labelled day; a hole in a calendar column on a labelled day is a data error.
+    """
     with tempfile.TemporaryDirectory() as tmp:
         path = Path(tmp) / "panel.csv"
         manifest = panel.build(path, version=1)
@@ -73,6 +99,9 @@ def load():
         days = h7_estimator.asof_days(rows, rule)
     # Days after the labels' end are read for R and S but carry no label: they are dropped, not scored, and counted.
     labelled = gp.labelled_days(days, accepted)
+    if calendar is not None:
+        values = {row.date: row.values for row in rows}
+        calendar.update({d.day: gp.calendar_flags(d.day, values[d.day]) for d in labelled.days})
     return labelled, {"panel_sha256": manifest["sha256"], "panel_rows": len(rows), "panel_last_day": rows[-1].date.isoformat(),
                       "repo_operation_coverage_end": coverage_end.isoformat(), "assemble": summary}
 
@@ -332,6 +361,278 @@ def run_part_b(days, sigma, grid_shifts, smoke):
                                   "gains": gains}}
 
 
+# -- the third record (`docs/stages/h7-g6.md` §11) ---------------------------------------------------------------------
+
+
+def third_days(days, length, *, baseline=THIRD_LENGTHS[0]):
+    """§11.4 option (i): the baseline length is the first `length` labelled days from 2025-01-02, exactly as in §10; a longer
+    one is the last `length` labelled days, because fewer than 500 labelled days exist from 2025-01-02.
+
+    Raises:
+        ValueError: if there are fewer than `length` such days.
+    """
+    span = [d for d in days if d.day >= THIRD_FROM][:length] if length == baseline else list(days[-length:])
+    if len(span) < length:
+        raise ValueError(f"{len(span)} labelled days for a window of {length}")
+    return span
+
+
+def _flags(span, calendar):
+    missing = [d.day for d in span if d.day not in calendar]
+    if missing:
+        raise ValueError(f"no calendar row for {missing[0]} (and {len(missing) - 1} more labelled days)")
+    return [calendar[d.day] for d in span]
+
+
+def _third_events(name, process, flags, n, seed):
+    """`n` simulated event indicators for the process `name`, from the separate stream of §11.2."""
+    rng = random.Random(f"events:{name}:{seed}")
+    if name == "calendar":
+        return gp.simulate_calendar_events(process, flags[:n], rng)
+    return gp.simulate_events(process, n, rng)
+
+
+_CLASSES = {"none": gp.Calendar(0, 0, 0, 0), "coupon_mid": gp.Calendar(1, 0, 0, 0), "coupon_end": gp.Calendar(0, 1, 0, 0),
+            "quarter_end": gp.Calendar(0, 1, 1, 0), "year_end": gp.Calendar(0, 1, 1, 1)}
+
+
+def _third_fit(name, fit_days, fit_flags):
+    """The process `name` fitted to the labelled days of the fitting window (§11.3), and the record of its fit."""
+    event = [d.event for d in fit_days]
+    base = {"calendar_window": [fit_days[0].day.isoformat(), fit_days[-1].day.isoformat()], "days": len(event),
+            "events": sum(event)}
+    if name == "independent":
+        process = gp.independent_process(event)
+        return process, {**base, "share": process.start}
+    if name == "two_state":
+        process = gp.fit_event_process(event)
+        return process, {**base, "start": process.start, "stay": process.stay, "stationary": process.stationary,
+                         "transitions_from_quiet": process.transitions_from_quiet,
+                         "transitions_from_event": process.transitions_from_event}
+    process = gp.fit_calendar_process(event, fit_flags)
+    implied = {f"previous_{state}": {label: process.probability(previous, flags) for label, flags in _CLASSES.items()}
+               for previous, state in ((0, "quiet"), (1, "event"))}
+    return process, {**base, "coefficients": list(process.coefficients),
+                     "coefficient_names": ["intercept", "previous_event", "coupon_mid", "coupon_end", "quarter_end",
+                                           "year_end"], "ridge": process.ridge, "pairs": process.pairs,
+                     "share": process.share, "implied_probabilities": implied}
+
+
+def _third_replicate(task):
+    """One replicate of one cell: the planted estimate at each grid gain, tested by both tests on shared resamples."""
+    key, k = task
+    ctx, draws = _DATA["third"][key], _DATA["third_draws"]
+    seed = THIRD_SEED + k
+    event = _third_events(ctx["name"], ctx["process"], ctx["flags"], len(ctx["ratio"]), seed)
+    rng = random.Random(seed)
+    indices = [stationary_bootstrap_indices(len(ctx["ratio"]), gp.BLOCK_LENGTH, rng) for _ in range(draws)]
+    out = {}
+    for target, c in ctx["shifts"].items():
+        estimate = gp.plant(ctx["ratio"], event, c, sigma=ctx["sigma"], seed=seed)
+        out[target] = {test: _outcome(gp.information_test(estimate, ctx["ratio"], state, event, look=THIRD_LOOK, seed=seed,
+                                                           indices=indices))
+                       for test, state in (("section5", ctx["state"]), ("calendar_strata", ctx["strata"]))}
+    return {"replicate": k, "events": sum(event), "results": out}
+
+
+def _third_rows(results, at_floor, shifts):
+    """Per grid gain and test: the two readings with their counts and Wilson intervals (§11.5)."""
+    tests = {}
+    for test in THIRD_TESTS:
+        rows = {}
+        for target in shifts:
+            everything = [r["results"][target][test] for r in results]
+            floor = [r["results"][target][test] for r in at_floor]
+            row = {}
+            for key, group in (("all_replicates", everything), ("replicates_at_the_floor", floor)):
+                supported = sum(r["supported"] for r in group)
+                low, high = gp.wilson(supported, len(group)) if group else (None, None)
+                row[key] = {"supported": supported, "replicates": len(group),
+                            "share": supported / len(group) if group else None, "interval": [low, high]}
+            row["mean_point"] = sum(r["point"] for r in everything) / len(everything)
+            row["point_at_or_above_mme"] = sum(r["point"] >= gp.MME for r in everything) / len(everything)
+            row["mean_strata"] = sum(r["strata"] for r in everything) / len(everything)
+            row["mean_dropped"] = sum(r["dropped"] for r in everything) / len(everything)
+            rows[str(target)] = row
+        tests[test] = {"gains": rows}
+    return tests
+
+
+def _third_floor(name, process, fit_flags, series, length):
+    """§11.5: days until 10 events are logged, on `series` simulated series of `length` days from day 0 of the fitting window."""
+    cycled = [fit_flags[i % len(fit_flags)] for i in range(length)]
+    reaching = [gp.days_to_events(_third_events(name, process, cycled, length, THIRD_SEED + 100000 + k), 0)
+                for k in range(series)]
+    reached = sorted(v for v in reaching if v is not None)
+    return {"series": series, "days_per_series": length, "never_reached": series - len(reached),
+            "share_never_reached": (series - len(reached)) / series,
+            "share_reached_within_250": sum(v <= 250 for v in reached) / series,
+            "mean_of_those_that_reach": sum(reached) / len(reached) if reached else None,
+            "median_of_those_that_reach": median(reached) if reached else None,
+            "p90_of_those_that_reach": reached[int(0.9 * (len(reached) - 1))] if reached else None}
+
+
+def run_third(days, calendar, *, processes=THIRD_PROCESSES, lengths=THIRD_LENGTHS, baseline=None, grid=GRID,
+              replicates=THIRD_REPLICATES, reference=THIRD_REFERENCE, floor_series=THIRD_FLOOR_SERIES,
+              floor_days=THIRD_FLOOR_DAYS, draws=None, workers=4, provenance=None):
+    """`docs/stages/h7-g6.md` §11: the labelled `days` and their `calendar`, for each process and window length.
+
+    Raises:
+        ValueError: if a labelled day has no calendar row, or a window has too few days.
+    """
+    began = clock.time()
+    baseline = lengths[0] if baseline is None else baseline
+    draws = gp.draws_for(THIRD_LOOK) if draws is None else draws
+    sigma = gp.sd([d.ratio for d in days])
+    fit_days = [d for d in days if d.day >= THIRD_FROM]
+    fit_flags = _flags(fit_days, calendar)
+    entries, contexts = {}, {}
+    for name in processes:
+        process, fit = _third_fit(name, fit_days, fit_flags)
+        entries[name] = {"fit": fit, "days_to_the_event_floor": _third_floor(name, process, fit_flags, floor_series,
+                                                                              floor_days), "cells": {}}
+        for length in lengths:
+            span = third_days(days, length, baseline=baseline)
+            flags = _flags(span, calendar)
+            ratio, state = [d.ratio for d in span], [d.state for d in span]
+            cases = [gp.CalibrationCase(ratio, state, _third_events(name, process, flags, length,
+                                                                    THIRD_SEED + 200000 + j), THIRD_SEED + 200000 + j)
+                     for j in range(reference)]
+            shifts, realised = {}, {}
+            for target in grid:
+                c = gp.calibrate_over(target, cases, sigma=sigma)
+                if c is None:
+                    realised[str(target)] = None
+                    continue
+                shifts[target] = c
+                mean = sum(gp.stratified_gain(gp.plant(x.ratio, x.event, c, sigma=sigma, seed=x.seed), x.ratio, x.state,
+                                              x.event).value for x in cases) / len(cases)
+                realised[str(target)] = {"mean_gain": mean, "miss": mean - target}
+            contexts[(name, length)] = {"name": name, "process": process, "flags": flags, "ratio": ratio, "state": state,
+                                        "strata": gp.calendar_strata(state, flags), "sigma": sigma, "shifts": shifts}
+            entries[name]["cells"][str(length)] = {
+                "length": length, "first_day": span[0].day.isoformat(), "last_day": span[-1].day.isoformat(),
+                "days": len(span), "planting": {"reference_series": len(cases),
+                                                "shift_in_sigma": {str(t): c for t, c in shifts.items()},
+                                                "mean_gain_on_the_reference_series": realised}}
+    _DATA.update(third=contexts, third_draws=draws)
+    tasks = [((name, length), k) for name in processes for length in lengths for k in range(replicates)]
+    if workers > 1:
+        with multiprocessing.get_context("fork").Pool(workers) as pool:
+            done = pool.map(_third_replicate, tasks, chunksize=1)
+    else:
+        done = [_third_replicate(task) for task in tasks]
+    for (key, _), result in zip(tasks, done):
+        entries[key[0]]["cells"][str(key[1])].setdefault("_results", []).append(result)
+    for name in processes:
+        for cell in entries[name]["cells"].values():
+            results = cell.pop("_results")
+            at_floor = [r for r in results if r["events"] >= gp.EVENT_FLOOR]
+            events = sorted(r["events"] for r in results)
+            shifts = contexts[(name, cell["length"])]["shifts"]
+            cell.update({"replicates": len(results), "replicates_at_the_event_floor": len(at_floor),
+                         "events_per_replicate": {"min": events[0], "median": median(events), "max": events[-1]},
+                         "tests": _third_rows(results, at_floor, shifts)})
+    return {
+        "what": "H7m G6, third record: Part B re-declared with a calendar-tied event process, fresh seeds and power-raising "
+                "options (docs/stages/h7-g6.md §11). No candidate is scored. Development evidence, never a verdict.",
+        "smoke": False,
+        "pins": {"parent": PARENT_COMMIT, "panel_digest": PANEL_SHA256},
+        "provenance": provenance or {},
+        "days": {"scored": len(days), "first": days[0].day.isoformat(), "last": days[-1].day.isoformat(),
+                 "events": sum(d.event for d in days)},
+        "declaration": {"seed": THIRD_SEED, "seed_rule": "2026101900 + the replicate's index; +100000 days to the floor; "
+                                                         "+200000 reference series",
+                        "grid": list(grid), "lengths": list(lengths), "baseline_length": baseline,
+                        "tests": list(THIRD_TESTS), "processes": list(THIRD_PROCESSES), "look": THIRD_LOOK,
+                        "draws": draws, "nominal_level": gp.nominal_level(THIRD_LOOK), "block_length": gp.BLOCK_LENGTH,
+                        "mme": gp.MME, "event_floor": gp.EVENT_FLOOR, "event_floor_counts": "events in the window",
+                        "replicates": replicates, "reference_series": reference, "floor_series": floor_series,
+                        "floor_days": floor_days, "ridge": gp.RIDGE, "calibration_tolerance": gp.CALIBRATION_TOLERANCE,
+                        "noise_sd_in_sigma": gp.NOISE_SD, "sigma": sigma},
+        "processes": entries,
+        "seconds": round(clock.time() - began, 1),
+    }
+
+
+def assemble_third(parts):
+    """The third record from its per-process parts, in the declared order.
+
+    Raises:
+        ValueError: if a process is missing or repeated, or the parts differ in pins, provenance, days or declaration.
+    """
+    names = [name for part in parts for name in part["processes"]]
+    if sorted(names) != sorted(THIRD_PROCESSES):
+        raise ValueError(f"the third record needs one part per process {THIRD_PROCESSES}, got {names}")
+    first = parts[0]
+    for part in parts[1:]:
+        for key in ("pins", "provenance", "days"):
+            if part[key] != first[key]:
+                raise ValueError(f"the parts differ in {key!r}: they were not made from the same tree")
+        if {**part["declaration"], "processes": None} != {**first["declaration"], "processes": None}:
+            raise ValueError("the parts differ in their declaration")
+    out = {key: first[key] for key in ("what", "smoke", "pins", "provenance", "days", "declaration")}
+    by_name = {name: part["processes"][name] for part in parts for name in part["processes"]}
+    out["processes"] = {name: by_name[name] for name in THIRD_PROCESSES}
+    out["seconds"] = round(sum(part["seconds"] for part in parts), 1)
+    return out
+
+
+def tables_third(record):
+    """The markdown tables of the third record (`docs/stages/h7-g6.md` §11), copied from the record and never recomputed."""
+    out = []
+    declared = record["declaration"]
+    for name, entry in record["processes"].items():
+        fit, floor = entry["fit"], entry["days_to_the_event_floor"]
+        out += [f"### Process: {name}", "",
+                f"Fitted to {fit['calendar_window'][0]} to {fit['calendar_window'][1]} ({fit['days']} labelled days, "
+                f"{fit['events']} events): " + ", ".join(
+                    f"{k} {v:.4f}" if isinstance(v, float) else f"{k} {v}" for k, v in fit.items()
+                    if k not in ("calendar_window", "days", "events", "coefficients", "coefficient_names",
+                                 "implied_probabilities")), ""]
+        if name == "calendar":
+            out += ["| " + " | ".join(fit["coefficient_names"]) + " |", "|" + "---|" * len(fit["coefficient_names"]),
+                    "| " + " | ".join(f"{c:+.4f}" for c in fit["coefficients"]) + " |", "",
+                    "| Fitted P(event) | " + " | ".join(next(iter(fit["implied_probabilities"].values()))) + " |",
+                    "|---|" + "---|" * len(_CLASSES)]
+            out += [f"| {state} | " + " | ".join(f"{p:.4f}" for p in row.values()) + " |"
+                    for state, row in fit["implied_probabilities"].items()] + [""]
+        out += [f"**Days until 10 events are logged** ({floor['series']} simulated series of {floor['days_per_series']} days)",
+                "", "| Never reach 10 | Reach 10 within 250 days | Mean (of those that reach) | Median | 90th percentile |",
+                "|---|---|---|---|---|",
+                f"| {_pct(floor['share_never_reached'])} ({floor['never_reached']} of {floor['series']}) | "
+                f"{_pct(floor['share_reached_within_250'])} | "
+                f"{'none' if floor['mean_of_those_that_reach'] is None else format(floor['mean_of_those_that_reach'], '.1f')} | "
+                f"{floor['median_of_those_that_reach']} | {floor['p90_of_those_that_reach']} |", ""]
+        for length, cell in entry["cells"].items():
+            e = cell["events_per_replicate"]
+            out += [f"**{name}, {length} days** ({cell['first_day']} to {cell['last_day']}; {cell['replicates']} replicates, "
+                    f"{declared['draws']:,} draws; events per replicate {e['min']} / {e['median']:g} / {e['max']}; "
+                    f"{cell['replicates_at_the_event_floor']} replicates hold at least 10). Each cell: supported share "
+                    "(supported/replicates; 95% Wilson interval)", "",
+                    "| Gain | section5, every replicate | section5, replicates at the floor | calendar_strata, every "
+                    "replicate | calendar_strata, replicates at the floor | Mean strata / dropped (section5; "
+                    "calendar_strata) |", "|---|---|---|---|---|---|"]
+            for gain in cell["tests"]["section5"]["gains"]:
+                cells = []
+                for test in THIRD_TESTS:
+                    row = cell["tests"][test]["gains"][gain]
+                    for key in ("all_replicates", "replicates_at_the_floor"):
+                        r = row[key]
+                        cells.append("none" if r["share"] is None else
+                                     f"{_pct(r['share'])} ({r['supported']}/{r['replicates']}; {_pct(r['interval'][0])}–"
+                                     f"{_pct(r['interval'][1])})")
+                a, b = (cell["tests"][t]["gains"][gain] for t in THIRD_TESTS)
+                out.append(f"| {gain}{' (size)' if float(gain) == 0.0 else ''} | " + " | ".join(cells) + " | "
+                           f"{a['mean_strata']:.1f} / {a['mean_dropped']:.1f}; {b['mean_strata']:.1f} / "
+                           f"{b['mean_dropped']:.1f} |")
+            planting = cell["planting"]
+            out += ["", f"Planting: shifts in sigma on the {planting['reference_series']} reference series " + ", ".join(
+                f"{t}: {c:.4f} (miss {planting['mean_gain_on_the_reference_series'][t]['miss']:+.1e})"
+                for t, c in planting["shift_in_sigma"].items()), ""]
+    return "\n".join(out)
+
+
 def _pct(value):
     return "n/a" if value is None else f"{100 * value:.0f}%"
 
@@ -454,11 +755,44 @@ def tables_part_b(record):
     return "\n".join(out)
 
 
+def _third_part(name):
+    return RESULTS / f"h7m-power-study-3.{name}.json"
+
+
+def main_third(args):
+    """The third record: one process to its part, the parts joined, or the tables printed."""
+    if args.tables:
+        print(tables_third(json.loads(THIRD_RECORD.read_text(encoding="utf-8"))))
+        return 0
+    if args.assemble:
+        parts = [json.loads(_third_part(name).read_text(encoding="utf-8")) for name in THIRD_PROCESSES]
+        record, path = assemble_third(parts), THIRD_RECORD
+    else:
+        calendar = {}
+        labelled, provenance = load(calendar)
+        names = (args.process,) if args.process else THIRD_PROCESSES
+        record = run_third(labelled.days, calendar, processes=names, provenance=provenance)
+        path = _third_part(args.process) if args.process else THIRD_RECORD
+    RESULTS.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(record, indent=1, default=str) + "\n", encoding="utf-8")
+    print(path, hashlib.sha256(path.read_bytes()).hexdigest())
+    return 0
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--smoke", action="store_true")
     parser.add_argument("--tables", action="store_true", help="print the markdown tables of the recorded study")
+    parser.add_argument("--third", action="store_true", help="the third record (docs/stages/h7-g6.md §11); runs on the Mac")
+    parser.add_argument("--process", choices=THIRD_PROCESSES, help="with --third: one process, written to its own part")
+    parser.add_argument("--assemble", action="store_true", help="with --third: join the three parts into the record")
     args = parser.parse_args(argv)
+    if (args.process or args.assemble) and not args.third:
+        parser.error("--process and --assemble belong to --third")
+    if args.third:
+        if args.smoke:
+            parser.error("the third record is never run, not even as a smoke run, on the real days outside her Mac run")
+        return main_third(args)
     if args.tables:
         record = json.loads(RECORD.read_text(encoding="utf-8"))
         print(tables(record))
