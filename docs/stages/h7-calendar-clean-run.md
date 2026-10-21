@@ -1,8 +1,8 @@
-# H7m, the run of the calendar-clean variants of C and D: what the code does and the readings it took
+# H7m, the run of the calendar-clean variants of C: what the code does and the readings it took
 
-**Serves:** H7 (reserve scarcity can be tracked), measurement question H7m, development steps 2 (candidate C) and 3 (candidate
-D). Directive #147. It implements, with no choice of its own, the declaration in `docs/stages/h7-calendar-clean.md` (merged with
-#146). **Development, never a verdict** (`docs/decisions/measurement-protocol.md` §1): no locked day, no goalpost 3, nothing
+**Serves:** H7 (reserve scarcity can be tracked), measurement question H7m, development step 2 (candidate C). Directive #147.
+It implements, with no choice of its own, the declaration in `docs/stages/h7-calendar-clean.md` (merged with #146) as amended
+by its section 9, the rulings on Q1 to Q6. D and its variants are not run (D dropped under #142); their code stays, tested. **Development, never a verdict** (`docs/decisions/measurement-protocol.md` §1): no locked day, no goalpost 3, nothing
 scored against the stress events.
 
 Code: `src/repo_liquidity/h7_clean.py`. Tests: `tests/test_h7_clean.py`. Run: `scripts/h7_calendar_clean.py`, which writes
@@ -11,32 +11,47 @@ edited by hand.
 
 ## The command
 
+**Not runnable yet.** The exclusion set's third clause reads the parent's `repo_model.turn_days.turn_label` (Q1), which exists
+only at a pin later than 8fd2cf8, and the pin move is PR #155 (a draft, hers). At the pin of this tree `read_flags` raises
+`ValueError` ("repo_model.turn_days is absent at the pin of this tree") before anything is fitted. The command, once #155 has
+merged into this branch (and `PYTHONPATH` names the parent at the new pin):
+
 ```
-PYTHONPATH=src:<repo-market-model at 8fd2cf8c72e7d5c6e81c509651b684b690054a6f>/src \
+PYTHONPATH=src:<repo-market-model at the new pin>/src \
   python3 -B scripts/h7_calendar_clean.py --replications 2000 --workers 8
 ```
 
 `--workers` only spreads the bootstrap draws over processes; the draws and the record do not depend on it. A variant's work is
 kept in `results/h7/calendar-clean.parts/<variant>.json` (not tracked) when it finishes, and a rerun reuses it. `--variants`
-runs some of `C,D,CV1,CV2,DV1,DV2`; `--limit-refits N` runs the first N refits.
+runs some of `C,CV1,CV2,CV3,CV4`; `--limit-refits N` runs the first N refits.
 
-## What is implemented, by section of the declaration
+## What is implemented, by section of the declaration (as amended)
 
-- **2(a), the exclusion set.** `h7_clean.read_flags` reads the parent's `settlement_day` and `quarter_end_window` for every
+- **2(a) and Q1, the exclusion set.** `h7_clean.read_flags` reads the parent's `settlement_day` and `quarter_end_window` for every
   scored day through `repo_model.asof.InformationRule` (the composed feature is formed by the parent's own composer), at the day's
-  own decision instant. `quarter_end_window` is the parent's opt-in column, a function of the date alone
-  (`data.quarter_end_window`), added to the rows with `with_quarter_end_window`. A flag read for any row but the scored one is a
-  `LookAheadError` (`check_flag_reads`), and a day's flags must be that day's own (`clean_days`). The counted-episode rule is taken
-  over the clean days, a dropped day is still served, and the bootstrap resamples the clean days only.
-- **2(b), the objective and the tie rule.** `lad_curve` is the exact least-absolute-deviation line `a + b × max(k − D, 0)`,
-  `b ≥ 0`, for every kink on `KINK_GRID` at once. Tied kinks go to the smaller. `descend` is the baselines' coordinate search; a
-  value replaces the current one only when its objective is lower by more than `KINK_TIE_RTOL`. `combine_starts` compares the
-  three starts at the end: tied and more than one grid step apart in any parameter is "not identified" (no estimate, no picked
-  vector); otherwise the lower objective, then the smaller vector.
-- **2(c), the left side.** `effr_minus_iorb_bp` is the parent's property of the scored row, in whole basis points, not rescaled.
-- **3, the variants.** CV1, CV2, DV1, DV2; four added.
-- **4, D under #142.** A day with no headroom is not a training day and is not served; the clean variants of D inherit it.
-- **5, the comparison.** `summarise` reads goalpost 1 and goalpost 2 for each estimator; the baselines are the current C and D.
+  own decision instant, and the parent's `turn_days.turn_label` of the scored day (`parent_turn_label`, `read_turn`). A day is
+  dropped when `settlement_day` = 1, `quarter_end_window` = 1, or the label is not `None`. `quarter_end_window` is the parent's
+  opt-in column, a function of the date alone (`data.quarter_end_window`), added to the rows with `with_quarter_end_window`. A flag
+  read for any row but the scored one, or a label read for any day but the scored one, is a `LookAheadError` (`check_flag_reads`,
+  `read_turn`), and a day's flags must be that day's own (`clean_days`). The counted-episode rule is taken over the clean days, a
+  dropped day is still served, and the bootstrap resamples the clean days only.
+- **2(b), Q3 and Q6, the objective and the tie rule.** `lad_curve` is the exact least-absolute-deviation line
+  `a + b x max(k - D, 0)`, `b >= 0`, for every kink on `KINK_GRID` at once. Tied kinks go to the smaller. `descend` is the
+  baselines' coordinate search; a value replaces the current one only when its objective is lower by more than `KINK_TIE_RTOL`.
+  `combine_starts` compares the three starts at the end: tied and more than one grid step apart in any parameter is "not
+  identified" (no estimate, no picked vector); otherwise the lower objective, then the smaller vector. It holds for every
+  variant.
+- **2(c) and Q2, the left side.** CV2 fits `(EFFR - ON RRP rate) / (IORB - ON RRP rate)` (`left_sides`), the corridor position
+  of `demand_curve.corridor_position` with EFFR in place of SOFR and the ON RRP rate in force that day. Raw `effr_minus_iorb_bp`
+  is not offered beside it.
+- **3 and Q4, the variants.** CV1 (clean days, absolute deviation, SOFR corridor), CV2 (the same on the EFFR position), CV3
+  (clean days, least squares: (a) only) and CV4 (every day, absolute deviation: (b) only). Four are run.
+- **Q5, D.** D and DV1 to DV4 are "not run (D dropped under #142)" and are listed so in the record. `refit_d` and `path_d` stay.
+- **5, the comparison.** `summarise` reads goalpost 1 and goalpost 2 for each estimator; the baseline is the current C.
+- **The block length, reporting only.** `politis_white_block` (Politis and White 2004, with Patton, Politis and White 2009) of
+  each fitted refit's training residuals in time order, recorded per refit and set beside goalpost 2. It follows the paper's
+  definition and agrees with `arch.bootstrap.optimal_block_length` on a fixed series (49.23 and 49.229). The bootstrap is
+  unchanged, mean block 10.
 
 ## Readings this implementation took (none changes what the declaration says; Eleonora may overrule any)
 
@@ -59,12 +74,16 @@ runs some of `C,D,CV1,CV2,DV1,DV2`; `--limit-refits N` runs the first N refits.
    and are tested equal to their modules' `real_time_path`.
 7. **The leakage check.** `check_no_future` rebuilds each cutoff's training sample (days, what each read, flags, left side) from
    the panel cut at that row and compares it with the full panel's. A refit depends on the panel only through that sample.
+8. **CV3 under the tie rule.** The declaration says the tie rule holds "for every variant", and Q3 extends the "not identified" rule
+   to C. CV3 is therefore the baseline's least-squares fit (its kink search and its rejection of a negative slope) on the clean
+   days, with `combine_starts` on its three starts. On days nothing drops it equals the baseline's fit (a test). Whether the
+   baseline's own starts should also be tested for identification is not asked here.
 
-## A fact the declaration's counting rule produces (reported, not decided)
+## A fact the counting rule produces (reported, not decided)
 
-On the tracked panel, with the parent's two flags, the 2025 episode has 77 scarce days (ratio below 13%) and 55 once the
-calendar days are dropped. The counting rule needs 60 clean scarce days, so under the declaration the 2025 episode never counts
-for a clean variant, and DV1 and DV2 (which have headroom only from 2021-12-21) have no counted episode at any refit. CV1 and CV2
-fit on the first episode alone at every refit. Whether that is what is wanted is Eleonora's: a lower count for clean days, or a
-count taken on the baseline's days, would be a change to the declaration. The run reports it as it is
-(`episode_counts` in the record).
+Counted from the tracked panel with the parent's three clauses (the turn label loaded from the later pin's file, since the pin of
+this tree has none; no variant was fitted): the 2025 episode has 77 scarce days (ratio below 13%) and 54 once the calendar days
+are dropped, and the counting rule needs 60. So the 2025 episode does not count for a clean variant, and the 69 refits of the
+run all share one training sample per variant (the first episode: 351 clean days, 486 days for CV4 and the baseline). Each variant
+is therefore one fit and one bootstrap, not 69. Whether that is what is wanted is Eleonora's: a lower count for clean days, or a
+count taken on the baseline's days, would be a change to the declaration. The run reports it as it is (`episode_counts`).

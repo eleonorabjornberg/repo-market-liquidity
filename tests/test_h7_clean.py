@@ -1,6 +1,14 @@
-"""H7m, the calendar-clean variants of candidates C and D (`docs/stages/h7-calendar-clean.md`, directive #147).
+"""H7m, the calendar-clean variants of candidate C, and D's (not run), `docs/stages/h7-calendar-clean.md` and its section 9
+(directive #147, the rulings on Q1-Q6).
 
 What is covered:
+
+* `TurnDayTests`, `RealTurnLabelTests` -- Q1: the third clause of the exclusion set, `turn_label(T) is not None`, read from the
+  parent for the scored day only. The label function is injected (it exists only at the parent's later pin, #149); the real one
+  runs in `RealTurnLabelTests`, which is skipped at a pin that lacks `repo_model.turn_days` and nowhere else.
+* `ObjectiveVariantTests`, `CorridorEffrTests` -- Q4 and Q2: CV3 (clean days, least squares) is the baseline's fit on the days
+  nothing drops, CV4 (every day, absolute deviation) reads no flags, and CV2's left side is the corridor-normalised EFFR.
+* `PoliticsWhiteTests` -- the block length reported beside goalpost 2 (reporting only).
 
 * `SolverTests` -- the exact absolute-deviation line against brute force over every two-point vertex and the `b = 0` boundary;
   a planted line recovered exactly; a falling trend gives the boundary; the kink search drops only kinks that cannot win, and
@@ -35,7 +43,23 @@ copy, the copy discarded:
    `NoFutureTests.test_a_sample_that_read_a_later_row_is_refused` fails with `AssertionError: LookAheadError not raised`
    (the only failure).
 
-Order of work, said plainly: the first draft of `repo_liquidity.h7_clean` was written before these tests, so they were not
+5. `read_turn`: replace `if read != scored:` by `if False:`. A turn-day label read for another day is no longer refused;
+   `TurnDayTests.test_a_label_read_for_another_day_is_refused` fails with `AssertionError: LookAheadError not raised` (the only
+   failure).
+6. `read_flags`: replace `read_turn(labeller, scored.date, scored.date)` by `read_turn(labeller, scored.date, rows[i].date)`
+   (the label of the cutoff row, one day early). `read_turn` refuses it: `repo_model.splits.LookAheadError: the turn-day label of
+   2019-03-19 was read for 2019-03-18; it is read for the scored day only`, from the class setup of `TurnDayTests` and
+   `FlagTests`.
+7. `Flags.dropped`: remove `or self.turn is not None`. A turn day is no longer dropped;
+   `TurnDayTests.test_a_turn_day_is_dropped_by_the_third_clause_alone` fails with `AssertionError: False is not true`, and
+   `test_a_turn_day_is_not_a_training_day_and_does_not_count_toward_an_episode` with `AssertionError: 100 != 98`.
+
+Mutations 5 to 7 were applied on 21 October 2026 the same way (CPython 3.11, the parent at the pin 8fd2cf8, the tests run
+against a disposable copy of the tree). The tests of this turn (Q1 to Q4, the Politis-White figure) were written before the code
+and watched failing: against the earlier module they failed with `AttributeError: module 'repo_liquidity.h7_clean' has no
+attribute 'parent_turn_label'` at import.
+
+Order of work, said plainly (for mutations 1 to 4, the first draft): the first draft of `repo_liquidity.h7_clean` was written before these tests, so they were not
 watched failing against an absent module as the first step. With the module moved away the suite fails at once with
 `ImportError` (`cannot import name 'h7_clean' from 'repo_liquidity'`), and each mutation above was applied to the finished
 module and killed by a test that passes without it.
@@ -55,6 +79,7 @@ from repo_model.splits import LookAheadError
 
 import test_h7_candidate_c as tc
 import test_h7_candidate_d as td
+from repo_liquidity import demand_curve
 from repo_liquidity import h7_candidate_c as c
 from repo_liquidity import h7_candidate_d as d
 from repo_liquidity import h7_clean as h
@@ -63,7 +88,7 @@ from repo_liquidity import h7_clean as h
 COARSE = tuple(round(0.0025 * i, 4) for i in range(1, 33))
 EPISODES = tc.EPISODES
 MIN_SCARCE = 15
-CORRIDOR, EFFR = "corridor", "effr_minus_iorb_bp"
+CORRIDOR, EFFR = "corridor", "effr_corridor"
 
 
 def _brute(z, y):
@@ -174,10 +199,23 @@ def _quiet_flags(days):
 
 
 def _effr_series(days):
-    """An EFFR - IORB in basis points that follows the same planted D as the corridor position, with its wiggle (a different left
-    side. It is not rounded: the published series is in whole basis points, and a left side that coarse ties more often, as the
-    declaration says)."""
-    return {EFFR: {x.day: 25.0 * x.corridor for x in days}}
+    """A corridor-normalised EFFR position that follows the same planted D as the SOFR corridor position, on its own scale (a
+    different left side). It is not rounded: the published EFFR is in whole basis points, and a left side that coarse ties more
+    often, as the declaration says."""
+    return {EFFR: {x.day: 0.8 * x.corridor + 0.1 for x in days}}
+
+
+def _no_turns(day):
+    """A stand-in for the parent's `turn_days.turn_label` where a test is not about the turn days: no day is a turn day. The
+    parent's own function is used in `RealTurnLabelTests` and by the run (`h.parent_turn_label`)."""
+    return None
+
+
+def _turn_label_or_stand_in():
+    try:
+        return h.parent_turn_label()
+    except ValueError:  # the pin of this tree predates repo_model.turn_days (it comes with the pin move, #149)
+        return _no_turns
 
 
 class _FitCase(unittest.TestCase):
@@ -232,9 +270,9 @@ class FitTests(_FitCase):
 
     def test_the_effr_left_side_needs_an_effr_column(self):
         with self.assertRaises(ValueError):
-            h.left_sides([DailyObservation(date(2019, 1, 2), {"sofr": 2.4, "iorb": 2.4})])
+            h.left_sides([DailyObservation(date(2019, 1, 2), {"sofr": 2.4, "iorb": 2.4})], lambda day: 2.25)
         rows = [DailyObservation(date(2019, 1, 2), {"sofr": 2.4, "iorb": 2.40, "effr": 2.33})]
-        self.assertEqual(h.left_sides(rows)[EFFR][date(2019, 1, 2)], -7.0)
+        self.assertEqual(h.left_sides(rows, lambda day: 2.25)[EFFR][date(2019, 1, 2)], round(0.08 / 0.15, 9))
 
 
 class NotIdentifiedTests(_FitCase):
@@ -255,6 +293,14 @@ class NotIdentifiedTests(_FitCase):
             self.assertFalse(fit.fitted, left)
             self.assertEqual((fit.shares, fit.draws, fit.record["status"]), (None, (), h.NOT_IDENTIFIED), left)
             self.assertGreater(fit.record["tied_span"][2], c.SHARE_GRID[1], left)
+
+    def test_cv3_and_cv4_are_not_identified(self):
+        """The same constructed case under least squares on clean days (CV3) and absolute deviation on every day (CV4)."""
+        for kw in ({"objective": "ls"}, {"clean": False}):
+            fit = h.refit_c(self.days, self.days[-1].day, self.flags, CORRIDOR, self.series, replications=3, episodes=EPISODES,
+                            min_scarce=MIN_SCARCE, **kw)
+            self.assertFalse(fit.fitted, kw)
+            self.assertEqual((fit.shares, fit.draws, fit.record["status"]), (None, (), h.NOT_IDENTIFIED), kw)
 
     def test_dv1_and_dv2_are_not_identified(self):
         slr_rows = td.SLR_ROWS
@@ -286,7 +332,7 @@ class FlagTests(unittest.TestCase):
     def setUpClass(cls):
         cls.coupon_day = date(2019, 4, 10)
         cls.rows = _flag_rows(coupons=(cls.coupon_day,))
-        cls.flags = h.read_flags(cls.rows, h.flag_rule())
+        cls.flags = h.read_flags(cls.rows, h.flag_rule(), _no_turns)
 
     def test_the_quarter_end_is_a_settlement_day(self):
         self.assertEqual(self.flags[date(2019, 3, 29)].settlement_day, 1.0)
@@ -546,7 +592,7 @@ class NoFutureTests(unittest.TestCase):
         def build(rows):
             last = rows[-1].date
             days = [x for x in self.all_days if x.day <= last]
-            series = {EFFR: {x.day: 25.0 * x.corridor + (len(rows) if leak else 0.0) for x in days}}
+            series = {EFFR: {x.day: 0.8 * x.corridor + 0.1 + (0.001 * len(rows) if leak else 0.0) for x in days}}
             return days, _quiet_flags(days), series
         return build
 
@@ -571,17 +617,23 @@ class TrackedPanelTests(unittest.TestCase):
 
         cls.rows, cls.pins = h.build_rows()
         cls.manifest = panel.load_manifest(1)
-        cls.flags = h.read_flags(h.with_quarter_end_window(cls.rows), h.flag_rule())
+        cls.flags = h.read_flags(h.with_quarter_end_window(cls.rows), h.flag_rule(), _turn_label_or_stand_in())
 
     def test_the_version_1_columns_are_the_manifests_bytes_with_effr_added(self):
         self.assertEqual(self.pins["panel_sha256"], self.manifest["sha256"])
         self.assertEqual((self.pins["first_day"], self.pins["last_day"]), (self.manifest["start_date"], self.manifest["end_date"]))
         self.assertTrue(all("effr" in row.values for row in self.rows))
 
-    def test_effr_minus_iorb_is_known_on_every_day_in_whole_basis_points(self):
+    def test_the_corridor_normalised_effr_is_known_on_every_day(self):
+        from repo_liquidity import demand_curve, scheduled
+
         left = h.left_sides(self.rows)[EFFR]
         self.assertFalse([day for day, value in left.items() if value is None])
-        self.assertTrue(all(value == round(value) for value in left.values()))
+        publications = scheduled.load_on_rrp_rates()
+        row = self.rows[500]
+        floor = scheduled.rate_in_force(publications, row.date)
+        self.assertEqual(left[row.date], demand_curve.corridor_position(
+            sofr=float(row.values["effr"]), iorb=float(row.values["iorb"]), on_rrp_rate=floor))
 
     def test_only_the_second_row_has_flags_the_rule_cannot_read(self):
         self.assertEqual([day for day, f in self.flags.items() if f.unread], [self.rows[1].date])
@@ -611,7 +663,9 @@ class ScriptTests(_FitCase):
         cls.cutoffs = [cls.days[40].day, cls.days[80].day]
         kw = dict(replications=2, episodes=EPISODES, min_scarce=MIN_SCARCE)
         cls.entries = {
-            "C": cls.script._entry(h.baseline_path_c(cls.days, cls.cutoffs, **kw), 1.0),
+            "C": cls.script._entry(h.baseline_path_c(cls.days, cls.cutoffs, **kw), 1.0,
+                                   lambda refit: h.politis_white_block(h.baseline_residuals_c(cls.days, refit, episodes=EPISODES,
+                                                                                              min_scarce=MIN_SCARCE))),
             "CV1": cls.script._entry(h.path_c(cls.days, cls.cutoffs, cls.flags, CORRIDOR, cls.series, **kw), 2.0),
         }
 
@@ -620,7 +674,8 @@ class ScriptTests(_FitCase):
                 "first_day": "2018-04-03", "last_day": "2025-12-31"}
         counts = self.script._episode_counts(self.days, self.flags, lambda x: x.week is not None)
         return {"tier": "development", "declaration": "docs/stages/h7-calendar-clean.md", "variant_count_added": 4,
-                "pins": pins, "window_end": "2025-12-31", "settings": {"replications": 2, "refit_every": 21},
+                "not_run": {"D": h.D_NOT_RUN, **{v.id: h.D_NOT_RUN for v in h.D_VARIANTS}},
+                "pins": pins, "window_end": "2025-12-31", "settings": {"replications": 2, "refit_every": 21, "block_length": 10},
                 "cutoffs": [day.isoformat() for day in self.cutoffs], "unread_flag_days": ["2018-04-04"],
                 "episode_counts": {"C": counts}, "estimators": self.entries, "comparison": self.script._compare(self.entries)}
 
@@ -632,8 +687,17 @@ class ScriptTests(_FitCase):
 
     def test_the_markdown_is_printed_from_the_record(self):
         text = self.script.markdown(self.record())
-        for needle in ("never edited by hand", "development", "| CV1 |", "| C |", "Goalposts 1 and 2", "2018-04-04"):
+        for needle in ("never edited by hand", "development", "| CV1 |", "| C |", "Goalposts 1 and 2", "2018-04-04",
+                       "Politis", "not run (D dropped under #142)", "DV1"):
             self.assertIn(needle, text)
+
+    def test_each_refit_reports_its_politis_white_block_beside_goalpost_2(self):
+        for name, entry in self.entries.items():
+            blocks = [r["politis_white_block"] for r in entry["refits"]]
+            self.assertEqual(len(blocks), len(self.cutoffs), name)
+            self.assertTrue(all(b is None or b > 0 for b in blocks), name)
+            self.assertEqual(set(entry["summary"]["politis_white_block"]), {"refits", "median", "max"}, name)
+            self.assertEqual(entry["summary"]["politis_white_block"]["refits"], sum(b is not None for b in blocks), name)
 
     def test_the_episode_counts_say_whether_an_episode_counts_clean(self):
         counts = self.script._episode_counts(self.days, self.flags, lambda x: x.week is not None)
@@ -643,9 +707,288 @@ class ScriptTests(_FitCase):
 
 
 class VariantTableTests(unittest.TestCase):
-    def test_the_declaration_names_four_variants(self):
-        self.assertEqual([v[0] for v in h.VARIANTS], ["CV1", "CV2", "DV1", "DV2"])
-        self.assertEqual({v[2] for v in h.VARIANTS}, {CORRIDOR, EFFR})
+    def test_the_run_has_the_four_variants_of_c_and_d_is_not_run(self):
+        self.assertEqual([v.id for v in h.VARIANTS], ["CV1", "CV2", "CV3", "CV4"])
+        self.assertEqual({v.candidate for v in h.VARIANTS}, {"C"})
+        # CV1: clean days, absolute deviation, SOFR corridor. CV2: the same on the corridor-normalised EFFR (replaces raw bp).
+        # CV3: (a) only, clean days with least squares. CV4: (b) only, all days with absolute deviation.
+        self.assertEqual([(v.days, v.objective, v.left) for v in h.VARIANTS],
+                         [("clean", "lad", CORRIDOR), ("clean", "lad", EFFR), ("clean", "ls", CORRIDOR), ("all", "lad", CORRIDOR)])
+        self.assertEqual([v.id for v in h.D_VARIANTS], ["DV1", "DV2", "DV3", "DV4"])
+        self.assertEqual([(v.days, v.objective, v.left) for v in h.D_VARIANTS],
+                         [(v.days, v.objective, v.left) for v in h.VARIANTS])
+        self.assertEqual(h.D_NOT_RUN, "not run (D dropped under #142)")
+        self.assertEqual({v.id for v in h.VARIANTS} & {v.id for v in h.D_VARIANTS}, set())
+
+
+class TurnDayTests(unittest.TestCase):
+    """Q1: the third clause of the exclusion set is `turn_label(T) is not None`, read from the parent at the scored day only. The
+    label function is injected here (it exists only at the parent's next pin); `RealTurnLabelTests` runs the parent's own."""
+
+    FIRST_OF_MAY, MID_APRIL = date(2019, 5, 1), date(2019, 4, 9)
+
+    @classmethod
+    def setUpClass(cls):
+        cls.rows = _flag_rows()
+        cls.calls = []
+
+        def labeller(day):
+            cls.calls.append(day)
+            return "turn" if day == cls.FIRST_OF_MAY else None
+
+        cls.flags = h.read_flags(cls.rows, h.flag_rule(), labeller)
+
+    def test_a_turn_day_is_dropped_by_the_third_clause_alone(self):
+        flag = self.flags[self.FIRST_OF_MAY]
+        self.assertEqual((flag.settlement_day, flag.quarter_end_window, flag.turn), (0.0, 0.0, "turn"))
+        self.assertTrue(flag.dropped())
+
+    def test_a_day_with_no_label_stays_clean(self):
+        flag = self.flags[self.MID_APRIL]
+        self.assertEqual((flag.turn, flag.dropped()), (None, False))
+
+    def test_the_label_is_asked_for_each_scored_day_once_and_for_no_other(self):
+        self.assertEqual(sorted(self.calls), [row.date for row in self.rows[1:]])
+
+    def test_a_label_read_for_another_day_is_refused(self):
+        self.assertEqual(h.read_turn(lambda day: "turn", self.FIRST_OF_MAY, self.FIRST_OF_MAY), "turn")
+        with self.assertRaises(LookAheadError):
+            h.read_turn(lambda day: "turn", self.FIRST_OF_MAY, date(2019, 4, 30))
+
+    def test_a_turn_day_is_not_a_training_day_and_does_not_count_toward_an_episode(self):
+        days = tc._planted_days(tc._weeks(), count=100)
+        flags = _quiet_flags(days)
+        for i in (3, 4):
+            flags[days[i].day] = h.Flags(days[i].day, 0.0, 0.0, False, "quarter_end_turn")
+        series = _effr_series(days)
+        sample, labels = h.training_days(days, days[-1].day, flags, CORRIDOR, series, lambda x: x.week is not None,
+                                         episodes=EPISODES, min_scarce=MIN_SCARCE)
+        self.assertEqual(len(sample), len(days) - 2)
+        cutoff = days[MIN_SCARCE - 1].day  # exactly the minimum of days by the cutoff, which two turn days take below it
+        args = (days, cutoff, None, CORRIDOR, series, lambda x: x.week is not None)
+        self.assertEqual(h.training_days(*args, clean=False, episodes=EPISODES, min_scarce=MIN_SCARCE)[1], (EPISODES[0][0],))
+        self.assertEqual(h.training_days(days, cutoff, flags, CORRIDOR, series, lambda x: x.week is not None,
+                                         episodes=EPISODES, min_scarce=MIN_SCARCE)[1], ())
+
+    def test_without_the_parents_function_the_flags_cannot_be_read(self):
+        import sys
+
+        with mock.patch.dict(sys.modules, {"repo_model.turn_days": None}):
+            with self.assertRaises(ValueError) as caught:
+                h.read_flags(self.rows, h.flag_rule())
+        self.assertIn("turn_days", str(caught.exception))
+        self.assertIn("#149", str(caught.exception))
+
+
+def _has_turn_days():
+    try:
+        h.parent_turn_label()
+    except ValueError:
+        return False
+    return True
+
+
+@unittest.skipUnless(_has_turn_days(), "the parent at this tree's pin has no repo_model.turn_days; it comes with the pin move (#149)")
+class RealTurnLabelTests(unittest.TestCase):
+    """The parent's own `turn_label` through the exclusion set, on the cases the ruling names."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.rows = _flag_rows(first=date(2021, 5, 17), last=date(2021, 6, 11))
+        cls.flags = h.read_flags(cls.rows, h.flag_rule(), h.parent_turn_label())
+
+    def test_the_last_business_day_three_calendar_days_before_month_end_is_dropped(self):
+        flag = self.flags[date(2021, 5, 28)]  # Memorial Day is the 31st
+        self.assertEqual((flag.settlement_day, flag.quarter_end_window), (0.0, 0.0))
+        self.assertEqual(flag.turn, "turn")
+        self.assertTrue(flag.dropped())
+
+    def test_the_first_business_day_of_the_next_month_is_dropped(self):
+        flag = self.flags[date(2021, 6, 1)]
+        self.assertEqual((flag.settlement_day, flag.quarter_end_window, flag.turn), (0.0, 0.0, "turn"))
+        self.assertTrue(flag.dropped())
+
+    def test_a_mid_month_day_stays_clean(self):
+        flag = self.flags[date(2021, 5, 19)]
+        self.assertEqual((flag.turn, flag.dropped()), (None, False))
+
+    def test_every_label_is_the_parents_own(self):
+        from repo_model import turn_days
+
+        for day, flag in self.flags.items():
+            if not flag.unread:
+                self.assertEqual(flag.turn, turn_days.turn_label(day), day)
+
+
+class ObjectiveVariantTests(_FitCase):
+    """Q4: CV3 is the calendar-clean days with least squares, CV4 is every day with absolute deviation."""
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.days = tc._planted_days(tc._weeks(), count=100)
+        cls.series = _effr_series(cls.days)
+        cls.flags = _quiet_flags(cls.days)
+        cls.dropping = _quiet_flags(cls.days)
+        for i in (20, 21, 22):
+            cls.dropping[cls.days[i].day] = h.Flags(cls.days[i].day, 1.0, 0.0)
+
+    def refit(self, flags, **kw):
+        kw.setdefault("replications", 0)
+        return h.refit_c(self.days, self.days[-1].day, flags, CORRIDOR, self.series, episodes=EPISODES, min_scarce=MIN_SCARCE,
+                         **kw)
+
+    def test_the_least_squares_curve_is_the_baselines_and_rejects_a_negative_slope(self):
+        xs = [0.0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06]
+        rising = [0.9, 0.7, 0.5, 0.3, 0.1, 0.1, 0.1]
+        got = h.ls_curve(xs, rising)
+        want = demand_curve.fit_broken_stick(xs, rising, h.KINK_GRID)
+        self.assertEqual((got.kink, got.intercept, got.slope, got.objective), (want.kink, want.intercept, want.slope, want.sse))
+        self.assertIsNone(h.ls_curve(xs, list(reversed(rising))))
+        self.assertIsNone(h.ls_curve([0.5, 0.6], [1.0, 2.0]))  # no kink has points on both sides
+
+    def test_cv3_on_days_nothing_drops_is_the_baseline_fit(self):
+        mine = self.refit(self.flags, objective="ls")
+        with mock.patch.object(c, "KINK_GRID", COARSE):  # the baseline searches the same kinks
+            base = c.refit_c(self.days, self.days[-1].day, replications=0, episodes=EPISODES, min_scarce=MIN_SCARCE)
+        self.assertEqual((mine.shares, mine.kink, mine.pairs), (base.shares, base.kink, base.pairs))
+        self.assertAlmostEqual(mine.slope, base.slope)
+        self.assertAlmostEqual(mine.intercept, base.intercept)
+        self.assertAlmostEqual(mine.sse, base.sse)
+        self.assertEqual(mine.record["objective_kind"], "ls")
+
+    def test_cv3_drops_the_flagged_days(self):
+        fit = self.refit(self.dropping, objective="ls")
+        self.assertEqual((fit.pairs, fit.record["dropped"], fit.record["objective_kind"]), (len(self.days) - 3, 3, "ls"))
+
+    def test_cv4_fits_every_day_even_where_the_flags_would_drop_them(self):
+        fit = self.refit(self.dropping, clean=False)
+        self.assertEqual((fit.pairs, fit.record["dropped"], fit.record["objective_kind"]), (len(self.days), 0, "lad"))
+        self.assertEqual(fit.shares, tc.PLANTED)
+        self.assertEqual(self.refit(None, clean=False).pairs, len(self.days))  # it reads no flags
+
+    def test_cv1_and_cv4_differ_in_the_days_alone(self):
+        clean, every = self.refit(self.dropping), self.refit(self.dropping, clean=False)
+        self.assertEqual(clean.record["objective_kind"], every.record["objective_kind"])
+        self.assertEqual(every.pairs - clean.pairs, 3)
+
+    def test_the_bootstrap_of_each_variant_refits_under_its_own_objective(self):
+        boom = mock.Mock(side_effect=AssertionError("the other objective was used"))
+        with mock.patch.object(h, "lad_curve", boom):
+            self.assertEqual(len(self.refit(self.flags, objective="ls", replications=3).draws), 3)
+        with mock.patch.object(h, "ls_curve", boom):
+            self.assertEqual(len(self.refit(self.flags, replications=3).draws), 3)
+
+    def test_an_unknown_objective_is_a_data_error(self):
+        with self.assertRaises(ValueError):
+            self.refit(self.flags, objective="huber")
+
+    def test_the_path_of_cv4_fits_on_the_flagged_days_and_the_path_of_cv1_does_not(self):
+        cutoffs = [self.days[60].day, self.days[90].day]
+        kw = dict(replications=0, episodes=EPISODES, min_scarce=MIN_SCARCE)
+        every = h.path_c(self.days, cutoffs, self.dropping, CORRIDOR, self.series, clean=False, **kw)
+        clean = h.path_c(self.days, cutoffs, self.dropping, CORRIDOR, self.series, **kw)
+        self.assertEqual(every[0].refit.pairs - clean[0].refit.pairs, 3)
+
+    def test_the_no_future_check_covers_the_variant_that_reads_no_flags(self):
+        rows = [DailyObservation(x.day, {}) for x in self.days]
+        h.check_no_future(rows, [self.days[40].day], lambda cut: (self.days[:len(cut)], None, self.series), CORRIDOR,
+                          lambda x: x.week is not None, clean=False, episodes=EPISODES, min_scarce=MIN_SCARCE)
+
+
+class CorridorEffrTests(unittest.TestCase):
+    """Q2: the left side of CV2 is `(EFFR - ON RRP rate) / (IORB - ON RRP rate)`, in place of raw basis points."""
+
+    def test_the_position_is_the_corridor_position_with_effr_in_place_of_sofr(self):
+        rows = [DailyObservation(date(2019, 1, 2), {"sofr": 2.9, "iorb": 2.40, "effr": 2.33}),
+                DailyObservation(date(2019, 1, 3), {"sofr": 2.9, "iorb": 2.40, "effr": 2.40})]
+        got = h.left_sides(rows, lambda day: 2.25)[EFFR]
+        self.assertEqual(got, {date(2019, 1, 2): round(0.08 / 0.15, 9), date(2019, 1, 3): 1.0})
+
+    def test_a_wider_corridor_does_not_move_the_position_of_a_rate_at_the_same_place(self):
+        rows = [DailyObservation(date(2019, 1, 2), {"iorb": 2.40, "effr": 2.325}),
+                DailyObservation(date(2019, 1, 3), {"iorb": 2.40, "effr": 2.30})]
+        wide = {date(2019, 1, 2): 2.25, date(2019, 1, 3): 2.20}  # 0.15 wide and 0.20 wide
+        got = h.left_sides(rows, lambda day: wide[day])[EFFR]
+        self.assertEqual(got[date(2019, 1, 2)], 0.5)
+        self.assertEqual(got[date(2019, 1, 3)], 0.5)
+
+    def test_a_missing_leg_or_rate_is_no_left_side_not_a_zero(self):
+        rows = [DailyObservation(date(2019, 1, 2), {"iorb": 2.40, "effr": None}),
+                DailyObservation(date(2019, 1, 3), {"iorb": 2.40, "effr": 2.3})]
+        got = h.left_sides(rows, lambda day: None if day.day == 3 else 2.25)[EFFR]
+        self.assertEqual(got, {date(2019, 1, 2): None, date(2019, 1, 3): None})
+
+    def test_a_corridor_that_is_not_positive_is_a_data_error(self):
+        rows = [DailyObservation(date(2019, 1, 2), {"iorb": 2.20, "effr": 2.3})]
+        with self.assertRaises(ValueError):
+            h.left_sides(rows, lambda day: 2.25)
+
+    def test_the_raw_basis_point_series_is_not_offered_beside_it(self):
+        rows = [DailyObservation(date(2019, 1, 2), {"iorb": 2.40, "effr": 2.33})]
+        self.assertEqual(set(h.left_sides(rows, lambda day: 2.25)), {EFFR})
+
+
+class PoliticsWhiteTests(unittest.TestCase):
+    """Reporting only: the Politis-White block length of a refit's training residuals, beside goalpost 2. It changes nothing."""
+
+    @staticmethod
+    def ar1(phi, n, seed):
+        import random
+
+        rng, x, out = random.Random(seed), 0.0, []
+        for _ in range(n + 200):
+            x = phi * x + rng.gauss(0.0, 1.0)
+            out.append(x)
+        return out[200:]
+
+    def test_white_noise_wants_a_short_block(self):
+        self.assertLessEqual(h.politis_white_block(self.ar1(0.0, 1000, 1)), 3.0)
+
+    def test_the_block_matches_the_published_estimator_on_a_fixed_series(self):
+        # arch.bootstrap.optimal_block_length (the Politis-White / Patton-Politis-White estimator) gives 49.229 for this series
+        self.assertAlmostEqual(h.politis_white_block(self.ar1(0.9, 1000, 1)), 49.23, places=2)
+
+    def test_a_persistent_series_wants_a_long_block(self):
+        self.assertGreater(h.politis_white_block(self.ar1(0.9, 1000, 1)), 10.0)
+
+    def test_a_more_persistent_series_wants_a_longer_block(self):
+        self.assertLess(h.politis_white_block(self.ar1(0.5, 1000, 2)), h.politis_white_block(self.ar1(0.9, 1000, 2)))
+
+    def test_the_block_is_the_same_for_the_same_series_and_for_a_shifted_or_scaled_one(self):
+        x = self.ar1(0.8, 600, 3)
+        self.assertEqual(h.politis_white_block(x), h.politis_white_block(list(x)))
+        self.assertEqual(h.politis_white_block(x), h.politis_white_block([5.0 + 3.0 * v for v in x]))
+
+    def test_it_never_exceeds_the_published_cap(self):
+        x = self.ar1(0.99, 300, 4)
+        self.assertLessEqual(h.politis_white_block(x), min(3.0 * len(x) ** 0.5, len(x) / 3.0) + 1.0)
+
+    def test_a_series_with_no_variation_or_too_short_has_no_block(self):
+        self.assertIsNone(h.politis_white_block([0.0] * 100))
+        self.assertIsNone(h.politis_white_block([1.0, 2.0, 1.5]))
+
+    def test_a_fitted_refit_records_the_block_of_its_training_residuals(self):
+        days = tc._planted_days(tc._weeks(), count=100)
+        noisy = {EFFR: {x.day: 0.8 * x.corridor + 0.1 + 0.004 * v for x, v in zip(days, self.ar1(0.9, len(days), 5))}}
+        fit = h.refit_c(days, days[-1].day, _quiet_flags(days), EFFR, noisy, replications=0, episodes=EPISODES,
+                        min_scarce=MIN_SCARCE)
+        self.assertTrue(fit.fitted, fit.record)
+        self.assertIsInstance(fit.record["pw_block"], float)
+        self.assertGreater(fit.record["pw_block"], 1.0)
+
+    def test_a_refit_that_is_not_fitted_has_no_block(self):
+        days = tc._planted_days(tc._weeks(), count=100)
+        fit = h.refit_c(days, days[5].day, _quiet_flags(days), CORRIDOR, _effr_series(days), replications=0,
+                        episodes=EPISODES, min_scarce=MIN_SCARCE)
+        self.assertNotIn("pw_block", fit.record)
+
+    def test_the_baselines_residuals_are_their_own_fit_on_their_own_days(self):
+        days = tc._planted_days(tc._weeks(), count=100)
+        base = c.refit_c(days, days[-1].day, replications=0, episodes=EPISODES, min_scarce=MIN_SCARCE)
+        residuals = h.baseline_residuals_c(days, base, episodes=EPISODES, min_scarce=MIN_SCARCE)
+        self.assertEqual(len(residuals), base.pairs)
+        self.assertAlmostEqual(sum(r * r for r in residuals), base.sse, places=9)
 
 
 if __name__ == "__main__":

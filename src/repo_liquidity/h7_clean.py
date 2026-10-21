@@ -1,28 +1,34 @@
 """H7m, development: the calendar-clean variants of candidates C and D (`docs/stages/h7-calendar-clean.md`, directive #147).
 
-Four variants, declared next to the current C and D (which stay as the baselines, in `h7_candidate_c` and `h7_candidate_d`):
+Four variants of candidate C are run, declared next to the current C (which stays as the baseline, in `h7_candidate_c`), under
+the rulings on Q1-Q6 (`docs/stages/h7-calendar-clean.md` section 9). D and its variants are **not run** (D dropped under #142,
+Q5); their code stays here, tested, and is not called by the run.
 
-====  ===========  ===========  ============================  ======================
+====  ===========  ===========  ============================  =====================================
  #    Candidate    Days         Objective                     Left side
-====  ===========  ===========  ============================  ======================
-CV1   C            clean        sum of absolute deviations    corridor position
-CV2   C            clean        sum of absolute deviations    `effr_minus_iorb_bp`
-DV1   D            clean        sum of absolute deviations    corridor position
-DV2   D            clean        sum of absolute deviations    `effr_minus_iorb_bp`
-====  ===========  ===========  ============================  ======================
+====  ===========  ===========  ============================  =====================================
+CV1   C            clean        sum of absolute deviations    corridor position (SOFR)
+CV2   C            clean        sum of absolute deviations    corridor-normalised EFFR (Q2)
+CV3   C            clean        least squares                 corridor position (SOFR); (a) only
+CV4   C            all          sum of absolute deviations    corridor position (SOFR); (b) only
+====  ===========  ===========  ============================  =====================================
 
 What changes against a baseline, and nothing else:
 
-* **Which days a refit fits on.** A scored day is dropped from the days a refit fits on, and from the days its bootstrap
-  resamples, when the parent's `settlement_day` or `quarter_end_window` is 1 on it. Both are read through the parent's
-  `InformationRule` at the day's own decision instant (`read_flags`), never re-implemented. The counted-episode rule is taken
-  over the clean days. A dropped day is still served, by the refit in force.
-* **The objective.** The sum of absolute deviations of the left side from Stage 2's curve `a + b x max(k - D, 0)`, `b >= 0`,
-  `k` on `h7_candidate_c.KINK_GRID`. `lad_curve` returns the optimum over the whole kink grid.
+* **Which days a refit fits on** (CV1 to CV3). A scored day is dropped from the days a refit fits on, and from the days its
+  bootstrap resamples, when the parent's `settlement_day` or `quarter_end_window` is 1 on it, or the parent's
+  `turn_days.turn_label` is not None on it (Q1). Each is read from the parent, never re-implemented: the first two through its
+  `InformationRule` at the day's own decision instant, the label for the scored day alone (`read_turn`). The counted-episode rule
+  is taken over the clean days. A dropped day is still served, by the refit in force. CV4 fits every day the baseline does.
+* **The objective** (CV1, CV2, CV4). The sum of absolute deviations of the left side from Stage 2's curve
+  `a + b x max(k - D, 0)`, `b >= 0`, `k` on `h7_candidate_c.KINK_GRID`. `lad_curve` returns the optimum over the whole kink
+  grid. CV3 keeps the baseline's least squares (`ls_curve`).
 * **The tie rule** (finding #54). Kinks tied within `KINK_TIE_RTOL` of the least objective go to the smaller kink, which is
   not part of the estimate. The three starts of the outer search are compared at the end of a refit: two starts whose objectives
   are tied and whose parameters differ by more than one grid step in any parameter make the refit **not identified**. It serves
-  no estimate and is never replaced by a picked vector (`combine_starts`).
+  no estimate and is never replaced by a picked vector (`combine_starts`). It holds for every variant (Q3), CV3 included.
+* **Reported, not changed.** Each fitted refit records the Politis-White block length of its training residuals
+  (`politis_white_block`), to be read beside goalpost 2. The bootstrap's mean block stays 10.
 
 Reads nothing but through the parent's as-of rule and the group series' and SLR rows' own availability times. Nothing is scored
 here: `variant_path` returns each refit's path and its gaps for goalposts 1 and 2 (`summarise`).
@@ -49,7 +55,7 @@ from repo_model.data import DailyObservation, next_business_day
 from repo_model.metrics import stationary_bootstrap_indices
 from repo_model.splits import LookAheadError, SplitError
 
-from repo_liquidity import demand_curve, declaration, goalposts
+from repo_liquidity import demand_curve, declaration, goalposts, scheduled
 from repo_liquidity import h7_candidate_c as c
 from repo_liquidity import h7_candidate_d as d
 from repo_liquidity import h7_estimator as h7
@@ -64,8 +70,8 @@ SERVING_LAG = h7.SERVING_LAG
 BLOCK_LENGTH, LEVEL, SEED = h7.BLOCK_LENGTH, h7.LEVEL, h7.SEED
 MAX_PASSES = c.MAX_PASSES
 DECISION_TIME = time(16, 0)
-#: The parent's flags the exclusion set reads (`docs/stages/h7-calendar-clean.md` section 2(a)): both are calendar or
-#: scheduled inputs read at the scored day itself.
+#: The parent's flags the exclusion set reads through its rule (`docs/stages/h7-calendar-clean.md` section 2(a)): both are
+#: calendar or scheduled inputs read at the scored day itself. The third clause, the turn-day label, is read by `read_turn`.
 FLAG_FEATURES = ("settlement_day", "quarter_end_window")
 #: The reason a refit serves nothing.
 NO_EPISODE, NO_FIT, NOT_IDENTIFIED, FITTED = "no counted episode", "no fit", "not identified", "fitted"
@@ -75,11 +81,30 @@ _ITERATIONS = 64
 #: The iterations every kink gets before the clearly worse ones are dropped (`lad_curve`).
 _COARSE = 30
 
-#: The variants of the declaration, section 3: (id, candidate, left side).
-VARIANTS: Tuple[Tuple[str, str, str], ...] = (
-    ("CV1", "C", "corridor"), ("CV2", "C", "effr_minus_iorb_bp"),
-    ("DV1", "D", "corridor"), ("DV2", "D", "effr_minus_iorb_bp"),
+#: The left sides: the baseline's SOFR corridor position, and EFFR's position in the same corridor (Q2).
+CORRIDOR, EFFR_CORRIDOR = "corridor", "effr_corridor"
+OBJECTIVES = ("lad", "ls")
+DAYS = ("clean", "all")
+
+
+class Variant(NamedTuple):
+    """One declared variant: the days it fits on (`clean` or `all`), its objective (`lad` or `ls`) and its left side."""
+
+    id: str
+    candidate: str
+    days: str
+    objective: str
+    left: str
+
+
+#: The variants the run fits (section 9 of the declaration, Q2 and Q4). CV3 is (a) only, CV4 is (b) only.
+VARIANTS: Tuple[Variant, ...] = (
+    Variant("CV1", "C", "clean", "lad", CORRIDOR), Variant("CV2", "C", "clean", "lad", EFFR_CORRIDOR),
+    Variant("CV3", "C", "clean", "ls", CORRIDOR), Variant("CV4", "C", "all", "lad", CORRIDOR),
 )
+#: D's variants are declared and implemented, and not run: Eleonora's #142 ruling (b), D dropped (Q5). They do not count.
+D_VARIANTS: Tuple[Variant, ...] = tuple(Variant("D" + v.id[1:], "D", v.days, v.objective, v.left) for v in VARIANTS)
+D_NOT_RUN = "not run (D dropped under #142)"
 #: One grid step of each searched parameter: the shares (C), and D's level, slope, small and foreign-related shares.
 STEPS_C: Tuple[float, ...] = (0.01, 0.01, 0.01)
 STEPS_D: Tuple[float, ...] = (0.01, 0.1, 0.01, 0.01)
@@ -97,9 +122,11 @@ class Flags(NamedTuple):
     settlement_day: Optional[float]
     quarter_end_window: Optional[float]
     unread: bool = False
+    #: The parent's `turn_days.turn_label` of the day: a label when it is a turn day, else None (Q1).
+    turn: Optional[str] = None
 
     def dropped(self) -> bool:
-        """Whether the day leaves the days a refit fits on.
+        """Whether the day leaves the days a refit fits on: one of the three clauses of the exclusion set holds.
 
         Raises:
             ValueError: a flag is a hole, so whether the day is a calendar day is not known.
@@ -108,7 +135,7 @@ class Flags(NamedTuple):
             return True
         if self.settlement_day is None or self.quarter_end_window is None:
             raise ValueError(f"{self.day}: a calendar flag is a hole, so whether it is a clean day is not known")
-        return self.settlement_day == 1.0 or self.quarter_end_window == 1.0
+        return self.settlement_day == 1.0 or self.quarter_end_window == 1.0 or self.turn is not None
 
 
 def with_quarter_end_window(rows: Sequence[DailyObservation]) -> List[DailyObservation]:
@@ -120,6 +147,34 @@ def flag_rule(registry: Optional[Mapping[str, Mapping]] = None) -> InformationRu
     """The rule that reads the two flags: the parent's, under Phase 3's registry, at 16:00 on the day before."""
     return InformationRule(declaration.registry() if registry is None else registry, FLAG_FEATURES,
                            decision_time=DECISION_TIME, horizon=1)
+
+
+def parent_turn_label() -> Callable[[date], Optional[str]]:
+    """The parent's `repo_model.turn_days.turn_label`: a label for the month's last business day and the first business day
+    after it, else None. Read from the parent, never re-implemented here.
+
+    Raises:
+        ValueError: the parent at this tree's pin has no `turn_days` (it comes with the pin move, #149), so the exclusion set's
+            third clause cannot be read and nothing may be fitted.
+    """
+    import importlib
+
+    try:
+        return importlib.import_module("repo_model.turn_days").turn_label
+    except ImportError as error:
+        raise ValueError("repo_model.turn_days is absent at the pin of this tree; the turn-day clause of the exclusion set "
+                         "(Q1) cannot be read until the pin moves (#149), so no variant may be fitted yet") from error
+
+
+def read_turn(turn_label: Callable[[date], Optional[str]], scored: date, read: date) -> Optional[str]:
+    """The turn-day label of the scored day, read for the day `read`.
+
+    Raises:
+        LookAheadError: `read` is not the scored day. The label is read for the day's own date and no other.
+    """
+    if read != scored:
+        raise LookAheadError(f"the turn-day label of {scored} was read for {read}; it is read for the scored day only")
+    return turn_label(read)
 
 
 def check_flag_reads(info: asof.InformationSet) -> None:
@@ -134,29 +189,34 @@ def check_flag_reads(info: asof.InformationSet) -> None:
                                  "a calendar flag is read at the day's own decision instant, for that day only")
 
 
-def read_flags(rows: Sequence[DailyObservation], rule: InformationRule) -> Dict[date, Flags]:
-    """The flags of every scored day (row `i + 1`, scored from the reads at row `i`), through `rule`.
+def read_flags(rows: Sequence[DailyObservation], rule: InformationRule,
+               turn_label: Optional[Callable[[date], Optional[str]]] = None) -> Dict[date, Flags]:
+    """The flags of every scored day (row `i + 1`, scored from the reads at row `i`), through `rule`, and its turn-day label.
 
-    `rows` must carry `quarter_end_window` (`with_quarter_end_window`).
+    `rows` must carry `quarter_end_window` (`with_quarter_end_window`). `turn_label` is the parent's `turn_days.turn_label`
+    (`parent_turn_label()` when None).
 
     Raises:
-        LookAheadError: the rule refuses a read, or a flag is read for any day but the scored one.
+        LookAheadError: the rule refuses a read, or a flag or the label is read for any day but the scored one.
         StaleReadError: a read is older than the latest value public at the decision instant.
+        ValueError: the parent has no turn-day label at this pin, or its holiday table does not cover a day.
     """
+    labeller = parent_turn_label() if turn_label is None else turn_label
     dates = [row.date for row in rows]
     out: Dict[date, Flags] = {}
     for i in range(len(rows) - 1):
         scored = rows[i + 1]
+        turn = read_turn(labeller, scored.date, scored.date)
         extended = h7._extended(dates, i)
         try:
             info = rule.information_set(extended, i + 1)
         except SplitError:
-            out[scored.date] = Flags(scored.date, None, None, True)
+            out[scored.date] = Flags(scored.date, None, None, True, turn)
             continue
         rule.check(extended, info)
         check_flag_reads(info)
         values = rule.observation(rows, info).values
-        out[scored.date] = Flags(scored.date, values.get("settlement_day"), values.get("quarter_end_window"))
+        out[scored.date] = Flags(scored.date, values.get("settlement_day"), values.get("quarter_end_window"), False, turn)
     return out
 
 
@@ -292,6 +352,33 @@ def lad_curve(xs: Sequence[float], ys: Sequence[float], grid: Optional[Sequence[
     return Curve(float(kinks[kept[pick]]), float(a[pick]), float(b[pick]), float(f[pick]))
 
 
+def ls_curve(xs: Sequence[float], ys: Sequence[float], grid: Optional[Sequence[float]] = None) -> Optional[Curve]:
+    """The baseline's least-squares broken stick (`demand_curve.fit_broken_stick`), with its rejection of a negative slope.
+
+    This is what the current candidate C fits (`h7_candidate_c._evaluate`) and what CV3 keeps: only the days differ. None when
+    no kink has points on both sides, or the slope is negative.
+    """
+    try:
+        fit = demand_curve.fit_broken_stick(np.asarray(xs, dtype=float).tolist(), np.asarray(ys, dtype=float).tolist(),
+                                            KINK_GRID if grid is None else grid)
+    except ValueError:
+        return None
+    return Curve(fit.kink, fit.intercept, fit.slope, fit.sse) if fit.slope >= 0.0 else None
+
+
+def curve_for(objective: str) -> Callable[..., Optional[Curve]]:
+    """`lad_curve` or `ls_curve`, looked up when called.
+
+    Raises:
+        ValueError: the objective is neither.
+    """
+    if objective == "lad":
+        return lad_curve
+    if objective == "ls":
+        return ls_curve
+    raise ValueError(f"the objective is one of {OBJECTIVES}, not {objective!r}")
+
+
 # -- the outer search and the three starts ----------------------------------------------------------------------------
 
 
@@ -362,11 +449,12 @@ def _draw(index: np.ndarray) -> Optional[Tuple[float, ...]]:
     """One bootstrap draw: the parameters refitted on the days `index` resamples, searching from the refit's own parameters."""
     ctx = _CONTEXT
     reserves, assets, ys = ctx["reserves"][index], ctx["assets"][index], ctx["ys"][index]
+    curve = curve_for(ctx["objective"])
     if ctx["kind"] == "C":
-        evaluate = lambda p: lad_curve(_xs_c(p, reserves, assets), ys)  # noqa: E731
+        evaluate = lambda p: curve(_xs_c(p, reserves, assets), ys)  # noqa: E731
     else:
         heads = ctx["heads"][index]
-        evaluate = lambda p: lad_curve(_xs_d(p, reserves, assets, heads), ys)  # noqa: E731
+        evaluate = lambda p: curve(_xs_d(p, reserves, assets, heads), ys)  # noqa: E731
     found = descend(ctx["start"], ctx["grids"], evaluate)
     return None if found is None else found.params
 
@@ -394,33 +482,45 @@ def run_draws(context: Mapping[str, object], replications: int, size: int, seed:
 # -- the left side and the training days -------------------------------------------------------------------------------
 
 
-def left_sides(rows: Sequence[DailyObservation]) -> Dict[str, Dict[date, Optional[float]]]:
-    """Each scored day's `effr_minus_iorb_bp` (the parent's, in whole basis points as published). The corridor position is the
-    baseline day's own.
+def left_sides(rows: Sequence[DailyObservation], on_rrp_rate: Optional[Callable[[date], Optional[float]]] = None
+               ) -> Dict[str, Dict[date, Optional[float]]]:
+    """Each scored day's EFFR position in the corridor, `(EFFR - ON RRP rate) / (IORB - ON RRP rate)` (Q2): the corridor
+    position of `demand_curve.corridor_position`, with EFFR in place of SOFR and the ON RRP rate in force on the day. It replaces
+    raw `effr_minus_iorb_bp`, which is not offered beside it. None where a leg or the rate is missing. The SOFR corridor position
+    is the baseline day's own.
 
     Raises:
-        ValueError: if the rows carry no `effr` column.
+        ValueError: if the rows carry no `effr` column, or a day's corridor is not positive.
     """
     if not any("effr" in row.values for row in rows):
         raise ValueError("the rows carry no effr column: build them with nyfed_effr_inputs (scripts/h7_calendar_clean.py)")
-    return {"effr_minus_iorb_bp": {row.date: row.effr_minus_iorb_bp for row in rows}}
+    if on_rrp_rate is None:
+        publications = scheduled.load_on_rrp_rates()
+        on_rrp_rate = lambda day: scheduled.rate_in_force(publications, day)  # noqa: E731
+    out: Dict[date, Optional[float]] = {}
+    for row in rows:
+        effr, iorb, floor = row.values.get("effr"), row.values.get("iorb"), on_rrp_rate(row.date)
+        out[row.date] = None if effr is None or iorb is None or floor is None else demand_curve.corridor_position(
+            sofr=float(effr), iorb=float(iorb), on_rrp_rate=float(floor))
+    return {EFFR_CORRIDOR: out}
 
 
 def _left(left_side: str, series: Mapping[str, Mapping[date, Optional[float]]], x) -> Optional[float]:
-    return x.corridor if left_side == "corridor" else series[left_side].get(x.day)
+    return x.corridor if left_side == CORRIDOR else series[left_side].get(x.day)
 
 
-def training_days(days: Sequence, cutoff: date, flags: Mapping[date, Flags], left_side: str,
-                  series: Mapping[str, Mapping[date, Optional[float]]], usable: Callable[[object], bool], *,
+def training_days(days: Sequence, cutoff: date, flags: Optional[Mapping[date, Flags]], left_side: str,
+                  series: Mapping[str, Mapping[date, Optional[float]]], usable: Callable[[object], bool], *, clean: bool = True,
                   episodes=demand_curve.EPISODES, min_scarce: int = demand_curve.MIN_SCARCE_DAYS_REVISED):
-    """The clean days a refit at `cutoff` fits on, with the labels of its counted episodes.
+    """The days a refit at `cutoff` fits on, with the labels of its counted episodes.
 
     A day is usable when it is on or before the cutoff, `usable` holds (a group week, and for D a headroom) and its left side is
-    known; the dropped days (`clean_days`) leave; an episode counts with at least `min_scarce` of the days that remain whose
-    ratio is below 13%.
+    known; with `clean` the dropped days (`clean_days`) leave (`flags` may be None without it, CV4); an episode counts with at
+    least `min_scarce` of the days that remain whose ratio is below 13%.
     """
     pool = [x for x in days if x.day <= cutoff and usable(x) and _left(left_side, series, x) is not None]
-    pool = clean_days(pool, flags)
+    if clean:
+        pool = clean_days(pool, flags)
     chosen: List = []
     labels: List[str] = []
     for label, first, last in episodes:
@@ -439,6 +539,69 @@ def _dropped(days, cutoff, left_side, series, usable, episodes, labels, sample) 
     return len(inside) - len(sample)
 
 
+# -- the Politis-White block length of a refit's residuals (reported beside goalpost 2, changes nothing) ----------------
+
+
+def politis_white_block(residuals: Sequence[float], c: float = 2.0) -> Optional[float]:
+    """The optimal mean block length of the stationary bootstrap for a residual series, by Politis and White (2004) with the
+    correction of Patton, Politis and White (2009).
+
+    With `n` residuals (taken in time order, centred), `K = max(5, ceil(sqrt(log10 n)))` and the sample autocovariances `R(k)`:
+    `m` is the smallest lag from which `K` successive autocorrelations are all below `c sqrt(log10(n) / n)` (the largest allowed
+    lag, `ceil(sqrt n) + K`, if none), the window is `M = 2 max(m, 1)` with the flat-top taper `lambda(t) = 1` for `t <= 1/2` and
+    `2 (1 - t)` above, and the block is `(2 G^2 / D)^(1/3) n^(1/3)` with `G = 2 sum_k lambda(k/M) k R(k)` and
+    `D = 2 (R(0) + 2 sum_k lambda(k/M) R(k))^2`, never above `ceil(min(3 sqrt n, n / 3))` and never below 1. None for fewer
+    than ten residuals, or residuals with no variation, or no long-run variance.
+
+    This is the figure of Lens C (repo-market-model#958) that the declaration asks to report: it is the mean block a series
+    like this one would want, to set beside the mean block of 10 the bootstrap uses.
+    """
+    x = np.asarray(residuals, dtype=float)
+    n = len(x)
+    if n < 10:
+        return None
+    x = x - x.mean()
+    scale = float(np.sqrt((x * x).mean()))
+    if not scale > 0.0 or scale < 1e-12 * max(1.0, float(np.abs(np.asarray(residuals, dtype=float)).max())):
+        return None
+    k_n = max(5, int(np.ceil(np.sqrt(np.log10(n)))))
+    m_max = min(int(np.ceil(np.sqrt(n))) + k_n, n - 1)
+    cov = np.array([float(x[: n - k] @ x[k:]) / n for k in range(m_max + 1)])
+    rho = np.abs(cov[1:] / cov[0])  # lags 1 .. m_max
+    critical = c * np.sqrt(np.log10(n) / n)
+    m_hat = m_max
+    for m in range(0, m_max - k_n + 1):
+        if np.all(rho[m: m + k_n] < critical):  # lags m + 1 .. m + k_n
+            m_hat = m
+            break
+    window = min(2 * max(m_hat, 1), m_max)
+    lags = np.arange(1, window + 1)
+    t = lags / window
+    taper = np.where(t <= 0.5, 1.0, 2.0 * (1.0 - t))
+    long_run = cov[0] + 2.0 * float((taper * cov[1: window + 1]).sum())
+    g = 2.0 * float((taper * lags * cov[1: window + 1]).sum())
+    if not long_run * long_run > 0.0:
+        return None
+    block = (2.0 * g * g / (2.0 * long_run * long_run)) ** (1.0 / 3.0) * n ** (1.0 / 3.0)
+    return round(float(min(max(block, 1.0), np.ceil(min(3.0 * np.sqrt(n), n / 3.0)))), 2)
+
+
+def curve_residuals(curve: Curve, xs: Sequence[float], ys: Sequence[float]) -> List[float]:
+    """The left side less Stage 2's curve at the fitted `curve`, day by day in the order given."""
+    x = np.asarray(xs, dtype=float)
+    return (np.asarray(ys, dtype=float) - (curve.intercept + curve.slope * np.maximum(curve.kink - x, 0.0))).tolist()
+
+
+def baseline_residuals_c(days: Sequence[c.DayC], refit: c.RefitC, *, episodes=demand_curve.EPISODES,
+                         min_scarce: int = demand_curve.MIN_SCARCE_DAYS_REVISED) -> List[float]:
+    """The training residuals of a refit of the current candidate C, on the days it fitted on. Empty when it did not fit."""
+    if not refit.fitted:
+        return []
+    sample, _ = c.training_days(days, refit.cutoff, episodes=episodes, min_scarce=min_scarce)
+    xs = _xs_c(refit.shares, np.array([x.week.reserves_bn for x in sample]), np.array([x.week.assets_bn for x in sample]))
+    return curve_residuals(Curve(refit.kink, refit.intercept, refit.slope, refit.sse), xs, [x.corridor for x in sample])
+
+
 # -- candidate C ------------------------------------------------------------------------------------------------------
 
 
@@ -446,11 +609,14 @@ def _xs_c(shares, reserves: np.ndarray, assets: np.ndarray) -> np.ndarray:
     return np.maximum(reserves - np.asarray(shares) * assets, 0.0).sum(axis=1) / assets.sum(axis=1)
 
 
-def fit_c(sample: Sequence[c.DayC], ys: Sequence[float], starts: Sequence[Sequence[float]] = c.START_SHARES) -> Combined:
-    """The three shares by absolute deviation over `sample`, whose left side is `ys`, with the tie rule."""
+def fit_c(sample: Sequence[c.DayC], ys: Sequence[float], starts: Sequence[Sequence[float]] = c.START_SHARES, *,
+          objective: str = "lad") -> Combined:
+    """The three shares over `sample`, whose left side is `ys`, by `objective` (absolute deviation or least squares), with the
+    tie rule."""
     reserves = np.array([x.week.reserves_bn for x in sample])
     assets = np.array([x.week.assets_bn for x in sample])
-    evaluate = lambda shares: lad_curve(_xs_c(shares, reserves, assets), ys)  # noqa: E731
+    curve = curve_for(objective)
+    evaluate = lambda shares: curve(_xs_c(shares, reserves, assets), ys)  # noqa: E731
     found = [descend(s, (c.SHARE_GRID,) * len(c.GROUPS), evaluate) for s in starts]
     return combine_starts([r for r in found if r is not None], STEPS_C)
 
@@ -467,40 +633,48 @@ def _record(combined: Combined, **extra) -> Dict[str, object]:
     return record
 
 
-def refit_c(days: Sequence[c.DayC], cutoff: date, flags: Mapping[date, Flags], left_side: str,
+def refit_c(days: Sequence[c.DayC], cutoff: date, flags: Optional[Mapping[date, Flags]], left_side: str,
             series: Mapping[str, Mapping[date, Optional[float]]], *, replications: int, seed: int = SEED, workers: int = 1,
-            episodes=demand_curve.EPISODES, min_scarce: int = demand_curve.MIN_SCARCE_DAYS_REVISED) -> c.RefitC:
-    """The refit at `cutoff` on the clean days, by absolute deviation, with the bootstrap draws of its shares.
+            clean: bool = True, objective: str = "lad", episodes=demand_curve.EPISODES,
+            min_scarce: int = demand_curve.MIN_SCARCE_DAYS_REVISED) -> c.RefitC:
+    """The refit at `cutoff` of C's shares, with the bootstrap draws of its shares.
 
-    A refit with no counted episode, no fit, or no identification is not fitted and has no draws.
+    `clean` fits on the days the exclusion set leaves (CV1 to CV3) or on every day the baseline does (CV4, `flags` may be None);
+    `objective` is `"lad"` (absolute deviation) or `"ls"` (least squares, CV3). A refit with no counted episode, no fit, or no
+    identification is not fitted and has no draws.
 
     Raises:
         LookAheadError: a day of the sample is after `cutoff`, or a flag was read for another day.
+        ValueError: the objective is unknown.
     """
-    sample, labels = training_days(days, cutoff, flags, left_side, series, lambda x: x.week is not None,
-                                   episodes=episodes, min_scarce=min_scarce)
+    curve_for(objective)
+    usable = lambda x: x.week is not None  # noqa: E731
+    sample, labels = training_days(days, cutoff, flags, left_side, series, usable, clean=clean, episodes=episodes,
+                                   min_scarce=min_scarce)
     for x in sample:
         if x.day > cutoff:
             raise LookAheadError(f"the shares for the refit at {cutoff} would be fitted on {x.day}, after its cutoff")
     breaks = tuple(sorted({x.week.week_ending for x in sample if x.week.break_week}))
-    dropped = _dropped(days, cutoff, left_side, series, lambda x: x.week is not None, episodes, labels, sample)
+    dropped = _dropped(days, cutoff, left_side, series, usable, episodes, labels, sample)
     if not sample:
         return c.RefitC(cutoff, None, False, None, None, None, None, 0, labels, None, breaks, (),
-                        _record(Combined(NO_EPISODE, None, None, None), dropped=dropped))
+                        _record(Combined(NO_EPISODE, None, None, None), dropped=dropped, objective_kind=objective))
     ys = [_left(left_side, series, x) for x in sample]
     ys_array = np.asarray(ys, dtype=float)
-    combined = fit_c(sample, ys)
+    combined = fit_c(sample, ys, objective=objective)
     if combined.status != FITTED:
         return c.RefitC(cutoff, None, False, None, None, None, None, len(sample), labels, combined.starts_agree, breaks, (),
-                        _record(combined, dropped=dropped))
+                        _record(combined, dropped=dropped, objective_kind=objective))
     shares, curve = combined.chosen
-    context = {"kind": "C", "reserves": np.array([x.week.reserves_bn for x in sample]),
-               "assets": np.array([x.week.assets_bn for x in sample]), "ys": ys_array, "start": shares,
+    reserves, assets = np.array([x.week.reserves_bn for x in sample]), np.array([x.week.assets_bn for x in sample])
+    block = politis_white_block(curve_residuals(curve, _xs_c(shares, reserves, assets), ys_array))
+    context = {"kind": "C", "objective": objective, "reserves": reserves, "assets": assets, "ys": ys_array, "start": shares,
                "grids": (c.SHARE_GRID,) * len(c.GROUPS)}
     draws = run_draws(context, replications, len(sample), seed, workers)
     return c.RefitC(cutoff, shares, True, curve.kink, curve.intercept, curve.slope, curve.objective, len(sample), labels,
                     combined.starts_agree, breaks, tuple(draws),
-                    _record(combined, dropped=dropped, replications=replications, draws=len(draws)))
+                    _record(combined, dropped=dropped, replications=replications, draws=len(draws), objective_kind=objective,
+                            pw_block=block))
 
 
 # -- candidate D ------------------------------------------------------------------------------------------------------
@@ -517,14 +691,18 @@ def _usable_d(x: d.DayD) -> bool:
     return x.week is not None and x.headroom is not None and x.headroom.headroom_bn is not None
 
 
-def refit_d(days: Sequence[d.DayD], cutoff: date, flags: Mapping[date, Flags], left_side: str,
+def refit_d(days: Sequence[d.DayD], cutoff: date, flags: Optional[Mapping[date, Flags]], left_side: str,
             series: Mapping[str, Mapping[date, Optional[float]]], *, replications: int, seed: int = SEED, workers: int = 1,
-            episodes=demand_curve.EPISODES, min_scarce: int = demand_curve.MIN_SCARCE_DAYS_REVISED) -> d.RefitD:
-    """The refit at `cutoff` of D's four parameters on the clean days that have a headroom, by absolute deviation.
+            clean: bool = True, objective: str = "lad", episodes=demand_curve.EPISODES,
+            min_scarce: int = demand_curve.MIN_SCARCE_DAYS_REVISED) -> d.RefitD:
+    """The refit at `cutoff` of D's four parameters on the days that have a headroom, as `refit_c` does for C.
 
-    A day with no headroom is not a training day (finding #142: D inherits its behaviour unchanged).
+    A day with no headroom is not a training day (finding #142). D is **not run** (dropped under #142, Q5): this is kept,
+    tested, and not called by `scripts/h7_calendar_clean.py`.
     """
-    sample, labels = training_days(days, cutoff, flags, left_side, series, _usable_d, episodes=episodes, min_scarce=min_scarce)
+    curve = curve_for(objective)
+    sample, labels = training_days(days, cutoff, flags, left_side, series, _usable_d, clean=clean, episodes=episodes,
+                                   min_scarce=min_scarce)
     for x in sample:
         if x.day > cutoff:
             raise LookAheadError(f"the parameters for the refit at {cutoff} would be fitted on {x.day}, after its cutoff")
@@ -532,27 +710,29 @@ def refit_d(days: Sequence[d.DayD], cutoff: date, flags: Mapping[date, Flags], l
     dropped = _dropped(days, cutoff, left_side, series, _usable_d, episodes, labels, sample)
     if not sample:
         return d.RefitD(cutoff, None, False, None, None, None, None, 0, labels, None, breaks, (),
-                        _record(Combined(NO_EPISODE, None, None, None), dropped=dropped))
+                        _record(Combined(NO_EPISODE, None, None, None), dropped=dropped, objective_kind=objective))
     ys = [_left(left_side, series, x) for x in sample]
     ys_array = np.asarray(ys, dtype=float)
     reserves = np.array([x.week.reserves_bn for x in sample])
     assets = np.array([x.week.assets_bn for x in sample])
     heads = np.array([x.headroom.headroom_bn for x in sample])
     grids = (d.LEVEL_GRID, d.SLOPE_GRID, c.SHARE_GRID, c.SHARE_GRID)
-    evaluate = lambda p: lad_curve(_xs_d(p, reserves, assets, heads), ys)  # noqa: E731
+    evaluate = lambda p: curve(_xs_d(p, reserves, assets, heads), ys)  # noqa: E731
     found = [descend(s, grids, evaluate) for s in d.START_PARAMETERS]
     combined = combine_starts([r for r in found if r is not None], STEPS_D)
     if combined.status != FITTED:
         return d.RefitD(cutoff, None, False, None, None, None, None, len(sample), labels, combined.starts_agree, breaks, (),
-                        _record(combined, dropped=dropped))
-    params, curve = combined.chosen
-    context = {"kind": "D", "reserves": reserves, "assets": assets, "heads": heads, "ys": ys_array, "start": params,
-               "grids": grids}
+                        _record(combined, dropped=dropped, objective_kind=objective))
+    params, fitted_curve = combined.chosen
+    block = politis_white_block(curve_residuals(fitted_curve, _xs_d(params, reserves, assets, heads), ys_array))
+    context = {"kind": "D", "objective": objective, "reserves": reserves, "assets": assets, "heads": heads, "ys": ys_array,
+               "start": params, "grids": grids}
     draws = [d.Params(*p) for p in run_draws(context, replications, len(sample), seed, workers)]
     fitted = d.Params(*params)
-    return d.RefitD(cutoff, fitted, True, curve.kink, curve.intercept, curve.slope, curve.objective, len(sample), labels,
-                    combined.starts_agree, breaks, tuple(draws),
-                    _record(combined, dropped=dropped, replications=replications, draws=len(draws),
+    return d.RefitD(cutoff, fitted, True, fitted_curve.kink, fitted_curve.intercept, fitted_curve.slope, fitted_curve.objective,
+                    len(sample), labels, combined.starts_agree, breaks, tuple(draws),
+                    _record(combined, dropped=dropped, replications=replications, draws=len(draws), objective_kind=objective,
+                            pw_block=block,
                             headroom_slope_sign="negative" if fitted.slope < 0 else "positive" if fitted.slope > 0 else "zero"))
 
 
@@ -632,31 +812,36 @@ def _memoised(refit_fn, sample_fn):
     return refit
 
 
-def path_c(days: Sequence[c.DayC], cutoffs: Sequence[date], flags: Mapping[date, Flags], left_side: str,
+def path_c(days: Sequence[c.DayC], cutoffs: Sequence[date], flags: Optional[Mapping[date, Flags]], left_side: str,
            series: Mapping[str, Mapping[date, Optional[float]]], *, replications: int, seed: int = SEED, workers: int = 1,
-           episodes=demand_curve.EPISODES, min_scarce: int = demand_curve.MIN_SCARCE_DAYS_REVISED) -> List[VariantPath]:
-    """CV1 (`left_side` "corridor") or CV2 (`"effr_minus_iorb_bp"`) over `cutoffs`."""
+           clean: bool = True, objective: str = "lad", episodes=demand_curve.EPISODES,
+           min_scarce: int = demand_curve.MIN_SCARCE_DAYS_REVISED) -> List[VariantPath]:
+    """A variant of C over `cutoffs`: `left_side` is `"corridor"` or `"effr_corridor"`, `clean` and `objective` as `refit_c`
+    (CV1: the defaults; CV2: the EFFR position; CV3: `objective="ls"`; CV4: `clean=False`)."""
     def sample_key(cut):
-        return _signature(*training_days(days, cut, flags, left_side, series, lambda x: x.week is not None,
+        return _signature(*training_days(days, cut, flags, left_side, series, lambda x: x.week is not None, clean=clean,
                                          episodes=episodes, min_scarce=min_scarce), left_side, series)
 
     refit = _memoised(lambda cut: refit_c(days, cut, flags, left_side, series, replications=replications, seed=seed,
-                                          workers=workers, episodes=episodes, min_scarce=min_scarce), sample_key)
+                                          workers=workers, clean=clean, objective=objective, episodes=episodes,
+                                          min_scarce=min_scarce), sample_key)
     return variant_path(days, cutoffs, refit,
                         lambda x, shares: None if x.week is None else c.deployable(x.week, shares),
                         lambda fit, x: None if x.week is None else c.interval(fit, x.week))
 
 
-def path_d(days: Sequence[d.DayD], cutoffs: Sequence[date], flags: Mapping[date, Flags], left_side: str,
+def path_d(days: Sequence[d.DayD], cutoffs: Sequence[date], flags: Optional[Mapping[date, Flags]], left_side: str,
            series: Mapping[str, Mapping[date, Optional[float]]], *, replications: int, seed: int = SEED, workers: int = 1,
-           episodes=demand_curve.EPISODES, min_scarce: int = demand_curve.MIN_SCARCE_DAYS_REVISED) -> List[VariantPath]:
-    """DV1 or DV2 over `cutoffs`. A served day with no headroom is missing."""
+           clean: bool = True, objective: str = "lad", episodes=demand_curve.EPISODES,
+           min_scarce: int = demand_curve.MIN_SCARCE_DAYS_REVISED) -> List[VariantPath]:
+    """A variant of D over `cutoffs` (not run: D is dropped under #142). A served day with no headroom is missing."""
     def sample_key(cut):
-        return _signature(*training_days(days, cut, flags, left_side, series, _usable_d, episodes=episodes,
+        return _signature(*training_days(days, cut, flags, left_side, series, _usable_d, clean=clean, episodes=episodes,
                                          min_scarce=min_scarce), left_side, series)
 
     refit = _memoised(lambda cut: refit_d(days, cut, flags, left_side, series, replications=replications, seed=seed,
-                                          workers=workers, episodes=episodes, min_scarce=min_scarce), sample_key)
+                                          workers=workers, clean=clean, objective=objective, episodes=episodes,
+                                          min_scarce=min_scarce), sample_key)
     return variant_path(days, cutoffs, refit,
                         lambda x, params: d.deployable(x.week, x.headroom.headroom_bn, params) if _usable_d(x) else None,
                         lambda fit, x: d.interval(fit, x.week, x.headroom.headroom_bn) if _usable_d(x) else None)
@@ -693,7 +878,7 @@ def baseline_path_d(days: Sequence[d.DayD], cutoffs: Sequence[date], *, replicat
 
 
 def check_no_future(rows: Sequence[DailyObservation], cutoffs: Sequence[date], build: Callable[[Sequence[DailyObservation]], Tuple],
-                    left_side: str, usable: Callable[[object], bool], *, episodes=demand_curve.EPISODES,
+                    left_side: str, usable: Callable[[object], bool], *, clean: bool = True, episodes=demand_curve.EPISODES,
                     min_scarce: int = demand_curve.MIN_SCARCE_DAYS_REVISED) -> None:
     """Refuse a refit whose training sample is not what the panel cut at its own cutoff gives.
 
@@ -707,8 +892,9 @@ def check_no_future(rows: Sequence[DailyObservation], cutoffs: Sequence[date], b
     days, flags, series = build(rows)
     for cutoff in cutoffs:
         cut_days, cut_flags, cut_series = build([row for row in rows if row.date <= cutoff])
-        now = training_days(days, cutoff, flags, left_side, series, usable, episodes=episodes, min_scarce=min_scarce)
-        then = training_days(cut_days, cutoff, cut_flags, left_side, cut_series, usable, episodes=episodes, min_scarce=min_scarce)
+        now = training_days(days, cutoff, flags, left_side, series, usable, clean=clean, episodes=episodes, min_scarce=min_scarce)
+        then = training_days(cut_days, cutoff, cut_flags, left_side, cut_series, usable, clean=clean, episodes=episodes,
+                             min_scarce=min_scarce)
         if _signature(*now, left_side, series) != _signature(*then, left_side, cut_series):
             raise LookAheadError(f"the training sample of the refit at {cutoff} is not the one the panel cut at that row gives; "
                                  "the refit depended on a later row")

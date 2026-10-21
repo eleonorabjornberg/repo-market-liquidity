@@ -32,11 +32,13 @@ class RecordTests(unittest.TestCase):
         cls.script = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(cls.script)
 
-    def test_it_is_development_evidence_with_the_declared_four_variants(self):
+    def test_it_is_development_evidence_with_the_declared_variants_of_c_and_d_not_run(self):
         self.assertEqual(self.record["tier"], "development")
         self.assertEqual(self.record["variant_count_added"], 4)
-        self.assertEqual(set(self.record["estimators"]), {"C", "D", "CV1", "CV2", "DV1", "DV2"})
-        self.assertEqual(set(self.record["comparison"]), {"CV1", "CV2", "DV1", "DV2"})
+        self.assertEqual(set(self.record["estimators"]), {"C", "CV1", "CV2", "CV3", "CV4"})
+        self.assertEqual(set(self.record["comparison"]), {"CV1", "CV2", "CV3", "CV4"})
+        self.assertEqual(set(self.record["not_run"]), {"D", "DV1", "DV2", "DV3", "DV4"})
+        self.assertEqual(set(self.record["not_run"].values()), {"not run (D dropped under #142)"})
 
     def test_it_was_made_at_this_pin_and_panel(self):
         self.assertEqual(self.record["pins"]["parent_commit"], PARENT_COMMIT)
