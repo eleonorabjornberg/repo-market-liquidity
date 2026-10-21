@@ -214,3 +214,41 @@ A **leakage test with one recorded mutation** (`CLAUDE.md`) for the calendar rea
 other than T at T's decision instant, must raise `LookAheadError`, and the mutated line and the exception the failing test raised
 are recorded in the test's docstring. The run keeps long computation to the Mac if it is expected to take over about two hours
 (each refit now solves a linear-programming fit per grid point and per bootstrap draw).
+
+## 9. Amendment of 21 October 2026: the rulings on Q1–Q6, applied before any fit
+
+This section is added to the run's pull request (#147, PR #150) and quotes the ruling comment
+(<https://github.com/eleonorabjornberg/repo-market-liquidity/issues/147#issuecomment-6297287738>; Q4 is Eleonora's own answer,
+Q1–Q3, Q5 and Q6 are the orchestrating session's decisions she asked for, each checked against the five-lens review,
+repo-market-model#958). Where this section and sections 2 to 7 differ, this section decides. Nothing has been fitted on real
+days, so protocol §12 is not touched. The answers to the marked questions of section 7 are:
+
+- **Q1, month-end.** "No, the parent's two-calendar-day clause is not enough." Decision, quoted: "add a third clause to the
+  exclusion set: `repo_model.turn_days.turn_label(T)` is not `None` (declared by `metadata/turn_day_labels_959.json`; model #959,
+  merged in #975). It covers every month's last business day and the first business day after it; the quarter-end and year-end
+  turns overlap the existing quarter-end window. It is read from the parent, never re-implemented, at the target day's own
+  decision instant, and the leakage test of §8 covers it." The exclusion set of section 2(a) is therefore three clauses:
+  `settlement_day` = 1, `quarter_end_window` = 1, or `turn_label(T)` is not `None`. The label exists only after the pin of this
+  document (8fd2cf8), so **the fit on real days waits for the pin move (#149)**; the tests, the solver and the constructed cases
+  go ahead. The set stays shared with A: `h7-kink.md`'s set gains the same clause before A's clean run.
+- **Q2, EFFR left side.** "Corridor-normalised for C and D, `(EFFR − ON RRP rate) / (IORB − ON RRP rate)`. It replaces raw
+  `effr_minus_iorb_bp` in CV2 and DV2; it is not added beside it." Section 2(c) is read accordingly: the left side of CV2 is that
+  position, built as the corridor position is (`demand_curve.corridor_position`, with EFFR in place of SOFR and the ON RRP rate
+  in force that day). The ties from EFFR's whole-basis-point prints remain and are reported.
+- **Q3, not identified.** "Yes." The rule of section 2(b) point 3 extends to the three-start agreement of C and D, and a refit
+  that is not identified serves nothing and is counted beside the goalposts (section 5).
+- **Q4, attribution (hers).** "Yes, add the separating variants." Per candidate, both on the corridor position:
+  **CV3** is (a) only, calendar-clean days with least squares; **CV4** is (b) only, all days with absolute deviation. The table
+  of section 3 is CV1 to CV4 for C (and DV1 to DV4 for D, below). CV3 is a least-squares fit on the clean days; it takes the
+  baseline's kink search and its rejection of a negative slope, and the tie rule of section 2(b) for the starts, because the
+  declaration says that rule holds "for every variant". CV4 fits all of the baseline's days.
+- **Q5, D and #142.** "Settled by her #142 ruling (b): try the vintage rule (#148), and drop D if it cannot be obtained." D was
+  dropped (#153). D and DV1 to DV4 are therefore "not run (D dropped under #142)" and **do not count as run variants**. The
+  code for D's variants stays in the tree, tested, and the run does not call it. Section 4 is no longer a run-time behaviour.
+- **Q6, loss.** "Yes, least absolute deviation. It is Lens B §4.2(2) verbatim, and it has no constant to choose after seeing
+  data."
+
+**Added for reporting only, nothing changed** (the ruling's last paragraph): the run reports the Politis–White block length of
+each refit's training residuals beside goalpost 2, because a block of 10 that is too short would make the 90% interval too
+narrow (Lens C measured about 108 days post-2020 for the model's score series). The bootstrap stays as declared (mean block 10,
+section 2(a)). "Whether a longer block is needed is her call, on that figure."
