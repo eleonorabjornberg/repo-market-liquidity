@@ -57,7 +57,7 @@ def main():
     warnings.simplefilter("ignore")
     with tempfile.TemporaryDirectory() as tmp:
         path = Path(tmp) / "panel.csv"
-        manifest = panel.build(path)
+        manifest = panel.build(path, version=1)
         observations = latent.assemble(load_daily_panel(path))
     jumps = latent.jump_days(observations, REFORMS)
     legal = latent.jump_days(observations, LEGAL)

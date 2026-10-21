@@ -1,8 +1,8 @@
 {
-  "byte_count": 20648,
+  "byte_count": 20392,
   "path": "nyfed_rde/rde_estimates.csv",
   "retrieved_at": "2026-10-19T19:35:11Z",
-  "sha256": "6edafdc786e9b99d8e43f540a52083ed843a086a43209d3df3bfd207023d9e80",
+  "sha256": "bc6f395a61b5b83c7fce36de3623e3e05f807f1f30cce5731c7d2743a81c85f2",
   "source_id": "nyfed_rde",
   "url": "https://www.newyorkfed.org/medialibrary/Research/Interactives/Data/elasticity/download-data"
 }

@@ -8,9 +8,11 @@ Built from tracked fixtures only, with no network:
 - this repository's scheduled tables (`repo_liquidity.scheduled`).
 
 Versions 2 and 3 also read the 2019 to 2021 repo operations through `repo_liquidity.fed_repo`, deleted on 12 October
-2026 in favour of the parent's `repo_model.fed_liquidity` (`docs/decisions/deleted-duplicates.md`), whose meaning
-differs (`docs/decisions/data-meaning.md`). Their manifests are development records: they are verified at the commit
-and parent pin they were made from (`scripts/verify_records.py`), and this module no longer builds them.
+2026 in favour of the parent's `repo_model.fed_liquidity` (`docs/decisions/data-meaning.md`). Their manifests are
+development records: they are verified at the commit and parent pin they were made from (`scripts/verify_records.py`),
+and this module no longer builds them. Version 1 is a record too since the pin moved to 08ff67e (#149): the parent's
+Desk test-trade rule changed 391 of its `srf_take_up` rows, so the same build now gives version 4
+(`docs/stages/panel-v4.md`).
 
 Before anything else the build checks that the published columns, built alone, reproduce the parent's published
 panel digest, as the parent's `scripts/scarcity_validation.py` does. Phase 3's built columns are then priced by the
@@ -38,9 +40,16 @@ MANIFEST = ROOT / "metadata" / "phase3_panel_manifest.json"
 MANIFEST_V2 = ROOT / "metadata" / "phase3_panel_v2_manifest.json"
 #: Stage 1b's panel (`docs/stages/stage-1b.md`): version 2 plus the first-wave indicators.
 MANIFEST_V3 = ROOT / "metadata" / "phase3_panel_v3_manifest.json"
-MANIFESTS = {1: MANIFEST, 2: MANIFEST_V2, 3: MANIFEST_V3}
+#: Version 1's build at the pin of 08ff67e (#149; Eleonora, 21 October 2026, "publish the panel as a new version"): the
+#: same columns and dates. The parent's Desk test-trade rule (its #933) moved 391 `srf_take_up` rows
+#: (`results/panel/v4_changes.json`), so version 1 no longer rebuilds at this pin and stays as published. The numbers 2
+#: and 3 were taken by the Stage 1a correction and Stage 1b, so this is version 4.
+MANIFEST_V4 = ROOT / "metadata" / "phase3_panel_v4_manifest.json"
+MANIFESTS = {1: MANIFEST, 2: MANIFEST_V2, 3: MANIFEST_V3, 4: MANIFEST_V4}
 #: The versions kept only as records (see the module docstring).
-RECORD_VERSIONS = (2, 3)
+RECORD_VERSIONS = (1, 2, 3)
+#: The version the readers build at the current pin.
+CURRENT_VERSION = 4
 H41_EXTRACT = ROOT / "tests" / "fixtures" / "snapshots" / "h41" / "h41_treasury_first_print.csv"
 H41_MBS_EXTRACT = ROOT / "tests" / "fixtures" / "snapshots" / "h41" / "h41_mbs_first_print.csv"
 PARENT_RAW_ROOTS = ("funding_inputs", "on_rrp_inputs", "h8_inputs", "srf_inputs")
@@ -78,10 +87,12 @@ def _parent_rows(workdir: Path, roots=PARENT_RAW_ROOTS):
     return load_point_in_time_panel(long_path), snapshot, retrieved
 
 
-def build(output: Path, version: int = 1) -> Dict:
+def build(output: Path, version: int) -> Dict:
     """Build the panel to `output` (CSV) and return its manifest.
 
-    Version 1 is Stage 1a's panel. Versions 2 and 3 are records only (`RECORD_VERSIONS`).
+    Version 4 is Stage 1a's panel (version 1) built at the pin of 08ff67e. Versions 1 to 3 are records only
+    (`RECORD_VERSIONS`): version 1 is verified at the commit and parent pin it was made from, and a rebuild at this
+    pin is version 4, not version 1.
 
     Raises:
         ValueError: for a version that is not built here, if the published columns do not reproduce the parent's
@@ -90,8 +101,9 @@ def build(output: Path, version: int = 1) -> Dict:
     from repo_model.data import build_daily_panel, verify_daily_panel, write_daily_panel
 
     if version in RECORD_VERSIONS:
-        raise ValueError(f"panel version {version} is a record, built by the deleted repo_liquidity.fed_repo; it is "
-                         "verified at the commit and parent pin it was made from (scripts/verify_records.py)")
+        raise ValueError(f"panel version {version} is a record; it is verified at the commit and parent pin it was "
+                         "made from (scripts/verify_records.py), and a rebuild at this pin is version "
+                         f"{CURRENT_VERSION}")
     if version not in MANIFESTS:
         raise ValueError(f"the panel has versions {sorted(MANIFESTS)}, not {version!r}")
 
@@ -149,6 +161,8 @@ def build(output: Path, version: int = 1) -> Dict:
         "holes": {column: phase3.holes.get(column, 0) for column in built_columns},
         "refusals": dict(phase3.refusals),
         "sha256": digest,
+        "version": version,
+        "v1_sha256": load_manifest(1)["sha256"],
     }
     return manifest
 
@@ -184,9 +198,9 @@ def _coverage(observations, columns: Sequence[str]) -> Dict[str, Dict]:
     return out
 
 
-def write_manifest(manifest: Dict, version: int = 1) -> None:
+def write_manifest(manifest: Dict, version: int) -> None:
     MANIFESTS[version].write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
-def load_manifest(version: int = 1) -> Dict:
+def load_manifest(version: int) -> Dict:
     return json.loads(MANIFESTS[version].read_text(encoding="utf-8"))

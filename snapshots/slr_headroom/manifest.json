@@ -26,10 +26,10 @@
   "last_quarter": "2026-06-30",
   "last_update": "2026-08-21T14:23:13",
   "measure_note": "The `measure` column is `main` for all nine banks. State Street is read at the bank of the G-SIB, State Street Bank and Trust Company (IDRSSD 35301), and is in the main measure (Eleonora, 15 October 2026). This replaces her decision on repo-market-liquidity#69 (Q2, 14 October 2026), made on the figures of State Street Bank and Trust Company, N.A. (IDRSSD 93619), a trust subsidiary read by mistake. A reader of the main measure still filters on `measure == main`.",
-  "parent_commit": "8fd2cf8c72e7d5c6e81c509651b684b690054a6f",
+  "parent_commit": "08ff67e27bc3d7e357491cf8e1da59793702b3fb",
   "parent_panel_sha256": "4ddc3882cd6d406b11e1088f8ff6195e16dde175a0ad6818abe40dd5bdac8999",
   "path": "snapshots/slr_headroom/4e9f87b518b3106ec5dc7d709f19e7f365e499c969fa5cb7ba9201e66f37e817.csv",
-  "repo_commit": "5fb0daa04b8535dc41179e458254686a03421d7f",
+  "repo_commit": "dfefb350c4db344c53de67feeee98c6dfc7c5a9c",
   "requirement_note": "`requirement_pct` and `headroom_pp` follow the requirement table of docs/decisions/slr-requirement.md (a draft until Eleonora merges it): 6.0% for quarter-ends 2018-01-01 to 2026-03-31, and no value from 2026-04-01, where the rule is bank-specific.",
   "restored_rows": {
     "note": "Filings made on or before the development end that a later amendment replaced in the bulk files (Eleonora's ruling of 19 October 2026 on finding #120; #123). Each row carries its own `available_from` and `source_zip_sha256` as stored in the superseded snapshot, and names it in `restored_from`. Their zips are lost (finding #94), so they are not in `source_zips`.",

@@ -85,7 +85,7 @@ class RecordTests(unittest.TestCase):
         self.assertEqual(r["parent_commit"], RECORD_PARENT_COMMIT)
         self.assertEqual(r["parent_panel_sha256"], PANEL_SHA256)
         self.assertEqual(r["panel"], self.development["panel"])
-        self.assertEqual(r["panel"]["sha256"], panel.load_manifest(1)["sha256"])
+        self.assertEqual(r["panel"]["sha256"], panel.load_manifest(r["panel"]["version"])["sha256"])
         self.assertEqual(r["source_record"]["sha256"], hashlib.sha256(DEVELOPMENT.read_bytes()).hexdigest())
         self.assertEqual(r["settings"]["placebo_rise_floor_bp"], 2.0)
         for key in ("seed", "placebo_windows", "baseline_days", "window_days"):
@@ -123,7 +123,7 @@ class RecordTests(unittest.TestCase):
 
     def test_the_floored_windows_are_recomputed_from_the_panel(self):
         rows, _ = h10_apply.load_development()
-        again = h10_apply.placebo_floor_record(rows, self.development, panel.load_manifest(1))
+        again = h10_apply.placebo_floor_record(rows, self.development, panel.load_manifest(h10_apply.PANEL_VERSION))
         # The recomputation names the live pin; the record names the pin it was made at. Everything else must agree.
         again["parent_commit"] = RECORD_PARENT_COMMIT
         self.assertEqual(again, self.record)

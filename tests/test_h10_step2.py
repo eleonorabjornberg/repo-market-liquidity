@@ -265,8 +265,12 @@ class RecordTests(unittest.TestCase):
     def test_the_record_names_its_pin_its_panel_and_its_seeds(self):
         self.assertEqual(self.record["parent_commit"], RECORD_PARENT_COMMIT)
         self.assertEqual(self.record["parent_panel_sha256"], PANEL_SHA256)
-        self.assertEqual(self.record["panel"]["sha256"], panel.load_manifest(1)["sha256"])
-        self.assertEqual(self.record["panel"]["sha256"], self.manifest["sha256"])
+        # The record names the version it was made on (1), and its manifest is unchanged. The application now reads version 4
+        # (#149; Eleonora, 21 October 2026), whose manifest names version 1 and differs in `srf_take_up` alone.
+        self.assertEqual(self.record["panel"]["version"], 1)
+        self.assertEqual(self.record["panel"]["sha256"], panel.load_manifest(self.record["panel"]["version"])["sha256"])
+        self.assertEqual(self.record["panel"]["sha256"], self.manifest["v1_sha256"])
+        self.assertEqual(self.manifest["version"], h10_apply.PANEL_VERSION)
         for key in ("seed", "draws", "null_draws", "null_quantile", "report_days", "placebo_windows", "drivers"):
             self.assertIn(key, self.record["settings"])
         self.assertEqual(self.record["tier"], "development")

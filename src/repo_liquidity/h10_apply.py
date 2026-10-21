@@ -34,8 +34,10 @@ SENSITIVITY_RECORD = ROOT / "results" / "h10" / "sensitivity_onrrp_interaction.j
 REGIMES_RECORD = ROOT / "results" / "h10" / "sensitivity_onrrp_regimes.json"
 PLACEBO_FLOOR_RECORD = ROOT / "results" / "h10" / "placebo_floor_2bp.json"
 STAGE_DOC = ROOT / "docs" / "stages" / "h10-step2.md"
-#: The panel the application reads: version 1, the published columns plus the built ON RRP take-up, to the development end.
-PANEL_VERSION = 1
+#: The panel the application reads: the published columns plus the built ON RRP take-up, to the development end. Version 4
+#: since the pin moved to 08ff67e (#149; Eleonora, 21 October 2026): version 1 is a record that no longer rebuilds, and the
+#: published H10 records name it (`panel.version` in each), so a reader that checks one against its panel passes that version.
+PANEL_VERSION = 4
 #: An episode is reported within 10 business days of its onset (the plan, Q7; the record, section 3). The report instant is
 #: that panel day's decision instant, 16:00, and the window's inputs must be public by then.
 REPORT_DAYS = 10
@@ -173,9 +175,9 @@ def as_attribution(entry: dict) -> Attribution:
 # --------------------------------------------------------------------------- the panel, the rule, one episode
 
 
-def load_development():
-    """The panel rows to the development end and the panel's manifest. Rebuilds version 1 from the tracked fixtures and
-    refuses if it does not give the manifest's digest.
+def load_development(version: int = PANEL_VERSION):
+    """The panel rows to the development end and the panel's manifest. Rebuilds `version` (the current one by default)
+    from the tracked fixtures and refuses if it does not give the manifest's digest.
 
     Raises:
         ValueError: the rebuilt panel is not the manifest's.
@@ -185,10 +187,10 @@ def load_development():
 
     with tempfile.TemporaryDirectory() as tmp:
         path = Path(tmp) / "phase3_panel.csv"
-        manifest = panel.build(path, version=PANEL_VERSION)
-        recorded = panel.load_manifest(PANEL_VERSION)
+        manifest = panel.build(path, version=version)
+        recorded = panel.load_manifest(version)
         if manifest["sha256"] != recorded["sha256"]:
-            raise ValueError(f"panel version {PANEL_VERSION} rebuilt to {manifest['sha256']}, not its manifest's {recorded['sha256']}")
+            raise ValueError(f"panel version {version} rebuilt to {manifest['sha256']}, not its manifest's {recorded['sha256']}")
         end = development.development_end()
         rows = [row for row in load_daily_panel(path) if end is None or row.date <= end]
     dates = [row.date for row in rows]
