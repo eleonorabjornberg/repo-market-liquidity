@@ -630,5 +630,27 @@ class LeakageTests(unittest.TestCase):
             k.check_no_future(full, cutoff, build)
 
 
+class BuildRowsTests(unittest.TestCase):
+    def test_the_rows_rebuild_at_the_pin_and_match_the_current_panel_manifest(self):
+        """`build_rows` rebuilds the panel columns at the parent pin and checks them against the current manifest (#151).
+
+        Before the fix it checked version 1, which no longer rebuilds at 08ff67e (the panel is version 4), so the run's first
+        step raised `ValueError`: the version-1 columns ... not the manifest's ... (reproduced at dc46dfb).
+        """
+        import importlib.util
+        from pathlib import Path
+
+        from repo_liquidity import h10_apply, panel
+
+        script = Path(__file__).resolve().parents[1] / "scripts" / "h7_kink_run.py"
+        spec = importlib.util.spec_from_file_location("h7_kink_run", script)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        rows, pins = module.build_rows()
+        self.assertEqual(pins["panel_version"], h10_apply.PANEL_VERSION)
+        self.assertEqual(pins["panel_sha256"], panel.load_manifest(h10_apply.PANEL_VERSION)["sha256"])
+        self.assertTrue(rows)
+
+
 if __name__ == "__main__":
     unittest.main()

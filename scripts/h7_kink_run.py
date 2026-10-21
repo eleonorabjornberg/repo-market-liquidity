@@ -11,7 +11,7 @@ Runs the baseline (the parent's fit on the same pairs) and V1 to V6 on the devel
 
 * **It cannot run on real days at the pinned parent**: the exclusion set needs `repo_model.turn_days.turn_label` (section 7(ii)),
   which arrives with the pin move (#149). The script then exits 2 and reads nothing.
-* Rows: the measurement panel version 1 from the tracked fixtures (digest checked) with the parent's opt-in `effr` column, to
+* Rows: the measurement panel version 4 (`h10_apply.PANEL_VERSION`) from the tracked fixtures (digest checked) with the parent's opt-in `effr` column, to
   `demand_curve.LAST_DAY`. Every scored day is read through the parent's rule, which refuses a locked day.
 * **First action:** derive the width regime table from the ON RRP and IORB announcements and print it. If its widths differ from
   `h7_kink.EXPECTED_WIDTHS` the run stops with a finding and fits nothing.
@@ -30,6 +30,7 @@ from datetime import date
 from pathlib import Path
 
 from repo_liquidity import demand_curve, goalposts
+from repo_liquidity.h10_apply import PANEL_VERSION
 from repo_liquidity import h7_estimator as h7
 from repo_liquidity import h7_kink as k
 
@@ -44,13 +45,13 @@ EFFR_ROOT = "nyfed_effr_inputs"
 
 
 def build_rows():
-    """The measurement panel's rows (version 1's columns, byte for byte) with the parent's opt-in `effr` column added.
+    """The measurement panel's rows (the current version's columns, byte for byte) with the parent's opt-in `effr` column added.
 
-    Built as `panel.build` builds version 1 from the tracked fixtures, with no network, except that the parent's EFFR snapshots
+    Built as `panel.build` builds the current version from the tracked fixtures, with no network, except that the parent's EFFR snapshots
     are read as well. Returns the rows and a dict of the pins.
 
     Raises:
-        ValueError: the version-1 columns do not reproduce the manifest's digest, a column is refused, or the dates differ.
+        ValueError: the current version's columns do not reproduce the manifest's digest, a column is refused, or the dates differ.
     """
     import hashlib
     import tempfile
@@ -76,15 +77,15 @@ def build_rows():
     if built.refusals:
         raise ValueError(f"the build refused {dict(built.refusals)}")
     observations = scheduled.with_scheduled(built.observations, decision_time=decision)
-    version1 = panel.load_manifest(1)
+    manifest = panel.load_manifest(PANEL_VERSION)
     with tempfile.TemporaryDirectory() as tmp:
         path = Path(tmp) / "v1.csv"
-        panel._write(observations, version1["columns"], path)
+        panel._write(observations, manifest["columns"], path)
         digest = hashlib.sha256(path.read_bytes()).hexdigest()
-    if digest != version1["sha256"]:
-        raise ValueError(f"the version-1 columns of these rows are {digest}, not the manifest's {version1['sha256']}")
+    if digest != manifest["sha256"]:
+        raise ValueError(f"the version-{PANEL_VERSION} columns of these rows are {digest}, not the manifest's {manifest['sha256']}")
     effr = "".join(f"{row.date.isoformat()},{row.values.get('effr')}\n" for row in observations)
-    pins = {"parent_commit": panel._parent_commit(), "panel_version": 1, "panel_sha256": digest,
+    pins = {"parent_commit": panel._parent_commit(), "panel_version": PANEL_VERSION, "panel_sha256": digest,
             "effr_series_sha256": hashlib.sha256(effr.encode()).hexdigest(), "rows": len(observations),
             "first_day": observations[0].date.isoformat(), "last_day": observations[-1].date.isoformat()}
     return observations, pins
