@@ -4,7 +4,7 @@ sys.path.insert(0, "src")
 from repo_liquidity import panel, latent
 from repo_model.data import load_daily_panel
 with tempfile.TemporaryDirectory() as tmp:
-    p = Path(tmp) / "panel.csv"; panel.build(p); obs = latent.assemble(load_daily_panel(p))
+    p = Path(tmp) / "panel.csv"; panel.build(p, version=1); obs = latent.assemble(load_daily_panel(p))
 pickle.dump(obs, open(sys.argv[1], "wb"))
 print(len(obs), obs[0].day, obs[-1].day)
 by = {}

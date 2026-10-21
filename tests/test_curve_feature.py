@@ -26,7 +26,7 @@ def _panel_rows():
     if not hasattr(_panel_rows, "rows"):
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "phase3_panel.csv"
-            panel.build(path, version=1)
+            panel.build(path, version=4)
             _panel_rows.rows = curve_feature.with_stage4_columns(load_daily_panel(path))
     return _panel_rows.rows
 

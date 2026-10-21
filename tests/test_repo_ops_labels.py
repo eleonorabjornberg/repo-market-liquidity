@@ -26,7 +26,7 @@ LAST_LABEL_DAY = date(2026, 9, 3)
 def _accepted():
     with tempfile.TemporaryDirectory() as tmp:
         path = Path(tmp) / "panel.csv"
-        manifest = panel.build(path, version=1)
+        manifest = panel.build(path, version=4)
         rows = load_daily_panel(path)
     snapshots = parent_root() / "tests" / "fixtures" / "snapshots" / "repo_ops_inputs"
     end = fed_liquidity.declared_coverage_end(fed_liquidity.NYFED_REPO_OPS_SOURCE_ID)

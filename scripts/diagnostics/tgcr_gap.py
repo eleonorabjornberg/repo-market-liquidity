@@ -16,7 +16,7 @@ def corr(a, b):
     return num / math.sqrt(sum((x - ma) ** 2 for x in a) * sum((y - mb) ** 2 for y in b))
 
 with tempfile.TemporaryDirectory() as tmp:
-    p = Path(tmp) / "panel.csv"; panel.build(p); rows = load_daily_panel(p)
+    p = Path(tmp) / "panel.csv"; panel.build(p, version=1); rows = load_daily_panel(p)
 by = {r.date: r.values for r in rows}
 FLOORS = scheduled.load_on_rrp_rates()
 recs = []

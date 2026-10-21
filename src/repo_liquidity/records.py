@@ -48,6 +48,8 @@ RECORD_FILES = {
 #: Records made after L0, each with the test file that checks it (L0's docstring: "a record made after L0 carries its own
 #: check"). They are not byte-pinned to `RECORD_COMMIT`; their own tests recompute them against the parent's pin.
 OWN_CHECK = {
+    "metadata/phase3_panel_v4_manifest.json": "tests/test_panel.py",
+    "results/panel/v4_changes.json": "tests/test_panel.py",
     "results/h10/development.json": "tests/test_h10_step2.py",
     "results/h10/sensitivity_onrrp_interaction.json": "tests/test_h10_step3.py",
     "results/h10/sensitivity_onrrp_regimes.json": "tests/test_h10_regimes.py",

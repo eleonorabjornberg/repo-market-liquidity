@@ -41,7 +41,7 @@ def main():
     record = json.loads(RECORD.read_text(encoding="utf-8"))
     with tempfile.TemporaryDirectory() as tmp:
         path = Path(tmp) / "panel.csv"
-        panel.build(path)
+        panel.build(path, version=1)
         days = dc.sample(load_daily_panel(path))
     splits = load_split_declaration(parent_root() / "metadata" / "evaluation_splits.json")
     labels = [label for label in splits.regime_labels if label in record["regimes"]]
