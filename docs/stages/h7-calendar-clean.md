@@ -54,7 +54,7 @@ What changes and what does not:
 - **Only which days enter the fit changes.** The group weeks, the headroom, the ratio, the corridor position and the as-of reads
   are untouched. The training-day rules of `h7-step2.md` (a group week and a corridor position; D also a headroom) still apply,
   and the calendar clause is applied on top.
-- **The counted-episode rule is taken over the clean days.** An episode counts at a cutoff when it has at least 60 *clean*
+- **(Amended by section 10: the episode floor is read on all days, not on the clean days.)** ~~The counted-episode rule is taken over the clean days.~~ An episode counts at a cutoff when it has at least 60 *clean*
   training days with the all-banks ratio below 13% (D's precedent, `h7-step3.md` section 3, which takes the 60 over the days
   that have a headroom). A refit with no counted episode is **not fitted**, serves no estimate and is reported; there is no
   fallback to the baseline's fit or to a fixed share.

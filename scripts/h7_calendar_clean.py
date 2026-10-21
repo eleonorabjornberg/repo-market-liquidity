@@ -114,8 +114,7 @@ def _episode_counts(days, flags, usable):
         clean = h.clean_days(inside, flags)
         scarce = lambda xs: sum(1 for x in xs if x.ratio is not None and x.ratio < demand_curve.SCARCE_BELOW)  # noqa: E731
         out[label] = {"training_days": len(inside), "scarce": scarce(inside), "clean_days": len(clean),
-                      "clean_scarce": scarce(clean), "counts_as_baseline": scarce(inside) >= demand_curve.MIN_SCARCE_DAYS_REVISED,
-                      "counts_when_clean": scarce(clean) >= demand_curve.MIN_SCARCE_DAYS_REVISED}
+                      "clean_scarce": scarce(clean), "counts": scarce(inside) >= demand_curve.MIN_SCARCE_DAYS_REVISED}
     return out
 
 
@@ -163,12 +162,14 @@ def markdown(record):
              f"{record['pins']['first_day']} to {record['window_end']}; {record['settings']['replications']} bootstrap draws; "
              f"{len(record['cutoffs'])} refits from {record['cutoffs'][0]} every {record['settings']['refit_every']} days.", "",
              "## The scarce episodes, with and without the calendar days", "",
-             "| Candidate | Episode | Training days | Scarce | Clean days | Clean scarce | Counts (baseline) | Counts (clean) |",
-             "|---|---|---|---|---|---|---|---|"]
+             "The floor of 60 scarce days is read on all days, the same for every variant; the clean variants then fit on the "
+             "counted episode's clean days (declaration section 10, her ruling on PR #150).", "",
+             "| Candidate | Episode | Training days | Scarce | Clean days | Clean scarce | Counts (all variants) |",
+             "|---|---|---|---|---|---|---|"]
     for candidate, episodes in record["episode_counts"].items():
         for label, e in episodes.items():
             lines.append(f"| {candidate} | {label} | {e['training_days']} | {e['scarce']} | {e['clean_days']} | "
-                         f"{e['clean_scarce']} | {e['counts_as_baseline']} | {e['counts_when_clean']} |")
+                         f"{e['clean_scarce']} | {e['counts']} |")
     lines += ["", "## Goalposts 1 and 2 on development days", "",
               "| Estimator | Days | Objective | Left side | Refits | Not fitted | Status | Worst gap (pts) | Gp1 | Median width (pts) | Gp2 "
               "| Politis-White block, median (max) | Served days |",
@@ -201,6 +202,13 @@ def markdown(record):
         lines.append(f"| {variant} | {row['against']} | {_fmt(row['worst_gap_points'])} | {_fmt(row['baseline_worst_gap_points'])} | "
                      f"{_fmt(row['median_width_points'])} | {_fmt(row['baseline_median_width_points'])} | "
                      f"{row['not_fitted_refits']} | {row['baseline_not_fitted_refits']} |")
+    names = list(record["estimators"])
+    lines += ["", "## Training sample size at each refit (days fitted on)", "",
+              "| Refit | " + " | ".join(names) + " |", "|---|" + "---|" * len(names)]
+    for i, cutoff in enumerate(record["cutoffs"]):
+        cells = [str(entry["refits"][i]["training_days"]) if i < len(entry["refits"]) and entry["refits"][i]["fitted"] else "not fitted"
+                 for entry in record["estimators"].values()]
+        lines.append(f"| {cutoff} | " + " | ".join(cells) + " |")
     lines += ["", f"Days whose flags the parent's rule cannot read (left out of every clean fit): "
               f"{', '.join(record['unread_flag_days']) or 'none'}.", "",
               "## Not run", ""]

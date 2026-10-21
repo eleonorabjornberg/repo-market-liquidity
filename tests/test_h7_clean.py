@@ -35,7 +35,7 @@ copy, the copy discarded:
    business days after its cutoff). `refit_c`'s own guard then raises `repo_model.splits.LookAheadError: the shares for the
    refit at 2019-01-14 would be fitted on 2019-01-15, after its cutoff` from `PathTests`' class setup and two more tests, and
    `TrainingDayTests.test_a_refit_never_fits_on_a_day_after_its_cutoff` and
-   `test_the_counted_episode_rule_is_taken_over_the_clean_days` fail with `AssertionError`. With that guard also replaced
+   `test_the_counted_episode_rule_is_taken_over_all_days` fail with `AssertionError`. With that guard also replaced
    by `if False:`, four tests fail with `AssertionError` and none passes a refit that read a later day.
 
 4. `check_no_future`: replace `if _signature(*now, left_side, series) != _signature(*then, left_side, cut_series):` by
@@ -434,10 +434,12 @@ class TrainingDayTests(_FitCase):
         sample, _ = self.sample(flags, self.days[-1].day)
         self.assertEqual(len(sample), len(self.days) - 1)
 
-    def test_the_counted_episode_rule_is_taken_over_the_clean_days(self):
+    def test_the_counted_episode_rule_is_taken_over_all_days(self):
         cutoff = self.days[MIN_SCARCE - 1].day  # exactly the minimum of days by the cutoff
         self.assertEqual(self.sample(_quiet_flags(self.days), cutoff)[1], (EPISODES[0][0],))
-        self.assertEqual(self.sample(self.flags_dropping([4]), cutoff), ([], ()))
+        sample, labels = self.sample(self.flags_dropping([4]), cutoff)  # a dropped day still counts; the fit leaves it out
+        self.assertEqual((len(sample), labels), (MIN_SCARCE - 1, (EPISODES[0][0],)))
+        self.assertEqual(self.sample(_quiet_flags(self.days), self.days[MIN_SCARCE - 2].day), ([], ()))  # one short on all days
 
     def test_a_day_with_no_left_side_is_not_a_training_day(self):
         series = {EFFR: dict(self.series[EFFR])}
@@ -688,7 +690,7 @@ class ScriptTests(_FitCase):
     def test_the_markdown_is_printed_from_the_record(self):
         text = self.script.markdown(self.record())
         for needle in ("never edited by hand", "development", "| CV1 |", "| C |", "Goalposts 1 and 2", "2018-04-04",
-                       "Politis", "not run (D dropped under #142)", "DV1"):
+                       "Politis", "not run (D dropped under #142)", "DV1", "Training sample size at each refit"):
             self.assertIn(needle, text)
 
     def test_each_refit_reports_its_politis_white_block_beside_goalpost_2(self):
@@ -704,6 +706,27 @@ class ScriptTests(_FitCase):
         e = counts[EPISODES[0][0]] if EPISODES[0][0] in counts else next(iter(counts.values()))
         self.assertEqual(e["training_days"], e["clean_days"])  # nothing is flagged here
         self.assertEqual(e["scarce"], e["clean_scarce"])
+
+    def test_an_episode_with_the_floor_on_all_days_but_not_on_clean_days_counts(self):
+        first, last = EPISODES[0][1], EPISODES[0][2]
+        flags = {x.day: h.Flags(x.day, 1.0, 0.0) if first <= x.day <= last else h.Flags(x.day, 0.0, 0.0) for x in self.days}
+        with mock.patch.object(demand_curve, "EPISODES", EPISODES), \
+                mock.patch.object(demand_curve, "MIN_SCARCE_DAYS_REVISED", MIN_SCARCE):
+            counts = self.script._episode_counts(self.days, flags, lambda x: x.week is not None)
+        e = counts[EPISODES[0][0]]
+        self.assertTrue(e["scarce"] >= MIN_SCARCE > e["clean_scarce"] == 0)
+        self.assertTrue(e["counts"])
+
+    def test_the_training_sample_size_is_reported_per_variant_per_refit(self):
+        record = self.record()
+        text = self.script.markdown(record)
+        section = text.split("## Training sample size at each refit")[1].split("##")[0]
+        for cutoff in record["cutoffs"]:
+            self.assertIn(cutoff, section)
+        for entry in record["estimators"].values():
+            for refit in entry["refits"]:
+                if refit["fitted"]:
+                    self.assertIn(str(refit["training_days"]), section)
 
 
 class VariantTableTests(unittest.TestCase):
@@ -767,8 +790,38 @@ class TurnDayTests(unittest.TestCase):
         cutoff = days[MIN_SCARCE - 1].day  # exactly the minimum of days by the cutoff, which two turn days take below it
         args = (days, cutoff, None, CORRIDOR, series, lambda x: x.week is not None)
         self.assertEqual(h.training_days(*args, clean=False, episodes=EPISODES, min_scarce=MIN_SCARCE)[1], (EPISODES[0][0],))
-        self.assertEqual(h.training_days(days, cutoff, flags, CORRIDOR, series, lambda x: x.week is not None,
-                                         episodes=EPISODES, min_scarce=MIN_SCARCE)[1], ())
+
+    def test_an_episode_counts_on_all_days_and_is_fitted_on_its_clean_days(self):
+        """Her ruling on PR #150, option (a): eligibility is read on all days, the fit on the counted episode's clean days.
+
+        An episode with exactly the minimum of scarce days by the cutoff, two of them turn days, counts for every variant and the
+        clean variants fit on the days that remain. Mutation: in `training_days`, count the episode over `pool` after
+        `clean_days` (the earlier reading). `AssertionError: Tuples differ: () != ('test episode',)` is what this test raised.
+        """
+        days = tc._planted_days(tc._weeks(), count=100)
+        flags = _quiet_flags(days)
+        for i in (3, 4):
+            flags[days[i].day] = h.Flags(days[i].day, 0.0, 0.0, False, "quarter_end_turn")
+        series = _effr_series(days)
+        cutoff = days[MIN_SCARCE - 1].day
+        usable = lambda x: x.week is not None  # noqa: E731
+        every, every_labels = h.training_days(days, cutoff, None, CORRIDOR, series, usable, clean=False, episodes=EPISODES,
+                                              min_scarce=MIN_SCARCE)
+        clean, labels = h.training_days(days, cutoff, flags, CORRIDOR, series, usable, episodes=EPISODES, min_scarce=MIN_SCARCE)
+        self.assertEqual(labels, every_labels)
+        self.assertEqual(labels, (EPISODES[0][0],))
+        self.assertEqual(len(every), MIN_SCARCE)
+        self.assertEqual({x.day for x in every} - {x.day for x in clean}, {days[3].day, days[4].day})
+        self.assertEqual(len(clean), MIN_SCARCE - 2)
+
+    def test_the_dropped_days_of_a_counted_episode_are_counted_in_the_record(self):
+        days = tc._planted_days(tc._weeks(), count=100)
+        flags = _quiet_flags(days)
+        for i in (3, 4):
+            flags[days[i].day] = h.Flags(days[i].day, 0.0, 0.0, False, "quarter_end_turn")
+        fit = h.refit_c(days, days[MIN_SCARCE - 1].day, flags, CORRIDOR, _effr_series(days), replications=0, episodes=EPISODES,
+                        min_scarce=MIN_SCARCE)
+        self.assertEqual((fit.pairs, fit.record["dropped"]), (MIN_SCARCE - 2, 2))
 
     def test_without_the_parents_function_the_flags_cannot_be_read(self):
         import sys

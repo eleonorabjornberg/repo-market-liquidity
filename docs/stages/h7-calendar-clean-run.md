@@ -33,8 +33,8 @@ runs some of `C,CV1,CV2,CV3,CV4`; `--limit-refits N` runs the first N refits.
   dropped when `settlement_day` = 1, `quarter_end_window` = 1, or the label is not `None`. `quarter_end_window` is the parent's
   opt-in column, a function of the date alone (`data.quarter_end_window`), added to the rows with `with_quarter_end_window`. A flag
   read for any row but the scored one, or a label read for any day but the scored one, is a `LookAheadError` (`check_flag_reads`,
-  `read_turn`), and a day's flags must be that day's own (`clean_days`). The counted-episode rule is taken over the clean days, a
-  dropped day is still served, and the bootstrap resamples the clean days only.
+  `read_turn`), and a day's flags must be that day's own (`clean_days`). The counted-episode rule is read on all days, as the baseline's, and the fit uses the counted episodes' clean days (declaration
+  section 10, her ruling on PR #150); a dropped day is still served, and the bootstrap resamples the clean days only.
 - **2(b), Q3 and Q6, the objective and the tie rule.** `lad_curve` is the exact least-absolute-deviation line
   `a + b x max(k - D, 0)`, `b >= 0`, for every kink on `KINK_GRID` at once. Tied kinks go to the smaller. `descend` is the
   baselines' coordinate search; a value replaces the current one only when its objective is lower by more than `KINK_TIE_RTOL`.

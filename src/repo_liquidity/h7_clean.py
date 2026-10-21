@@ -19,7 +19,7 @@ What changes against a baseline, and nothing else:
   bootstrap resamples, when the parent's `settlement_day` or `quarter_end_window` is 1 on it, or the parent's
   `turn_days.turn_label` is not None on it (Q1). Each is read from the parent, never re-implemented: the first two through its
   `InformationRule` at the day's own decision instant, the label for the scored day alone (`read_turn`). The counted-episode rule
-  is taken over the clean days. A dropped day is still served, by the refit in force. CV4 fits every day the baseline does.
+  is read on all days, as the baseline's, and the fit then uses the counted episodes' clean days (section 10). A dropped day is still served, by the refit in force. CV4 fits every day the baseline does.
 * **The objective** (CV1, CV2, CV4). The sum of absolute deviations of the left side from Stage 2's curve
   `a + b x max(k - D, 0)`, `b >= 0`, `k` on `h7_candidate_c.KINK_GRID`. `lad_curve` returns the optimum over the whole kink
   grid. CV3 keeps the baseline's least squares (`ls_curve`).
@@ -515,18 +515,20 @@ def training_days(days: Sequence, cutoff: date, flags: Optional[Mapping[date, Fl
     """The days a refit at `cutoff` fits on, with the labels of its counted episodes.
 
     A day is usable when it is on or before the cutoff, `usable` holds (a group week, and for D a headroom) and its left side is
-    known; with `clean` the dropped days (`clean_days`) leave (`flags` may be None without it, CV4); an episode counts with at
-    least `min_scarce` of the days that remain whose ratio is below 13%.
+    known. An episode counts with at least `min_scarce` usable days whose ratio is below 13%, read on all days, dropped or not,
+    the same for every variant (her ruling on PR #150, option (a); `docs/stages/h7-calendar-clean.md` section 10). With `clean`
+    the fit then uses the counted episodes' clean days only: the dropped days (`clean_days`) leave (`flags` may be None without
+    it, CV4).
     """
-    pool = [x for x in days if x.day <= cutoff and usable(x) and _left(left_side, series, x) is not None]
-    if clean:
-        pool = clean_days(pool, flags)
+    usable_days = [x for x in days if x.day <= cutoff and usable(x) and _left(left_side, series, x) is not None]
+    pool = clean_days(usable_days, flags) if clean else usable_days
     chosen: List = []
     labels: List[str] = []
     for label, first, last in episodes:
-        inside = [x for x in pool if first <= x.day <= last]
-        if sum(1 for x in inside if x.ratio is not None and x.ratio < demand_curve.SCARCE_BELOW) >= min_scarce:
-            chosen.extend(inside)
+        counted = sum(1 for x in usable_days if first <= x.day <= last and x.ratio is not None
+                      and x.ratio < demand_curve.SCARCE_BELOW)
+        if counted >= min_scarce:
+            chosen.extend(x for x in pool if first <= x.day <= last)
             labels.append(label)
     return sorted(chosen, key=lambda x: x.day), tuple(labels)
 
