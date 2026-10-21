@@ -267,7 +267,7 @@ class RecordTests(unittest.TestCase):
         self.assertEqual(b["parent_commit"], RECORD_PARENT_COMMIT)
         self.assertEqual(b["parent_panel_sha256"], PANEL_SHA256)
         self.assertEqual(b["panel"], a["panel"])
-        self.assertEqual(b["panel"]["sha256"], panel.load_manifest(1)["sha256"])
+        self.assertEqual(b["panel"]["sha256"], panel.load_manifest(a["panel"]["version"])["sha256"])
         for key in ("seed", "draws", "null_draws", "null_quantile", "placebo_windows", "baseline_days", "window_days",
                     "block_length", "residual_bar", "report_days", "decision_time", "regime_break_bn"):
             self.assertEqual(b["settings"][key], a["settings"][key], key)

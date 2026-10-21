@@ -60,6 +60,18 @@ STAGE4_OVERLAY = Path(__file__).resolve().parents[2] / "metadata" / "sources_sta
 STAGE4_FIELDS = MappingProxyType({IORB_COLUMN: (("fed_iorb_rate", IORB_COLUMN),)})
 
 
+def require_direct_pairs(settings: Mapping[str, Any]) -> Dict[str, Any]:
+    """`settings` with `training_pairs="direct"`: the pairing every Stage 4 arm that adds the feature trains on.
+
+    Raises:
+        ValueError: if the settings name another pairing (a one-step model with the feature is refused, not rewritten).
+    """
+    pairs = settings.get("training_pairs")
+    if pairs not in (None, "direct"):
+        raise ValueError(f"Stage 4 trains on direct pairs, not {pairs!r} (calendar first; #149)")
+    return {**settings, "training_pairs": "direct"}
+
+
 class CurveFailure(ValueError):
     """A refit's curve could not be fitted, or carries no reserves signal (slope 0). Never replaced by a default."""
 
@@ -413,6 +425,10 @@ class CurveFeatureFitter:
         regressors = tuple(keywords.pop("regressors"))
         if FEATURE in regressors:
             raise ValueError(f"the published fitter already reads {FEATURE}")
+        # Direct pairs (Eleonora, 21 October 2026, #149 question 2): the calendar and scheduled columns are read at the
+        # target day, as `asof` rule 2 serves them. A one-step fit reads `treasury_settlement` a day off, and the
+        # parent's one-step guard (#947) refuses it with this feature added.
+        keywords = require_direct_pairs(keywords)
         self.func = base.func
         self.regressors = regressors + (FEATURE,)
         self.settings = MappingProxyType(keywords)
@@ -554,6 +570,7 @@ def published_exceedance_arm(with_feature: bool = False):
     settings.update(cli_eval._volatility_feature(model_args, "gbm", choice.takes_volatility_feature))
     settings.update(cli_eval._arx_feature(model_args, "gbm", choice.takes_arx_feature))
     settings.update(cli_eval._tail(model_args, "gbm", choice.takes_tail))
+    settings = require_direct_pairs(settings)
     inner = choice.construct(regressors=tuple(regressors) + (FEATURE,), regime_variable=None,
                              minimum_history=model_args.minimum_history, settings=settings)
     return "gbm_curve_implied_spread", CurveFeatureExceedance(inner), online, benchmarks

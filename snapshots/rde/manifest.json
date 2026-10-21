@@ -15,25 +15,46 @@
   ],
   "coverage": {
     "path": "tests/fixtures/snapshots/rde/rde_estimates.coverage.json",
-    "sha256": "efaf10750ba0c9e72f32f6f52d1777f1da1aac4e10b56060581a1c1ae6c8bad3"
+    "sha256": "9af7939a040a3505b3abb35e36c5c8c98a7430bcafe01903903baaeef3c7bb1b"
   },
-  "first_estimate": "2024-10-02",
+  "first_estimate": "2024-10-09",
   "hash_note": "fetch_sha256 identifies the stored workbook; content_sha256 identifies the row's date and five values, as six-place decimals",
+  "history": {
+    "columns": [
+      "estimate_date",
+      "series",
+      "elasticity_p50",
+      "elasticity_p2_5",
+      "elasticity_p97_5",
+      "elasticity_p16",
+      "elasticity_p84",
+      "fetch_sha256",
+      "content_sha256"
+    ],
+    "first_estimate": "2010-01-20",
+    "label": "history, not public before 2024-10-17",
+    "last_estimate": "2024-10-02",
+    "note": "The estimates before the table, published apart (the ruling of 19 October 2026): not a point-in-time series, outside the declaration and read by nothing. They carry no availability.",
+    "path": "snapshots/rde/history-78839353511b4a7624c31dcba6682546fa39cec99aff9d7eca990792ce640e2a.csv",
+    "rows": 634,
+    "sha256": "78839353511b4a7624c31dcba6682546fa39cec99aff9d7eca990792ce640e2a",
+    "source_table": "tests/fixtures/snapshots/rde/rde_history.csv"
+  },
   "last_estimate": "2026-08-06",
-  "last_read_from": "2026-08-20T10:00:00-04:00",
-  "parent_commit": "8fd2cf8c72e7d5c6e81c509651b684b690054a6f",
+  "last_read_from": "2026-08-20T12:00:00-04:00",
+  "parent_commit": "08ff67e27bc3d7e357491cf8e1da59793702b3fb",
   "parent_panel_sha256": "4ddc3882cd6d406b11e1088f8ff6195e16dde175a0ad6818abe40dd5bdac8999",
-  "path": "snapshots/rde/6edafdc786e9b99d8e43f540a52083ed843a086a43209d3df3bfd207023d9e80.csv",
-  "repo_commit": "0764f71915cfe7b14fc299df0517f7e55a5f8939",
+  "path": "snapshots/rde/bc6f395a61b5b83c7fce36de3623e3e05f807f1f30cce5731c7d2743a81c85f2.csv",
+  "repo_commit": "5e56f25d056f555ab0b9865bbdb07c24369fdcba",
   "role_note": "An external check on H7m goalposts 1 and 3, reported and never deciding (Eleonora, 19 October 2026); R and S stay the deciding benchmarks, and nothing reads this series into a goalpost or a score.",
-  "rows": 80,
+  "rows": 79,
   "series": "rde",
-  "sha256": "6edafdc786e9b99d8e43f540a52083ed843a086a43209d3df3bfd207023d9e80",
+  "sha256": "bc6f395a61b5b83c7fce36de3623e3e05f807f1f30cce5731c7d2743a81c85f2",
   "source_table": "tests/fixtures/snapshots/rde/rde_estimates.csv",
   "source_workbooks": {
     "2026-10-15": "59b9f49d21ac09ef385de933813775ee302f4b4c232d103e5699c1377ffeed43"
   },
   "source_workbooks_record": "tests/fixtures/snapshots/rde/rde_captures.json",
   "vintage": "latest_release:2026-10-15",
-  "vintage_note": "The latest release's figures, which may differ from the first print: the Fed serves only its latest workbook, so earlier releases are not recoverable. Each estimate is read as public from the release repo_liquidity.rde.release_for assigns it, never before the launch on 2024-10-17."
+  "vintage_note": "The latest release's figures, which may differ from the first print: the Fed serves only its latest workbook, so earlier releases are not recoverable. Each estimate is read as public from the release repo_liquidity.rde.release_for assigns it (12:00 New York time on the third Thursday, or on the first business day after an FOMC blackout that holds it), never before the launch on 2024-10-17."
 }

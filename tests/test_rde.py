@@ -13,7 +13,7 @@ import shutil
 import tempfile
 import unittest
 import zipfile
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, time, timedelta
 from decimal import Decimal
 
 from repo_model.asof import StaleReadError
@@ -24,6 +24,7 @@ from repo_liquidity import declaration, development, rde
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 DIRECTORY = ROOT / "tests" / "fixtures" / "snapshots" / "rde"
 EXTRACT = DIRECTORY / rde.EXTRACT_NAME
+HISTORY = DIRECTORY / rde.HISTORY_NAME
 NEW_YORK = rde.NEW_YORK
 EXCEL_ZERO = date(1899, 12, 30)
 
@@ -78,37 +79,121 @@ class ScheduleTests(unittest.TestCase):
         self.assertEqual(rde.third_thursday(2025, 1), date(2025, 1, 16))
         self.assertEqual(rde.third_thursday(2026, 1), date(2026, 1, 15))  # the month starts on a Thursday
 
-    def test_a_release_is_at_ten_new_york_time(self):
-        self.assertEqual(rde.release_for(date(2026, 8, 6)), datetime(2026, 8, 20, 10, 0, tzinfo=NEW_YORK))
+    def test_availability_is_at_noon_new_york_time(self):
+        """The launch press release says "around 10:00 A.M."; availability is declared at 12:00, the conservative reading."""
+        self.assertEqual(rde.RELEASE_TIME, time(12, 0))
+        self.assertEqual(rde.release_for(date(2026, 8, 6)), datetime(2026, 8, 20, 12, 0, tzinfo=NEW_YORK))
 
     def test_nothing_is_public_before_the_launch(self):
         """Leakage guard: an estimate dated before the product existed is read from the launch and no earlier.
 
-        Recorded mutation (19 October 2026): in `rde.release_for`, `max(..., LAUNCH)` replaced by its first argument.
-        This test then fails with `AssertionError: datetime.datetime(2010, 2, 18, 10, 0, ...) != datetime.datetime(2024,
-        10, 17, 10, 0, ...)`: the 2010 estimate is read at the third Thursday after its own date.
+        Recorded mutation (20 October 2026): in `rde.release_for`, the starting month
+        `max((estimate_date.year, estimate_date.month), (LAUNCH_DATE.year, LAUNCH_DATE.month))` replaced by
+        `(estimate_date.year, estimate_date.month)`. This test then fails with `ValueError: the saved FOMC calendar covers
+        2021 to 2027, not enough to place the release of 2010-02`: the 2010 estimate is sent to the release after its own
+        date, which the calendar-years guard refuses (a calendar reaching 2010 would read it at the third Thursday after
+        its date, years before the launch).
         """
         self.assertEqual(rde.release_for(date(2010, 1, 20)), rde.LAUNCH)
         self.assertEqual(rde.release_for(date(2024, 10, 2)), rde.LAUNCH)
-        self.assertEqual(rde.LAUNCH, datetime(2024, 10, 17, 10, 0, tzinfo=NEW_YORK))
+        self.assertEqual(rde.LAUNCH, datetime(2024, 10, 17, 12, 0, tzinfo=NEW_YORK))
 
-    def test_an_estimate_waits_for_the_first_release_at_least_ten_days_after_its_date(self):
-        """Leakage guard: the stored release shows 5 October for release on 15 October; no estimate is read sooner.
+    def test_an_estimate_is_public_at_the_first_release_whose_data_is_as_of_its_date_or_later(self):
+        """Leakage guard (the ruling of 19 October 2026, change 4): the launch release carried data as of Friday 11
+        October 2024, the stored one as of 5 October 2026 (its cover sheet); an estimate is not read from an earlier release.
 
-        Recorded mutation (19 October 2026): in `rde.UPDATE_TO_RELEASE_DAYS`, 10 changed to 0. This test then fails
-        with `AssertionError: datetime.date(2026, 8, 20) != datetime.date(2026, 9, 17)`
-        for the estimate dated 2026-08-20, which would be read at the release on its own date.
+        Recorded mutation (20 October 2026): in `rde.release_for`, the comparison `as_of_date(year, month) < estimate_date`
+        replaced by `as_of_date(year, month) < estimate_date - timedelta(days=1)`. This test then fails with
+        `AssertionError: datetime.date(2024, 10, 17) != datetime.date(2024, 11, 21)`: the estimate dated the day after
+        the launch release's as-of date is read at the launch.
         """
+        self.assertEqual(rde.release_for(date(2024, 10, 11)).date(), date(2024, 10, 17))
+        self.assertEqual(rde.release_for(date(2024, 10, 12)).date(), date(2024, 11, 21))
+        self.assertEqual(rde.release_for(date(2026, 10, 5)).date(), date(2026, 10, 15))
+        self.assertEqual(rde.release_for(date(2026, 10, 6)).date(), date(2026, 11, 19))
+
+    def test_a_release_with_no_recorded_as_of_date_is_assumed_ten_days_earlier_than_its_release(self):
+        """The one declared conservative lag: the larger of the two recorded gaps (6 days at the launch, 10 in October 2026)."""
+        self.assertEqual(rde.UNRECORDED_AS_OF_LAG_DAYS, 10)
+        self.assertEqual(rde.as_of_date(2026, 8), date(2026, 8, 20) - timedelta(days=10))
         self.assertEqual(rde.release_for(date(2026, 8, 10)).date(), date(2026, 8, 20))
-        self.assertEqual(rde.release_for(date(2026, 8, 11)).date(), date(2026, 9, 17))
-        self.assertEqual(rde.release_for(date(2026, 8, 20)).date(), date(2026, 9, 17))
-        self.assertEqual(rde.release_for(date(2026, 12, 10)).date(), date(2027, 1, 21))  # across the year end
+        self.assertEqual(rde.release_for(date(2026, 8, 11)).date(), date(2026, 9, 18))  # 17 September is in the blackout
+        self.assertEqual(rde.release_for(date(2025, 12, 10)).date(), date(2026, 1, 15))  # across the year end
+
+    def test_the_recorded_as_of_dates_are_the_sourced_ones(self):
+        self.assertEqual(rde.AS_OF_RECORDED, {date(2024, 10, 17): date(2024, 10, 11), date(2026, 10, 15): date(2026, 10, 5)})
 
     def test_the_release_is_never_before_the_estimate_date(self):
         day = date(2024, 10, 9)
         while day < date(2027, 1, 1):
-            self.assertGreaterEqual(rde.release_for(day).date(), day + timedelta(days=rde.UPDATE_TO_RELEASE_DAYS))
+            self.assertGreater(rde.release_for(day).date(), day)
             day += timedelta(days=1)
+
+
+class BlackoutTests(unittest.TestCase):
+    """The FOMC blackout (the launch press release of 17 October 2024; the ruling of 19 October 2026, change 2)."""
+
+    #: #136's table: the third Thursday read as the release before the fallback, and the first business day after the blackout.
+    MOVED = {date(2024, 12, 19): date(2024, 12, 20), date(2025, 3, 20): date(2025, 3, 21),
+             date(2025, 6, 19): date(2025, 6, 20), date(2025, 9, 18): date(2025, 9, 19),
+             date(2026, 3, 19): date(2026, 3, 20),
+             date(2026, 6, 18): date(2026, 6, 22)}  # Friday 19 June 2026 is Juneteenth: the next business day is the Monday
+
+    def test_the_meetings_are_read_from_the_saved_board_calendar(self):
+        meetings = rde.fomc_meetings()
+        self.assertIn((date(2024, 12, 17), date(2024, 12, 18)), meetings)
+        self.assertIn((date(2024, 4, 30), date(2024, 5, 1)), meetings)  # across a month end
+        self.assertIn((date(2026, 6, 16), date(2026, 6, 17)), meetings)
+        self.assertEqual(sorted({first.year for first, _ in meetings}), list(range(2021, 2028)))
+        self.assertNotIn(date(2025, 8, 22), [first for first, _ in meetings])  # a notation vote is not a meeting
+        self.assertEqual(sum(first.year == 2025 for first, _ in meetings), 8)
+
+    def test_the_blackout_runs_from_the_second_saturday_before_the_meeting_through_the_day_after_it(self):
+        self.assertEqual(rde.blackout(date(2025, 3, 18), date(2025, 3, 19)), (date(2025, 3, 8), date(2025, 3, 20)))
+        self.assertEqual(rde.blackout(date(2024, 12, 17), date(2024, 12, 18)), (date(2024, 12, 7), date(2024, 12, 19)))
+        self.assertEqual(rde.blackout(date(2024, 4, 30), date(2024, 5, 1)), (date(2024, 4, 20), date(2024, 5, 2)))
+        self.assertEqual(rde.blackout(date(2025, 3, 18), date(2025, 3, 19))[0].weekday(), 5)  # a Saturday
+
+    def test_a_third_thursday_inside_a_blackout_moves_to_the_first_business_day_after_it(self):
+        """Leakage guard: the six releases of finding #136 are not read on their third Thursday, 16:00 included.
+
+        Recorded mutation (20 October 2026): in `rde.release_day`, the shifted day `next_business_day(end, 1)` replaced by
+        the nominal third Thursday `nominal`. This test then fails with `AssertionError: LookAheadError not raised` for the
+        read at 16:00 on Thursday 19 December 2024 (the estimate dated 2024-12-04 is returned before its release).
+        """
+        values = (Decimal(v) for v in ("-0.1", "-0.5", "0.3", "-0.3", "0.1"))
+        estimate = rde.Row(date(2024, 12, 4), "latest_release:2026-10-15", *values, "0" * 64)
+        with self.assertRaises(LookAheadError):
+            rde.read([estimate], estimate.estimate_date, datetime(2024, 12, 19, 16, 0, tzinfo=NEW_YORK))
+        self.assertEqual(rde.read([estimate], estimate.estimate_date, datetime(2024, 12, 20, 16, 0, tzinfo=NEW_YORK)), estimate)
+        for nominal, moved in self.MOVED.items():
+            self.assertEqual(rde.nominal_release_day(nominal.year, nominal.month), nominal)
+            self.assertEqual(rde.release_day(nominal.year, nominal.month), moved)
+
+    def test_no_other_release_from_the_launch_to_august_2026_moves(self):
+        """The six of #136, to the last release of the table (20 August 2026); September 2026's moves too (below)."""
+        moved = {}
+        for year, month in [(2024, m) for m in (10, 11, 12)] + [(2025, m) for m in range(1, 13)] + [(2026, m) for m in range(1, 9)]:
+            nominal = rde.nominal_release_day(year, month)
+            if rde.release_day(year, month) != nominal:
+                moved[nominal] = rde.release_day(year, month)
+        self.assertEqual(moved, self.MOVED)
+        self.assertEqual(rde.release_day(2026, 9), date(2026, 9, 18))  # inside the blackout of the 15-16 September meeting
+
+    def test_a_release_in_a_year_the_saved_calendar_does_not_cover_is_refused_not_read_as_unmoved(self):
+        with self.assertRaises(ValueError):
+            rde.release_day(2028, 1)
+        with self.assertRaises(ValueError):
+            rde.release_for(date(2027, 12, 20))
+
+    def test_the_release_time_and_the_source_are_stated(self):
+        entry = declaration.registry()[rde.SOURCE_ID]
+        note = entry["availability_provenance"]["note"]
+        self.assertIn("around 10:00 A.M. Eastern Time on the third Thursday of each month", note)
+        self.assertIn("first business day following a Federal Open Market Committee blackout period", note)
+        self.assertTrue("https://www.newyorkfed.org/newsevents/news/research/2024/20241017" in entry["availability_provenance"]["publication"])
+        self.assertNotIn("not a time the Fed states", note)
+        self.assertNotIn("10 days (the gap on the cover sheet)", note)
 
 
 class ParseTests(unittest.TestCase):
@@ -166,22 +251,68 @@ class ParseTests(unittest.TestCase):
 
 class BackHistoryTests(unittest.TestCase):
     def test_the_table_starts_at_the_estimate_the_launch_release_headlined(self):
-        days = [date(2024, 9, 25), date(2024, 10, 2), date(2024, 10, 7), date(2024, 10, 9), date(2024, 10, 17)]
-        self.assertEqual(rde.launch_headline(days), date(2024, 10, 7))  # ten days before the launch: read at the launch
+        """The launch release carried data as of Friday 11 October 2024 (its press release): its headline is the latest
+        estimate dated on or before that day, and the estimates up to it are read at the launch."""
+        days = [date(2024, 9, 25), date(2024, 10, 2), date(2024, 10, 9), date(2024, 10, 12), date(2024, 10, 17)]
+        self.assertEqual(rde.launch_headline(days), date(2024, 10, 9))
         self.assertEqual(rde.launch_headline(days[:2] + days[3:]), date(2024, 10, 2))
-        self.assertEqual(rde.release_for(date(2024, 10, 7)), rde.LAUNCH)
-        self.assertGreater(rde.release_for(date(2024, 10, 8)), rde.LAUNCH)
+        self.assertEqual(rde.release_for(date(2024, 10, 9)), rde.LAUNCH)
+        self.assertEqual(rde.release_for(date(2024, 10, 11)), rde.LAUNCH)
+        self.assertGreater(rde.release_for(date(2024, 10, 12)), rde.LAUNCH)
 
     def test_the_rows_before_the_headline_are_the_back_history(self):
         make = lambda day: rde.Row(day, "latest_release:2026-10-15", *(Decimal(v) for v in ("-0.1", "-0.5", "0.3", "-0.3", "0.1")), "0" * 64)
-        rows = [make(date(2024, 9, 25)), make(date(2024, 10, 2)), make(date(2024, 10, 9))]
+        rows = [make(date(2024, 9, 25)), make(date(2024, 10, 2)), make(date(2024, 10, 9)), make(date(2024, 10, 16))]
         table, back = rde.split_back_history(rows)
-        self.assertEqual([r.estimate_date for r in table], [date(2024, 10, 2), date(2024, 10, 9)])
-        self.assertEqual([r.estimate_date for r in back], [date(2024, 9, 25)])
+        self.assertEqual([r.estimate_date for r in table], [date(2024, 10, 9), date(2024, 10, 16)])
+        self.assertEqual([r.estimate_date for r in back], [date(2024, 9, 25), date(2024, 10, 2)])
 
-    def test_a_workbook_with_no_estimate_ten_days_before_the_launch_is_refused(self):
+    def test_a_workbook_with_no_estimate_as_of_the_launch_is_refused(self):
         with self.assertRaises(ValueError):
-            rde.launch_headline([date(2024, 10, 9), date(2024, 10, 17)])
+            rde.launch_headline([date(2024, 10, 12), date(2024, 10, 17)])
+
+
+class HistoryTests(unittest.TestCase):
+    """The estimates before the launch, published apart from the table (the ruling of 19 October 2026, change 5)."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.table = rde.load_extract(EXTRACT)
+        cls.history = rde.load_history(HISTORY)
+        cls.captures = json.loads((DIRECTORY / rde.CAPTURES_NAME).read_text(encoding="utf-8"))
+
+    def test_the_history_is_every_estimate_before_the_table(self):
+        latest = self.captures["captures"][-1]
+        rows, _ = rde.rows_from_workbook((DIRECTORY / latest["file"]).read_bytes())
+        _, back = rde.split_back_history(rows)
+        self.assertEqual([row.estimate_date for row in self.history], [row.estimate_date for row in back])
+        self.assertEqual(self.history[0].estimate_date, date(2010, 1, 20))
+        self.assertLess(self.history[-1].estimate_date, self.table[0].estimate_date)
+        self.assertGreater(len(self.history), 600)
+
+    def test_every_history_row_carries_the_label_and_no_availability(self):
+        self.assertEqual(rde.HISTORY_LABEL, "history, not public before 2024-10-17")
+        self.assertNotIn("available_from", rde.HISTORY_COLUMNS)
+        for line in HISTORY.read_text(encoding="utf-8").splitlines()[1:]:
+            self.assertIn(rde.HISTORY_LABEL, line)
+
+    def test_the_declaration_does_not_read_the_history(self):
+        """No declared field is a history field, and the history's estimates are not in the table."""
+        for path in (ROOT / "declarations").glob("*.json"):
+            for entry in json.loads(path.read_text(encoding="utf-8")).values():
+                self.assertFalse(any("history" in field for field in entry["fields"]), path.name)
+        self.assertFalse({row.estimate_date for row in self.history} & {row.estimate_date for row in self.table})
+        self.assertEqual(set(declaration.registry()[rde.SOURCE_ID]["fields"]), set(rde.FIELDS))
+
+    def test_an_edited_history_is_refused(self):
+        tmp = pathlib.Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, tmp)
+        shutil.copy(HISTORY, tmp / HISTORY.name)
+        shutil.copy(DIRECTORY / (HISTORY.name + ".manifest.json"), tmp / (HISTORY.name + ".manifest.json"))
+        with (tmp / HISTORY.name).open("a", encoding="utf-8") as handle:
+            handle.write("\n")
+        with self.assertRaises(ValueError):
+            rde.load_history(tmp / HISTORY.name)
 
 
 class WithholdTests(unittest.TestCase):
@@ -195,10 +326,10 @@ class WithholdTests(unittest.TestCase):
         `development.is_locked(row.available_from.date())` replaced by `False`. This test then fails: the estimate
         released on the first locked day is kept and `holes` is empty (`AssertionError: Lists differ`).
         """
-        # With the development end at 2026-09-03: the release of 20 August is inside it, the one of 17 September is not.
+        # With the development end at 2026-09-03: the release of 20 August is inside it, the one of 18 September is not.
         inside, outside = self.row(date(2026, 8, 6)), self.row(date(2026, 8, 13))
         self.assertEqual((inside.available_from.date(), outside.available_from.date()),
-                         (date(2026, 8, 20), date(2026, 9, 17)))
+                         (date(2026, 8, 20), date(2026, 9, 18)))  # 17 September is inside the blackout of the 15-16 meeting
         self.assertTrue(development.is_locked(outside.available_from.date()))
         self.assertFalse(development.is_locked(inside.available_from.date()))
         kept, holes = rde.withhold_locked([inside, outside])
@@ -215,7 +346,7 @@ class ExtractTests(unittest.TestCase):
 
     def test_the_table_runs_from_the_launch_to_the_development_end(self):
         self.assertEqual(min(row.available_from for row in self.rows), rde.LAUNCH)
-        self.assertEqual(self.rows[0].estimate_date, date(2024, 10, 2))  # the estimate the launch release headlined
+        self.assertEqual(self.rows[0].estimate_date, date(2024, 10, 9))  # the estimate the launch release headlined
         self.assertLessEqual(max(row.available_from for row in self.rows).date(), development.development_end())
         last = self.rows[-1]
         self.assertEqual(last.available_from, rde.release_for(last.estimate_date))
@@ -252,7 +383,7 @@ class ExtractTests(unittest.TestCase):
         changes = rde.sign_changes(self.rows)
         self.assertTrue(changes)
         self.assertEqual(changes[0], {"estimate_date": "2025-10-03", "from": "negative", "to": "positive",
-                                      "read_from": "2025-10-16T10:00:00-04:00"})
+                                      "read_from": "2025-10-16T12:00:00-04:00"})
         for before, now in zip(self.rows, self.rows[1:]):
             self.assertEqual(before.sign != now.sign, any(c["estimate_date"] == now.estimate_date.isoformat() for c in changes))
 
@@ -264,7 +395,7 @@ class ExtractTests(unittest.TestCase):
         self.assertEqual(record["worst_case_lag_days"], rde.worst_case_lag_days(self.rows))
         self.assertEqual(record["estimates_in_workbook"],
                          len(self.rows) + record["withheld"] + record["back_history"]["estimates"])
-        self.assertEqual(record["back_history"]["last"], "2024-09-20")
+        self.assertEqual(record["back_history"]["last"], "2024-10-02")
 
     def copy(self, edit):
         """A copy of the extract with `edit` applied to its text, the manifest refreshed to match."""
@@ -294,7 +425,7 @@ class ExtractTests(unittest.TestCase):
             rde.load_extract(path)
 
     def test_a_stored_availability_that_the_rule_does_not_give_is_refused(self):
-        path = self.copy(lambda text: text.replace("2024-10-17T10:00:00-04:00", "2010-02-18T10:00:00-05:00", 1))
+        path = self.copy(lambda text: text.replace("2024-10-17T12:00:00-04:00", "2010-02-18T12:00:00-05:00", 1))
         with self.assertRaises(ValueError):
             rde.load_extract(path)
 
@@ -312,7 +443,7 @@ class ExtractTests(unittest.TestCase):
         with `AssertionError: LookAheadError not raised` (the row is returned).
         """
         end = development.development_end()
-        day = rde.release_for(end + timedelta(days=1)).date() - timedelta(days=rde.UPDATE_TO_RELEASE_DAYS)
+        day = rde.release_for(end + timedelta(days=1)).date() - timedelta(days=rde.UNRECORDED_AS_OF_LAG_DAYS)
         locked = rde.Row(day, "latest_release:2026-10-15", *(Decimal(v) for v in ("-0.1", "-0.5", "0.3", "-0.3", "0.1")),
                          self.rows[0].fetch_sha256)
         line = ",".join((day.isoformat(), locked.vintage, locked.available_from.isoformat(),
@@ -344,16 +475,16 @@ class DeclarationTests(unittest.TestCase):
         self.assertIn("LATEST-RELEASE", text)
         self.assertIn("2024-10-17", json.dumps(self.entry["availability_provenance"]).replace("17 October 2024", "2024-10-17"))
 
-    def test_the_declared_time_is_ten_new_york_time(self):
-        self.assertEqual(self.entry["release_lag"]["available_time"], "10:00")
+    def test_the_declared_time_is_noon_new_york_time(self):
+        self.assertEqual(self.entry["release_lag"]["available_time"], "12:00")
         self.assertEqual(self.entry["release_lag"]["timezone"], "America/New_York")
 
     def test_no_estimate_is_available_after_its_declared_availability(self):
         """Leakage guard: the declared lag covers every estimate in the extract.
 
-        Recorded mutation (19 October 2026): in `declarations/nyfed_rde.json`, `nyfed_rde.release_lag.days` changed
-        from 44 to 30. This test then fails with LookAheadError: the estimate of 2024-10-09 is
-        available from 2024-11-21 10:00:00-05:00, after its declared availability 2024-11-08 10:00:00-05:00.
+        Recorded mutation (20 October 2026): in `declarations/nyfed_rde.json`, `nyfed_rde.release_lag.days` changed
+        from 44 to 30. This test then fails with LookAheadError: the estimate of 2024-10-17 is
+        available from 2024-11-21 12:00:00-05:00, after its declared availability 2024-11-16 12:00:00-05:00.
         """
         rde.check_declared_lag(self.entry, self.rows)
 

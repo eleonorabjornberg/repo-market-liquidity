@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """Build the Phase 3 measurement panel and write its manifest.
 
-    PYTHONPATH=src python3 scripts/build_panel.py [--version 2] [--output data/processed/phase3_panel.csv] [--check]
+    PYTHONPATH=src python3 scripts/build_panel.py [--version 4] [--output data/processed/phase3_panel.csv] [--check]
 
 Builds from tracked fixtures alone (the parent's at the pin, and this repository's), with no network. Writes the
-panel CSV (not tracked) and `metadata/phase3_panel_manifest.json` (tracked, generated, never edited by hand).
-`--check` writes nothing and exits 1 if the build differs from the tracked manifest. `--version 2` builds the Stage 1a
-correction's panel (`metadata/phase3_panel_v2_manifest.json`); version 1 is Stage 1a's. Nothing is scored.
+panel CSV (not tracked) and the version's manifest under `metadata/` (tracked, generated, never edited by hand).
+`--check` writes nothing and exits 1 if the build differs from the tracked manifest. Version 4, the default, is
+Stage 1a's panel built at the current pin (`metadata/phase3_panel_v4_manifest.json`); versions 1 to 3 are records that
+`panel.build` refuses (`scripts/verify_records.py` checks them at their own pin). Nothing is scored.
 """
 
 import argparse
@@ -23,7 +24,7 @@ def main(argv=None):
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", type=Path, default=ROOT / "data/processed/phase3_panel.csv")
     parser.add_argument("--check", action="store_true")
-    parser.add_argument("--version", type=int, choices=sorted(panel.MANIFESTS), default=1)
+    parser.add_argument("--version", type=int, choices=sorted(panel.MANIFESTS), default=panel.CURRENT_VERSION)
     args = parser.parse_args(argv)
     manifest = panel.build(args.output, version=args.version)
     if args.check:

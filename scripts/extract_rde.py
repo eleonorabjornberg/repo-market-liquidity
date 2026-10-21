@@ -15,7 +15,9 @@ fetch that differs is a new vintage kept beside the old one. `cut` reads the vin
 writes, in the same directory:
 
 - `rde_estimates.csv` and its `.manifest.json`: one row per estimate date from the one the launch release headlined
-  (2024-10-02), the back history before it left out;
+  (2024-10-09), the back history before it left out;
+- `rde_history.csv` and its `.manifest.json`: the back history, labelled "history, not public before 2024-10-17", outside
+  the declaration and read by nothing;
 - `rde_estimates.coverage.json`: the rows read, those withheld past the development end, and the sign and significance
   changes;
 - `docs/research/rde-table.md`: the same in words (generated, never hand-edited).
@@ -92,13 +94,18 @@ def cut(directory: Path):
     if declared != worst:
         raise ValueError(f"declarations/nyfed_rde.json declares {declared} days; the measured worst case is {worst}")
     extract = rde.write_extract(kept)
+    history = rde.write_history(back_history)
     summary = rde.coverage(kept, holes, back_history)
     artifact = SnapshotArtifact(
         source_id=rde.SOURCE_ID, path=Path(rde.SOURCE_ID) / rde.EXTRACT_NAME, retrieved_at=latest["retrieved_utc"],
         sha256=hashlib.sha256(extract).hexdigest(), url=rde.URL, byte_count=len(extract)).as_dict()
     coverage = {**summary, "vintage": kept[0].vintage, "development_end": development.development_end().isoformat(),
                 "captures": record["captures"]}
+    history_artifact = SnapshotArtifact(
+        source_id=rde.SOURCE_ID, path=Path(rde.SOURCE_ID) / rde.HISTORY_NAME, retrieved_at=latest["retrieved_utc"],
+        sha256=hashlib.sha256(history).hexdigest(), url=rde.URL, byte_count=len(history)).as_dict()
     files = {rde.EXTRACT_NAME: extract, rde.EXTRACT_NAME + ".manifest.json": _json(artifact),
+             rde.HISTORY_NAME: history, rde.HISTORY_NAME + ".manifest.json": _json(history_artifact),
              rde.COVERAGE_NAME: _json(coverage)}
     return files, {k: summary[k] for k in ("rows", "withheld", "worst_case_lag_days")}, render_markdown(kept, coverage)
 
@@ -117,16 +124,17 @@ def render_markdown(rows, coverage) -> str:
         f"- Vintage: `{coverage['vintage']}`. The page serves only its latest release, so each value is the one in that",
         "  release, not necessarily the one first printed; earlier releases are not recoverable here.",
         f"- Rows: {coverage['rows']} estimate dates, {coverage['first_estimate']} to {coverage['last_estimate']}. Read as",
-        f"  public from {coverage['first_read_from'][:10]} (the launch) to {coverage['last_read_from'][:10]}, at 10:00",
-        "  New York time on a third Thursday.",
-        f"- Left out, the back history the launch carried: {coverage['back_history']['estimates']} estimate dates, "
-        f"{coverage['back_history']['first']} to {coverage['back_history']['last']}. They stay in the stored workbook.",
+        f"  public from {coverage['first_read_from'][:10]} (the launch) to {coverage['last_read_from'][:10]}, at 12:00",
+        "  New York time on the third Thursday, or on the first business day after an FOMC blackout that holds it.",
+        f"- Published apart, the back history the launch carried: {coverage['back_history']['estimates']} estimate dates, "
+        f"{coverage['back_history']['first']} to {coverage['back_history']['last']}, in `rde_history.csv`, labelled "
+        f"\"{rde.HISTORY_LABEL}\", outside the declaration and read by nothing.",
         f"- Withheld, because their assigned release falls after the development end ({coverage['development_end']}):",
         f"  {coverage['withheld']} estimate dates"
         + (f" ({coverage['withheld_estimates'][0]['estimate_date']} to {coverage['withheld_estimates'][-1]['estimate_date']})."
            if coverage["withheld"] else "."),
         f"- Worst-case lag, estimate date to the day it is read as public: {coverage['worst_case_lag_days']} calendar days:",
-        f"  an estimate waits for the first release at least {rde.UPDATE_TO_RELEASE_DAYS} days after its date.",
+        "  an estimate waits for the first release whose data is as of its date or later.",
         "",
         "## Where the estimates sit",
         "",
@@ -158,11 +166,14 @@ def render_markdown(rows, coverage) -> str:
               f"{last.available_from.date()}.", "",
               "## Not checked", "",
               "- Whether the RDE's definition of scarce reserves matches H7's kink.",
-              "- Which release first carried each estimate: the workbook does not say, so the availability is the rule in",
-              "  `repo_liquidity.rde` (the first third-Thursday release at least 10 days after the estimate date), checked on",
-              "  the one release stored (cover sheet: updated 5 October, released 15 October 2026).",
-              "- The release time of 10:00 and the third Thursday in months where that day is a holiday: taken from the",
-              "  ruling, not from a Fed statement; the stored release's own date (Thursday 15 October 2026) is the third Thursday.",
+              "- Which release first carried each estimate: the workbook does not say. The rule in `repo_liquidity.rde` uses the",
+              "  two recorded data-as-of dates (the launch release, 11 October 2024; the stored release, 5 October 2026) and,",
+              f"  for any other release, an assumed {rde.UNRECORDED_AS_OF_LAG_DAYS} days before its third Thursday: a declared conservative",
+              "  lag, not a source (a marked question for Eleonora).",
+              "- The release time: \"around 10:00 A.M.\" in the launch press release of 17 October 2024; availability is declared",
+              "  at 12:00, the conservative reading. The FOMC meetings behind the blackout fallback are read from this repository's",
+              "  saved Board calendar page, because the parent holds no meeting calendar at the pin; a notation vote (22 August",
+              "  2025) is not counted as a meeting.",
               "- Revisions: the values are those of the latest release (see above).",
               "- Whether the Oct 2026 re-estimate of earlier dates uses data from after the estimate date. The product is",
               "  described as real-time by construction; the staff report was not read for this.", ""]

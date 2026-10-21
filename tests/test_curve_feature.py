@@ -26,7 +26,7 @@ def _panel_rows():
     if not hasattr(_panel_rows, "rows"):
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "phase3_panel.csv"
-            panel.build(path, version=1)
+            panel.build(path, version=4)
             _panel_rows.rows = curve_feature.with_stage4_columns(load_daily_panel(path))
     return _panel_rows.rows
 
@@ -255,6 +255,53 @@ class WrapperTests(unittest.TestCase):
         for name in curve_feature.CURVE_READS:
             self.assertIn(name, model.features_read)
         self.assertIn(curve_feature.FEATURE, model.inner.features_read)
+
+
+class DirectPairsTests(unittest.TestCase):
+    """Stage 4 trains on direct pairs (Eleonora, 21 October 2026, #149 question 2): the calendar and scheduled columns are
+    read at the target day, and no allow-list entry is asked of the parent's one-step guard (#947)."""
+
+    END = date(2018, 11, 30)
+
+    def _fit(self, fitter):
+        rows = [row for row in _panel_rows() if row.date <= self.END]
+        with curve_feature.stage4_declaration():
+            rule = InformationRule(curve_feature.registry(), curve_feature.DECLARED_FEATURES, decision_time=DECISION)
+            return fitter(rows[:62], minimum_history=61, information=rule)
+
+    def test_the_wrapper_trains_the_published_gbm_on_direct_pairs(self):
+        """Recorded mutation (21 October 2026): in `CurveFeatureFitter.__init__`, the line
+        `keywords = require_direct_pairs(keywords)` deleted. This test failed with KeyError ('training_pairs' missing from the wrapper's settings); with the
+        assertion on the settings removed, the fit itself raised ValueError, the parent's one-step guard refusing
+        `treasury_settlement` with the feature added."""
+        fitter = curve_feature.CurveFeatureFitter(curve_feature.published_fitter())
+        self.assertEqual(fitter.settings["training_pairs"], "direct")
+        model = self._fit(fitter)
+        self.assertEqual(model.inner.training_pairs, "direct")
+
+    def test_the_wrapper_does_not_rewrite_another_pairing(self):
+        base = curve_feature.published_fitter()
+        one_step = functools.partial(base.func, *base.args, **{**base.keywords, "training_pairs": None})
+        self.assertEqual(curve_feature.CurveFeatureFitter(one_step).settings["training_pairs"], "direct")
+        with self.assertRaises(ValueError):
+            curve_feature.require_direct_pairs({"training_pairs": "one_step"})
+
+    def test_the_published_model_a_keeps_its_own_pairing(self):
+        """Model A is the parent's published declaration, which the allow-list admits on one-step pairs; only the arms
+        that add the feature move."""
+        self.assertNotIn("training_pairs", curve_feature.published_fitter().keywords)
+
+    def test_the_exceedance_arm_with_the_feature_trains_on_direct_pairs(self):
+        """Recorded mutation (21 October 2026): in `published_exceedance_arm`, the line
+        `settings = require_direct_pairs(settings)` deleted. This test failed with AssertionError (None != 'direct', read from the closure of the parent's
+        `gbm_exceedance`); the exceedance backtest tests below fail with ValueError too."""
+        import inspect
+
+        with curve_feature.stage4_declaration():
+            _name, predictor, _online, _benchmarks = curve_feature.published_exceedance_arm(with_feature=True)
+            _name, plain, _online, _benchmarks = curve_feature.published_exceedance_arm(with_feature=False)
+        self.assertEqual(inspect.getclosurevars(predictor.inner).nonlocals["training_pairs"], "direct")
+        self.assertIsNone(inspect.getclosurevars(plain).nonlocals["training_pairs"])
 
 
 class CarryForwardTests(unittest.TestCase):

@@ -148,6 +148,7 @@ in step 5,** under the protocol's §5 statistic, and are never cited from Stage 
 - G6. A power study for the information goalpost on development data. How many confirmation days, and how many stress
   events, detect the MME? Runs before registration.
 - G7. **The announced balance-sheet pace**: runoff caps less announced reserve-management purchases, MBS reinvestment at 0 (Eleonora, 19 October 2026; #125).
+- G8. **The NY Fed reserve demand elasticity**: an external check on H7m goalposts 1 and 3, reported, never deciding (Eleonora, 19 October 2026; #132).
 
 **Development steps (never a verdict)**
 1. **Estimand and as-of estimator.** This is the recreated model eleonorabjornberg/repo-market-model#644. Define
@@ -331,7 +332,7 @@ All lines are at a1685ac.
 | 3, the latent buffer | Not shown. Not identified (full-window and walk-forward fits settle apart); ON RRP dominates; worst refit gap about 4 points against 0.5. | `docs/stages/stage-3.md:34`; `docs/HANDOFF.md:36-62` |
 | 3b, the buffer on a fixed curve | Benchmark shown (+3.3 points full-window, [2.8, 3.7]); stability not shown. | `docs/HANDOFF.md:78-114`; `docs/stages/stage-3b.md:76` |
 | 3c, the real-time buffer | Not shown: it moved by up to 4.2 points between refits. | `PLAN.md:144-146`; `docs/stages/stage-4.md:8` |
-| 4, the curve as a gbm feature | Not shown: +0.0038 bp CRPS, 90% [−0.0070, +0.0146]. | `docs/stages/stage-4.md:208-232` |
+| 4, the curve as a gbm feature | Not shown: +0.0038 bp CRPS, 90% [−0.0070, +0.0146]; provisional until re-run (21 October 2026). | `docs/stages/stage-4.md:208-232` |
 | 5a, a daily log | Built; the schedule was never on. Retired (S3). | `docs/stages/stage-5a.md:21-22`; `.github/workflows/live-log.yml:15-19` |
 | 6, candidates A and B | A: stable, 2.7-point median width, eligibility pending the distribution account. B: not eligible (4.0-point gap). Stage 6 argued both rank days as R does; R's own score was never computed (step 5 computes it). | `docs/stages/stage-6.md:86-94` (eligibility), `:100-107` (choice rule), `:142-149` (table), `:167-173` (reading) |
 

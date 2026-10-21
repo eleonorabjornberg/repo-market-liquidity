@@ -14,10 +14,10 @@
   "locked_rows_omitted": [
     "2026-09-16"
   ],
-  "parent_commit": "8fd2cf8c72e7d5c6e81c509651b684b690054a6f",
+  "parent_commit": "08ff67e27bc3d7e357491cf8e1da59793702b3fb",
   "parent_panel_sha256": "4ddc3882cd6d406b11e1088f8ff6195e16dde175a0ad6818abe40dd5bdac8999",
   "path": "snapshots/srf_rate/a1182d32530038de4dbeb40fed3b8e733e012bf1cb4e52f430e08a0ae0bfa252.csv",
-  "repo_commit": "12785751b8af73dff5a6e475c61c0754e29c6bb5",
+  "repo_commit": "dfefb350c4db344c53de67feeee98c6dfc7c5a9c",
   "rows": 18,
   "series": "srf_rate",
   "sha256": "a1182d32530038de4dbeb40fed3b8e733e012bf1cb4e52f430e08a0ae0bfa252",
