@@ -54,9 +54,9 @@ The last estimate read is 2026-08-06: -0.356 [-0.754, 0.051], read as public fro
   for any other release, an assumed 10 days before its third Thursday: a declared conservative
   lag, not a source (a marked question for Eleonora).
 - The release time: "around 10:00 A.M." in the launch press release of 17 October 2024; availability is declared
-  at 12:00, the conservative reading. The FOMC meetings behind the blackout fallback are read from this repository's
-  saved Board calendar page, because the parent holds no meeting calendar at the pin; a notation vote (22 August
-  2025) is not counted as a meeting.
+  at 12:00, the conservative reading. The FOMC meetings behind the blackout fallback are read from the parent's
+  FOMC meeting calendar (`repo_liquidity.fomc`; her #140 ruling), the scheduled meetings it shows as public at 12:00
+  on the release's third Thursday. The Board's calendar page saved here is a cross-check only.
 - Revisions: the values are those of the latest release (see above).
 - Whether the Oct 2026 re-estimate of earlier dates uses data from after the estimate date. The product is
   described as real-time by construction; the staff report was not read for this.
