@@ -622,6 +622,66 @@ class ScriptTests(unittest.TestCase):
         self.assertIn("#149", done.stderr)
 
 
+class TimingTests(unittest.TestCase):
+    """`scripts/h7_kink_run.py --timing` (the review of 06beb39, point 3).
+
+    The estimate quoted for the run was 33 core-hours (4 to 5 hours with 8 workers); the Mac run took 21 minutes. The harness
+    timed every one of the 72 refits at the largest training window (1700 days) and the 8 workers were assumed to divide a
+    cloud core's time, while the real training sets grow from 436 to 1864 clean days over 69 refits, and a refit costs about
+    n**1.3. The harness now times two window sizes, fits the power law, sums it over the refit sizes, and divides by the workers.
+    """
+
+    @staticmethod
+    def _script():
+        import importlib.util
+        from pathlib import Path
+
+        script = Path(__file__).resolve().parents[1] / "scripts" / "h7_kink_run.py"
+        spec = importlib.util.spec_from_file_location("h7_kink_run", script)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+
+    def test_the_refit_sizes_grow_evenly_from_the_first_window_to_the_last(self):
+        module = self._script()
+        self.assertEqual(module.refit_sizes(400, 2000, 5), [400, 800, 1200, 1600, 2000])
+        self.assertEqual(module.refit_sizes(400, 2000, 1), [400])
+
+    def test_a_linear_cost_sums_over_the_sizes_not_at_the_largest(self):
+        module = self._script()
+        total = module.estimate_core_seconds((400, 4.0), (2000, 20.0), [400, 800, 1200, 1600, 2000])
+        self.assertAlmostEqual(total, 60.0)
+
+    def test_a_quadratic_cost_is_interpolated_by_its_power_law(self):
+        module = self._script()
+        total = module.estimate_core_seconds((500, 1.0), (2000, 16.0), [500, 1000, 2000])
+        self.assertAlmostEqual(total, 21.0)
+
+    def test_the_estimate_is_far_below_every_refit_at_the_largest_window(self):
+        module = self._script()
+        sizes = module.refit_sizes(436, 1864, 69)
+        total = module.estimate_core_seconds((430, 60.0), (1870, 500.0), sizes)
+        self.assertLess(total, 0.6 * 69 * 500.0)
+
+    def test_the_wall_time_divides_the_core_time_by_the_workers(self):
+        module = self._script()
+        self.assertEqual(module.wall_seconds(4000.0, 8), 500.0)
+        self.assertEqual(module.wall_seconds(4000.0, 1), 4000.0)
+
+    def test_timing_runs_on_a_synthetic_window_and_prints_both_figures(self):
+        import contextlib
+        import io
+
+        module = self._script()
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            code = module.timing(2, 2, workers=8, sizes=(220, 440), refits=3)
+        self.assertEqual(code, 0)
+        text = out.getvalue()
+        self.assertIn("core-hours", text)
+        self.assertIn("8 workers", text)
+
+
 class LeakageTests(unittest.TestCase):
     def _signature_days(self):
         return _pairs(420)

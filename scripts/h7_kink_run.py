@@ -24,6 +24,7 @@ Runs the baseline (the parent's fit on the same pairs) and V1 to V6 on the devel
 
 import argparse
 import json
+import math
 import sys
 import time as clock
 from datetime import date
@@ -235,24 +236,63 @@ def markdown(record):
     return "\n".join(lines)
 
 
-def timing(replications, target):
-    """Time one refit of every estimator on a synthetic window the size of the real one; reads no real day.
+#: Clean training days at the first and the last refit of the run, and the refits, as `results/h7/kink.json` records them (V3).
+TIMING_SIZES = (436, 1864)
+TIMING_REFITS = 69
 
-    Measured at `replications` draws and scaled to `target` draws (the bootstrap is the cost)."""
+
+def refit_sizes(first, last, refits):
+    """The training-window sizes of `refits` refits growing evenly from `first` to `last`."""
+    if refits < 2:
+        return [first]
+    return [round(first + (last - first) * i / (refits - 1)) for i in range(refits)]
+
+
+def estimate_core_seconds(small, large, sizes):
+    """Core-seconds of one estimator over refits of `sizes` days, from one refit timed at each of two window sizes.
+
+    `small` and `large` are (days, seconds) pairs; the cost between and beyond them follows the power law through the two."""
+    (n0, t0), (n1, t1) = small, large
+    power = math.log(t1 / t0) / math.log(n1 / n0)
+    return sum(t0 * (n / n0) ** power for n in sizes)
+
+
+def wall_seconds(core_seconds, workers):
+    """The refits are independent (`real_time_path`), so `workers` processes divide the core time."""
+    return core_seconds / workers
+
+
+def _timed(variant, size, replications, target):
+    """Seconds for one refit of `variant` at `target` draws on a synthetic window of `size` days (measured at `replications`)."""
     sys.path.insert(0, str(ROOT / "tests"))
     import test_h7_kink as t
 
-    days = t._pairs(1700, intercepts=(1, 3, 2, 4), regime_lengths=(400, 400, 400, 500), noise=0.5)
-    cutoff = days[-1].day
+    quarter = size // 4
+    days = t._pairs(size, intercepts=(1, 3, 2, 4), regime_lengths=(quarter, quarter, quarter, size - 3 * quarter), noise=0.5)
+    started = clock.time()
+    k.refit_on(days, days[-1].day, variant, replications=replications)
+    return (clock.time() - started) * target / replications
+
+
+def timing(replications, target, workers=1, sizes=TIMING_SIZES, refits=TIMING_REFITS):
+    """Estimate the run on a synthetic window; reads no real day.
+
+    One refit per estimator is timed at the first and at the last window size, at `replications` draws, scaled to `target`
+    draws (the bootstrap is the cost). The power law through the two is summed over the refits' sizes and divided by `workers`.
+    Review of 06beb39: the earlier harness timed all refits at the largest window, which overstated this run about tenfold.
+    The figure is for the machine it runs on: run it on the machine that will do the run.
+    """
+    schedule = refit_sizes(sizes[0], sizes[1], refits)
     total = 0.0
-    refits = len(range(0, 1500, REFIT_EVERY))
     for variant in (k.BASELINE,) + k.VARIANTS:
-        started = clock.time()
-        k.refit_on(days, cutoff, variant, replications=replications)
-        seconds = clock.time() - started
-        total += seconds * target / replications * refits
-        print(f"{variant.id}: {seconds:.2f} s per refit at 1700 days, {replications} draws (about {seconds * target / replications:.0f} s at {target})")
-    print(f"about {total / 3600:.1f} hours on one core for about {refits} refits of all seven (an upper bound: early refits have fewer days)")
+        small = (sizes[0], _timed(variant, sizes[0], replications, target))
+        large = (sizes[1], _timed(variant, sizes[1], replications, target))
+        seconds = estimate_core_seconds(small, large, schedule)
+        total += seconds
+        print(f"{variant.id}: {small[1]:.1f} s per refit at {small[0]} days, {large[1]:.1f} s at {large[0]} ({target} draws); "
+              f"{seconds / 60:.1f} core-minutes over {refits} refits")
+    print(f"about {total / 3600:.2f} core-hours for {refits} refits of all seven; about {wall_seconds(total, workers) / 60:.0f} minutes "
+          f"with {workers} workers on this machine")
     return 0
 
 
@@ -270,7 +310,7 @@ def main(argv=None):
     parser.add_argument("--check", action="store_true", help="with --render: write nothing, exit 1 if the page is stale")
     args = parser.parse_args(argv)
     if args.timing:
-        return timing(20, args.replications)
+        return timing(20, args.replications, args.workers)
     if args.render:
         text = markdown(json.loads(args.output.read_text(encoding="utf-8")))
         if args.check:
