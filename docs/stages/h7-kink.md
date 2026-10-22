@@ -153,3 +153,34 @@ under all six variants; the calendar-clean flag against the parent's own columns
 the exact solver against brute force. A leakage test with one recorded mutation for the regime read (a width read at its
 effective date instead of its announcement must raise `LookAheadError`), per `CLAUDE.md`. The run keeps long computation to
 the Mac if it is expected to take over about two hours.
+
+## 7. Amendment before the run (directive #151; declared before any fit, so protocol §12 is not touched)
+
+Two rulings of 20 October 2026, both relayed by the orchestrating session, amend this declaration. Nothing in sections 1 to 6
+changes except as stated here. This amendment is declared before any variant is fitted on real days.
+
+**(i) The training start** (Eleonora, "Go ahead with 137a", [comment on #137][r137], option (a)). Every variant, and the
+baseline it is compared with, trains only on pairs whose scored day is **after 2018-06-13**. The 25 bp corridor regime (41 days,
+below the floor of 50) is left out, so every variant keeps one intercept per corridor width in V3, V5 and V6, as Lens B §4.2(3)
+of eleonorabjornberg/repo-market-model#958 asks. Option (b), merging two widths into one intercept, is not taken. The regimes
+expected in section 2(c) then read 20, 15, 10 and 15 bp; the first action of the run still derives the table from the two series
+and stops with a finding if the number of regimes or a width differs from that list.
+
+**(ii) The turn-day clause** (the Q1 ruling on #147, [comment][r147], which adds it to the exclusion set shared by A, C and D).
+Section 2(a)'s set gains a third clause: a pair is also dropped when `repo_model.turn_days.turn_label(T)` is not `None` (declared
+by the parent's `metadata/turn_day_labels_959.json`; model #959, merged in #975). It covers every month's last business day and
+the first business day after it, so the first business day after a month-end that is not a quarter-end is no longer a training
+day. It is read from the parent, never re-implemented, at the scored day's own decision instant. The label does not exist at the
+pin (8fd2cf8), so **the fit on real days waits for the pin move (#149)**; the code, the tests and the constructed cases do not.
+The "marked reading" in section 2(a) on the days after month-end is answered by this clause.
+
+**(iii) What the later record must report** (the #137 ruling, for the run):
+- every variant against the baseline **on the same served days** (Lens B's kill test);
+- the **clean training days per corridor regime** at each refit, against the floor of 50;
+- each refit's Politis–White block length of the training residuals, beside goalpost 2 (the #147 ruling's reporting addition: the
+  bootstrap stays as declared, mean block 10; whether a longer block is needed is hers on that figure).
+
+The variant count (section 3) is still 6.
+
+[r137]: https://github.com/eleonorabjornberg/repo-market-liquidity/issues/137#issuecomment-6297470015
+[r147]: https://github.com/eleonorabjornberg/repo-market-liquidity/issues/147#issuecomment-6297287738
