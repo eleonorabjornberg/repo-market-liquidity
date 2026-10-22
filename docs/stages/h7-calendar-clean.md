@@ -171,7 +171,7 @@ on the development walk-forward with the same refit dates, the same bootstrap (m
 of draws) and the same days:
 
 - **Goalpost 1 (protocol §3):** the worst gap between a refit and the one before it, on every served day, against 0.5 points of
-  bank assets.
+  bank assets. **Amended (section 12, 22 October 2026): unreadable for C and CV1 to CV4 on development data, read prospectively.**
 - **Goalpost 2 (protocol §4):** the median width of the 90% interval, against 3 points.
 - Each variant is compared with its own baseline on both. The count of refits that are **not fitted** or **not identified** is
   reported beside them, per variant, because a variant that is not fitted cannot breach a gap.
@@ -298,3 +298,22 @@ Where this section and the refit dates of section 2 or of `h7-calendar-clean-run
   separate investigation the ruling names; nothing here answers it.
 
 Nothing has been fitted on real days, so protocol §12 is not touched. The run implements this section with no further choice.
+
+## 12. Amendment of 22 October 2026: goalpost 1 is unreadable for C on development data (option 6 of PR #163), before any fit
+
+Quoting Eleonora's ruling, relayed by the orchestrating session on PR #150
+(<https://github.com/eleonorabjornberg/repo-market-liquidity/pull/150#issuecomment-6343728193>): "option 6 of PR #163: '6'.
+Goalpost 1 is treated as unreadable for C on development data and is read prospectively. There is no new refit schedule. This PR is
+re-declared only as far as its record must say this, and then runs once on its current schedule: S1, every 21 observation days from
+2020-03-13 plus the final refit on 2025-12-31, as at 67f2b70." And her broader direction: "refocus".
+
+Where this section and section 5 (goalpost 1), section 9 or section 11 differ, this section decides, for goalpost 1 only:
+
+- **Goalpost 1 is unreadable on development data for the baseline C and for CV1, CV2, CV3 and CV4 alike**, and is **read
+  prospectively**. In the record and on the printed page it is stated as "unreadable on development data, read prospectively
+  (Eleonora, 22 Oct, option 6)". It is not printed as a pass (`holds`) or a fail (`does not hold`), for any of the five.
+- Goalpost 2 (section 5) is read as declared.
+- **Nothing else changes**: not the refit schedule S1 of section 11, not the variants, not the draws, not the exclusion set, not
+  the sample, not the tie rule.
+
+Nothing has been fitted on real days, so protocol §12 is not touched.

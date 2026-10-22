@@ -48,6 +48,9 @@ runs some of `C,CV1,CV2,CV3,CV4`; `--limit-refits N` runs the first N refits.
   (clean days, least squares: (a) only) and CV4 (every day, absolute deviation: (b) only). Four are run.
 - **Q5, D.** D and DV1 to DV4 are "not run (D dropped under #142)" and are listed so in the record. `refit_d` and `path_d` stay.
 - **5, the comparison.** `summarise` reads goalpost 1 and goalpost 2 for each estimator; the baseline is the current C.
+  Goalpost 1 is **unreadable on development data and read prospectively** for C and CV1 to CV4 (her ruling of 22 October 2026, option 6
+  of PR #163, `h7-calendar-clean.md` section 12): the record and the page carry "unreadable on development data, read prospectively
+  (Eleonora, 22 Oct, option 6)" in its place, never `holds` or `does not hold`. Goalpost 2 is read as before.
 - **The block length, reporting only.** `politis_white_block` (Politis and White 2004, with Patton, Politis and White 2009) of
   each fitted refit's training residuals in time order, recorded per refit and set beside goalpost 2. It follows the paper's
   definition and agrees with `arch.bootstrap.optimal_block_length` on a fixed series (49.23 and 49.229). The bootstrap is
