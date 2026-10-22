@@ -89,10 +89,10 @@ class ScheduleTests(unittest.TestCase):
 
         Recorded mutation (20 October 2026): in `rde.release_for`, the starting month
         `max((estimate_date.year, estimate_date.month), (LAUNCH_DATE.year, LAUNCH_DATE.month))` replaced by
-        `(estimate_date.year, estimate_date.month)`. This test then fails with `ValueError: the saved FOMC calendar covers
-        2021 to 2027, not enough to place the release of 2010-02`: the 2010 estimate is sent to the release after its own
-        date, which the calendar-years guard refuses (a calendar reaching 2010 would read it at the third Thursday after
-        its date, years before the launch).
+        `(estimate_date.year, estimate_date.month)`. This test then fails with `ValueError: the parent's FOMC calendar holds no
+        scheduled meeting public at 2010-02-18 12:00:00`: the 2010 estimate is sent to the release after its own date, where
+        the parent's calendar shows no meeting yet (re-recorded 22 October 2026 for #162; the guard that refused it was the
+        saved page's calendar-years check).
         """
         self.assertEqual(rde.release_for(date(2010, 1, 20)), rde.LAUNCH)
         self.assertEqual(rde.release_for(date(2024, 10, 2)), rde.LAUNCH)
@@ -139,14 +139,54 @@ class BlackoutTests(unittest.TestCase):
              date(2026, 3, 19): date(2026, 3, 20),
              date(2026, 6, 18): date(2026, 6, 22)}  # Friday 19 June 2026 is Juneteenth: the next business day is the Monday
 
-    def test_the_meetings_are_read_from_the_saved_board_calendar(self):
-        meetings = rde.fomc_meetings()
+    def test_the_meetings_are_read_from_the_parents_calendar_and_not_from_the_saved_board_page(self):
+        """Her #140 ruling (20 October 2026): the blackout is placed from the parent's FOMC calendar (`repo_liquidity.fomc`).
+
+        `rde` holds no reader of the saved Board page; the page stays a cross-check in `tests/test_fomc.py`.
+        """
+        self.assertFalse(hasattr(rde, "fomc_meetings"))
+        self.assertFalse(hasattr(rde, "live"))
+        source = (ROOT / "src" / "repo_liquidity" / "rde.py").read_text(encoding="utf-8")
+        self.assertNotIn("CALENDAR_PAGE", source.split('"""', 2)[2])  # outside the module docstring
+        self.assertNotIn("gzip", source)
+        meetings = rde.blackout_meetings(datetime(2026, 8, 20, 12, 0))
         self.assertIn((date(2024, 12, 17), date(2024, 12, 18)), meetings)
         self.assertIn((date(2024, 4, 30), date(2024, 5, 1)), meetings)  # across a month end
         self.assertIn((date(2026, 6, 16), date(2026, 6, 17)), meetings)
-        self.assertEqual(sorted({first.year for first, _ in meetings}), list(range(2021, 2028)))
         self.assertNotIn(date(2025, 8, 22), [first for first, _ in meetings])  # a notation vote is not a meeting
         self.assertEqual(sum(first.year == 2025 for first, _ in meetings), 8)
+        from repo_liquidity import fomc
+        self.assertEqual(set(meetings), {(m.start, m.end) for m in fomc.meetings_at(datetime(2026, 8, 20, 12, 0))
+                                         if m.kind == "scheduled"})
+
+    def test_a_meeting_not_public_at_the_release_does_not_move_it(self):
+        """Leakage guard (her #140 ruling): the blackout is placed only from meetings the parent's calendar shows as public
+        at the instant the release is due (12:00 on the third Thursday), and a meeting cancelled by then is not one.
+
+        A synthetic meeting on 25-26 August 2026 has its blackout from 15 to 27 August, which holds the third Thursday
+        (20 August 2026). Announced after noon on the 20th, it must not move that release; announced earlier, it moves it
+        to Friday 28 August; announced earlier and cancelled before noon on the 20th, it does not move it.
+
+        Recorded mutation (22 October 2026): in `rde.blackout_meetings`, `fomc.meetings_at(as_of, calendar)` replaced by
+        `fomc.load() if calendar is None else calendar` (every meeting of the calendar, whenever it became public). This
+        test then fails with `AssertionError: datetime.date(2026, 8, 28) != datetime.date(2026, 8, 20)`: the late-announced
+        meeting moves the release.
+        """
+        from repo_model.fomc_calendar import Meeting
+
+        def meeting(public_at, cancelled_at=None, kind="scheduled"):
+            return Meeting("synthetic-2026-08-25", kind, date(2026, 8, 25), date(2026, 8, 26), public_at, cancelled_at,
+                           "https://example.invalid/")
+
+        after = Meeting("scheduled-2027-01-26", "scheduled", date(2027, 1, 26), date(2027, 1, 27),
+                        datetime(2024, 8, 9, 13, 30), None, "https://example.invalid/")  # keeps the calendar reaching on
+        nominal = date(2026, 8, 20)
+        self.assertEqual(rde.release_day(2026, 8, [meeting(datetime(2026, 8, 20, 13, 0)), after]), nominal)
+        self.assertEqual(rde.release_day(2026, 8, [meeting(datetime(2026, 8, 1, 9, 0)), after]), date(2026, 8, 28))
+        self.assertEqual(rde.release_day(2026, 8, [meeting(datetime(2026, 8, 1, 9, 0), datetime(2026, 8, 19, 9, 0)), after]),
+                         nominal)
+        # An unscheduled meeting carries no blackout rule here (the Board page the check compares with lists none).
+        self.assertEqual(rde.release_day(2026, 8, [meeting(datetime(2026, 8, 1, 9, 0), kind="unscheduled"), after]), nominal)
 
     def test_the_blackout_runs_from_the_second_saturday_before_the_meeting_through_the_day_after_it(self):
         self.assertEqual(rde.blackout(date(2025, 3, 18), date(2025, 3, 19)), (date(2025, 3, 8), date(2025, 3, 20)))
@@ -180,11 +220,13 @@ class BlackoutTests(unittest.TestCase):
         self.assertEqual(moved, self.MOVED)
         self.assertEqual(rde.release_day(2026, 9), date(2026, 9, 18))  # inside the blackout of the 15-16 September meeting
 
-    def test_a_release_in_a_year_the_saved_calendar_does_not_cover_is_refused_not_read_as_unmoved(self):
+    def test_a_release_the_parents_calendar_does_not_reach_is_refused_not_read_as_unmoved(self):
+        """The calendar reaches the 25-26 January 2028 meeting; a release after it could hide a blackout."""
+        self.assertEqual(rde.release_day(2028, 1), date(2028, 1, 28))  # inside the blackout of the 25-26 January meeting
         with self.assertRaises(ValueError):
-            rde.release_day(2028, 1)
+            rde.release_day(2028, 3)
         with self.assertRaises(ValueError):
-            rde.release_for(date(2027, 12, 20))
+            rde.release_for(date(2028, 2, 20))
 
     def test_the_release_time_and_the_source_are_stated(self):
         entry = declaration.registry()[rde.SOURCE_ID]

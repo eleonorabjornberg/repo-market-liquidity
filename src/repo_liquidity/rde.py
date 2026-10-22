@@ -18,8 +18,9 @@ section 5; the protocol does not change, and nothing here is wired into a goalpo
   period"). A release is public from 12:00 New York time, the conservative reading of "around 10:00", on the third
   Thursday, or when that day is inside an FOMC blackout (the second Saturday before a meeting through the day after it)
   on the first business day after the blackout, and never before the launch on 2024-10-17. The meetings are read from the
-  Board's calendar page saved in this repository (`live.CALENDAR_PAGE`); the parent holds no meeting calendar at the pin
-  (finding filed with the pull request). An estimate for date d is public at the first release whose data-as-of date is on
+  parent's FOMC meeting calendar (`repo_liquidity.fomc`, parent #1038; her #140 ruling of 20 October 2026), the scheduled
+  meetings it shows as public at 12:00 on the release's third Thursday; the Board's calendar page saved in this repository
+  is a cross-check only (`tests/test_fomc.py`) and `rde` reads no page. An estimate for date d is public at the first release whose data-as-of date is on
   or after d. Two as-of dates are recorded: Friday 11 October 2024 for the launch release (its press release: "include data
   as of Friday, October 11, 2024") and Monday 5 October 2026 for the release of 15 October 2026 (the stored workbook's cover
   sheet, "Updated on October 5 for release on October 15"). A release with no recorded as-of date is assumed to carry data
@@ -40,7 +41,6 @@ Standard library only (the parent's `repo_model` is imported for the exception c
 from __future__ import annotations
 
 import csv
-import gzip
 import hashlib
 import io
 import json
@@ -49,13 +49,14 @@ import zipfile
 from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta
 from decimal import Decimal
-from functools import lru_cache
 from pathlib import Path
 from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 from xml.etree import ElementTree
 from zoneinfo import ZoneInfo
 
-from repo_liquidity import contenthash, development, live
+from repo_model.fomc_calendar import Meeting
+
+from repo_liquidity import contenthash, development, fomc
 
 SOURCE_ID = "nyfed_rde"
 URL = "https://www.newyorkfed.org/medialibrary/Research/Interactives/Data/elasticity/download-data"
@@ -115,41 +116,21 @@ def third_thursday(year: int, month: int) -> date:
     return first + timedelta(days=(3 - first.weekday()) % 7 + 14)
 
 
-@lru_cache(maxsize=None)
-def fomc_meetings() -> Tuple[Tuple[date, date], ...]:
-    """The scheduled FOMC meetings (first day, last day) in the Board's calendar page saved in this repository.
+def blackout_meetings(as_of: datetime, calendar: Optional[Sequence[Meeting]] = None) -> Tuple[Tuple[date, date], ...]:
+    """The scheduled FOMC meetings (first day, last day) that the parent's calendar shows as public at `as_of`.
 
-    A row whose dates are not two days of a meeting (a notation vote, such as 22 August 2025) is not a meeting.
+    Read through `repo_liquidity.fomc.meetings_at` (the parent's `visible_at` and `require_public`), never from the Board's
+    saved calendar page (her #140 ruling). A meeting announced after `as_of`, or cancelled by it, is not returned. An
+    unscheduled meeting is not returned: the blackout rule is stated for the scheduled calendar the Board publishes.
 
     Raises:
-        ValueError: if the saved page does not match its manifest, or holds no meeting.
+        ValueError: if `as_of` is not a naive wall-clock datetime, or the calendar holds no meeting.
     """
-    page = live.CALENDAR_PAGE
-    manifest = json.loads(page.with_name(page.name + ".manifest.json").read_text(encoding="utf-8"))
-    raw = page.read_bytes()
-    if hashlib.sha256(raw).hexdigest() != manifest["sha256"]:
-        raise ValueError(f"{page.name} does not match its manifest")
-    parts = re.split(r'<a id="\d+">(\d{4}) FOMC Meetings</a>', gzip.decompress(raw).decode("utf-8"))
-    meetings = []
-    for year, body in zip(parts[1::2], parts[2::2]):
-        for month, days in re.findall(r'fomc-meeting__month[^>]*><strong>([^<]+)</strong>.*?fomc-meeting__date[^>]*>([^<]+)<',
-                                      body, re.S):
-            match = re.fullmatch(r"(\d+)-(\d+)\*?", days.strip())
-            if match is None:
-                continue
-            names = [name.strip() for name in month.split("/")]
-            first_month, last_month = _month_number(names[0]), _month_number(names[-1])
-            meetings.append((date(int(year), first_month, int(match.group(1))), date(int(year), last_month, int(match.group(2)))))
+    meetings = tuple((meeting.start, meeting.end) for meeting in fomc.meetings_at(as_of, calendar)
+                     if meeting.kind == "scheduled")
     if not meetings:
-        raise ValueError(f"{page.name} holds no FOMC meeting")
-    return tuple(sorted(meetings))
-
-
-def _month_number(name: str) -> int:
-    for number, full in enumerate(_MONTHS, start=1):
-        if full.startswith(name[:3]):
-            return number
-    raise ValueError(f"{name!r} is not a month")
+        raise ValueError(f"the parent's FOMC calendar holds no scheduled meeting public at {as_of}")
+    return meetings
 
 
 def blackout(first_day: date, last_day: date) -> Tuple[date, date]:
@@ -163,21 +144,25 @@ def nominal_release_day(year: int, month: int) -> date:
     return third_thursday(year, month)
 
 
-def release_day(year: int, month: int) -> date:
+def release_day(year: int, month: int, calendar: Optional[Sequence[Meeting]] = None) -> date:
     """The day the month's release is public: its third Thursday, or, when that day is inside an FOMC blackout, the first
     business day after the blackout (the launch press release of 17 October 2024).
 
+    The meetings are those the parent's calendar shows as public at 12:00 on the third Thursday, the instant the release
+    is due before any shift (`blackout_meetings`). `calendar` replaces the parent's, for a test.
+
     Raises:
-        ValueError: if the saved FOMC calendar does not cover the year, so a blackout could be missed.
+        ValueError: if no meeting public then starts on or after the third Thursday, so the calendar does not reach far
+            enough to say whether a blackout holds the release.
     """
     from repo_model.data import next_business_day
 
-    covered = {first.year for first, _ in fomc_meetings()}
-    if year not in covered:
-        raise ValueError(f"the saved FOMC calendar covers {min(covered)} to {max(covered)}, not enough to place the "
-                         f"release of {year}-{month:02d}")
     nominal = nominal_release_day(year, month)
-    for first, last in fomc_meetings():
+    meetings = blackout_meetings(datetime.combine(nominal, RELEASE_TIME), calendar)
+    if max(first for first, _ in meetings) < nominal:
+        raise ValueError(f"the parent's FOMC calendar ends with the meeting of {max(meetings)[0]}, not enough to place "
+                         f"the release of {year}-{month:02d}")
+    for first, last in meetings:
         start, end = blackout(first, last)
         if start <= nominal <= end:
             return next_business_day(end, 1)
