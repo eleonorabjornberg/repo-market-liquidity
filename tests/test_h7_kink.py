@@ -48,6 +48,7 @@ Order of work, said plainly: the tests were written first and the module did not
 from __future__ import annotations
 
 import itertools
+import json
 import unittest
 from datetime import date, datetime, time, timedelta
 
@@ -529,6 +530,145 @@ class PathTests(unittest.TestCase):
         self.assertFalse(paths[1].refit.fitted)
         self.assertEqual(paths[1].estimates, [])
         self.assertEqual(k.summarise(paths, None)["not_fitted"], 1)
+
+
+class GoalpostUnitsTests(unittest.TestCase):
+    """`summarise` holds gaps and widths in points, so it must pass the limits in points (#166, #167): 0.5 and 3.
+
+    Before the fix `summarise` called the goalposts with their limits in shares (0.005 and 0.03), so every width over 0.03
+    points failed goalpost 2 and every gap of 0.005 points or more breached goalpost 1. Recorded mutation, 22 October 2026,
+    in a disposable copy: in `summarise`, replace `sharpness_goalpost(widths, limit=h7.points(goalposts.WIDTH_LIMIT))` by
+    `sharpness_goalpost(widths)` (the default limit, in shares). `test_a_width_of_2_75_points_holds_goalpost_2` fails with
+    `AssertionError: False is not true` and `test_the_limits_are_reported_in_points` with `AssertionError: 0.03 != 3.0`. The same
+    on the stability call fails `test_a_gap_under_half_a_point_holds_goalpost_1` the same way. On the unfixed call, before the
+    change, three of the five tests failed (the two above and the gap test).
+    """
+
+    START = date(2021, 1, 4)
+
+    def _path(self, width_points, gap_points, days=5):
+        refit = h7.Refit(self.START, 0.1, True, None, None, 100, {})
+        estimates, gaps = [], {}
+        for i in range(days):
+            day = self.START + timedelta(days=i)
+            half = width_points / 200.0  # a share: half the width in points / 100
+            estimates.append(h7.Estimate(day, 0.1, 0.0, 0.1 - half, 0.1 + half, None))
+            gaps[day] = gap_points / 100.0
+        return [h7.RefitPath(refit, estimates, gaps, 0)]
+
+    def test_a_width_of_2_75_points_holds_goalpost_2(self):
+        self.assertTrue(k.summarise(self._path(2.75, 0.1))["goalpost_2"]["holds"])
+
+    def test_a_width_of_3_5_points_does_not_hold_goalpost_2(self):
+        self.assertFalse(k.summarise(self._path(3.5, 0.1))["goalpost_2"]["holds"])
+
+    def test_a_gap_under_half_a_point_holds_goalpost_1(self):
+        self.assertTrue(k.summarise(self._path(2.0, 0.49))["goalpost_1"]["holds"])
+
+    def test_a_gap_of_half_a_point_does_not_hold_goalpost_1(self):
+        self.assertFalse(k.summarise(self._path(2.0, 0.5))["goalpost_1"]["holds"])
+        self.assertFalse(k.summarise(self._path(2.0, 0.75))["goalpost_1"]["holds"])
+
+    def test_the_limits_are_reported_in_points(self):
+        summary = k.summarise(self._path(2.0, 0.1))
+        self.assertEqual(summary["goalpost_1"]["limit"], 0.5)
+        self.assertEqual(summary["goalpost_2"]["limit"], 3.0)
+
+
+def _old_summary(median, worst, not_fitted=0):
+    """A summary as the superseded record (sha256 f6292a31...7395) holds it: both limits in shares, the counts of shares."""
+    return {"served_days": 10, "not_fitted": not_fitted, "worst_gap_points": worst,
+            "goalpost_1": {"holds": False, "limit": 0.005, "days_compared": 9, "breaches": 9, "missing_refits": not_fitted,
+                           "worst": {"day": "2021-01-05", "gap": worst}},
+            "goalpost_2": {"holds": False, "limit": 0.03, "days": 10, "median": median, "missing": 0}}
+
+
+class RestateTests(unittest.TestCase):
+    """`restate_goalposts` (#167): the superseded record's goalposts 1 and 2 recomputed in points from what it holds."""
+
+    def _record(self, summaries):
+        both = {n: {"all_served_days": json.loads(json.dumps(s)), "common_served_days": json.loads(json.dumps(s))} for n, s in summaries.items()}
+        return {"note": "n", "summaries": both,
+                "comparison": {n: {"goalpost_1_holds": False, "goalpost_2_holds": False, "worst_gap_points": s["worst_gap_points"]}
+                               for n, s in summaries.items() if n != "B"}}
+
+    def test_goalpost_2_is_the_median_under_3_points_and_goalpost_1_the_worst_gap_under_half_a_point(self):
+        record = self._record({"B": _old_summary(2.75, 6.25), "V1": _old_summary(3.5, 0.25), "V2": _old_summary(2.0, 0.5)})
+        out = k.restate_goalposts(record, superseded="abc", reason="r")
+        common = {n: s["common_served_days"] for n, s in out["summaries"].items()}
+        self.assertEqual({n: c["goalpost_2"]["holds"] for n, c in common.items()}, {"B": True, "V1": False, "V2": True})
+        self.assertEqual({n: c["goalpost_1"]["holds"] for n, c in common.items()}, {"B": False, "V1": True, "V2": False})
+        self.assertEqual((common["B"]["goalpost_1"]["limit"], common["B"]["goalpost_2"]["limit"]), (0.5, 3.0))
+
+    def test_a_refit_that_did_not_fit_is_a_breach_whatever_the_gaps(self):
+        record = self._record({"B": _old_summary(2.0, 0.25, not_fitted=1)})
+        out = k.restate_goalposts(record, superseded="abc", reason="r")
+        self.assertFalse(out["summaries"]["B"]["common_served_days"]["goalpost_1"]["holds"])
+
+    def test_the_breach_counts_are_removed_and_marked_and_nothing_else_moves(self):
+        record = self._record({"B": _old_summary(2.75, 6.25), "V1": _old_summary(2.25, 3.5)})
+        out = k.restate_goalposts(record, superseded="abc", reason="r")
+        gp1 = out["summaries"]["V1"]["all_served_days"]["goalpost_1"]
+        self.assertNotIn("breaches", gp1)
+        self.assertIn("#166", gp1["breaches_note"])
+        for name in ("B", "V1"):
+            for view in ("all_served_days", "common_served_days"):
+                old, new = record["summaries"][name][view], out["summaries"][name][view]
+                for key in ("served_days", "not_fitted", "worst_gap_points"):
+                    self.assertEqual(old[key], new[key])
+                self.assertEqual(old["goalpost_1"]["worst"], new["goalpost_1"]["worst"])
+                self.assertEqual(old["goalpost_2"]["median"], new["goalpost_2"]["median"])
+        self.assertEqual(out["comparison"]["V1"]["worst_gap_points"], 3.5)
+        self.assertEqual((out["comparison"]["V1"]["goalpost_1_holds"], out["comparison"]["V1"]["goalpost_2_holds"]), (False, True))
+        self.assertEqual(out["superseded"], {"sha256": "abc", "reason": "r"})
+
+    def test_the_input_is_not_changed(self):
+        record = self._record({"B": _old_summary(2.75, 6.25)})
+        before = json.dumps(record, sort_keys=True)
+        k.restate_goalposts(record, superseded="abc", reason="r")
+        self.assertEqual(json.dumps(record, sort_keys=True), before)
+
+    def test_a_restated_record_is_refused(self):
+        out = k.restate_goalposts(self._record({"B": _old_summary(2.75, 6.25)}), superseded="abc", reason="r")
+        with self.assertRaises(ValueError):
+            k.restate_goalposts(out, superseded="abc", reason="r")
+
+
+class KinkRecordTests(unittest.TestCase):
+    """The tracked record `results/h7/kink.json` as restated under #167: goalposts read in points, the old record named."""
+
+    @classmethod
+    def setUpClass(cls):
+        from pathlib import Path
+
+        root = Path(__file__).resolve().parents[1]
+        cls.record = json.loads((root / "results" / "h7" / "kink.json").read_text(encoding="utf-8"))
+
+    def test_on_the_same_served_days_goalpost_2_holds_for_all_seven_and_goalpost_1_for_none(self):
+        common = {n: s["common_served_days"] for n, s in self.record["summaries"].items()}
+        self.assertEqual(len(common), 7)
+        for name, c in common.items():
+            self.assertTrue(c["goalpost_2"]["holds"], name)
+            self.assertLess(c["goalpost_2"]["median"], 3.0, name)
+            self.assertFalse(c["goalpost_1"]["holds"], name)
+            self.assertGreaterEqual(c["worst_gap_points"], 0.5, name)
+
+    def test_the_limits_are_in_points_and_the_breach_counts_are_gone(self):
+        for entry in self.record["summaries"].values():
+            for c in entry.values():
+                self.assertEqual((c["goalpost_1"]["limit"], c["goalpost_2"]["limit"]), (0.5, 3.0))
+                self.assertNotIn("breaches", c["goalpost_1"])
+                self.assertIn("#166", c["goalpost_1"]["breaches_note"])
+
+    def test_the_comparison_agrees_with_the_summaries(self):
+        for name, row in self.record["comparison"].items():
+            common = self.record["summaries"][name]["common_served_days"]
+            self.assertEqual((row["goalpost_1_holds"], row["goalpost_2_holds"]),
+                             (common["goalpost_1"]["holds"], common["goalpost_2"]["holds"]))
+
+    def test_the_superseded_record_is_named(self):
+        self.assertEqual(self.record["superseded"]["sha256"],
+                         "f6292a314a792961e52c6fbe5a64f14db5be8e08f76fff61102fa04d198a7395")
 
 
 class ReportTests(unittest.TestCase):

@@ -23,6 +23,7 @@ Runs the baseline (the parent's fit on the same pairs) and V1 to V6 on the devel
 """
 
 import argparse
+import hashlib
 import json
 import math
 import sys
@@ -215,6 +216,10 @@ def markdown(record):
         c = s["common_served_days"]
         lines.append(f"| {name} | {c['not_fitted']} | {_fmt(c['worst_gap_points'])} | {'holds' if c['goalpost_1']['holds'] else 'does not hold'} | "
                      f"{_fmt(c['goalpost_2']['median'])} | {'holds' if c['goalpost_2']['holds'] else 'does not hold'} | {c['served_days']} |")
+    if "superseded" in record:
+        lines += ["", f"Goalposts 1 and 2 are read in points (limits 0.5 and 3). This record replaces the one with sha256 "
+                  f"`{record['superseded']['sha256']}`: {record['superseded']['reason']} The breach counts of goalpost 1 are removed: "
+                  f"{k.BREACHES_NOTE}."]
     lines += ["", "## Each variant against the baseline", "", "| Variant | Worst gap | Baseline | Reduces it | Median width | Baseline | "
               "Wider (clean only) | Not fitted | Baseline not fitted |", "|---|---|---|---|---|---|---|---|---|"]
     for v, r in record["comparison"].items():
@@ -296,6 +301,25 @@ def timing(replications, target, workers=1, sizes=TIMING_SIZES, refits=TIMING_RE
     return 0
 
 
+#: The record as 06beb39 published it, whose goalposts compared points with limits in shares (#166); replaced under #167.
+SUPERSEDED_SHA256 = "f6292a314a792961e52c6fbe5a64f14db5be8e08f76fff61102fa04d198a7395"
+SUPERSEDED_REASON = ("goalposts 1 and 2 compared gaps and widths in points with limits in shares (0.005 and 0.03) instead of points "
+                     "(0.5 and 3); recomputed in points from the record's medians, worst gaps and unfitted refits, nothing re-run "
+                     "(Eleonora's ruling on repo-market-liquidity#166, directive #167). The superseded record was never on main.")
+
+
+def restate(output):
+    """Rewrite `output` with goalposts 1 and 2 in points (`k.restate_goalposts`); only the record whose sha256 is the superseded one."""
+    raw = output.read_bytes()
+    if hashlib.sha256(raw).hexdigest() != SUPERSEDED_SHA256:
+        print(f"{output} is not the record with sha256 {SUPERSEDED_SHA256}: nothing restated", file=sys.stderr)
+        return 1
+    record = k.restate_goalposts(json.loads(raw), superseded=SUPERSEDED_SHA256, reason=SUPERSEDED_REASON)
+    output.write_text(json.dumps(record, indent=2, sort_keys=True, default=str) + "\n", encoding="utf-8")
+    print(f"restated {output}; now render the page")
+    return 0
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser()
     parser.add_argument("--replications", type=int, default=demand_curve.REPLICATIONS)
@@ -307,10 +331,14 @@ def main(argv=None):
     parser.add_argument("--force", action="store_true")
     parser.add_argument("--timing", action="store_true", help="time one refit per estimator on a synthetic window; real days untouched")
     parser.add_argument("--render", action="store_true", help="print the page from the record; run nothing")
+    parser.add_argument("--restate", action="store_true",
+                        help="restate goalposts 1 and 2 in points from the record (#167); runs nothing, and refuses any other record")
     parser.add_argument("--check", action="store_true", help="with --render: write nothing, exit 1 if the page is stale")
     args = parser.parse_args(argv)
     if args.timing:
         return timing(20, args.replications, args.workers)
+    if args.restate:
+        return restate(args.output)
     if args.render:
         text = markdown(json.loads(args.output.read_text(encoding="utf-8")))
         if args.check:
