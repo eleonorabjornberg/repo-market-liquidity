@@ -1,0 +1,4440 @@
+{
+  "boundaries": [
+    "2018-12-20",
+    "2019-05-02",
+    "2024-12-19"
+  ],
+  "common_live_days": {
+    "S0": {
+      "A": {
+        "days_every_estimator_can_have_an_estimate": 1384,
+        "scored_days_after_first_serve": 1447
+      },
+      "C": {
+        "days_every_estimator_can_have_an_estimate": 1447,
+        "scored_days_after_first_serve": 1447
+      }
+    },
+    "S1": {
+      "A": {
+        "days_every_estimator_can_have_an_estimate": 1384,
+        "scored_days_after_first_serve": 1447
+      },
+      "C": {
+        "days_every_estimator_can_have_an_estimate": 1447,
+        "scored_days_after_first_serve": 1447
+      }
+    },
+    "S1b": {
+      "A": {
+        "days_every_estimator_can_have_an_estimate": 1384,
+        "scored_days_after_first_serve": 1447
+      },
+      "C": {
+        "days_every_estimator_can_have_an_estimate": 1447,
+        "scored_days_after_first_serve": 1447
+      }
+    },
+    "S2": {
+      "A": {
+        "days_every_estimator_can_have_an_estimate": 1384,
+        "scored_days_after_first_serve": 1447
+      },
+      "C": {
+        "days_every_estimator_can_have_an_estimate": 1447,
+        "scored_days_after_first_serve": 1447
+      }
+    },
+    "S3": {
+      "A": {
+        "days_every_estimator_can_have_an_estimate": 1379,
+        "scored_days_after_first_serve": 1447
+      },
+      "C": {
+        "days_every_estimator_can_have_an_estimate": 1447,
+        "scored_days_after_first_serve": 1447
+      }
+    },
+    "S3f": {
+      "A": {
+        "days_every_estimator_can_have_an_estimate": 1387,
+        "scored_days_after_first_serve": 1447
+      },
+      "C": {
+        "days_every_estimator_can_have_an_estimate": 1447,
+        "scored_days_after_first_serve": 1447
+      }
+    },
+    "S3r": {
+      "A": {
+        "days_every_estimator_can_have_an_estimate": 1363,
+        "scored_days_after_first_serve": 1447
+      },
+      "C": {
+        "days_every_estimator_can_have_an_estimate": 1447,
+        "scored_days_after_first_serve": 1447
+      }
+    },
+    "S4": {
+      "A": {
+        "days_every_estimator_can_have_an_estimate": 1387,
+        "scored_days_after_first_serve": 1447
+      },
+      "C": {
+        "days_every_estimator_can_have_an_estimate": 1447,
+        "scored_days_after_first_serve": 1447
+      }
+    },
+    "S5": {
+      "A": {
+        "days_every_estimator_can_have_an_estimate": 1387,
+        "scored_days_after_first_serve": 1447
+      },
+      "C": {
+        "days_every_estimator_can_have_an_estimate": 1447,
+        "scored_days_after_first_serve": 1447
+      }
+    },
+    "S6": {
+      "A": {
+        "days_every_estimator_can_have_an_estimate": 1387,
+        "scored_days_after_first_serve": 1447
+      },
+      "C": {
+        "days_every_estimator_can_have_an_estimate": 1447,
+        "scored_days_after_first_serve": 1447
+      }
+    }
+  },
+  "declared": {
+    "A": "S0",
+    "C": "S1"
+  },
+  "directive": "repo-market-liquidity#161",
+  "entry_dates": {
+    "B": {},
+    "C": {
+      "episode:2018 to March 2020": "2018-07-11",
+      "episode:2025": "2025-12-05"
+    },
+    "CV1": {
+      "episode:2018 to March 2020": "2018-07-11",
+      "episode:2025": "2025-12-05"
+    },
+    "CV2": {
+      "episode:2018 to March 2020": "2018-07-11",
+      "episode:2025": "2025-12-05"
+    },
+    "CV3": {
+      "episode:2018 to March 2020": "2018-07-11",
+      "episode:2025": "2025-12-05"
+    },
+    "CV4": {
+      "episode:2018 to March 2020": "2018-07-11",
+      "episode:2025": "2025-12-05"
+    },
+    "V1": {},
+    "V2": {},
+    "V3": {
+      "regime:1 (20 bp)": "2018-08-23",
+      "regime:2 (15 bp)": "2019-03-05",
+      "regime:3 (10 bp)": "2019-07-12",
+      "regime:4 (15 bp)": "2025-03-04"
+    },
+    "V4": {},
+    "V5": {
+      "regime:1 (20 bp)": "2018-09-21",
+      "regime:2 (15 bp)": "2019-04-04",
+      "regime:3 (10 bp)": "2019-08-07",
+      "regime:4 (15 bp)": "2025-03-26"
+    },
+    "V6": {
+      "regime:1 (20 bp)": "2018-09-21",
+      "regime:2 (15 bp)": "2019-04-04",
+      "regime:3 (10 bp)": "2019-08-07",
+      "regime:4 (15 bp)": "2025-03-26"
+    }
+  },
+  "episode_floor": 60,
+  "episodes": [
+    {
+      "first": "2018-01-01",
+      "label": "2018 to March 2020",
+      "last": "2020-03-13"
+    },
+    {
+      "first": "2025-01-01",
+      "label": "2025",
+      "last": "2025-12-31"
+    }
+  ],
+  "estimators": {
+    "B": {
+      "family": "A",
+      "units": []
+    },
+    "C": {
+      "family": "C",
+      "units": [
+        "episode:2018 to March 2020",
+        "episode:2025"
+      ]
+    },
+    "CV1": {
+      "family": "C",
+      "units": [
+        "episode:2018 to March 2020",
+        "episode:2025"
+      ]
+    },
+    "CV2": {
+      "family": "C",
+      "units": [
+        "episode:2018 to March 2020",
+        "episode:2025"
+      ]
+    },
+    "CV3": {
+      "family": "C",
+      "units": [
+        "episode:2018 to March 2020",
+        "episode:2025"
+      ]
+    },
+    "CV4": {
+      "family": "C",
+      "units": [
+        "episode:2018 to March 2020",
+        "episode:2025"
+      ]
+    },
+    "V1": {
+      "family": "A",
+      "units": []
+    },
+    "V2": {
+      "family": "A",
+      "units": []
+    },
+    "V3": {
+      "family": "A",
+      "units": [
+        "regime:1 (20 bp)",
+        "regime:2 (15 bp)",
+        "regime:3 (10 bp)",
+        "regime:4 (15 bp)"
+      ]
+    },
+    "V4": {
+      "family": "A",
+      "units": []
+    },
+    "V5": {
+      "family": "A",
+      "units": [
+        "regime:1 (20 bp)",
+        "regime:2 (15 bp)",
+        "regime:3 (10 bp)",
+        "regime:4 (15 bp)"
+      ]
+    },
+    "V6": {
+      "family": "A",
+      "units": [
+        "regime:1 (20 bp)",
+        "regime:2 (15 bp)",
+        "regime:3 (10 bp)",
+        "regime:4 (15 bp)"
+      ]
+    }
+  },
+  "hypothesis": "H7m",
+  "input_code_sha256": {
+    "scripts/h7_calendar_clean.py": "8a82a5e96a9dfb2406d2fb802f2d435f3557ebacacef7599ab48531c2a5da108",
+    "scripts/h7_kink_run.py": "4d7a3f3d05db833630f14f27ecdb2a22fbc03f153996b85b960689f8922caef5",
+    "src/repo_liquidity/h7_candidate_c.py": "0bf13caf05aa577ce0c0037cc0aae6571c1b9321bb6db0ca322e8bc67dc89877",
+    "src/repo_liquidity/h7_clean.py": "e156dafaeaa2f1e761fd80f1e34a124a507dd0e85645ec3b3d615dd5e8af88e0",
+    "src/repo_liquidity/h7_kink.py": "f707542fa58b421e8eb2da16f12da35760878533cf786e8986c05f1519378562"
+  },
+  "kink_minimum_pairs": 250,
+  "note": "Generated by scripts/h7_refit_schedule.py; never edited by hand. Nothing is fitted: inputs only.",
+  "pins": {
+    "effr_series_sha256": "0b59d4e07ac43885f09ac212eb43da30feefa49221db1072b33532e271782ae1",
+    "first_day": "2018-04-03",
+    "last_day": "2026-09-03",
+    "panel_sha256": "6415651da6095e8d2942ab3ff344211b7fa32e7488eff622b04e18d72de822a4",
+    "panel_version": 4,
+    "parent_commit": "08ff67e27bc3d7e357491cf8e1da59793702b3fb",
+    "rows": 2104
+  },
+  "regime_floor": 50,
+  "regime_table": [
+    {
+      "days": 50,
+      "first": "2018-04-04",
+      "last": "2018-06-13",
+      "regime": 0,
+      "width_bp": 25
+    },
+    {
+      "days": 129,
+      "first": "2018-06-14",
+      "last": "2018-12-19",
+      "regime": 1,
+      "width_bp": 20
+    },
+    {
+      "days": 90,
+      "first": "2018-12-20",
+      "last": "2019-05-01",
+      "regime": 2,
+      "width_bp": 15
+    },
+    {
+      "days": 1408,
+      "first": "2019-05-02",
+      "last": "2024-12-18",
+      "regime": 3,
+      "width_bp": 10
+    },
+    {
+      "days": 257,
+      "first": "2024-12-19",
+      "last": "2025-12-31",
+      "regime": 4,
+      "width_bp": 15
+    }
+  ],
+  "results": {
+    "S0": {
+      "B": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 69,
+        "distinct_samples": 69,
+        "not_serving": [],
+        "refits": 69,
+        "served_days": 1447,
+        "serving": 69,
+        "transitions_changed": 68,
+        "transitions_fittable": 68,
+        "units": {}
+      },
+      "C": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 1,
+        "distinct_samples": 1,
+        "not_serving": [],
+        "refits": 69,
+        "served_days": 1447,
+        "serving": 69,
+        "transitions_changed": 0,
+        "transitions_fittable": 0,
+        "units": {
+          "episode:2018 to March 2020": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "episode:2025": {
+            "days_served_with_unit": 0,
+            "first_serving_refit": null
+          }
+        }
+      },
+      "CV1": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 1,
+        "distinct_samples": 1,
+        "not_serving": [],
+        "refits": 69,
+        "served_days": 1447,
+        "serving": 69,
+        "transitions_changed": 0,
+        "transitions_fittable": 0,
+        "units": {
+          "episode:2018 to March 2020": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "episode:2025": {
+            "days_served_with_unit": 0,
+            "first_serving_refit": null
+          }
+        }
+      },
+      "CV2": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 1,
+        "distinct_samples": 1,
+        "not_serving": [],
+        "refits": 69,
+        "served_days": 1447,
+        "serving": 69,
+        "transitions_changed": 0,
+        "transitions_fittable": 0,
+        "units": {
+          "episode:2018 to March 2020": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "episode:2025": {
+            "days_served_with_unit": 0,
+            "first_serving_refit": null
+          }
+        }
+      },
+      "CV3": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 1,
+        "distinct_samples": 1,
+        "not_serving": [],
+        "refits": 69,
+        "served_days": 1447,
+        "serving": 69,
+        "transitions_changed": 0,
+        "transitions_fittable": 0,
+        "units": {
+          "episode:2018 to March 2020": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "episode:2025": {
+            "days_served_with_unit": 0,
+            "first_serving_refit": null
+          }
+        }
+      },
+      "CV4": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 1,
+        "distinct_samples": 1,
+        "not_serving": [],
+        "refits": 69,
+        "served_days": 1447,
+        "serving": 69,
+        "transitions_changed": 0,
+        "transitions_fittable": 0,
+        "units": {
+          "episode:2018 to March 2020": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "episode:2025": {
+            "days_served_with_unit": 0,
+            "first_serving_refit": null
+          }
+        }
+      },
+      "V1": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 69,
+        "distinct_samples": 69,
+        "not_serving": [],
+        "refits": 69,
+        "served_days": 1447,
+        "serving": 69,
+        "transitions_changed": 68,
+        "transitions_fittable": 68,
+        "units": {}
+      },
+      "V2": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 69,
+        "distinct_samples": 69,
+        "not_serving": [],
+        "refits": 69,
+        "served_days": 1447,
+        "serving": 69,
+        "transitions_changed": 68,
+        "transitions_fittable": 68,
+        "units": {}
+      },
+      "V3": {
+        "dead_days": 63,
+        "dead_serving": 3,
+        "distinct_fittable": 66,
+        "distinct_samples": 69,
+        "not_serving": [],
+        "refits": 69,
+        "served_days": 1447,
+        "serving": 69,
+        "transitions_changed": 68,
+        "transitions_fittable": 64,
+        "units": {
+          "regime:1 (20 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:2 (15 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:3 (10 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:4 (15 bp)": {
+            "days_served_with_unit": 187,
+            "first_serving_refit": "2025-03-31"
+          }
+        }
+      },
+      "V4": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 69,
+        "distinct_samples": 69,
+        "not_serving": [],
+        "refits": 69,
+        "served_days": 1447,
+        "serving": 69,
+        "transitions_changed": 68,
+        "transitions_fittable": 68,
+        "units": {}
+      },
+      "V5": {
+        "dead_days": 63,
+        "dead_serving": 3,
+        "distinct_fittable": 66,
+        "distinct_samples": 69,
+        "not_serving": [],
+        "refits": 69,
+        "served_days": 1447,
+        "serving": 69,
+        "transitions_changed": 68,
+        "transitions_fittable": 64,
+        "units": {
+          "regime:1 (20 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:2 (15 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:3 (10 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:4 (15 bp)": {
+            "days_served_with_unit": 187,
+            "first_serving_refit": "2025-03-31"
+          }
+        }
+      },
+      "V6": {
+        "dead_days": 63,
+        "dead_serving": 3,
+        "distinct_fittable": 66,
+        "distinct_samples": 69,
+        "not_serving": [],
+        "refits": 69,
+        "served_days": 1447,
+        "serving": 69,
+        "transitions_changed": 68,
+        "transitions_fittable": 64,
+        "units": {
+          "regime:1 (20 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:2 (15 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:3 (10 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:4 (15 bp)": {
+            "days_served_with_unit": 187,
+            "first_serving_refit": "2025-03-31"
+          }
+        }
+      }
+    },
+    "S1": {
+      "B": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 69,
+        "distinct_samples": 69,
+        "not_serving": [
+          "2025-12-31"
+        ],
+        "refits": 70,
+        "served_days": 1447,
+        "serving": 69,
+        "transitions_changed": 68,
+        "transitions_fittable": 68,
+        "units": {}
+      },
+      "C": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 1,
+        "distinct_samples": 1,
+        "not_serving": [
+          "2025-12-31"
+        ],
+        "refits": 70,
+        "served_days": 1447,
+        "serving": 69,
+        "transitions_changed": 0,
+        "transitions_fittable": 0,
+        "units": {
+          "episode:2018 to March 2020": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "episode:2025": {
+            "days_served_with_unit": 0,
+            "first_serving_refit": null
+          }
+        }
+      },
+      "CV1": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 1,
+        "distinct_samples": 1,
+        "not_serving": [
+          "2025-12-31"
+        ],
+        "refits": 70,
+        "served_days": 1447,
+        "serving": 69,
+        "transitions_changed": 0,
+        "transitions_fittable": 0,
+        "units": {
+          "episode:2018 to March 2020": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "episode:2025": {
+            "days_served_with_unit": 0,
+            "first_serving_refit": null
+          }
+        }
+      },
+      "CV2": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 1,
+        "distinct_samples": 1,
+        "not_serving": [
+          "2025-12-31"
+        ],
+        "refits": 70,
+        "served_days": 1447,
+        "serving": 69,
+        "transitions_changed": 0,
+        "transitions_fittable": 0,
+        "units": {
+          "episode:2018 to March 2020": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "episode:2025": {
+            "days_served_with_unit": 0,
+            "first_serving_refit": null
+          }
+        }
+      },
+      "CV3": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 1,
+        "distinct_samples": 1,
+        "not_serving": [
+          "2025-12-31"
+        ],
+        "refits": 70,
+        "served_days": 1447,
+        "serving": 69,
+        "transitions_changed": 0,
+        "transitions_fittable": 0,
+        "units": {
+          "episode:2018 to March 2020": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "episode:2025": {
+            "days_served_with_unit": 0,
+            "first_serving_refit": null
+          }
+        }
+      },
+      "CV4": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 1,
+        "distinct_samples": 1,
+        "not_serving": [
+          "2025-12-31"
+        ],
+        "refits": 70,
+        "served_days": 1447,
+        "serving": 69,
+        "transitions_changed": 0,
+        "transitions_fittable": 0,
+        "units": {
+          "episode:2018 to March 2020": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "episode:2025": {
+            "days_served_with_unit": 0,
+            "first_serving_refit": null
+          }
+        }
+      },
+      "V1": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 69,
+        "distinct_samples": 69,
+        "not_serving": [
+          "2025-12-31"
+        ],
+        "refits": 70,
+        "served_days": 1447,
+        "serving": 69,
+        "transitions_changed": 68,
+        "transitions_fittable": 68,
+        "units": {}
+      },
+      "V2": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 69,
+        "distinct_samples": 69,
+        "not_serving": [
+          "2025-12-31"
+        ],
+        "refits": 70,
+        "served_days": 1447,
+        "serving": 69,
+        "transitions_changed": 68,
+        "transitions_fittable": 68,
+        "units": {}
+      },
+      "V3": {
+        "dead_days": 63,
+        "dead_serving": 3,
+        "distinct_fittable": 66,
+        "distinct_samples": 69,
+        "not_serving": [
+          "2025-12-31"
+        ],
+        "refits": 70,
+        "served_days": 1447,
+        "serving": 69,
+        "transitions_changed": 68,
+        "transitions_fittable": 64,
+        "units": {
+          "regime:1 (20 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:2 (15 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:3 (10 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:4 (15 bp)": {
+            "days_served_with_unit": 187,
+            "first_serving_refit": "2025-03-31"
+          }
+        }
+      },
+      "V4": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 69,
+        "distinct_samples": 69,
+        "not_serving": [
+          "2025-12-31"
+        ],
+        "refits": 70,
+        "served_days": 1447,
+        "serving": 69,
+        "transitions_changed": 68,
+        "transitions_fittable": 68,
+        "units": {}
+      },
+      "V5": {
+        "dead_days": 63,
+        "dead_serving": 3,
+        "distinct_fittable": 66,
+        "distinct_samples": 69,
+        "not_serving": [
+          "2025-12-31"
+        ],
+        "refits": 70,
+        "served_days": 1447,
+        "serving": 69,
+        "transitions_changed": 68,
+        "transitions_fittable": 64,
+        "units": {
+          "regime:1 (20 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:2 (15 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:3 (10 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:4 (15 bp)": {
+            "days_served_with_unit": 187,
+            "first_serving_refit": "2025-03-31"
+          }
+        }
+      },
+      "V6": {
+        "dead_days": 63,
+        "dead_serving": 3,
+        "distinct_fittable": 66,
+        "distinct_samples": 69,
+        "not_serving": [
+          "2025-12-31"
+        ],
+        "refits": 70,
+        "served_days": 1447,
+        "serving": 69,
+        "transitions_changed": 68,
+        "transitions_fittable": 64,
+        "units": {
+          "regime:1 (20 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:2 (15 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:3 (10 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:4 (15 bp)": {
+            "days_served_with_unit": 187,
+            "first_serving_refit": "2025-03-31"
+          }
+        }
+      }
+    },
+    "S1b": {
+      "B": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 70,
+        "distinct_samples": 70,
+        "not_serving": [],
+        "refits": 70,
+        "served_days": 1447,
+        "serving": 70,
+        "transitions_changed": 69,
+        "transitions_fittable": 69,
+        "units": {}
+      },
+      "C": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 2,
+        "distinct_samples": 2,
+        "not_serving": [],
+        "refits": 70,
+        "served_days": 1447,
+        "serving": 70,
+        "transitions_changed": 1,
+        "transitions_fittable": 1,
+        "units": {
+          "episode:2018 to March 2020": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "episode:2025": {
+            "days_served_with_unit": 1,
+            "first_serving_refit": "2025-12-29"
+          }
+        }
+      },
+      "CV1": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 2,
+        "distinct_samples": 2,
+        "not_serving": [],
+        "refits": 70,
+        "served_days": 1447,
+        "serving": 70,
+        "transitions_changed": 1,
+        "transitions_fittable": 1,
+        "units": {
+          "episode:2018 to March 2020": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "episode:2025": {
+            "days_served_with_unit": 1,
+            "first_serving_refit": "2025-12-29"
+          }
+        }
+      },
+      "CV2": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 2,
+        "distinct_samples": 2,
+        "not_serving": [],
+        "refits": 70,
+        "served_days": 1447,
+        "serving": 70,
+        "transitions_changed": 1,
+        "transitions_fittable": 1,
+        "units": {
+          "episode:2018 to March 2020": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "episode:2025": {
+            "days_served_with_unit": 1,
+            "first_serving_refit": "2025-12-29"
+          }
+        }
+      },
+      "CV3": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 2,
+        "distinct_samples": 2,
+        "not_serving": [],
+        "refits": 70,
+        "served_days": 1447,
+        "serving": 70,
+        "transitions_changed": 1,
+        "transitions_fittable": 1,
+        "units": {
+          "episode:2018 to March 2020": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "episode:2025": {
+            "days_served_with_unit": 1,
+            "first_serving_refit": "2025-12-29"
+          }
+        }
+      },
+      "CV4": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 2,
+        "distinct_samples": 2,
+        "not_serving": [],
+        "refits": 70,
+        "served_days": 1447,
+        "serving": 70,
+        "transitions_changed": 1,
+        "transitions_fittable": 1,
+        "units": {
+          "episode:2018 to March 2020": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "episode:2025": {
+            "days_served_with_unit": 1,
+            "first_serving_refit": "2025-12-29"
+          }
+        }
+      },
+      "V1": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 70,
+        "distinct_samples": 70,
+        "not_serving": [],
+        "refits": 70,
+        "served_days": 1447,
+        "serving": 70,
+        "transitions_changed": 69,
+        "transitions_fittable": 69,
+        "units": {}
+      },
+      "V2": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 70,
+        "distinct_samples": 70,
+        "not_serving": [],
+        "refits": 70,
+        "served_days": 1447,
+        "serving": 70,
+        "transitions_changed": 69,
+        "transitions_fittable": 69,
+        "units": {}
+      },
+      "V3": {
+        "dead_days": 63,
+        "dead_serving": 3,
+        "distinct_fittable": 67,
+        "distinct_samples": 70,
+        "not_serving": [],
+        "refits": 70,
+        "served_days": 1447,
+        "serving": 70,
+        "transitions_changed": 69,
+        "transitions_fittable": 65,
+        "units": {
+          "regime:1 (20 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:2 (15 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:3 (10 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:4 (15 bp)": {
+            "days_served_with_unit": 187,
+            "first_serving_refit": "2025-03-31"
+          }
+        }
+      },
+      "V4": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 70,
+        "distinct_samples": 70,
+        "not_serving": [],
+        "refits": 70,
+        "served_days": 1447,
+        "serving": 70,
+        "transitions_changed": 69,
+        "transitions_fittable": 69,
+        "units": {}
+      },
+      "V5": {
+        "dead_days": 63,
+        "dead_serving": 3,
+        "distinct_fittable": 67,
+        "distinct_samples": 70,
+        "not_serving": [],
+        "refits": 70,
+        "served_days": 1447,
+        "serving": 70,
+        "transitions_changed": 69,
+        "transitions_fittable": 65,
+        "units": {
+          "regime:1 (20 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:2 (15 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:3 (10 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:4 (15 bp)": {
+            "days_served_with_unit": 187,
+            "first_serving_refit": "2025-03-31"
+          }
+        }
+      },
+      "V6": {
+        "dead_days": 63,
+        "dead_serving": 3,
+        "distinct_fittable": 67,
+        "distinct_samples": 70,
+        "not_serving": [],
+        "refits": 70,
+        "served_days": 1447,
+        "serving": 70,
+        "transitions_changed": 69,
+        "transitions_fittable": 65,
+        "units": {
+          "regime:1 (20 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:2 (15 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:3 (10 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:4 (15 bp)": {
+            "days_served_with_unit": 187,
+            "first_serving_refit": "2025-03-31"
+          }
+        }
+      }
+    },
+    "S2": {
+      "B": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 70,
+        "distinct_samples": 70,
+        "not_serving": [],
+        "refits": 70,
+        "served_days": 1447,
+        "serving": 70,
+        "transitions_changed": 69,
+        "transitions_fittable": 69,
+        "units": {}
+      },
+      "C": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 2,
+        "distinct_samples": 2,
+        "not_serving": [],
+        "refits": 70,
+        "served_days": 1447,
+        "serving": 70,
+        "transitions_changed": 1,
+        "transitions_fittable": 1,
+        "units": {
+          "episode:2018 to March 2020": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "episode:2025": {
+            "days_served_with_unit": 16,
+            "first_serving_refit": "2025-12-05"
+          }
+        }
+      },
+      "CV1": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 2,
+        "distinct_samples": 2,
+        "not_serving": [],
+        "refits": 70,
+        "served_days": 1447,
+        "serving": 70,
+        "transitions_changed": 1,
+        "transitions_fittable": 1,
+        "units": {
+          "episode:2018 to March 2020": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "episode:2025": {
+            "days_served_with_unit": 16,
+            "first_serving_refit": "2025-12-05"
+          }
+        }
+      },
+      "CV2": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 2,
+        "distinct_samples": 2,
+        "not_serving": [],
+        "refits": 70,
+        "served_days": 1447,
+        "serving": 70,
+        "transitions_changed": 1,
+        "transitions_fittable": 1,
+        "units": {
+          "episode:2018 to March 2020": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "episode:2025": {
+            "days_served_with_unit": 16,
+            "first_serving_refit": "2025-12-05"
+          }
+        }
+      },
+      "CV3": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 2,
+        "distinct_samples": 2,
+        "not_serving": [],
+        "refits": 70,
+        "served_days": 1447,
+        "serving": 70,
+        "transitions_changed": 1,
+        "transitions_fittable": 1,
+        "units": {
+          "episode:2018 to March 2020": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "episode:2025": {
+            "days_served_with_unit": 16,
+            "first_serving_refit": "2025-12-05"
+          }
+        }
+      },
+      "CV4": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 2,
+        "distinct_samples": 2,
+        "not_serving": [],
+        "refits": 70,
+        "served_days": 1447,
+        "serving": 70,
+        "transitions_changed": 1,
+        "transitions_fittable": 1,
+        "units": {
+          "episode:2018 to March 2020": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "episode:2025": {
+            "days_served_with_unit": 16,
+            "first_serving_refit": "2025-12-05"
+          }
+        }
+      },
+      "V1": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 70,
+        "distinct_samples": 70,
+        "not_serving": [],
+        "refits": 70,
+        "served_days": 1447,
+        "serving": 70,
+        "transitions_changed": 69,
+        "transitions_fittable": 69,
+        "units": {}
+      },
+      "V2": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 70,
+        "distinct_samples": 70,
+        "not_serving": [],
+        "refits": 70,
+        "served_days": 1447,
+        "serving": 70,
+        "transitions_changed": 69,
+        "transitions_fittable": 69,
+        "units": {}
+      },
+      "V3": {
+        "dead_days": 63,
+        "dead_serving": 3,
+        "distinct_fittable": 67,
+        "distinct_samples": 70,
+        "not_serving": [],
+        "refits": 70,
+        "served_days": 1447,
+        "serving": 70,
+        "transitions_changed": 69,
+        "transitions_fittable": 65,
+        "units": {
+          "regime:1 (20 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:2 (15 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:3 (10 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:4 (15 bp)": {
+            "days_served_with_unit": 187,
+            "first_serving_refit": "2025-03-31"
+          }
+        }
+      },
+      "V4": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 70,
+        "distinct_samples": 70,
+        "not_serving": [],
+        "refits": 70,
+        "served_days": 1447,
+        "serving": 70,
+        "transitions_changed": 69,
+        "transitions_fittable": 69,
+        "units": {}
+      },
+      "V5": {
+        "dead_days": 63,
+        "dead_serving": 3,
+        "distinct_fittable": 67,
+        "distinct_samples": 70,
+        "not_serving": [],
+        "refits": 70,
+        "served_days": 1447,
+        "serving": 70,
+        "transitions_changed": 69,
+        "transitions_fittable": 65,
+        "units": {
+          "regime:1 (20 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:2 (15 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:3 (10 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:4 (15 bp)": {
+            "days_served_with_unit": 187,
+            "first_serving_refit": "2025-03-31"
+          }
+        }
+      },
+      "V6": {
+        "dead_days": 63,
+        "dead_serving": 3,
+        "distinct_fittable": 67,
+        "distinct_samples": 70,
+        "not_serving": [],
+        "refits": 70,
+        "served_days": 1447,
+        "serving": 70,
+        "transitions_changed": 69,
+        "transitions_fittable": 65,
+        "units": {
+          "regime:1 (20 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:2 (15 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:3 (10 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:4 (15 bp)": {
+            "days_served_with_unit": 187,
+            "first_serving_refit": "2025-03-31"
+          }
+        }
+      }
+    },
+    "S3": {
+      "B": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 70,
+        "distinct_samples": 70,
+        "not_serving": [],
+        "refits": 70,
+        "served_days": 1447,
+        "serving": 70,
+        "transitions_changed": 69,
+        "transitions_fittable": 69,
+        "units": {}
+      },
+      "C": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 1,
+        "distinct_samples": 1,
+        "not_serving": [],
+        "refits": 70,
+        "served_days": 1447,
+        "serving": 70,
+        "transitions_changed": 0,
+        "transitions_fittable": 0,
+        "units": {
+          "episode:2018 to March 2020": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "episode:2025": {
+            "days_served_with_unit": 0,
+            "first_serving_refit": null
+          }
+        }
+      },
+      "CV1": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 1,
+        "distinct_samples": 1,
+        "not_serving": [],
+        "refits": 70,
+        "served_days": 1447,
+        "serving": 70,
+        "transitions_changed": 0,
+        "transitions_fittable": 0,
+        "units": {
+          "episode:2018 to March 2020": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "episode:2025": {
+            "days_served_with_unit": 0,
+            "first_serving_refit": null
+          }
+        }
+      },
+      "CV2": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 1,
+        "distinct_samples": 1,
+        "not_serving": [],
+        "refits": 70,
+        "served_days": 1447,
+        "serving": 70,
+        "transitions_changed": 0,
+        "transitions_fittable": 0,
+        "units": {
+          "episode:2018 to March 2020": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "episode:2025": {
+            "days_served_with_unit": 0,
+            "first_serving_refit": null
+          }
+        }
+      },
+      "CV3": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 1,
+        "distinct_samples": 1,
+        "not_serving": [],
+        "refits": 70,
+        "served_days": 1447,
+        "serving": 70,
+        "transitions_changed": 0,
+        "transitions_fittable": 0,
+        "units": {
+          "episode:2018 to March 2020": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "episode:2025": {
+            "days_served_with_unit": 0,
+            "first_serving_refit": null
+          }
+        }
+      },
+      "CV4": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 1,
+        "distinct_samples": 1,
+        "not_serving": [],
+        "refits": 70,
+        "served_days": 1447,
+        "serving": 70,
+        "transitions_changed": 0,
+        "transitions_fittable": 0,
+        "units": {
+          "episode:2018 to March 2020": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "episode:2025": {
+            "days_served_with_unit": 0,
+            "first_serving_refit": null
+          }
+        }
+      },
+      "V1": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 70,
+        "distinct_samples": 70,
+        "not_serving": [],
+        "refits": 70,
+        "served_days": 1447,
+        "serving": 70,
+        "transitions_changed": 69,
+        "transitions_fittable": 69,
+        "units": {}
+      },
+      "V2": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 70,
+        "distinct_samples": 70,
+        "not_serving": [],
+        "refits": 70,
+        "served_days": 1447,
+        "serving": 70,
+        "transitions_changed": 69,
+        "transitions_fittable": 69,
+        "units": {}
+      },
+      "V3": {
+        "dead_days": 68,
+        "dead_serving": 4,
+        "distinct_fittable": 66,
+        "distinct_samples": 70,
+        "not_serving": [],
+        "refits": 70,
+        "served_days": 1447,
+        "serving": 70,
+        "transitions_changed": 69,
+        "transitions_fittable": 64,
+        "units": {
+          "regime:1 (20 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:2 (15 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:3 (10 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:4 (15 bp)": {
+            "days_served_with_unit": 187,
+            "first_serving_refit": "2025-03-31"
+          }
+        }
+      },
+      "V4": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 70,
+        "distinct_samples": 70,
+        "not_serving": [],
+        "refits": 70,
+        "served_days": 1447,
+        "serving": 70,
+        "transitions_changed": 69,
+        "transitions_fittable": 69,
+        "units": {}
+      },
+      "V5": {
+        "dead_days": 68,
+        "dead_serving": 4,
+        "distinct_fittable": 66,
+        "distinct_samples": 70,
+        "not_serving": [],
+        "refits": 70,
+        "served_days": 1447,
+        "serving": 70,
+        "transitions_changed": 69,
+        "transitions_fittable": 64,
+        "units": {
+          "regime:1 (20 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:2 (15 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:3 (10 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:4 (15 bp)": {
+            "days_served_with_unit": 187,
+            "first_serving_refit": "2025-03-31"
+          }
+        }
+      },
+      "V6": {
+        "dead_days": 68,
+        "dead_serving": 4,
+        "distinct_fittable": 66,
+        "distinct_samples": 70,
+        "not_serving": [],
+        "refits": 70,
+        "served_days": 1447,
+        "serving": 70,
+        "transitions_changed": 69,
+        "transitions_fittable": 64,
+        "units": {
+          "regime:1 (20 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:2 (15 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:3 (10 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:4 (15 bp)": {
+            "days_served_with_unit": 187,
+            "first_serving_refit": "2025-03-31"
+          }
+        }
+      }
+    },
+    "S3f": {
+      "B": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 71,
+        "distinct_samples": 71,
+        "not_serving": [],
+        "refits": 71,
+        "served_days": 1447,
+        "serving": 71,
+        "transitions_changed": 70,
+        "transitions_fittable": 70,
+        "units": {}
+      },
+      "C": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 1,
+        "distinct_samples": 1,
+        "not_serving": [],
+        "refits": 71,
+        "served_days": 1447,
+        "serving": 71,
+        "transitions_changed": 0,
+        "transitions_fittable": 0,
+        "units": {
+          "episode:2018 to March 2020": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "episode:2025": {
+            "days_served_with_unit": 0,
+            "first_serving_refit": null
+          }
+        }
+      },
+      "CV1": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 1,
+        "distinct_samples": 1,
+        "not_serving": [],
+        "refits": 71,
+        "served_days": 1447,
+        "serving": 71,
+        "transitions_changed": 0,
+        "transitions_fittable": 0,
+        "units": {
+          "episode:2018 to March 2020": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "episode:2025": {
+            "days_served_with_unit": 0,
+            "first_serving_refit": null
+          }
+        }
+      },
+      "CV2": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 1,
+        "distinct_samples": 1,
+        "not_serving": [],
+        "refits": 71,
+        "served_days": 1447,
+        "serving": 71,
+        "transitions_changed": 0,
+        "transitions_fittable": 0,
+        "units": {
+          "episode:2018 to March 2020": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "episode:2025": {
+            "days_served_with_unit": 0,
+            "first_serving_refit": null
+          }
+        }
+      },
+      "CV3": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 1,
+        "distinct_samples": 1,
+        "not_serving": [],
+        "refits": 71,
+        "served_days": 1447,
+        "serving": 71,
+        "transitions_changed": 0,
+        "transitions_fittable": 0,
+        "units": {
+          "episode:2018 to March 2020": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "episode:2025": {
+            "days_served_with_unit": 0,
+            "first_serving_refit": null
+          }
+        }
+      },
+      "CV4": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 1,
+        "distinct_samples": 1,
+        "not_serving": [],
+        "refits": 71,
+        "served_days": 1447,
+        "serving": 71,
+        "transitions_changed": 0,
+        "transitions_fittable": 0,
+        "units": {
+          "episode:2018 to March 2020": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "episode:2025": {
+            "days_served_with_unit": 0,
+            "first_serving_refit": null
+          }
+        }
+      },
+      "V1": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 70,
+        "distinct_samples": 70,
+        "not_serving": [],
+        "refits": 71,
+        "served_days": 1447,
+        "serving": 71,
+        "transitions_changed": 69,
+        "transitions_fittable": 69,
+        "units": {}
+      },
+      "V2": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 71,
+        "distinct_samples": 71,
+        "not_serving": [],
+        "refits": 71,
+        "served_days": 1447,
+        "serving": 71,
+        "transitions_changed": 70,
+        "transitions_fittable": 70,
+        "units": {}
+      },
+      "V3": {
+        "dead_days": 44,
+        "dead_serving": 3,
+        "distinct_fittable": 68,
+        "distinct_samples": 71,
+        "not_serving": [],
+        "refits": 71,
+        "served_days": 1447,
+        "serving": 71,
+        "transitions_changed": 70,
+        "transitions_fittable": 66,
+        "units": {
+          "regime:1 (20 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:2 (15 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:3 (10 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:4 (15 bp)": {
+            "days_served_with_unit": 206,
+            "first_serving_refit": "2025-03-04"
+          }
+        }
+      },
+      "V4": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 70,
+        "distinct_samples": 70,
+        "not_serving": [],
+        "refits": 71,
+        "served_days": 1447,
+        "serving": 71,
+        "transitions_changed": 69,
+        "transitions_fittable": 69,
+        "units": {}
+      },
+      "V5": {
+        "dead_days": 60,
+        "dead_serving": 4,
+        "distinct_fittable": 66,
+        "distinct_samples": 70,
+        "not_serving": [],
+        "refits": 71,
+        "served_days": 1447,
+        "serving": 71,
+        "transitions_changed": 69,
+        "transitions_fittable": 64,
+        "units": {
+          "regime:1 (20 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:2 (15 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:3 (10 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:4 (15 bp)": {
+            "days_served_with_unit": 190,
+            "first_serving_refit": "2025-03-26"
+          }
+        }
+      },
+      "V6": {
+        "dead_days": 60,
+        "dead_serving": 4,
+        "distinct_fittable": 66,
+        "distinct_samples": 70,
+        "not_serving": [],
+        "refits": 71,
+        "served_days": 1447,
+        "serving": 71,
+        "transitions_changed": 69,
+        "transitions_fittable": 64,
+        "units": {
+          "regime:1 (20 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:2 (15 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:3 (10 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:4 (15 bp)": {
+            "days_served_with_unit": 190,
+            "first_serving_refit": "2025-03-26"
+          }
+        }
+      }
+    },
+    "S3r": {
+      "B": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 70,
+        "distinct_samples": 70,
+        "not_serving": [],
+        "refits": 70,
+        "served_days": 1447,
+        "serving": 70,
+        "transitions_changed": 69,
+        "transitions_fittable": 69,
+        "units": {}
+      },
+      "C": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 2,
+        "distinct_samples": 2,
+        "not_serving": [],
+        "refits": 70,
+        "served_days": 1447,
+        "serving": 70,
+        "transitions_changed": 1,
+        "transitions_fittable": 1,
+        "units": {
+          "episode:2018 to March 2020": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "episode:2025": {
+            "days_served_with_unit": 3,
+            "first_serving_refit": "2025-12-24"
+          }
+        }
+      },
+      "CV1": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 2,
+        "distinct_samples": 2,
+        "not_serving": [],
+        "refits": 70,
+        "served_days": 1447,
+        "serving": 70,
+        "transitions_changed": 1,
+        "transitions_fittable": 1,
+        "units": {
+          "episode:2018 to March 2020": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "episode:2025": {
+            "days_served_with_unit": 3,
+            "first_serving_refit": "2025-12-24"
+          }
+        }
+      },
+      "CV2": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 2,
+        "distinct_samples": 2,
+        "not_serving": [],
+        "refits": 70,
+        "served_days": 1447,
+        "serving": 70,
+        "transitions_changed": 1,
+        "transitions_fittable": 1,
+        "units": {
+          "episode:2018 to March 2020": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "episode:2025": {
+            "days_served_with_unit": 3,
+            "first_serving_refit": "2025-12-24"
+          }
+        }
+      },
+      "CV3": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 2,
+        "distinct_samples": 2,
+        "not_serving": [],
+        "refits": 70,
+        "served_days": 1447,
+        "serving": 70,
+        "transitions_changed": 1,
+        "transitions_fittable": 1,
+        "units": {
+          "episode:2018 to March 2020": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "episode:2025": {
+            "days_served_with_unit": 3,
+            "first_serving_refit": "2025-12-24"
+          }
+        }
+      },
+      "CV4": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 2,
+        "distinct_samples": 2,
+        "not_serving": [],
+        "refits": 70,
+        "served_days": 1447,
+        "serving": 70,
+        "transitions_changed": 1,
+        "transitions_fittable": 1,
+        "units": {
+          "episode:2018 to March 2020": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "episode:2025": {
+            "days_served_with_unit": 3,
+            "first_serving_refit": "2025-12-24"
+          }
+        }
+      },
+      "V1": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 70,
+        "distinct_samples": 70,
+        "not_serving": [],
+        "refits": 70,
+        "served_days": 1447,
+        "serving": 70,
+        "transitions_changed": 69,
+        "transitions_fittable": 69,
+        "units": {}
+      },
+      "V2": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 70,
+        "distinct_samples": 70,
+        "not_serving": [],
+        "refits": 70,
+        "served_days": 1447,
+        "serving": 70,
+        "transitions_changed": 69,
+        "transitions_fittable": 69,
+        "units": {}
+      },
+      "V3": {
+        "dead_days": 63,
+        "dead_serving": 3,
+        "distinct_fittable": 67,
+        "distinct_samples": 70,
+        "not_serving": [],
+        "refits": 70,
+        "served_days": 1447,
+        "serving": 70,
+        "transitions_changed": 69,
+        "transitions_fittable": 65,
+        "units": {
+          "regime:1 (20 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:2 (15 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:3 (10 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:4 (15 bp)": {
+            "days_served_with_unit": 192,
+            "first_serving_refit": "2025-03-24"
+          }
+        }
+      },
+      "V4": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 70,
+        "distinct_samples": 70,
+        "not_serving": [],
+        "refits": 70,
+        "served_days": 1447,
+        "serving": 70,
+        "transitions_changed": 69,
+        "transitions_fittable": 69,
+        "units": {}
+      },
+      "V5": {
+        "dead_days": 84,
+        "dead_serving": 4,
+        "distinct_fittable": 66,
+        "distinct_samples": 70,
+        "not_serving": [],
+        "refits": 70,
+        "served_days": 1447,
+        "serving": 70,
+        "transitions_changed": 69,
+        "transitions_fittable": 64,
+        "units": {
+          "regime:1 (20 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:2 (15 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:3 (10 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:4 (15 bp)": {
+            "days_served_with_unit": 171,
+            "first_serving_refit": "2025-04-23"
+          }
+        }
+      },
+      "V6": {
+        "dead_days": 84,
+        "dead_serving": 4,
+        "distinct_fittable": 66,
+        "distinct_samples": 70,
+        "not_serving": [],
+        "refits": 70,
+        "served_days": 1447,
+        "serving": 70,
+        "transitions_changed": 69,
+        "transitions_fittable": 64,
+        "units": {
+          "regime:1 (20 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:2 (15 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:3 (10 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:4 (15 bp)": {
+            "days_served_with_unit": 171,
+            "first_serving_refit": "2025-04-23"
+          }
+        }
+      }
+    },
+    "S4": {
+      "B": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 72,
+        "distinct_samples": 72,
+        "not_serving": [],
+        "refits": 72,
+        "served_days": 1447,
+        "serving": 72,
+        "transitions_changed": 71,
+        "transitions_fittable": 71,
+        "units": {}
+      },
+      "C": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 2,
+        "distinct_samples": 2,
+        "not_serving": [],
+        "refits": 72,
+        "served_days": 1447,
+        "serving": 72,
+        "transitions_changed": 1,
+        "transitions_fittable": 1,
+        "units": {
+          "episode:2018 to March 2020": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "episode:2025": {
+            "days_served_with_unit": 16,
+            "first_serving_refit": "2025-12-05"
+          }
+        }
+      },
+      "CV1": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 2,
+        "distinct_samples": 2,
+        "not_serving": [],
+        "refits": 72,
+        "served_days": 1447,
+        "serving": 72,
+        "transitions_changed": 1,
+        "transitions_fittable": 1,
+        "units": {
+          "episode:2018 to March 2020": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "episode:2025": {
+            "days_served_with_unit": 16,
+            "first_serving_refit": "2025-12-05"
+          }
+        }
+      },
+      "CV2": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 2,
+        "distinct_samples": 2,
+        "not_serving": [],
+        "refits": 72,
+        "served_days": 1447,
+        "serving": 72,
+        "transitions_changed": 1,
+        "transitions_fittable": 1,
+        "units": {
+          "episode:2018 to March 2020": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "episode:2025": {
+            "days_served_with_unit": 16,
+            "first_serving_refit": "2025-12-05"
+          }
+        }
+      },
+      "CV3": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 2,
+        "distinct_samples": 2,
+        "not_serving": [],
+        "refits": 72,
+        "served_days": 1447,
+        "serving": 72,
+        "transitions_changed": 1,
+        "transitions_fittable": 1,
+        "units": {
+          "episode:2018 to March 2020": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "episode:2025": {
+            "days_served_with_unit": 16,
+            "first_serving_refit": "2025-12-05"
+          }
+        }
+      },
+      "CV4": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 2,
+        "distinct_samples": 2,
+        "not_serving": [],
+        "refits": 72,
+        "served_days": 1447,
+        "serving": 72,
+        "transitions_changed": 1,
+        "transitions_fittable": 1,
+        "units": {
+          "episode:2018 to March 2020": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "episode:2025": {
+            "days_served_with_unit": 16,
+            "first_serving_refit": "2025-12-05"
+          }
+        }
+      },
+      "V1": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 71,
+        "distinct_samples": 71,
+        "not_serving": [],
+        "refits": 72,
+        "served_days": 1447,
+        "serving": 72,
+        "transitions_changed": 70,
+        "transitions_fittable": 70,
+        "units": {}
+      },
+      "V2": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 72,
+        "distinct_samples": 72,
+        "not_serving": [],
+        "refits": 72,
+        "served_days": 1447,
+        "serving": 72,
+        "transitions_changed": 71,
+        "transitions_fittable": 71,
+        "units": {}
+      },
+      "V3": {
+        "dead_days": 44,
+        "dead_serving": 3,
+        "distinct_fittable": 69,
+        "distinct_samples": 72,
+        "not_serving": [],
+        "refits": 72,
+        "served_days": 1447,
+        "serving": 72,
+        "transitions_changed": 71,
+        "transitions_fittable": 67,
+        "units": {
+          "regime:1 (20 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:2 (15 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:3 (10 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:4 (15 bp)": {
+            "days_served_with_unit": 206,
+            "first_serving_refit": "2025-03-04"
+          }
+        }
+      },
+      "V4": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 71,
+        "distinct_samples": 71,
+        "not_serving": [],
+        "refits": 72,
+        "served_days": 1447,
+        "serving": 72,
+        "transitions_changed": 70,
+        "transitions_fittable": 70,
+        "units": {}
+      },
+      "V5": {
+        "dead_days": 60,
+        "dead_serving": 4,
+        "distinct_fittable": 67,
+        "distinct_samples": 71,
+        "not_serving": [],
+        "refits": 72,
+        "served_days": 1447,
+        "serving": 72,
+        "transitions_changed": 70,
+        "transitions_fittable": 65,
+        "units": {
+          "regime:1 (20 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:2 (15 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:3 (10 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:4 (15 bp)": {
+            "days_served_with_unit": 190,
+            "first_serving_refit": "2025-03-26"
+          }
+        }
+      },
+      "V6": {
+        "dead_days": 60,
+        "dead_serving": 4,
+        "distinct_fittable": 67,
+        "distinct_samples": 71,
+        "not_serving": [],
+        "refits": 72,
+        "served_days": 1447,
+        "serving": 72,
+        "transitions_changed": 70,
+        "transitions_fittable": 65,
+        "units": {
+          "regime:1 (20 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:2 (15 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:3 (10 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:4 (15 bp)": {
+            "days_served_with_unit": 190,
+            "first_serving_refit": "2025-03-26"
+          }
+        }
+      }
+    },
+    "S5": {
+      "B": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 75,
+        "distinct_samples": 75,
+        "not_serving": [],
+        "refits": 75,
+        "served_days": 1447,
+        "serving": 75,
+        "transitions_changed": 74,
+        "transitions_fittable": 74,
+        "units": {}
+      },
+      "C": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 5,
+        "distinct_samples": 5,
+        "not_serving": [],
+        "refits": 75,
+        "served_days": 1447,
+        "serving": 75,
+        "transitions_changed": 4,
+        "transitions_fittable": 4,
+        "units": {
+          "episode:2018 to March 2020": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "episode:2025": {
+            "days_served_with_unit": 16,
+            "first_serving_refit": "2025-12-05"
+          }
+        }
+      },
+      "CV1": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 5,
+        "distinct_samples": 5,
+        "not_serving": [],
+        "refits": 75,
+        "served_days": 1447,
+        "serving": 75,
+        "transitions_changed": 4,
+        "transitions_fittable": 4,
+        "units": {
+          "episode:2018 to March 2020": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "episode:2025": {
+            "days_served_with_unit": 16,
+            "first_serving_refit": "2025-12-05"
+          }
+        }
+      },
+      "CV2": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 5,
+        "distinct_samples": 5,
+        "not_serving": [],
+        "refits": 75,
+        "served_days": 1447,
+        "serving": 75,
+        "transitions_changed": 4,
+        "transitions_fittable": 4,
+        "units": {
+          "episode:2018 to March 2020": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "episode:2025": {
+            "days_served_with_unit": 16,
+            "first_serving_refit": "2025-12-05"
+          }
+        }
+      },
+      "CV3": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 5,
+        "distinct_samples": 5,
+        "not_serving": [],
+        "refits": 75,
+        "served_days": 1447,
+        "serving": 75,
+        "transitions_changed": 4,
+        "transitions_fittable": 4,
+        "units": {
+          "episode:2018 to March 2020": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "episode:2025": {
+            "days_served_with_unit": 16,
+            "first_serving_refit": "2025-12-05"
+          }
+        }
+      },
+      "CV4": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 5,
+        "distinct_samples": 5,
+        "not_serving": [],
+        "refits": 75,
+        "served_days": 1447,
+        "serving": 75,
+        "transitions_changed": 4,
+        "transitions_fittable": 4,
+        "units": {
+          "episode:2018 to March 2020": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "episode:2025": {
+            "days_served_with_unit": 16,
+            "first_serving_refit": "2025-12-05"
+          }
+        }
+      },
+      "V1": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 74,
+        "distinct_samples": 74,
+        "not_serving": [],
+        "refits": 75,
+        "served_days": 1447,
+        "serving": 75,
+        "transitions_changed": 73,
+        "transitions_fittable": 73,
+        "units": {}
+      },
+      "V2": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 75,
+        "distinct_samples": 75,
+        "not_serving": [],
+        "refits": 75,
+        "served_days": 1447,
+        "serving": 75,
+        "transitions_changed": 74,
+        "transitions_fittable": 74,
+        "units": {}
+      },
+      "V3": {
+        "dead_days": 44,
+        "dead_serving": 3,
+        "distinct_fittable": 72,
+        "distinct_samples": 75,
+        "not_serving": [],
+        "refits": 75,
+        "served_days": 1447,
+        "serving": 75,
+        "transitions_changed": 74,
+        "transitions_fittable": 70,
+        "units": {
+          "regime:1 (20 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:2 (15 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:3 (10 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:4 (15 bp)": {
+            "days_served_with_unit": 206,
+            "first_serving_refit": "2025-03-04"
+          }
+        }
+      },
+      "V4": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 74,
+        "distinct_samples": 74,
+        "not_serving": [],
+        "refits": 75,
+        "served_days": 1447,
+        "serving": 75,
+        "transitions_changed": 73,
+        "transitions_fittable": 73,
+        "units": {}
+      },
+      "V5": {
+        "dead_days": 60,
+        "dead_serving": 4,
+        "distinct_fittable": 70,
+        "distinct_samples": 74,
+        "not_serving": [],
+        "refits": 75,
+        "served_days": 1447,
+        "serving": 75,
+        "transitions_changed": 73,
+        "transitions_fittable": 68,
+        "units": {
+          "regime:1 (20 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:2 (15 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:3 (10 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:4 (15 bp)": {
+            "days_served_with_unit": 190,
+            "first_serving_refit": "2025-03-26"
+          }
+        }
+      },
+      "V6": {
+        "dead_days": 60,
+        "dead_serving": 4,
+        "distinct_fittable": 70,
+        "distinct_samples": 74,
+        "not_serving": [],
+        "refits": 75,
+        "served_days": 1447,
+        "serving": 75,
+        "transitions_changed": 73,
+        "transitions_fittable": 68,
+        "units": {
+          "regime:1 (20 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:2 (15 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:3 (10 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:4 (15 bp)": {
+            "days_served_with_unit": 190,
+            "first_serving_refit": "2025-03-26"
+          }
+        }
+      }
+    },
+    "S6": {
+      "B": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 145,
+        "distinct_samples": 145,
+        "not_serving": [],
+        "refits": 145,
+        "served_days": 1447,
+        "serving": 145,
+        "transitions_changed": 144,
+        "transitions_fittable": 144,
+        "units": {}
+      },
+      "C": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 2,
+        "distinct_samples": 2,
+        "not_serving": [],
+        "refits": 145,
+        "served_days": 1447,
+        "serving": 145,
+        "transitions_changed": 1,
+        "transitions_fittable": 1,
+        "units": {
+          "episode:2018 to March 2020": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "episode:2025": {
+            "days_served_with_unit": 7,
+            "first_serving_refit": "2025-12-18"
+          }
+        }
+      },
+      "CV1": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 2,
+        "distinct_samples": 2,
+        "not_serving": [],
+        "refits": 145,
+        "served_days": 1447,
+        "serving": 145,
+        "transitions_changed": 1,
+        "transitions_fittable": 1,
+        "units": {
+          "episode:2018 to March 2020": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "episode:2025": {
+            "days_served_with_unit": 7,
+            "first_serving_refit": "2025-12-18"
+          }
+        }
+      },
+      "CV2": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 2,
+        "distinct_samples": 2,
+        "not_serving": [],
+        "refits": 145,
+        "served_days": 1447,
+        "serving": 145,
+        "transitions_changed": 1,
+        "transitions_fittable": 1,
+        "units": {
+          "episode:2018 to March 2020": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "episode:2025": {
+            "days_served_with_unit": 7,
+            "first_serving_refit": "2025-12-18"
+          }
+        }
+      },
+      "CV3": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 2,
+        "distinct_samples": 2,
+        "not_serving": [],
+        "refits": 145,
+        "served_days": 1447,
+        "serving": 145,
+        "transitions_changed": 1,
+        "transitions_fittable": 1,
+        "units": {
+          "episode:2018 to March 2020": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "episode:2025": {
+            "days_served_with_unit": 7,
+            "first_serving_refit": "2025-12-18"
+          }
+        }
+      },
+      "CV4": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 2,
+        "distinct_samples": 2,
+        "not_serving": [],
+        "refits": 145,
+        "served_days": 1447,
+        "serving": 145,
+        "transitions_changed": 1,
+        "transitions_fittable": 1,
+        "units": {
+          "episode:2018 to March 2020": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "episode:2025": {
+            "days_served_with_unit": 7,
+            "first_serving_refit": "2025-12-18"
+          }
+        }
+      },
+      "V1": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 145,
+        "distinct_samples": 145,
+        "not_serving": [],
+        "refits": 145,
+        "served_days": 1447,
+        "serving": 145,
+        "transitions_changed": 144,
+        "transitions_fittable": 144,
+        "units": {}
+      },
+      "V2": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 145,
+        "distinct_samples": 145,
+        "not_serving": [],
+        "refits": 145,
+        "served_days": 1447,
+        "serving": 145,
+        "transitions_changed": 144,
+        "transitions_fittable": 144,
+        "units": {}
+      },
+      "V3": {
+        "dead_days": 50,
+        "dead_serving": 5,
+        "distinct_fittable": 140,
+        "distinct_samples": 145,
+        "not_serving": [],
+        "refits": 145,
+        "served_days": 1447,
+        "serving": 145,
+        "transitions_changed": 144,
+        "transitions_fittable": 138,
+        "units": {
+          "regime:1 (20 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:2 (15 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:3 (10 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:4 (15 bp)": {
+            "days_served_with_unit": 197,
+            "first_serving_refit": "2025-03-17"
+          }
+        }
+      },
+      "V4": {
+        "dead_days": 0,
+        "dead_serving": 0,
+        "distinct_fittable": 145,
+        "distinct_samples": 145,
+        "not_serving": [],
+        "refits": 145,
+        "served_days": 1447,
+        "serving": 145,
+        "transitions_changed": 144,
+        "transitions_fittable": 144,
+        "units": {}
+      },
+      "V5": {
+        "dead_days": 60,
+        "dead_serving": 6,
+        "distinct_fittable": 139,
+        "distinct_samples": 145,
+        "not_serving": [],
+        "refits": 145,
+        "served_days": 1447,
+        "serving": 145,
+        "transitions_changed": 144,
+        "transitions_fittable": 137,
+        "units": {
+          "regime:1 (20 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:2 (15 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:3 (10 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:4 (15 bp)": {
+            "days_served_with_unit": 187,
+            "first_serving_refit": "2025-03-31"
+          }
+        }
+      },
+      "V6": {
+        "dead_days": 60,
+        "dead_serving": 6,
+        "distinct_fittable": 139,
+        "distinct_samples": 145,
+        "not_serving": [],
+        "refits": 145,
+        "served_days": 1447,
+        "serving": 145,
+        "transitions_changed": 144,
+        "transitions_fittable": 137,
+        "units": {
+          "regime:1 (20 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:2 (15 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:3 (10 bp)": {
+            "days_served_with_unit": 1447,
+            "first_serving_refit": "2020-03-13"
+          },
+          "regime:4 (15 bp)": {
+            "days_served_with_unit": 187,
+            "first_serving_refit": "2025-03-31"
+          }
+        }
+      }
+    }
+  },
+  "rules": {
+    "S0": {
+      "cutoffs": [
+        "2020-03-13",
+        "2020-04-14",
+        "2020-05-13",
+        "2020-06-12",
+        "2020-07-14",
+        "2020-08-12",
+        "2020-09-11",
+        "2020-10-13",
+        "2020-11-12",
+        "2020-12-14",
+        "2021-01-14",
+        "2021-02-16",
+        "2021-03-17",
+        "2021-04-16",
+        "2021-05-17",
+        "2021-06-16",
+        "2021-07-16",
+        "2021-08-16",
+        "2021-09-15",
+        "2021-10-15",
+        "2021-11-16",
+        "2021-12-16",
+        "2022-01-18",
+        "2022-02-16",
+        "2022-03-18",
+        "2022-04-19",
+        "2022-05-18",
+        "2022-06-17",
+        "2022-07-20",
+        "2022-08-18",
+        "2022-09-19",
+        "2022-10-19",
+        "2022-11-18",
+        "2022-12-20",
+        "2023-01-23",
+        "2023-02-22",
+        "2023-03-23",
+        "2023-04-24",
+        "2023-05-23",
+        "2023-06-23",
+        "2023-07-25",
+        "2023-08-23",
+        "2023-09-22",
+        "2023-10-24",
+        "2023-11-22",
+        "2023-12-22",
+        "2024-01-25",
+        "2024-02-26",
+        "2024-03-26",
+        "2024-04-25",
+        "2024-05-24",
+        "2024-06-26",
+        "2024-07-26",
+        "2024-08-26",
+        "2024-09-25",
+        "2024-10-25",
+        "2024-11-26",
+        "2024-12-27",
+        "2025-01-29",
+        "2025-02-28",
+        "2025-03-31",
+        "2025-04-30",
+        "2025-05-30",
+        "2025-07-01",
+        "2025-07-31",
+        "2025-08-29",
+        "2025-09-30",
+        "2025-10-30",
+        "2025-12-02"
+      ],
+      "no_future_probes": 145,
+      "not_serving": [],
+      "refits": 69,
+      "serving": 69,
+      "text": "the current schedule: every 21 scored days from the first cutoff",
+      "window_dependent_cutoffs": [],
+      "window_end_dependent": false
+    },
+    "S1": {
+      "cutoffs": [
+        "2020-03-13",
+        "2020-04-14",
+        "2020-05-13",
+        "2020-06-12",
+        "2020-07-14",
+        "2020-08-12",
+        "2020-09-11",
+        "2020-10-13",
+        "2020-11-12",
+        "2020-12-14",
+        "2021-01-14",
+        "2021-02-16",
+        "2021-03-17",
+        "2021-04-16",
+        "2021-05-17",
+        "2021-06-16",
+        "2021-07-16",
+        "2021-08-16",
+        "2021-09-15",
+        "2021-10-15",
+        "2021-11-16",
+        "2021-12-16",
+        "2022-01-18",
+        "2022-02-16",
+        "2022-03-18",
+        "2022-04-19",
+        "2022-05-18",
+        "2022-06-17",
+        "2022-07-20",
+        "2022-08-18",
+        "2022-09-19",
+        "2022-10-19",
+        "2022-11-18",
+        "2022-12-20",
+        "2023-01-23",
+        "2023-02-22",
+        "2023-03-23",
+        "2023-04-24",
+        "2023-05-23",
+        "2023-06-23",
+        "2023-07-25",
+        "2023-08-23",
+        "2023-09-22",
+        "2023-10-24",
+        "2023-11-22",
+        "2023-12-22",
+        "2024-01-25",
+        "2024-02-26",
+        "2024-03-26",
+        "2024-04-25",
+        "2024-05-24",
+        "2024-06-26",
+        "2024-07-26",
+        "2024-08-26",
+        "2024-09-25",
+        "2024-10-25",
+        "2024-11-26",
+        "2024-12-27",
+        "2025-01-29",
+        "2025-02-28",
+        "2025-03-31",
+        "2025-04-30",
+        "2025-05-30",
+        "2025-07-01",
+        "2025-07-31",
+        "2025-08-29",
+        "2025-09-30",
+        "2025-10-30",
+        "2025-12-02",
+        "2025-12-31"
+      ],
+      "no_future_probes": 145,
+      "not_serving": [
+        "2025-12-31"
+      ],
+      "refits": 70,
+      "serving": 69,
+      "text": "S0 plus a final refit on the last row (her #160 option (b), now in #150)",
+      "window_dependent_cutoffs": [
+        "2025-12-31"
+      ],
+      "window_end_dependent": true
+    },
+    "S1b": {
+      "cutoffs": [
+        "2020-03-13",
+        "2020-04-14",
+        "2020-05-13",
+        "2020-06-12",
+        "2020-07-14",
+        "2020-08-12",
+        "2020-09-11",
+        "2020-10-13",
+        "2020-11-12",
+        "2020-12-14",
+        "2021-01-14",
+        "2021-02-16",
+        "2021-03-17",
+        "2021-04-16",
+        "2021-05-17",
+        "2021-06-16",
+        "2021-07-16",
+        "2021-08-16",
+        "2021-09-15",
+        "2021-10-15",
+        "2021-11-16",
+        "2021-12-16",
+        "2022-01-18",
+        "2022-02-16",
+        "2022-03-18",
+        "2022-04-19",
+        "2022-05-18",
+        "2022-06-17",
+        "2022-07-20",
+        "2022-08-18",
+        "2022-09-19",
+        "2022-10-19",
+        "2022-11-18",
+        "2022-12-20",
+        "2023-01-23",
+        "2023-02-22",
+        "2023-03-23",
+        "2023-04-24",
+        "2023-05-23",
+        "2023-06-23",
+        "2023-07-25",
+        "2023-08-23",
+        "2023-09-22",
+        "2023-10-24",
+        "2023-11-22",
+        "2023-12-22",
+        "2024-01-25",
+        "2024-02-26",
+        "2024-03-26",
+        "2024-04-25",
+        "2024-05-24",
+        "2024-06-26",
+        "2024-07-26",
+        "2024-08-26",
+        "2024-09-25",
+        "2024-10-25",
+        "2024-11-26",
+        "2024-12-27",
+        "2025-01-29",
+        "2025-02-28",
+        "2025-03-31",
+        "2025-04-30",
+        "2025-05-30",
+        "2025-07-01",
+        "2025-07-31",
+        "2025-08-29",
+        "2025-09-30",
+        "2025-10-30",
+        "2025-12-02",
+        "2025-12-29"
+      ],
+      "no_future_probes": 145,
+      "not_serving": [],
+      "refits": 70,
+      "serving": 70,
+      "text": "S0 plus a final refit on the last cutoff that serves a scored day",
+      "window_dependent_cutoffs": [
+        "2025-12-29"
+      ],
+      "window_end_dependent": true
+    },
+    "S2": {
+      "cutoffs": [
+        "2020-03-13",
+        "2020-04-14",
+        "2020-05-13",
+        "2020-06-12",
+        "2020-07-14",
+        "2020-08-12",
+        "2020-09-11",
+        "2020-10-13",
+        "2020-11-12",
+        "2020-12-14",
+        "2021-01-14",
+        "2021-02-16",
+        "2021-03-17",
+        "2021-04-16",
+        "2021-05-17",
+        "2021-06-16",
+        "2021-07-16",
+        "2021-08-16",
+        "2021-09-15",
+        "2021-10-15",
+        "2021-11-16",
+        "2021-12-16",
+        "2022-01-18",
+        "2022-02-16",
+        "2022-03-18",
+        "2022-04-19",
+        "2022-05-18",
+        "2022-06-17",
+        "2022-07-20",
+        "2022-08-18",
+        "2022-09-19",
+        "2022-10-19",
+        "2022-11-18",
+        "2022-12-20",
+        "2023-01-23",
+        "2023-02-22",
+        "2023-03-23",
+        "2023-04-24",
+        "2023-05-23",
+        "2023-06-23",
+        "2023-07-25",
+        "2023-08-23",
+        "2023-09-22",
+        "2023-10-24",
+        "2023-11-22",
+        "2023-12-22",
+        "2024-01-25",
+        "2024-02-26",
+        "2024-03-26",
+        "2024-04-25",
+        "2024-05-24",
+        "2024-06-26",
+        "2024-07-26",
+        "2024-08-26",
+        "2024-09-25",
+        "2024-10-25",
+        "2024-11-26",
+        "2024-12-27",
+        "2025-01-29",
+        "2025-02-28",
+        "2025-03-31",
+        "2025-04-30",
+        "2025-05-30",
+        "2025-07-01",
+        "2025-07-31",
+        "2025-08-29",
+        "2025-09-30",
+        "2025-10-30",
+        "2025-12-02",
+        "2025-12-05"
+      ],
+      "no_future_probes": 145,
+      "not_serving": [],
+      "refits": 70,
+      "serving": 70,
+      "text": "the stride restarted on the day each episode reaches its floor",
+      "window_dependent_cutoffs": [],
+      "window_end_dependent": false
+    },
+    "S3": {
+      "cutoffs": [
+        "2020-03-13",
+        "2020-04-14",
+        "2020-05-13",
+        "2020-06-12",
+        "2020-07-14",
+        "2020-08-12",
+        "2020-09-11",
+        "2020-10-13",
+        "2020-11-12",
+        "2020-12-14",
+        "2021-01-14",
+        "2021-02-16",
+        "2021-03-17",
+        "2021-04-16",
+        "2021-05-17",
+        "2021-06-16",
+        "2021-07-16",
+        "2021-08-16",
+        "2021-09-15",
+        "2021-10-15",
+        "2021-11-16",
+        "2021-12-16",
+        "2022-01-18",
+        "2022-02-16",
+        "2022-03-18",
+        "2022-04-19",
+        "2022-05-18",
+        "2022-06-17",
+        "2022-07-20",
+        "2022-08-18",
+        "2022-09-19",
+        "2022-10-19",
+        "2022-11-18",
+        "2022-12-20",
+        "2023-01-23",
+        "2023-02-22",
+        "2023-03-23",
+        "2023-04-24",
+        "2023-05-23",
+        "2023-06-23",
+        "2023-07-25",
+        "2023-08-23",
+        "2023-09-22",
+        "2023-10-24",
+        "2023-11-22",
+        "2023-12-22",
+        "2024-01-25",
+        "2024-02-26",
+        "2024-03-26",
+        "2024-04-25",
+        "2024-05-24",
+        "2024-06-26",
+        "2024-07-26",
+        "2024-08-26",
+        "2024-09-25",
+        "2024-10-25",
+        "2024-11-26",
+        "2024-12-19",
+        "2024-12-27",
+        "2025-01-29",
+        "2025-02-28",
+        "2025-03-31",
+        "2025-04-30",
+        "2025-05-30",
+        "2025-07-01",
+        "2025-07-31",
+        "2025-08-29",
+        "2025-09-30",
+        "2025-10-30",
+        "2025-12-02"
+      ],
+      "no_future_probes": 145,
+      "not_serving": [],
+      "refits": 70,
+      "serving": 70,
+      "text": "S0 plus a refit on the first day of each corridor-width regime",
+      "window_dependent_cutoffs": [],
+      "window_end_dependent": false
+    },
+    "S3f": {
+      "cutoffs": [
+        "2020-03-13",
+        "2020-04-14",
+        "2020-05-13",
+        "2020-06-12",
+        "2020-07-14",
+        "2020-08-12",
+        "2020-09-11",
+        "2020-10-13",
+        "2020-11-12",
+        "2020-12-14",
+        "2021-01-14",
+        "2021-02-16",
+        "2021-03-17",
+        "2021-04-16",
+        "2021-05-17",
+        "2021-06-16",
+        "2021-07-16",
+        "2021-08-16",
+        "2021-09-15",
+        "2021-10-15",
+        "2021-11-16",
+        "2021-12-16",
+        "2022-01-18",
+        "2022-02-16",
+        "2022-03-18",
+        "2022-04-19",
+        "2022-05-18",
+        "2022-06-17",
+        "2022-07-20",
+        "2022-08-18",
+        "2022-09-19",
+        "2022-10-19",
+        "2022-11-18",
+        "2022-12-20",
+        "2023-01-23",
+        "2023-02-22",
+        "2023-03-23",
+        "2023-04-24",
+        "2023-05-23",
+        "2023-06-23",
+        "2023-07-25",
+        "2023-08-23",
+        "2023-09-22",
+        "2023-10-24",
+        "2023-11-22",
+        "2023-12-22",
+        "2024-01-25",
+        "2024-02-26",
+        "2024-03-26",
+        "2024-04-25",
+        "2024-05-24",
+        "2024-06-26",
+        "2024-07-26",
+        "2024-08-26",
+        "2024-09-25",
+        "2024-10-25",
+        "2024-11-26",
+        "2024-12-27",
+        "2025-01-29",
+        "2025-02-28",
+        "2025-03-04",
+        "2025-03-26",
+        "2025-03-31",
+        "2025-04-30",
+        "2025-05-30",
+        "2025-07-01",
+        "2025-07-31",
+        "2025-08-29",
+        "2025-09-30",
+        "2025-10-30",
+        "2025-12-02"
+      ],
+      "no_future_probes": 145,
+      "not_serving": [],
+      "refits": 71,
+      "serving": 71,
+      "text": "S0 plus a refit on the day each regime reaches its 50-pair floor",
+      "window_dependent_cutoffs": [],
+      "window_end_dependent": false
+    },
+    "S3r": {
+      "cutoffs": [
+        "2020-03-13",
+        "2020-04-14",
+        "2020-05-13",
+        "2020-06-12",
+        "2020-07-14",
+        "2020-08-12",
+        "2020-09-11",
+        "2020-10-13",
+        "2020-11-12",
+        "2020-12-14",
+        "2021-01-14",
+        "2021-02-16",
+        "2021-03-17",
+        "2021-04-16",
+        "2021-05-17",
+        "2021-06-16",
+        "2021-07-16",
+        "2021-08-16",
+        "2021-09-15",
+        "2021-10-15",
+        "2021-11-16",
+        "2021-12-16",
+        "2022-01-18",
+        "2022-02-16",
+        "2022-03-18",
+        "2022-04-19",
+        "2022-05-18",
+        "2022-06-17",
+        "2022-07-20",
+        "2022-08-18",
+        "2022-09-19",
+        "2022-10-19",
+        "2022-11-18",
+        "2022-12-20",
+        "2023-01-23",
+        "2023-02-22",
+        "2023-03-23",
+        "2023-04-24",
+        "2023-05-23",
+        "2023-06-23",
+        "2023-07-25",
+        "2023-08-23",
+        "2023-09-22",
+        "2023-10-24",
+        "2023-11-22",
+        "2023-12-22",
+        "2024-01-25",
+        "2024-02-26",
+        "2024-03-26",
+        "2024-04-25",
+        "2024-05-24",
+        "2024-06-26",
+        "2024-07-26",
+        "2024-08-26",
+        "2024-09-25",
+        "2024-10-25",
+        "2024-11-26",
+        "2024-12-19",
+        "2025-01-22",
+        "2025-02-21",
+        "2025-03-24",
+        "2025-04-23",
+        "2025-05-22",
+        "2025-06-24",
+        "2025-07-24",
+        "2025-08-22",
+        "2025-09-23",
+        "2025-10-23",
+        "2025-11-24",
+        "2025-12-24"
+      ],
+      "no_future_probes": 145,
+      "not_serving": [],
+      "refits": 70,
+      "serving": 70,
+      "text": "the stride restarted on the first day of each corridor-width regime",
+      "window_dependent_cutoffs": [],
+      "window_end_dependent": false
+    },
+    "S4": {
+      "cutoffs": [
+        "2020-03-13",
+        "2020-04-14",
+        "2020-05-13",
+        "2020-06-12",
+        "2020-07-14",
+        "2020-08-12",
+        "2020-09-11",
+        "2020-10-13",
+        "2020-11-12",
+        "2020-12-14",
+        "2021-01-14",
+        "2021-02-16",
+        "2021-03-17",
+        "2021-04-16",
+        "2021-05-17",
+        "2021-06-16",
+        "2021-07-16",
+        "2021-08-16",
+        "2021-09-15",
+        "2021-10-15",
+        "2021-11-16",
+        "2021-12-16",
+        "2022-01-18",
+        "2022-02-16",
+        "2022-03-18",
+        "2022-04-19",
+        "2022-05-18",
+        "2022-06-17",
+        "2022-07-20",
+        "2022-08-18",
+        "2022-09-19",
+        "2022-10-19",
+        "2022-11-18",
+        "2022-12-20",
+        "2023-01-23",
+        "2023-02-22",
+        "2023-03-23",
+        "2023-04-24",
+        "2023-05-23",
+        "2023-06-23",
+        "2023-07-25",
+        "2023-08-23",
+        "2023-09-22",
+        "2023-10-24",
+        "2023-11-22",
+        "2023-12-22",
+        "2024-01-25",
+        "2024-02-26",
+        "2024-03-26",
+        "2024-04-25",
+        "2024-05-24",
+        "2024-06-26",
+        "2024-07-26",
+        "2024-08-26",
+        "2024-09-25",
+        "2024-10-25",
+        "2024-11-26",
+        "2024-12-27",
+        "2025-01-29",
+        "2025-02-28",
+        "2025-03-04",
+        "2025-03-26",
+        "2025-03-31",
+        "2025-04-30",
+        "2025-05-30",
+        "2025-07-01",
+        "2025-07-31",
+        "2025-08-29",
+        "2025-09-30",
+        "2025-10-30",
+        "2025-12-02",
+        "2025-12-05"
+      ],
+      "no_future_probes": 145,
+      "not_serving": [],
+      "refits": 72,
+      "serving": 72,
+      "text": "S0 plus one refit on the day each episode and each regime first counts",
+      "window_dependent_cutoffs": [],
+      "window_end_dependent": false
+    },
+    "S5": {
+      "cutoffs": [
+        "2020-03-13",
+        "2020-04-14",
+        "2020-05-13",
+        "2020-06-12",
+        "2020-07-14",
+        "2020-08-12",
+        "2020-09-11",
+        "2020-10-13",
+        "2020-11-12",
+        "2020-12-14",
+        "2021-01-14",
+        "2021-02-16",
+        "2021-03-17",
+        "2021-04-16",
+        "2021-05-17",
+        "2021-06-16",
+        "2021-07-16",
+        "2021-08-16",
+        "2021-09-15",
+        "2021-10-15",
+        "2021-11-16",
+        "2021-12-16",
+        "2022-01-18",
+        "2022-02-16",
+        "2022-03-18",
+        "2022-04-19",
+        "2022-05-18",
+        "2022-06-17",
+        "2022-07-20",
+        "2022-08-18",
+        "2022-09-19",
+        "2022-10-19",
+        "2022-11-18",
+        "2022-12-20",
+        "2023-01-23",
+        "2023-02-22",
+        "2023-03-23",
+        "2023-04-24",
+        "2023-05-23",
+        "2023-06-23",
+        "2023-07-25",
+        "2023-08-23",
+        "2023-09-22",
+        "2023-10-24",
+        "2023-11-22",
+        "2023-12-22",
+        "2024-01-25",
+        "2024-02-26",
+        "2024-03-26",
+        "2024-04-25",
+        "2024-05-24",
+        "2024-06-26",
+        "2024-07-26",
+        "2024-08-26",
+        "2024-09-25",
+        "2024-10-25",
+        "2024-11-26",
+        "2024-12-27",
+        "2025-01-29",
+        "2025-02-28",
+        "2025-03-04",
+        "2025-03-26",
+        "2025-03-31",
+        "2025-04-30",
+        "2025-05-30",
+        "2025-07-01",
+        "2025-07-31",
+        "2025-08-29",
+        "2025-09-30",
+        "2025-10-30",
+        "2025-12-02",
+        "2025-12-05",
+        "2025-12-12",
+        "2025-12-19",
+        "2025-12-29"
+      ],
+      "no_future_probes": 145,
+      "not_serving": [],
+      "refits": 75,
+      "serving": 75,
+      "text": "S4 plus a refit every 5 scored days for a stride after each episode's entry",
+      "window_dependent_cutoffs": [],
+      "window_end_dependent": false
+    },
+    "S6": {
+      "cutoffs": [
+        "2020-03-13",
+        "2020-03-27",
+        "2020-04-13",
+        "2020-04-27",
+        "2020-05-11",
+        "2020-05-26",
+        "2020-06-09",
+        "2020-06-23",
+        "2020-07-08",
+        "2020-07-22",
+        "2020-08-05",
+        "2020-08-19",
+        "2020-09-02",
+        "2020-09-17",
+        "2020-10-01",
+        "2020-10-16",
+        "2020-10-30",
+        "2020-11-16",
+        "2020-12-01",
+        "2020-12-15",
+        "2020-12-30",
+        "2021-01-14",
+        "2021-01-29",
+        "2021-02-12",
+        "2021-03-01",
+        "2021-03-15",
+        "2021-03-29",
+        "2021-04-13",
+        "2021-04-27",
+        "2021-05-11",
+        "2021-05-25",
+        "2021-06-09",
+        "2021-06-23",
+        "2021-07-08",
+        "2021-07-22",
+        "2021-08-05",
+        "2021-08-19",
+        "2021-09-02",
+        "2021-09-17",
+        "2021-10-01",
+        "2021-10-18",
+        "2021-11-01",
+        "2021-11-16",
+        "2021-12-01",
+        "2021-12-15",
+        "2021-12-30",
+        "2022-01-13",
+        "2022-01-28",
+        "2022-02-11",
+        "2022-02-28",
+        "2022-03-14",
+        "2022-03-28",
+        "2022-04-11",
+        "2022-04-26",
+        "2022-05-10",
+        "2022-05-24",
+        "2022-06-08",
+        "2022-06-23",
+        "2022-07-08",
+        "2022-07-22",
+        "2022-08-05",
+        "2022-08-19",
+        "2022-09-02",
+        "2022-09-19",
+        "2022-10-03",
+        "2022-10-18",
+        "2022-11-01",
+        "2022-11-16",
+        "2022-12-01",
+        "2022-12-15",
+        "2022-12-30",
+        "2023-01-17",
+        "2023-01-31",
+        "2023-02-14",
+        "2023-03-01",
+        "2023-03-15",
+        "2023-03-29",
+        "2023-04-13",
+        "2023-04-27",
+        "2023-05-11",
+        "2023-05-25",
+        "2023-06-09",
+        "2023-06-26",
+        "2023-07-11",
+        "2023-07-25",
+        "2023-08-08",
+        "2023-08-22",
+        "2023-09-06",
+        "2023-09-20",
+        "2023-10-04",
+        "2023-10-19",
+        "2023-11-02",
+        "2023-11-16",
+        "2023-12-01",
+        "2023-12-15",
+        "2024-01-02",
+        "2024-01-17",
+        "2024-01-31",
+        "2024-02-14",
+        "2024-02-29",
+        "2024-03-14",
+        "2024-03-28",
+        "2024-04-12",
+        "2024-04-26",
+        "2024-05-10",
+        "2024-05-24",
+        "2024-06-10",
+        "2024-06-25",
+        "2024-07-10",
+        "2024-07-24",
+        "2024-08-07",
+        "2024-08-21",
+        "2024-09-05",
+        "2024-09-19",
+        "2024-10-03",
+        "2024-10-18",
+        "2024-11-01",
+        "2024-11-18",
+        "2024-12-03",
+        "2024-12-17",
+        "2025-01-02",
+        "2025-01-16",
+        "2025-01-31",
+        "2025-02-14",
+        "2025-03-03",
+        "2025-03-17",
+        "2025-03-31",
+        "2025-04-14",
+        "2025-04-29",
+        "2025-05-13",
+        "2025-05-28",
+        "2025-06-11",
+        "2025-06-26",
+        "2025-07-11",
+        "2025-07-25",
+        "2025-08-08",
+        "2025-08-22",
+        "2025-09-08",
+        "2025-09-22",
+        "2025-10-06",
+        "2025-10-21",
+        "2025-11-04",
+        "2025-11-19",
+        "2025-12-04",
+        "2025-12-18"
+      ],
+      "no_future_probes": 145,
+      "not_serving": [],
+      "refits": 145,
+      "serving": 145,
+      "text": "a denser stride: every 10 scored days (a bound on cost, not a proposal)",
+      "window_dependent_cutoffs": [],
+      "window_end_dependent": false
+    }
+  },
+  "tier": "development",
+  "versus_declared": {
+    "S0": {
+      "A": {
+        "added": [],
+        "days_with_a_new_serving_refit": 0,
+        "kept": 69,
+        "removed": []
+      },
+      "C": {
+        "added": [],
+        "days_with_a_new_serving_refit": 0,
+        "kept": 69,
+        "removed": [
+          "2025-12-31"
+        ]
+      }
+    },
+    "S1": {
+      "A": {
+        "added": [
+          "2025-12-31"
+        ],
+        "days_with_a_new_serving_refit": 0,
+        "kept": 69,
+        "removed": []
+      },
+      "C": {
+        "added": [],
+        "days_with_a_new_serving_refit": 0,
+        "kept": 70,
+        "removed": []
+      }
+    },
+    "S1b": {
+      "A": {
+        "added": [
+          "2025-12-29"
+        ],
+        "days_with_a_new_serving_refit": 1,
+        "kept": 69,
+        "removed": []
+      },
+      "C": {
+        "added": [
+          "2025-12-29"
+        ],
+        "days_with_a_new_serving_refit": 1,
+        "kept": 69,
+        "removed": [
+          "2025-12-31"
+        ]
+      }
+    },
+    "S2": {
+      "A": {
+        "added": [
+          "2025-12-05"
+        ],
+        "days_with_a_new_serving_refit": 16,
+        "kept": 69,
+        "removed": []
+      },
+      "C": {
+        "added": [
+          "2025-12-05"
+        ],
+        "days_with_a_new_serving_refit": 16,
+        "kept": 69,
+        "removed": [
+          "2025-12-31"
+        ]
+      }
+    },
+    "S3": {
+      "A": {
+        "added": [
+          "2024-12-19"
+        ],
+        "days_with_a_new_serving_refit": 5,
+        "kept": 69,
+        "removed": []
+      },
+      "C": {
+        "added": [
+          "2024-12-19"
+        ],
+        "days_with_a_new_serving_refit": 5,
+        "kept": 69,
+        "removed": [
+          "2025-12-31"
+        ]
+      }
+    },
+    "S3f": {
+      "A": {
+        "added": [
+          "2025-03-04",
+          "2025-03-26"
+        ],
+        "days_with_a_new_serving_refit": 19,
+        "kept": 69,
+        "removed": []
+      },
+      "C": {
+        "added": [
+          "2025-03-04",
+          "2025-03-26"
+        ],
+        "days_with_a_new_serving_refit": 19,
+        "kept": 69,
+        "removed": [
+          "2025-12-31"
+        ]
+      }
+    },
+    "S3r": {
+      "A": {
+        "added": [
+          "2024-12-19",
+          "2025-01-22",
+          "2025-02-21",
+          "2025-03-24",
+          "2025-04-23",
+          "2025-05-22",
+          "2025-06-24",
+          "2025-07-24",
+          "2025-08-22",
+          "2025-09-23",
+          "2025-10-23",
+          "2025-11-24",
+          "2025-12-24"
+        ],
+        "days_with_a_new_serving_refit": 255,
+        "kept": 57,
+        "removed": [
+          "2024-12-27",
+          "2025-01-29",
+          "2025-02-28",
+          "2025-03-31",
+          "2025-04-30",
+          "2025-05-30",
+          "2025-07-01",
+          "2025-07-31",
+          "2025-08-29",
+          "2025-09-30",
+          "2025-10-30",
+          "2025-12-02"
+        ]
+      },
+      "C": {
+        "added": [
+          "2024-12-19",
+          "2025-01-22",
+          "2025-02-21",
+          "2025-03-24",
+          "2025-04-23",
+          "2025-05-22",
+          "2025-06-24",
+          "2025-07-24",
+          "2025-08-22",
+          "2025-09-23",
+          "2025-10-23",
+          "2025-11-24",
+          "2025-12-24"
+        ],
+        "days_with_a_new_serving_refit": 255,
+        "kept": 57,
+        "removed": [
+          "2024-12-27",
+          "2025-01-29",
+          "2025-02-28",
+          "2025-03-31",
+          "2025-04-30",
+          "2025-05-30",
+          "2025-07-01",
+          "2025-07-31",
+          "2025-08-29",
+          "2025-09-30",
+          "2025-10-30",
+          "2025-12-02",
+          "2025-12-31"
+        ]
+      }
+    },
+    "S4": {
+      "A": {
+        "added": [
+          "2025-03-04",
+          "2025-03-26",
+          "2025-12-05"
+        ],
+        "days_with_a_new_serving_refit": 35,
+        "kept": 69,
+        "removed": []
+      },
+      "C": {
+        "added": [
+          "2025-03-04",
+          "2025-03-26",
+          "2025-12-05"
+        ],
+        "days_with_a_new_serving_refit": 35,
+        "kept": 69,
+        "removed": [
+          "2025-12-31"
+        ]
+      }
+    },
+    "S5": {
+      "A": {
+        "added": [
+          "2025-03-04",
+          "2025-03-26",
+          "2025-12-05",
+          "2025-12-12",
+          "2025-12-19",
+          "2025-12-29"
+        ],
+        "days_with_a_new_serving_refit": 35,
+        "kept": 69,
+        "removed": []
+      },
+      "C": {
+        "added": [
+          "2025-03-04",
+          "2025-03-26",
+          "2025-12-05",
+          "2025-12-12",
+          "2025-12-19",
+          "2025-12-29"
+        ],
+        "days_with_a_new_serving_refit": 35,
+        "kept": 69,
+        "removed": [
+          "2025-12-31"
+        ]
+      }
+    },
+    "S6": {
+      "A": {
+        "added": [
+          "2020-03-27",
+          "2020-04-13",
+          "2020-04-27",
+          "2020-05-11",
+          "2020-05-26",
+          "2020-06-09",
+          "2020-06-23",
+          "2020-07-08",
+          "2020-07-22",
+          "2020-08-05",
+          "2020-08-19",
+          "2020-09-02",
+          "2020-09-17",
+          "2020-10-01",
+          "2020-10-16",
+          "2020-10-30",
+          "2020-11-16",
+          "2020-12-01",
+          "2020-12-15",
+          "2020-12-30",
+          "2021-01-29",
+          "2021-02-12",
+          "2021-03-01",
+          "2021-03-15",
+          "2021-03-29",
+          "2021-04-13",
+          "2021-04-27",
+          "2021-05-11",
+          "2021-05-25",
+          "2021-06-09",
+          "2021-06-23",
+          "2021-07-08",
+          "2021-07-22",
+          "2021-08-05",
+          "2021-08-19",
+          "2021-09-02",
+          "2021-09-17",
+          "2021-10-01",
+          "2021-10-18",
+          "2021-11-01",
+          "2021-12-01",
+          "2021-12-15",
+          "2021-12-30",
+          "2022-01-13",
+          "2022-01-28",
+          "2022-02-11",
+          "2022-02-28",
+          "2022-03-14",
+          "2022-03-28",
+          "2022-04-11",
+          "2022-04-26",
+          "2022-05-10",
+          "2022-05-24",
+          "2022-06-08",
+          "2022-06-23",
+          "2022-07-08",
+          "2022-07-22",
+          "2022-08-05",
+          "2022-08-19",
+          "2022-09-02",
+          "2022-10-03",
+          "2022-10-18",
+          "2022-11-01",
+          "2022-11-16",
+          "2022-12-01",
+          "2022-12-15",
+          "2022-12-30",
+          "2023-01-17",
+          "2023-01-31",
+          "2023-02-14",
+          "2023-03-01",
+          "2023-03-15",
+          "2023-03-29",
+          "2023-04-13",
+          "2023-04-27",
+          "2023-05-11",
+          "2023-05-25",
+          "2023-06-09",
+          "2023-06-26",
+          "2023-07-11",
+          "2023-08-08",
+          "2023-08-22",
+          "2023-09-06",
+          "2023-09-20",
+          "2023-10-04",
+          "2023-10-19",
+          "2023-11-02",
+          "2023-11-16",
+          "2023-12-01",
+          "2023-12-15",
+          "2024-01-02",
+          "2024-01-17",
+          "2024-01-31",
+          "2024-02-14",
+          "2024-02-29",
+          "2024-03-14",
+          "2024-03-28",
+          "2024-04-12",
+          "2024-04-26",
+          "2024-05-10",
+          "2024-06-10",
+          "2024-06-25",
+          "2024-07-10",
+          "2024-07-24",
+          "2024-08-07",
+          "2024-08-21",
+          "2024-09-05",
+          "2024-09-19",
+          "2024-10-03",
+          "2024-10-18",
+          "2024-11-01",
+          "2024-11-18",
+          "2024-12-03",
+          "2024-12-17",
+          "2025-01-02",
+          "2025-01-16",
+          "2025-01-31",
+          "2025-02-14",
+          "2025-03-03",
+          "2025-03-17",
+          "2025-04-14",
+          "2025-04-29",
+          "2025-05-13",
+          "2025-05-28",
+          "2025-06-11",
+          "2025-06-26",
+          "2025-07-11",
+          "2025-07-25",
+          "2025-08-08",
+          "2025-08-22",
+          "2025-09-08",
+          "2025-09-22",
+          "2025-10-06",
+          "2025-10-21",
+          "2025-11-04",
+          "2025-11-19",
+          "2025-12-04",
+          "2025-12-18"
+        ],
+        "days_with_a_new_serving_refit": 1377,
+        "kept": 7,
+        "removed": [
+          "2020-04-14",
+          "2020-05-13",
+          "2020-06-12",
+          "2020-07-14",
+          "2020-08-12",
+          "2020-09-11",
+          "2020-10-13",
+          "2020-11-12",
+          "2020-12-14",
+          "2021-02-16",
+          "2021-03-17",
+          "2021-04-16",
+          "2021-05-17",
+          "2021-06-16",
+          "2021-07-16",
+          "2021-08-16",
+          "2021-09-15",
+          "2021-10-15",
+          "2021-12-16",
+          "2022-01-18",
+          "2022-02-16",
+          "2022-03-18",
+          "2022-04-19",
+          "2022-05-18",
+          "2022-06-17",
+          "2022-07-20",
+          "2022-08-18",
+          "2022-10-19",
+          "2022-11-18",
+          "2022-12-20",
+          "2023-01-23",
+          "2023-02-22",
+          "2023-03-23",
+          "2023-04-24",
+          "2023-05-23",
+          "2023-06-23",
+          "2023-08-23",
+          "2023-09-22",
+          "2023-10-24",
+          "2023-11-22",
+          "2023-12-22",
+          "2024-01-25",
+          "2024-02-26",
+          "2024-03-26",
+          "2024-04-25",
+          "2024-06-26",
+          "2024-07-26",
+          "2024-08-26",
+          "2024-09-25",
+          "2024-10-25",
+          "2024-11-26",
+          "2024-12-27",
+          "2025-01-29",
+          "2025-02-28",
+          "2025-04-30",
+          "2025-05-30",
+          "2025-07-01",
+          "2025-07-31",
+          "2025-08-29",
+          "2025-09-30",
+          "2025-10-30",
+          "2025-12-02"
+        ]
+      },
+      "C": {
+        "added": [
+          "2020-03-27",
+          "2020-04-13",
+          "2020-04-27",
+          "2020-05-11",
+          "2020-05-26",
+          "2020-06-09",
+          "2020-06-23",
+          "2020-07-08",
+          "2020-07-22",
+          "2020-08-05",
+          "2020-08-19",
+          "2020-09-02",
+          "2020-09-17",
+          "2020-10-01",
+          "2020-10-16",
+          "2020-10-30",
+          "2020-11-16",
+          "2020-12-01",
+          "2020-12-15",
+          "2020-12-30",
+          "2021-01-29",
+          "2021-02-12",
+          "2021-03-01",
+          "2021-03-15",
+          "2021-03-29",
+          "2021-04-13",
+          "2021-04-27",
+          "2021-05-11",
+          "2021-05-25",
+          "2021-06-09",
+          "2021-06-23",
+          "2021-07-08",
+          "2021-07-22",
+          "2021-08-05",
+          "2021-08-19",
+          "2021-09-02",
+          "2021-09-17",
+          "2021-10-01",
+          "2021-10-18",
+          "2021-11-01",
+          "2021-12-01",
+          "2021-12-15",
+          "2021-12-30",
+          "2022-01-13",
+          "2022-01-28",
+          "2022-02-11",
+          "2022-02-28",
+          "2022-03-14",
+          "2022-03-28",
+          "2022-04-11",
+          "2022-04-26",
+          "2022-05-10",
+          "2022-05-24",
+          "2022-06-08",
+          "2022-06-23",
+          "2022-07-08",
+          "2022-07-22",
+          "2022-08-05",
+          "2022-08-19",
+          "2022-09-02",
+          "2022-10-03",
+          "2022-10-18",
+          "2022-11-01",
+          "2022-11-16",
+          "2022-12-01",
+          "2022-12-15",
+          "2022-12-30",
+          "2023-01-17",
+          "2023-01-31",
+          "2023-02-14",
+          "2023-03-01",
+          "2023-03-15",
+          "2023-03-29",
+          "2023-04-13",
+          "2023-04-27",
+          "2023-05-11",
+          "2023-05-25",
+          "2023-06-09",
+          "2023-06-26",
+          "2023-07-11",
+          "2023-08-08",
+          "2023-08-22",
+          "2023-09-06",
+          "2023-09-20",
+          "2023-10-04",
+          "2023-10-19",
+          "2023-11-02",
+          "2023-11-16",
+          "2023-12-01",
+          "2023-12-15",
+          "2024-01-02",
+          "2024-01-17",
+          "2024-01-31",
+          "2024-02-14",
+          "2024-02-29",
+          "2024-03-14",
+          "2024-03-28",
+          "2024-04-12",
+          "2024-04-26",
+          "2024-05-10",
+          "2024-06-10",
+          "2024-06-25",
+          "2024-07-10",
+          "2024-07-24",
+          "2024-08-07",
+          "2024-08-21",
+          "2024-09-05",
+          "2024-09-19",
+          "2024-10-03",
+          "2024-10-18",
+          "2024-11-01",
+          "2024-11-18",
+          "2024-12-03",
+          "2024-12-17",
+          "2025-01-02",
+          "2025-01-16",
+          "2025-01-31",
+          "2025-02-14",
+          "2025-03-03",
+          "2025-03-17",
+          "2025-04-14",
+          "2025-04-29",
+          "2025-05-13",
+          "2025-05-28",
+          "2025-06-11",
+          "2025-06-26",
+          "2025-07-11",
+          "2025-07-25",
+          "2025-08-08",
+          "2025-08-22",
+          "2025-09-08",
+          "2025-09-22",
+          "2025-10-06",
+          "2025-10-21",
+          "2025-11-04",
+          "2025-11-19",
+          "2025-12-04",
+          "2025-12-18"
+        ],
+        "days_with_a_new_serving_refit": 1377,
+        "kept": 7,
+        "removed": [
+          "2020-04-14",
+          "2020-05-13",
+          "2020-06-12",
+          "2020-07-14",
+          "2020-08-12",
+          "2020-09-11",
+          "2020-10-13",
+          "2020-11-12",
+          "2020-12-14",
+          "2021-02-16",
+          "2021-03-17",
+          "2021-04-16",
+          "2021-05-17",
+          "2021-06-16",
+          "2021-07-16",
+          "2021-08-16",
+          "2021-09-15",
+          "2021-10-15",
+          "2021-12-16",
+          "2022-01-18",
+          "2022-02-16",
+          "2022-03-18",
+          "2022-04-19",
+          "2022-05-18",
+          "2022-06-17",
+          "2022-07-20",
+          "2022-08-18",
+          "2022-10-19",
+          "2022-11-18",
+          "2022-12-20",
+          "2023-01-23",
+          "2023-02-22",
+          "2023-03-23",
+          "2023-04-24",
+          "2023-05-23",
+          "2023-06-23",
+          "2023-08-23",
+          "2023-09-22",
+          "2023-10-24",
+          "2023-11-22",
+          "2023-12-22",
+          "2024-01-25",
+          "2024-02-26",
+          "2024-03-26",
+          "2024-04-25",
+          "2024-06-26",
+          "2024-07-26",
+          "2024-08-26",
+          "2024-09-25",
+          "2024-10-25",
+          "2024-11-26",
+          "2024-12-27",
+          "2025-01-29",
+          "2025-02-28",
+          "2025-04-30",
+          "2025-05-30",
+          "2025-07-01",
+          "2025-07-31",
+          "2025-08-29",
+          "2025-09-30",
+          "2025-10-30",
+          "2025-12-02",
+          "2025-12-31"
+        ]
+      }
+    }
+  },
+  "window": {
+    "first_cutoff": "2020-03-13",
+    "first_scored_day": "2018-04-04",
+    "last_scored_day": "2025-12-31",
+    "refit_every": 21,
+    "scored_days": 1934
+  }
+}
