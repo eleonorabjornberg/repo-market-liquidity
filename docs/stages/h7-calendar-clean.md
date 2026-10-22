@@ -273,3 +273,28 @@ decides:
 
 Nothing has been fitted on real days, so protocol §12 is not touched.
 
+
+## 11. Amendment of 21 October 2026: a final refit on the last row (finding #160, option (b)), before any fit
+
+Quoting Eleonora's ruling on finding #160, relayed by the orchestrating session on PR #150
+(<https://github.com/eleonorabjornberg/repo-market-liquidity/pull/150#issuecomment-6329276565>): "finding #160, option (b). Add one
+final refit on the last row, 2025-12-31, so that the 2025 episode counts. Her words: 'done, but investigate whether we need a
+different schedule'. The investigation is a separate directive and does not hold this run." And the changes it asks for: "the refit
+schedule becomes every 21 observation days from 2020-03-13, plus a final refit on 2025-12-31. This applies to the baseline C and to
+CV1–CV4 alike."
+
+Where this section and the refit dates of section 2 or of `h7-calendar-clean-run.md` differ, this section decides:
+
+- **The schedule is every 21 observation days from 2020-03-13, plus a final refit on 2025-12-31** (`demand_curve.LAST_DAY`, the
+  last row). If the 21-day stride already lands on 2025-12-31 there is no extra refit. It is the same schedule for the baseline C and
+  for CV1 to CV4.
+- **Eligibility is read on all days** (section 10), so the 2025 episode counts at the final refit, and at no earlier one: the last
+  refit of the stride, 2025-12-02, sees 57 scarce days against the floor of 60 (finding #160). The clean variants (CV1 to CV3) then
+  fit the first episode's clean days and the 2025 episode's clean days; CV4 and the baseline fit every day of both.
+- The training sample of each variant at the last two refits is reported, without fitting (`final_refit_samples` in the record's
+  inputs of the run: the days and the episodes counted).
+- The final refit's first served day is the second business day after 2025-12-31, which is after the window of the run, so it serves
+  no day in this run. It is fitted and reported all the same, as the ruling asks. Whether a different schedule is needed is the
+  separate investigation the ruling names; nothing here answers it.
+
+Nothing has been fitted on real days, so protocol §12 is not touched. The run implements this section with no further choice.

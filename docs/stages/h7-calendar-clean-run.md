@@ -56,8 +56,9 @@ runs some of `C,CV1,CV2,CV3,CV4`; `--limit-refits N` runs the first N refits.
 ## Readings this implementation took (none changes what the declaration says; Eleonora may overrule any)
 
 1. **The refit dates and the window.** The first refit is at 2020-03-13, then every 21 observation days, as Stages 3c and 6, on
-   the rows to `demand_curve.LAST_DAY` (2025-12-31), as Stage 6's refits ran. The declaration says "the same refit dates" without
-   naming them. The near-blind 2026 days are ordinary history since the lockbox amendment of 5 October 2026 and are not used.
+   the rows to `demand_curve.LAST_DAY` (2025-12-31), as Stage 6's refits ran, plus a final refit on 2025-12-31 (her ruling on
+   finding #160, option (b); `h7-calendar-clean.md` section 11), for the baseline C and CV1 to CV4 alike. The declaration says
+   "the same refit dates" without naming them. The near-blind 2026 days are ordinary history since the lockbox amendment of 5 October 2026 and are not used.
 2. **The number of draws.** 2000, the count Stage 2 and Stage 6 use for the bend's interval (`demand_curve.REPLICATIONS`). The
    declaration says "the same number of draws" without a number.
 3. **The slope bound and the rule that rejects a negative slope.** The fit enforces `b ≥ 0`, as section 2(b) says, so a fit
@@ -81,9 +82,9 @@ runs some of `C,CV1,CV2,CV3,CV4`; `--limit-refits N` runs the first N refits.
 
 ## A fact the counting rule produces (reported, not decided)
 
-Counted from the tracked panel with the parent's three clauses (the turn label loaded from the later pin's file, since the pin of
-this tree has none; no variant was fitted): the 2025 episode has 77 scarce days (ratio below 13%) and 54 once the calendar days
-are dropped, and the counting rule needs 60. So the 2025 episode does not count for a clean variant, and the 69 refits of the
-run all share one training sample per variant (the first episode: 351 clean days, 486 days for CV4 and the baseline). Each variant
-is therefore one fit and one bootstrap, not 69. Whether that is what is wanted is Eleonora's: a lower count for clean days, or a
-count taken on the baseline's days, would be a change to the declaration. The run reports it as it is (`episode_counts`).
+Counted from the tracked panel with the parent's three clauses (finding #160; no variant was fitted): the 2025 episode has 77
+scarce days (ratio below 13%), the 60th on 2025-12-05. The last refit of the 21-day stride, 2025-12-02, sees 57, so 2025 counts at
+no refit of the stride. Her ruling on #160, option (b), adds a final refit on 2025-12-31 (`h7-calendar-clean.md` section 11), where
+it counts for every variant. The first episode alone is the sample at every earlier refit (one fit per variant, shared by the 69
+refits of the stride), and the final refit is a second sample, hence a second fit per variant. The final refit serves no day in
+the window. The run reports the episodes counted at each refit (`episode_counts`).
