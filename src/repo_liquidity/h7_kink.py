@@ -34,6 +34,7 @@ numpy is the approved extra of `docs/decisions/dependencies.md` (Stage 4).
 
 from __future__ import annotations
 
+import copy
 import math
 import multiprocessing
 import random
@@ -603,15 +604,53 @@ def common_served_days(paths: Mapping[str, Sequence[h7.RefitPath]]) -> Set[date]
 def summarise(path: Sequence[h7.RefitPath], days: Optional[Set[date]] = None) -> Dict:
     """Goalposts 1 and 2 for one estimator (`goalposts.stability_goalpost`, `sharpness_goalpost`), on `days` when given.
 
-    Gaps and widths are in points of bank assets. A refit that did not fit is a breach of goalpost 1 and counted.
+    Gaps and widths are in points of bank assets, so the limits are passed in points too (`goalposts` holds them in shares; #166).
+    A refit that did not fit is a breach of goalpost 1 and counted.
     """
     not_fitted = sum(1 for p in path if not p.refit.fitted)
     gaps = {d: h7.points(g) for p in path for d, g in p.gaps.items() if days is None or d in days}
     served = [e for p in path for e in p.estimates if days is None or e.day in days]
     widths = [None if e.lower is None or e.upper is None else h7.points(e.upper - e.lower) for e in served]
     return {"served_days": len(served), "not_fitted": not_fitted,
-            "goalpost_1": goalposts.stability_goalpost(gaps, not_fitted), "goalpost_2": goalposts.sharpness_goalpost(widths),
+            "goalpost_1": goalposts.stability_goalpost(gaps, not_fitted, limit=h7.points(goalposts.STABILITY_LIMIT)),
+            "goalpost_2": goalposts.sharpness_goalpost(widths, limit=h7.points(goalposts.WIDTH_LIMIT)),
             "worst_gap_points": max(gaps.values()) if gaps else None}
+
+
+BREACHES_NOTE = ("not recomputable from this record without a re-run (#166): the record holds the worst gap, not the gap of each "
+                 "day, and the superseded count compared points with a limit in shares")
+
+
+def restate_goalposts(record: Mapping, *, superseded: str, reason: str) -> Dict:
+    """The record with goalposts 1 and 2 recomputed in points from what it holds, and nothing re-run (the #166 ruling, #167).
+
+    The superseded record compared gaps and widths in points with limits in shares. Goalpost 1 holds if no refit is missing and
+    the worst gap is strictly under 0.5 points; goalpost 2 holds if the median width is strictly under 3 points. The breach
+    counts of goalpost 1 need the gap of each day, which the record does not hold: they are removed and marked. Every other
+    figure is copied as it is. The input is not changed.
+
+    Raises:
+        ValueError: the record has already been restated.
+    """
+    if "superseded" in record:
+        raise ValueError("this record has already been restated")
+    out = copy.deepcopy(dict(record))
+    stability, width = h7.points(goalposts.STABILITY_LIMIT), h7.points(goalposts.WIDTH_LIMIT)
+    for entry in out["summaries"].values():
+        for summary in entry.values():
+            one, two = summary["goalpost_1"], summary["goalpost_2"]
+            worst = summary["worst_gap_points"]
+            one["holds"] = summary["not_fitted"] == 0 and (worst is None or worst < stability)
+            one["limit"] = stability
+            one.pop("breaches", None)
+            one["breaches_note"] = BREACHES_NOTE
+            two["holds"] = two["median"] is not None and two["median"] < width
+            two["limit"] = width
+    for name, row in out["comparison"].items():
+        common = out["summaries"][name]["common_served_days"]
+        row["goalpost_1_holds"], row["goalpost_2_holds"] = common["goalpost_1"]["holds"], common["goalpost_2"]["holds"]
+    out["superseded"] = {"sha256": superseded, "reason": reason}
+    return out
 
 
 # -- the block length, reported beside goalpost 2 ---------------------------------------------------------------------------

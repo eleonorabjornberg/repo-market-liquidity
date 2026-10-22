@@ -5,7 +5,7 @@
       "baseline_not_fitted_refits": 0,
       "baseline_worst_gap_points": 6.25,
       "goalpost_1_holds": false,
-      "goalpost_2_holds": false,
+      "goalpost_2_holds": true,
       "interval_wider_than_baseline": false,
       "median_width_points": 2.249999999999999,
       "not_fitted_refits": 4,
@@ -17,7 +17,7 @@
       "baseline_not_fitted_refits": 0,
       "baseline_worst_gap_points": 6.25,
       "goalpost_1_holds": false,
-      "goalpost_2_holds": false,
+      "goalpost_2_holds": true,
       "interval_wider_than_baseline": false,
       "median_width_points": 2.7499999999999996,
       "not_fitted_refits": 5,
@@ -29,7 +29,7 @@
       "baseline_not_fitted_refits": 0,
       "baseline_worst_gap_points": 6.25,
       "goalpost_1_holds": false,
-      "goalpost_2_holds": false,
+      "goalpost_2_holds": true,
       "interval_wider_than_baseline": false,
       "median_width_points": 2.4999999999999996,
       "not_fitted_refits": 3,
@@ -41,7 +41,7 @@
       "baseline_not_fitted_refits": 0,
       "baseline_worst_gap_points": 6.25,
       "goalpost_1_holds": false,
-      "goalpost_2_holds": false,
+      "goalpost_2_holds": true,
       "interval_wider_than_baseline": false,
       "median_width_points": 2.4999999999999996,
       "not_fitted_refits": 4,
@@ -53,7 +53,7 @@
       "baseline_not_fitted_refits": 0,
       "baseline_worst_gap_points": 6.25,
       "goalpost_1_holds": false,
-      "goalpost_2_holds": false,
+      "goalpost_2_holds": true,
       "interval_wider_than_baseline": false,
       "median_width_points": 2.249999999999999,
       "not_fitted_refits": 6,
@@ -65,7 +65,7 @@
       "baseline_not_fitted_refits": 0,
       "baseline_worst_gap_points": 6.25,
       "goalpost_1_holds": false,
-      "goalpost_2_holds": false,
+      "goalpost_2_holds": true,
       "interval_wider_than_baseline": false,
       "median_width_points": 1.7500000000000002,
       "not_fitted_refits": 17,
@@ -11251,10 +11251,10 @@
     "B": {
       "all_served_days": {
         "goalpost_1": {
-          "breaches": 523,
+          "breaches_note": "not recomputable from this record without a re-run (#166): the record holds the worst gap, not the gap of each day, and the superseded count compared points with a limit in shares",
           "days_compared": 1426,
           "holds": false,
-          "limit": 0.005,
+          "limit": 0.5,
           "missing_refits": 0,
           "worst": {
             "day": "2021-07-20",
@@ -11264,7 +11264,7 @@
         "goalpost_2": {
           "days": 1447,
           "holds": false,
-          "limit": 0.03,
+          "limit": 3.0,
           "median": 3.25,
           "missing": 0
         },
@@ -11274,10 +11274,10 @@
       },
       "common_served_days": {
         "goalpost_1": {
-          "breaches": 292,
+          "breaches_note": "not recomputable from this record without a re-run (#166): the record holds the worst gap, not the gap of each day, and the superseded count compared points with a limit in shares",
           "days_compared": 985,
           "holds": false,
-          "limit": 0.005,
+          "limit": 0.5,
           "missing_refits": 0,
           "worst": {
             "day": "2021-07-20",
@@ -11286,8 +11286,8 @@
         },
         "goalpost_2": {
           "days": 985,
-          "holds": false,
-          "limit": 0.03,
+          "holds": true,
+          "limit": 3.0,
           "median": 2.7499999999999996,
           "missing": 0
         },
@@ -11299,10 +11299,10 @@
     "V1": {
       "all_served_days": {
         "goalpost_1": {
-          "breaches": 376,
+          "breaches_note": "not recomputable from this record without a re-run (#166): the record holds the worst gap, not the gap of each day, and the superseded count compared points with a limit in shares",
           "days_compared": 1300,
           "holds": false,
-          "limit": 0.005,
+          "limit": 0.5,
           "missing_refits": 4,
           "worst": {
             "day": "2022-11-22",
@@ -11311,8 +11311,8 @@
         },
         "goalpost_2": {
           "days": 1363,
-          "holds": false,
-          "limit": 0.03,
+          "holds": true,
+          "limit": 3.0,
           "median": 2.249999999999999,
           "missing": 0
         },
@@ -11322,10 +11322,10 @@
       },
       "common_served_days": {
         "goalpost_1": {
-          "breaches": 208,
+          "breaches_note": "not recomputable from this record without a re-run (#166): the record holds the worst gap, not the gap of each day, and the superseded count compared points with a limit in shares",
           "days_compared": 964,
           "holds": false,
-          "limit": 0.005,
+          "limit": 0.5,
           "missing_refits": 4,
           "worst": {
             "day": "2022-11-22",
@@ -11334,8 +11334,8 @@
         },
         "goalpost_2": {
           "days": 985,
-          "holds": false,
-          "limit": 0.03,
+          "holds": true,
+          "limit": 3.0,
           "median": 2.249999999999999,
           "missing": 0
         },
@@ -11347,10 +11347,10 @@
     "V2": {
       "all_served_days": {
         "goalpost_1": {
-          "breaches": 376,
+          "breaches_note": "not recomputable from this record without a re-run (#166): the record holds the worst gap, not the gap of each day, and the superseded count compared points with a limit in shares",
           "days_compared": 1300,
           "holds": false,
-          "limit": 0.005,
+          "limit": 0.5,
           "missing_refits": 5,
           "worst": {
             "day": "2022-12-22",
@@ -11359,8 +11359,8 @@
         },
         "goalpost_2": {
           "days": 1342,
-          "holds": false,
-          "limit": 0.03,
+          "holds": true,
+          "limit": 3.0,
           "median": 2.7499999999999996,
           "missing": 0
         },
@@ -11370,10 +11370,10 @@
       },
       "common_served_days": {
         "goalpost_1": {
-          "breaches": 229,
+          "breaches_note": "not recomputable from this record without a re-run (#166): the record holds the worst gap, not the gap of each day, and the superseded count compared points with a limit in shares",
           "days_compared": 943,
           "holds": false,
-          "limit": 0.005,
+          "limit": 0.5,
           "missing_refits": 5,
           "worst": {
             "day": "2022-12-22",
@@ -11382,8 +11382,8 @@
         },
         "goalpost_2": {
           "days": 985,
-          "holds": false,
-          "limit": 0.03,
+          "holds": true,
+          "limit": 3.0,
           "median": 2.7499999999999996,
           "missing": 0
         },
@@ -11395,10 +11395,10 @@
     "V3": {
       "all_served_days": {
         "goalpost_1": {
-          "breaches": 313,
+          "breaches_note": "not recomputable from this record without a re-run (#166): the record holds the worst gap, not the gap of each day, and the superseded count compared points with a limit in shares",
           "days_compared": 1342,
           "holds": false,
-          "limit": 0.005,
+          "limit": 0.5,
           "missing_refits": 3,
           "worst": {
             "day": "2021-09-17",
@@ -11407,8 +11407,8 @@
         },
         "goalpost_2": {
           "days": 1384,
-          "holds": false,
-          "limit": 0.03,
+          "holds": true,
+          "limit": 3.0,
           "median": 2.4999999999999996,
           "missing": 0
         },
@@ -11418,10 +11418,10 @@
       },
       "common_served_days": {
         "goalpost_1": {
-          "breaches": 103,
+          "breaches_note": "not recomputable from this record without a re-run (#166): the record holds the worst gap, not the gap of each day, and the superseded count compared points with a limit in shares",
           "days_compared": 964,
           "holds": false,
-          "limit": 0.005,
+          "limit": 0.5,
           "missing_refits": 3,
           "worst": {
             "day": "2025-12-04",
@@ -11430,8 +11430,8 @@
         },
         "goalpost_2": {
           "days": 985,
-          "holds": false,
-          "limit": 0.03,
+          "holds": true,
+          "limit": 3.0,
           "median": 2.4999999999999996,
           "missing": 0
         },
@@ -11443,10 +11443,10 @@
     "V4": {
       "all_served_days": {
         "goalpost_1": {
-          "breaches": 397,
+          "breaches_note": "not recomputable from this record without a re-run (#166): the record holds the worst gap, not the gap of each day, and the superseded count compared points with a limit in shares",
           "days_compared": 1321,
           "holds": false,
-          "limit": 0.005,
+          "limit": 0.5,
           "missing_refits": 4,
           "worst": {
             "day": "2022-12-22",
@@ -11455,8 +11455,8 @@
         },
         "goalpost_2": {
           "days": 1363,
-          "holds": false,
-          "limit": 0.03,
+          "holds": true,
+          "limit": 3.0,
           "median": 2.4999999999999996,
           "missing": 0
         },
@@ -11466,10 +11466,10 @@
       },
       "common_served_days": {
         "goalpost_1": {
-          "breaches": 250,
+          "breaches_note": "not recomputable from this record without a re-run (#166): the record holds the worst gap, not the gap of each day, and the superseded count compared points with a limit in shares",
           "days_compared": 943,
           "holds": false,
-          "limit": 0.005,
+          "limit": 0.5,
           "missing_refits": 4,
           "worst": {
             "day": "2022-12-22",
@@ -11478,8 +11478,8 @@
         },
         "goalpost_2": {
           "days": 985,
-          "holds": false,
-          "limit": 0.03,
+          "holds": true,
+          "limit": 3.0,
           "median": 2.4999999999999996,
           "missing": 0
         },
@@ -11491,10 +11491,10 @@
     "V5": {
       "all_served_days": {
         "goalpost_1": {
-          "breaches": 292,
+          "breaches_note": "not recomputable from this record without a re-run (#166): the record holds the worst gap, not the gap of each day, and the superseded count compared points with a limit in shares",
           "days_compared": 1258,
           "holds": false,
-          "limit": 0.005,
+          "limit": 0.5,
           "missing_refits": 6,
           "worst": {
             "day": "2022-11-22",
@@ -11503,8 +11503,8 @@
         },
         "goalpost_2": {
           "days": 1321,
-          "holds": false,
-          "limit": 0.03,
+          "holds": true,
+          "limit": 3.0,
           "median": 2.249999999999999,
           "missing": 0
         },
@@ -11514,10 +11514,10 @@
       },
       "common_served_days": {
         "goalpost_1": {
-          "breaches": 124,
+          "breaches_note": "not recomputable from this record without a re-run (#166): the record holds the worst gap, not the gap of each day, and the superseded count compared points with a limit in shares",
           "days_compared": 943,
           "holds": false,
-          "limit": 0.005,
+          "limit": 0.5,
           "missing_refits": 6,
           "worst": {
             "day": "2022-11-22",
@@ -11526,8 +11526,8 @@
         },
         "goalpost_2": {
           "days": 985,
-          "holds": false,
-          "limit": 0.03,
+          "holds": true,
+          "limit": 3.0,
           "median": 2.249999999999999,
           "missing": 0
         },
@@ -11539,10 +11539,10 @@
     "V6": {
       "all_served_days": {
         "goalpost_1": {
-          "breaches": 147,
+          "breaches_note": "not recomputable from this record without a re-run (#166): the record holds the worst gap, not the gap of each day, and the superseded count compared points with a limit in shares",
           "days_compared": 1006,
           "holds": false,
-          "limit": 0.005,
+          "limit": 0.5,
           "missing_refits": 17,
           "worst": {
             "day": "2020-10-15",
@@ -11551,8 +11551,8 @@
         },
         "goalpost_2": {
           "days": 1090,
-          "holds": false,
-          "limit": 0.03,
+          "holds": true,
+          "limit": 3.0,
           "median": 1.7500000000000002,
           "missing": 0
         },
@@ -11562,10 +11562,10 @@
       },
       "common_served_days": {
         "goalpost_1": {
-          "breaches": 105,
+          "breaches_note": "not recomputable from this record without a re-run (#166): the record holds the worst gap, not the gap of each day, and the superseded count compared points with a limit in shares",
           "days_compared": 943,
           "holds": false,
-          "limit": 0.005,
+          "limit": 0.5,
           "missing_refits": 17,
           "worst": {
             "day": "2020-10-15",
@@ -11574,8 +11574,8 @@
         },
         "goalpost_2": {
           "days": 985,
-          "holds": false,
-          "limit": 0.03,
+          "holds": true,
+          "limit": 3.0,
           "median": 1.7500000000000002,
           "missing": 0
         },
@@ -11584,6 +11584,10 @@
         "worst_gap_points": 2.0000000000000004
       }
     }
+  },
+  "superseded": {
+    "reason": "goalposts 1 and 2 compared gaps and widths in points with limits in shares (0.005 and 0.03) instead of points (0.5 and 3); recomputed in points from the record's medians, worst gaps and unfitted refits, nothing re-run (Eleonora's ruling on repo-market-liquidity#166, directive #167). The superseded record was never on main.",
+    "sha256": "f6292a314a792961e52c6fbe5a64f14db5be8e08f76fff61102fa04d198a7395"
   },
   "tier": "development",
   "training_after": "2018-06-13",

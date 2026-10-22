@@ -19,13 +19,15 @@ Panel version 4 `6415651da6095e8d2942ab3ff344211b7fa32e7488eff622b04e18d72de822a
 
 | Estimator | Not fitted | Worst gap (pts) | Gp1 | Median width (pts) | Gp2 | Same served days |
 |---|---|---|---|---|---|---|
-| B | 0 | 6.250 | does not hold | 2.750 | does not hold | 985 |
-| V1 | 4 | 3.500 | does not hold | 2.250 | does not hold | 985 |
-| V2 | 5 | 3.000 | does not hold | 2.750 | does not hold | 985 |
-| V3 | 3 | 2.750 | does not hold | 2.500 | does not hold | 985 |
-| V4 | 4 | 3.500 | does not hold | 2.500 | does not hold | 985 |
-| V5 | 6 | 5.500 | does not hold | 2.250 | does not hold | 985 |
-| V6 | 17 | 2.000 | does not hold | 1.750 | does not hold | 985 |
+| B | 0 | 6.250 | does not hold | 2.750 | holds | 985 |
+| V1 | 4 | 3.500 | does not hold | 2.250 | holds | 985 |
+| V2 | 5 | 3.000 | does not hold | 2.750 | holds | 985 |
+| V3 | 3 | 2.750 | does not hold | 2.500 | holds | 985 |
+| V4 | 4 | 3.500 | does not hold | 2.500 | holds | 985 |
+| V5 | 6 | 5.500 | does not hold | 2.250 | holds | 985 |
+| V6 | 17 | 2.000 | does not hold | 1.750 | holds | 985 |
+
+Goalposts 1 and 2 are read in points (limits 0.5 and 3). This record replaces the one with sha256 `f6292a314a792961e52c6fbe5a64f14db5be8e08f76fff61102fa04d198a7395`: goalposts 1 and 2 compared gaps and widths in points with limits in shares (0.005 and 0.03) instead of points (0.5 and 3); recomputed in points from the record's medians, worst gaps and unfitted refits, nothing re-run (Eleonora's ruling on repo-market-liquidity#166, directive #167). The superseded record was never on main. The breach counts of goalpost 1 are removed: not recomputable from this record without a re-run (#166): the record holds the worst gap, not the gap of each day, and the superseded count compared points with a limit in shares.
 
 ## Each variant against the baseline
 
