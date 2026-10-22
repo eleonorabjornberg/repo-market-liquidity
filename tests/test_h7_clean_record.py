@@ -58,6 +58,14 @@ class RecordTests(unittest.TestCase):
             self.assertEqual([r["cutoff"] for r in entry["refits"]], cutoffs, name)
         self.assertGreaterEqual(self.record["settings"]["replications"], 1)
 
+    def test_goalpost_1_is_unreadable_on_development_data_and_is_neither_a_pass_nor_a_fail(self):
+        reading = self.script.GOALPOST_1_READING
+        for name, entry in self.record["estimators"].items():
+            self.assertEqual(entry["summary"]["goalpost_1"]["reading"], reading, name)
+            self.assertNotIn("holds", entry["summary"]["goalpost_1"], name)
+        for variant, row in self.record["comparison"].items():
+            self.assertEqual((row["goalpost_1_reading"], row["baseline_goalpost_1_reading"]), (reading, reading), variant)
+
     def test_the_tracked_page_is_what_the_record_renders_to(self):
         self.assertEqual(PAGE.read_text(encoding="utf-8"), self.script.markdown(self.record))
 

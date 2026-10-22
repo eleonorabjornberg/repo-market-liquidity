@@ -17,8 +17,9 @@ page is not what the record renders to.
   final refit on the last row, 2025-12-31 (her ruling on finding #160, option (b); declaration section 11), for the baseline C and
   CV1 to CV4 alike. A refit serves from the second business day after its cutoff, so the final one serves no day of the window.
 * Bootstrap: mean block 10, level 0.90, the parent's seed, `--replications` draws (2000, Stage 2's and Stage 6's count).
-* Goalpost 1 (the worst gap between a refit and the one before, against 0.5 points) and goalpost 2 (the median 90% width,
-  against 3 points) are read for each estimator and each variant is set beside its own baseline. Beside goalpost 2 the record
+* Goalpost 1 is unreadable on development data for C and CV1 to CV4 and is read prospectively (Eleonora, 22 Oct, option 6;
+  declaration section 12): the record and the page say so, and it is never a pass or a fail. Goalpost 2 (the median 90% width,
+  against 3 points) is read for each estimator and each variant is set beside its own baseline. Beside goalpost 2 the record
   gives each refit's Politis-White block length of its training residuals (reported only: the bootstrap's mean block stays 10).
   Development evidence only: no verdict, no locked day, no goalpost 3, nothing scored against the stress events (that is step 5).
 * The exclusion set reads the parent's `turn_days.turn_label` (Q1), which exists from the pin of 08ff67e on: at the
@@ -124,10 +125,16 @@ def _block_summary(rows):
             "max": blocks[-1]}
 
 
+#: Goalpost 1 on development data (her ruling of 22 October 2026, option 6; declaration section 12): it is neither a pass nor a
+#: fail for C or for CV1 to CV4, and is read prospectively.
+GOALPOST_1_READING = "unreadable on development data, read prospectively (Eleonora, 22 Oct, option 6)"
+
+
 def _entry(paths, seconds, block=None):
     """One estimator's entry. `block(refit)` gives the Politis-White block length of a refit whose record does not hold it (the
     baseline's)."""
     summary = h.summarise(paths)
+    summary["goalpost_1"] = {**{k: v for k, v in summary["goalpost_1"].items() if k != "holds"}, "reading": GOALPOST_1_READING}
     rows = [_refit_row(p.refit, block) for p in paths]
     summary["politis_white_block"] = _block_summary(rows)
     return {"summary": summary, "refits": rows,
@@ -160,7 +167,7 @@ def _compare(entries):
                 "baseline_worst_gap_points": (base["goalpost_1"]["worst"] or {}).get("gap_points"),
                 "median_width_points": mine["goalpost_2"]["median_points"],
                 "baseline_median_width_points": base["goalpost_2"]["median_points"],
-                "goalpost_1_holds": mine["goalpost_1"]["holds"], "baseline_goalpost_1_holds": base["goalpost_1"]["holds"],
+                "goalpost_1_reading": mine["goalpost_1"]["reading"], "baseline_goalpost_1_reading": base["goalpost_1"]["reading"],
                 "goalpost_2_holds": mine["goalpost_2"]["holds"], "baseline_goalpost_2_holds": base["goalpost_2"]["holds"],
                 "not_fitted_refits": mine["not_fitted_refits"], "baseline_not_fitted_refits": base["not_fitted_refits"],
                 "refit_status": mine["refit_status"]}
@@ -215,9 +222,11 @@ def markdown(record):
         block = s["politis_white_block"]
         pw = "n/a" if not block["refits"] else f"{_fmt(block['median'], 1)} ({_fmt(block['max'], 1)}) over {block['refits']} refits"
         lines.append(f"| {name} | {days} | {objective} | {left} | {s['refits']} | {s['not_fitted_refits']} | {status} | "
-                     f"{_fmt(worst)} | {_verdict(s['goalpost_1'])} | {_fmt(s['goalpost_2']['median_points'])} | "
+                     f"{_fmt(worst)} | {s['goalpost_1']['reading']} | {_fmt(s['goalpost_2']['median_points'])} | "
                      f"{_verdict(s['goalpost_2'])} | {pw} | {s['served_days']} |")
-    lines += ["", "Goalpost 1 is read on the gaps between consecutive refits on the days both serve; a refit that is not fitted or "
+    lines += ["", f"**Goalpost 1 is {GOALPOST_1_READING}** for C and CV1 to CV4 (declaration section 12); the Gp1 column carries that "
+              "reading, and the worst gap beside it is a description of the gaps, not a reading of the goalpost.", "",
+              "Goalpost 1, were it read, is read on the gaps between consecutive refits on the days both serve; a refit that is not fitted or "
               "not identified serves nothing, so it makes no gap and is counted beside the figure. Goalpost 2's median counts a "
               "served day with no interval, and a day a refit left unserved, as over the limit.", "",
               "The Politis-White block length (Politis and White 2004, with the correction of Patton, Politis and White 2009) is "

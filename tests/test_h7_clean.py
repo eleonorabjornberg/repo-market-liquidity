@@ -687,6 +687,24 @@ class ScriptTests(_FitCase):
         self.assertEqual(comparison["CV1"]["against"], "C")
         self.assertIn("baseline_worst_gap_points", comparison["CV1"])
 
+    def test_goalpost_1_is_unreadable_on_development_data_for_c_and_the_variants_and_is_never_a_pass_or_a_fail(self):
+        """Her ruling of 22 October 2026, option 6 (declaration section 12): the record and the page say so, never `holds`."""
+        reading = self.script.GOALPOST_1_READING
+        self.assertEqual(reading, "unreadable on development data, read prospectively (Eleonora, 22 Oct, option 6)")
+        record = self.record()
+        for name, entry in record["estimators"].items():
+            self.assertEqual(entry["summary"]["goalpost_1"]["reading"], reading, name)
+            self.assertNotIn("holds", entry["summary"]["goalpost_1"], name)
+        row = record["comparison"]["CV1"]
+        self.assertEqual((row["goalpost_1_reading"], row["baseline_goalpost_1_reading"]), (reading, reading))
+        self.assertNotIn("goalpost_1_holds", row)
+        self.assertNotIn("baseline_goalpost_1_holds", row)
+        text = self.script.markdown(record)
+        self.assertEqual(text.count(reading), len(record["estimators"]) + 1)  # one cell per estimator and the note
+        table = text.split("## Goalposts 1 and 2 on development days")[1].split("## Each variant")[0]
+        gp1 = [line.split("|")[9].strip() for line in table.splitlines() if line.startswith(("| C |", "| CV1 |"))]
+        self.assertEqual(gp1, [reading, reading])
+
     def test_the_markdown_is_printed_from_the_record(self):
         text = self.script.markdown(self.record())
         for needle in ("never edited by hand", "development", "| CV1 |", "| C |", "Goalposts 1 and 2", "2018-04-04",
