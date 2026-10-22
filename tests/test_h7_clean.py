@@ -729,6 +729,101 @@ class ScriptTests(_FitCase):
                     self.assertIn(str(refit["training_days"]), section)
 
 
+class ScheduleTests(_FitCase):
+    """The refit schedule: every 21 observation days from 2020-03-13, plus a final refit on 2025-12-31 (her ruling on finding
+    #160, option (b); `docs/stages/h7-calendar-clean.md` section 11). Written before the code and watched failing: against the
+    earlier script, `_cutoffs` ended on 2025-12-02 and `_last_samples` did not exist (`AttributeError: module 'h7_calendar_clean'
+    has no attribute '_last_samples'`)."""
+
+    LAST = date(2025, 12, 31)
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        import importlib.util
+        from pathlib import Path
+        from types import SimpleNamespace
+
+        path = Path(__file__).resolve().parents[1] / "scripts" / "h7_calendar_clean.py"
+        spec = importlib.util.spec_from_file_location("h7_calendar_clean", path)
+        cls.script = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(cls.script)
+        weekdays, day = [], date(2018, 4, 3)
+        while day <= cls.LAST:
+            if day.weekday() < 5:
+                weekdays.append(day)
+            day += timedelta(days=1)
+        cls.weekdays = weekdays
+        # The second episode is 2025. 59 of its days are scarce before the last day and the last day is the 60th, so it counts
+        # on all days at the final refit and at no refit before. Five of its days are dropped, so it never has 60 clean scarce days.
+        second = [d_ for d_ in weekdays if d_ >= date(2025, 1, 1)]
+        cls.scarce = set(second[3:62]) | {cls.LAST}
+        cls.dropped = set(second[10:15])
+        cls.episodes = (("first", date(2018, 1, 1), date(2020, 3, 13)), ("second", date(2025, 1, 1), cls.LAST))
+        cls.days = [SimpleNamespace(day=d_, ratio=0.10 if d_ in cls.scarce or d_ <= date(2020, 3, 13) else 0.30, corridor=0.2,
+                                    week=object()) for d_ in weekdays]
+        cls.flags = {d_: h.Flags(d_, 1.0 if d_ in cls.dropped else 0.0, 0.0) for d_ in weekdays}
+        cls.cutoffs = cls.script._cutoffs(cls.days, None)
+
+    def sample(self, cutoff, clean=True):
+        return h.training_days(self.days, cutoff, self.flags, CORRIDOR, {}, lambda x: True, clean=clean, episodes=self.episodes)
+
+    def test_the_schedule_ends_on_the_last_row_after_the_stride(self):
+        self.assertEqual(self.cutoffs[0], date(2020, 3, 13))
+        self.assertEqual(self.cutoffs[-1], self.LAST)
+        stride = self.cutoffs[:-1]
+        self.assertEqual(stride, [x for x in self.weekdays if x >= date(2020, 3, 13)][::21])
+        self.assertLess(stride[-1], self.LAST)
+        self.assertEqual(self.cutoffs, sorted(set(self.cutoffs)))
+
+    def test_a_stride_that_lands_on_the_last_row_has_no_extra_refit(self):
+        stride = [x for x in self.weekdays if x >= date(2020, 3, 13)][::21]
+        with mock.patch.object(demand_curve, "LAST_DAY", stride[-1]):
+            days = [x for x in self.days if x.day <= stride[-1]]
+            self.assertEqual(self.script._cutoffs(days, None), stride)
+
+    def test_a_limit_takes_the_first_refits_of_the_stride_only(self):
+        self.assertEqual(self.script._cutoffs(self.days, 3), self.cutoffs[:3])
+
+    def test_a_window_without_the_last_row_is_refused(self):
+        with self.assertRaises(ValueError):
+            self.script._cutoffs([x for x in self.days if x.day < self.LAST], None)
+
+    def test_2025_counts_at_the_final_refit_and_at_no_earlier_one(self):
+        for clean in (True, False):
+            for cutoff in self.cutoffs[:-1]:
+                self.assertEqual(self.sample(cutoff, clean)[1], ("first",), (cutoff, clean))
+            self.assertEqual(self.sample(self.LAST, clean)[1], ("first", "second"), clean)
+
+    def test_eligibility_is_on_all_days_and_the_fit_leaves_the_dropped_days(self):
+        clean, _ = self.sample(self.LAST, True)
+        every, _ = self.sample(self.LAST, False)
+        in_2025 = lambda xs: [x for x in xs if x.day >= date(2025, 1, 1)]  # noqa: E731
+        self.assertEqual(len(in_2025(every)) - len(in_2025(clean)), len(self.dropped))
+        self.assertLess(sum(1 for x in in_2025(clean) if x.day in self.scarce), demand_curve.MIN_SCARCE_DAYS_REVISED)
+
+    def test_the_last_two_samples_are_reported_for_each_variant_without_fitting(self):
+        series = {EFFR: {x.day: 0.8 * x.corridor + 0.1 for x in self.days}}
+        with mock.patch.object(h, "refit_c", side_effect=AssertionError("fitted")):
+            report = self.script._last_samples(self.days, self.cutoffs, self.flags, series, episodes=self.episodes)
+        self.assertEqual(set(report), {"C", "CV1", "CV2", "CV3", "CV4"})
+        last_two = [self.cutoffs[-2].isoformat(), self.cutoffs[-1].isoformat()]
+        for name, rows in report.items():
+            self.assertEqual([r["cutoff"] for r in rows], last_two, name)
+            self.assertEqual([r["episodes"] for r in rows], [["first"], ["first", "second"]], name)
+            self.assertGreater(rows[1]["training_days"], rows[0]["training_days"], name)
+        self.assertEqual(report["C"][1]["training_days"], report["CV4"][1]["training_days"])
+        self.assertLess(report["CV1"][1]["training_days"], report["CV4"][1]["training_days"])
+
+    def test_the_final_refit_serves_no_day_of_the_window(self):
+        planted = tc._planted_days(tc._weeks(), count=120)
+        flags = _quiet_flags(planted)
+        path = h.path_c(planted, [planted[40].day, planted[-1].day], flags, CORRIDOR, _effr_series(planted), replications=0,
+                        episodes=EPISODES, min_scarce=MIN_SCARCE)
+        self.assertEqual(path[-1].estimates, [])
+        self.assertEqual(path[0].estimates[-1].day, planted[-1].day)
+
+
 class VariantTableTests(unittest.TestCase):
     def test_the_run_has_the_four_variants_of_c_and_d_is_not_run(self):
         self.assertEqual([v.id for v in h.VARIANTS], ["CV1", "CV2", "CV3", "CV4"])

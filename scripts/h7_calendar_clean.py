@@ -13,8 +13,9 @@ page is not what the record renders to.
 * Rows: the measurement panel version 4 (panel-v4.md) from the tracked fixtures (its digest is checked), with the parent's opt-in `effr`
   column, to `demand_curve.LAST_DAY`, as Stage 6's refits ran. Every scored day is read through the parent's rule, which
   refuses a locked day (`lockbox.require_unlocked`).
-* Refits: the first at the first episode's last day, 2020-03-13, then every 21 observation days, as Stages 3c and 6. A refit
-  serves from the second business day after its cutoff.
+* Refits: the first at the first episode's last day, 2020-03-13, then every 21 observation days, as Stages 3c and 6, plus a
+  final refit on the last row, 2025-12-31 (her ruling on finding #160, option (b); declaration section 11), for the baseline C and
+  CV1 to CV4 alike. A refit serves from the second business day after its cutoff, so the final one serves no day of the window.
 * Bootstrap: mean block 10, level 0.90, the parent's seed, `--replications` draws (2000, Stage 2's and Stage 6's count).
 * Goalpost 1 (the worst gap between a refit and the one before, against 0.5 points) and goalpost 2 (the median 90% width,
   against 3 points) are read for each estimator and each variant is set beside its own baseline. Beside goalpost 2 the record
@@ -64,9 +65,37 @@ def _inputs(rows):
 
 
 def _cutoffs(days, limit):
+    """Every 21 observation days from 2020-03-13, plus a final refit on the last row, 2025-12-31 (her ruling on finding #160,
+    option (b); `docs/stages/h7-calendar-clean.md` section 11), the same for the baseline C and CV1 to CV4. With `limit` the
+    first `limit` refits of the stride only (a partial run, which has no final refit)."""
     first = next(i for i, x in enumerate(days) if x.day >= FIRST_CUTOFF)
     out = [x.day for x in days[first::REFIT_EVERY]]
-    return out if limit is None else out[:limit]
+    if limit is not None:
+        return out[:limit]
+    final = demand_curve.LAST_DAY
+    if not any(x.day == final for x in days):
+        raise ValueError(f"the final refit is on {final}, which is not a row of the window")
+    return out if out[-1] == final else out + [final]
+
+
+def _last_samples(days, cutoffs, flags, series, *, episodes=demand_curve.EPISODES, min_scarce=demand_curve.MIN_SCARCE_DAYS_REVISED):
+    """The training sample of the baseline C and of each variant at the last two refits, without fitting anything: the days it
+    fits on, the episodes that count and the days of those episodes the exclusion set takes out."""
+    out = {}
+    for cutoff in cutoffs[-2:]:
+        sample, labels = c.training_days(days, cutoff, episodes=episodes, min_scarce=min_scarce)
+        out.setdefault("C", []).append({"cutoff": cutoff.isoformat(), "training_days": len(sample), "episodes": list(labels),
+                                        "dropped_days": 0})
+        for v in h.VARIANTS:
+            clean = v.days == "clean"
+            usable = lambda x: x.week is not None  # noqa: E731
+            sample, labels = h.training_days(days, cutoff, flags, v.left, series, usable, clean=clean, episodes=episodes,
+                                             min_scarce=min_scarce)
+            every, _ = h.training_days(days, cutoff, flags, v.left, series, usable, clean=False, episodes=episodes,
+                                       min_scarce=min_scarce)
+            out.setdefault(v.id, []).append({"cutoff": cutoff.isoformat(), "training_days": len(sample), "episodes": list(labels),
+                                             "dropped_days": len(every) - len(sample)})
+    return out
 
 
 def _block(refit, block):
@@ -160,7 +189,9 @@ def markdown(record):
              f"Panel version {record['pins']['panel_version']} `{record['pins']['panel_sha256']}`; parent "
              f"`{record['pins']['parent_commit']}`; `effr` series `{record['pins']['effr_series_sha256']}`; days "
              f"{record['pins']['first_day']} to {record['window_end']}; {record['settings']['replications']} bootstrap draws; "
-             f"{len(record['cutoffs'])} refits from {record['cutoffs'][0]} every {record['settings']['refit_every']} days.", "",
+             f"{len(record['cutoffs'])} refits from {record['cutoffs'][0]} every {record['settings']['refit_every']} observation days"
+             + (f", plus a final refit on {record['cutoffs'][-1]}." if record['cutoffs'][-1] == demand_curve.LAST_DAY.isoformat() else "."),
+             "",
              "## The scarce episodes, with and without the calendar days", "",
              "The floor of 60 scarce days is read on all days, the same for every variant; the clean variants then fit on the "
              "counted episode's clean days (declaration section 10, her ruling on PR #150).", "",
@@ -297,6 +328,7 @@ def main(argv=None):
                      "stability_limit_points": c.points(goalposts.STABILITY_LIMIT),
                      "width_limit_points": c.points(goalposts.WIDTH_LIMIT)},
         "cutoffs": [day.isoformat() for day in cutoffs],
+        "final_refit_samples": _last_samples(days_c, cutoffs, flags, series),
         "unread_flag_days": sorted(day.isoformat() for day, f in flags.items() if f.unread),
         "episode_counts": {"C": _episode_counts(days_c, flags, lambda x: x.week is not None and x.corridor is not None)},
         "estimators": entries, "comparison": _compare(entries),
