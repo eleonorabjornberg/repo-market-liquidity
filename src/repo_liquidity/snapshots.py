@@ -86,7 +86,8 @@ SERIES: Dict[str, Path] = {
     "rde": RDE_EXTRACT,
 }
 #: The tracked tables a derived series is computed from, named in its manifest by digest (#125).
-INPUTS: Dict[str, tuple] = {"announced_pace": (scheduled.CAPS_TABLE, announced_pace.PURCHASES_TABLE)}
+INPUTS: Dict[str, tuple] = {"announced_pace": (scheduled.CAPS_TABLE, announced_pace.PURCHASES_TABLE,
+                                               announced_pace.RMP_TABLE)}
 _HEX40 = re.compile(r"^[0-9a-f]{40}$")
 
 

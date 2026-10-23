@@ -120,3 +120,19 @@ the launch release headlined (2024-10-09, one row later than before). The 634 ea
 
 A reader that pinned the superseded digest still finds its bytes; they read estimates up to a day before their release and must
 move to the current digest.
+
+## 23 October 2026: the `announced_pace` snapshot extended with the Desk's monthly reserve management purchases (#158, G7)
+
+Eleonora's ruling of 21 October 2026 on #156 (option (a)): the monthly amounts on the Desk's operational-details page are read, each
+as of its publication instant and from its period's start. The table gains eight rows, for the periods starting 15 January to
+14 August 2026 (announced from 14 January to 13 August), so the pace reads a signed value from 16 January 2026 to the development end where
+it read `None`. The published bytes of the 23 earlier rows are unchanged. The `source_inputs` of the manifest now also name
+`rmp_schedule.csv`, which holds the page's fetch hash and the values' content hash. Two notes that called MBS reinvestment at 0 "marked
+question Q1" now cite her ruling of 19 October 2026; the table does not carry them.
+
+| Series | Superseded digest (file kept) | Current digest | Rows |
+|---|---|---|---|
+| `announced_pace` | `b542577ce0a3aa051503b6606de4be6c7fa3d35222abc97218a67c48ca62b6ab` | `8036fe9b1dc25cfd34126e2c35e4e7885bdb6b5fa74cd516ac37265596209ab6` | 23 to 31 |
+
+A reader that pinned the superseded digest still finds its bytes; it reads `None` from 12 January 2026 and must move to the current
+digest for the monthly amounts.
