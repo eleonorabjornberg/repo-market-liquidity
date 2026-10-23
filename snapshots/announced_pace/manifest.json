@@ -15,18 +15,19 @@
     "page"
   ],
   "first_announced": "2017-09-20T14:00",
-  "last_announced": "2025-12-10T23:59",
-  "last_effective": "2026-01-12",
+  "last_announced": "2026-08-13T23:59",
+  "last_effective": "2026-08-14",
   "locked_rows_omitted": [],
   "parent_commit": "08ff67e27bc3d7e357491cf8e1da59793702b3fb",
   "parent_panel_sha256": "4ddc3882cd6d406b11e1088f8ff6195e16dde175a0ad6818abe40dd5bdac8999",
-  "path": "snapshots/announced_pace/b542577ce0a3aa051503b6606de4be6c7fa3d35222abc97218a67c48ca62b6ab.csv",
-  "repo_commit": "dfefb350c4db344c53de67feeee98c6dfc7c5a9c",
-  "rows": 23,
+  "path": "snapshots/announced_pace/8036fe9b1dc25cfd34126e2c35e4e7885bdb6b5fa74cd516ac37265596209ab6.csv",
+  "repo_commit": "fa5b83d1b02e09b0119498626ac4d7780c61bd02",
+  "rows": 31,
   "series": "announced_pace",
-  "sha256": "b542577ce0a3aa051503b6606de4be6c7fa3d35222abc97218a67c48ca62b6ab",
+  "sha256": "8036fe9b1dc25cfd34126e2c35e4e7885bdb6b5fa74cd516ac37265596209ab6",
   "source_inputs": {
-    "announced_purchases.csv": "8a5dee0f9f9297722754d4813c6a42eae050ea0e865431b4d7b328e721bedb2f",
+    "announced_purchases.csv": "b3db2699b92f82cf93263bef5750d97990a599793787777c008064b202eaad64",
+    "rmp_schedule.csv": "df3c70ddc72517e9cd3c95059a3ea8755739d2ca991fe72162575b8067cd0fa7",
     "runoff_caps.csv": "ff413b061516e5c3a8eb25add442bd695a36cd4647f76afc8856512859430d8d"
   },
   "source_pages": {
@@ -52,8 +53,9 @@
     "operating_policy_211103.htm.gz": "033d768500b3ae31ea5dd219936ba05b920b5f1b1dd2f7a01e002775563128c0",
     "operating_policy_211215.htm.gz": "646ff459d0916ca6c2021ac7dbfc0034cd2c6559d568d9dd493a5889cab06d4c",
     "operating_policy_220126.htm.gz": "2fa2e7f0398ee7ea787b9ca74540fafc7da338f373ae955ae1878547f624db01",
-    "operating_policy_251210a.htm.gz": "b21c40691c844c73472a58992bd29ac14c7788bb49c802c3b526921c94c73971"
+    "operating_policy_251210a.htm.gz": "b21c40691c844c73472a58992bd29ac14c7788bb49c802c3b526921c94c73971",
+    "treasury_operational_details_20261023.htm.gz": "4a98f1f787692f33f0d8481c05051940f68c5645a900a594a7c0daafb79ba000"
   },
   "source_table": "tests/fixtures/snapshots/fomc_notes/announced_pace.csv",
-  "source_table_sha256": "b542577ce0a3aa051503b6606de4be6c7fa3d35222abc97218a67c48ca62b6ab"
+  "source_table_sha256": "8036fe9b1dc25cfd34126e2c35e4e7885bdb6b5fa74cd516ac37265596209ab6"
 }
