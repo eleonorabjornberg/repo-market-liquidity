@@ -223,7 +223,7 @@ def markdown(record: Dict) -> str:
         "day is listed apart and does not count (her ruling of 21 October, addition 1).", "",
         "Parent pin " + str(record["pins"]["parent_commit"]) + ", panel digest " + str(record["pins"]["panel_sha256"]) + ". "
         "The code that reads the inputs, by sha256: " + "; ".join(f"`{p}` {h[:12]}" for p, h in sorted(record["input_code_sha256"].items())) +
-        " (`h7_kink` and `h7_clean` are in #154 and #150, not yet on `main`).", "",
+        " (`h7_kink` and `h7_clean` are on `main` since #154 and #150).", "",
         "## Candidates", "",
         "| Id | Rule | Refits | Serving a scored day | Serving none | Refit that exists because of the window's end |",
         "|---|---|---|---|---|---|",

@@ -26,6 +26,7 @@ one-line replacement and the line restored afterwards:
    and `ScheduleTests.test_s2_restarts_the_stride_at_the_entry_date` raised `ValueError` (`list.index`).
 """
 
+import hashlib
 import importlib.util
 import json
 import pathlib
@@ -364,6 +365,36 @@ class ScriptTests(unittest.TestCase):
             with self.assertRaises(ImportError):
                 script.read_inputs()
             self.assertEqual(script.main(["--output", "/nonexistent/none.json"]), 2)
+
+
+class InputDriftTests(unittest.TestCase):
+    """The record's counts were read through five files; the record says which, by sha256 (finding #165, directive #169).
+
+    If any of them changes without the script being re-run, the counts no longer describe the code on main. This test fails then.
+    It reads the committed record and the files; it runs no input.
+
+    **Recorded mutation** (CLAUDE.md), 23 October 2026, CPython 3.11.17, in the working tree, the line restored afterwards:
+    in `src/repo_liquidity/h7_kink.py`, the first line of the module docstring gained a trailing space. `test_every_file_the_record_names_is_the_file_on_main` (path=`src/repo_liquidity/h7_kink.py`) raised
+    `AssertionError` (the sha256 of the file, 77fef34fa0ce..., is not the recorded bacaff380ef7...); the other two tests passed.
+    """
+
+    def record(self):
+        return json.loads(script.OUTPUT.read_text(encoding="utf-8"))["input_code_sha256"]
+
+    def test_the_record_names_the_five_files_the_script_reads(self):
+        self.assertEqual(sorted(self.record()), sorted([
+            "scripts/h7_calendar_clean.py", "scripts/h7_kink_run.py", "src/repo_liquidity/h7_candidate_c.py",
+            "src/repo_liquidity/h7_clean.py", "src/repo_liquidity/h7_kink.py"]))
+
+    def test_every_file_the_record_names_is_the_file_on_main(self):
+        for path, recorded in sorted(self.record().items()):
+            with self.subTest(path=path):
+                actual = hashlib.sha256((ROOT / path).read_bytes()).hexdigest()
+                self.assertEqual(actual, recorded, f"{path} differs from the file the counts were read through: "
+                                                   "re-run scripts/h7_refit_schedule.py and compare every count")
+
+    def test_the_page_no_longer_says_the_code_is_not_on_main(self):
+        self.assertNotIn("not yet on `main`", script.PAGE.read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":
