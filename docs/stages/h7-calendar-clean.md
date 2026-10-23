@@ -54,7 +54,7 @@ What changes and what does not:
 - **Only which days enter the fit changes.** The group weeks, the headroom, the ratio, the corridor position and the as-of reads
   are untouched. The training-day rules of `h7-step2.md` (a group week and a corridor position; D also a headroom) still apply,
   and the calendar clause is applied on top.
-- **The counted-episode rule is taken over the clean days.** An episode counts at a cutoff when it has at least 60 *clean*
+- **(Amended by section 10: the episode floor is read on all days, not on the clean days.)** ~~The counted-episode rule is taken over the clean days.~~ An episode counts at a cutoff when it has at least 60 *clean*
   training days with the all-banks ratio below 13% (D's precedent, `h7-step3.md` section 3, which takes the 60 over the days
   that have a headroom). A refit with no counted episode is **not fitted**, serves no estimate and is reported; there is no
   fallback to the baseline's fit or to a fixed share.
@@ -171,7 +171,7 @@ on the development walk-forward with the same refit dates, the same bootstrap (m
 of draws) and the same days:
 
 - **Goalpost 1 (protocol §3):** the worst gap between a refit and the one before it, on every served day, against 0.5 points of
-  bank assets.
+  bank assets. **Amended (section 12, 22 October 2026): unreadable for C and CV1 to CV4 on development data, read prospectively.**
 - **Goalpost 2 (protocol §4):** the median width of the 90% interval, against 3 points.
 - Each variant is compared with its own baseline on both. The count of refits that are **not fitted** or **not identified** is
   reported beside them, per variant, because a variant that is not fitted cannot breach a gap.
@@ -214,3 +214,106 @@ A **leakage test with one recorded mutation** (`CLAUDE.md`) for the calendar rea
 other than T at T's decision instant, must raise `LookAheadError`, and the mutated line and the exception the failing test raised
 are recorded in the test's docstring. The run keeps long computation to the Mac if it is expected to take over about two hours
 (each refit now solves a linear-programming fit per grid point and per bootstrap draw).
+
+## 9. Amendment of 21 October 2026: the rulings on Q1–Q6, applied before any fit
+
+This section is added to the run's pull request (#147, PR #150) and quotes the ruling comment
+(<https://github.com/eleonorabjornberg/repo-market-liquidity/issues/147#issuecomment-6297287738>; Q4 is Eleonora's own answer,
+Q1–Q3, Q5 and Q6 are the orchestrating session's decisions she asked for, each checked against the five-lens review,
+repo-market-model#958). Where this section and sections 2 to 7 differ, this section decides. Nothing has been fitted on real
+days, so protocol §12 is not touched. The answers to the marked questions of section 7 are:
+
+- **Q1, month-end.** "No, the parent's two-calendar-day clause is not enough." Decision, quoted: "add a third clause to the
+  exclusion set: `repo_model.turn_days.turn_label(T)` is not `None` (declared by `metadata/turn_day_labels_959.json`; model #959,
+  merged in #975). It covers every month's last business day and the first business day after it; the quarter-end and year-end
+  turns overlap the existing quarter-end window. It is read from the parent, never re-implemented, at the target day's own
+  decision instant, and the leakage test of §8 covers it." The exclusion set of section 2(a) is therefore three clauses:
+  `settlement_day` = 1, `quarter_end_window` = 1, or `turn_label(T)` is not `None`. The label exists only after the pin of this
+  document (8fd2cf8), so **the fit on real days waits for the pin move (#149)**; the tests, the solver and the constructed cases
+  go ahead. The set stays shared with A: `h7-kink.md`'s set gains the same clause before A's clean run.
+- **Q2, EFFR left side.** "Corridor-normalised for C and D, `(EFFR − ON RRP rate) / (IORB − ON RRP rate)`. It replaces raw
+  `effr_minus_iorb_bp` in CV2 and DV2; it is not added beside it." Section 2(c) is read accordingly: the left side of CV2 is that
+  position, built as the corridor position is (`demand_curve.corridor_position`, with EFFR in place of SOFR and the ON RRP rate
+  in force that day). The ties from EFFR's whole-basis-point prints remain and are reported.
+- **Q3, not identified.** "Yes." The rule of section 2(b) point 3 extends to the three-start agreement of C and D, and a refit
+  that is not identified serves nothing and is counted beside the goalposts (section 5).
+- **Q4, attribution (hers).** "Yes, add the separating variants." Per candidate, both on the corridor position:
+  **CV3** is (a) only, calendar-clean days with least squares; **CV4** is (b) only, all days with absolute deviation. The table
+  of section 3 is CV1 to CV4 for C (and DV1 to DV4 for D, below). CV3 is a least-squares fit on the clean days; it takes the
+  baseline's kink search and its rejection of a negative slope, and the tie rule of section 2(b) for the starts, because the
+  declaration says that rule holds "for every variant". CV4 fits all of the baseline's days.
+- **Q5, D and #142.** "Settled by her #142 ruling (b): try the vintage rule (#148), and drop D if it cannot be obtained." D was
+  dropped (#153). D and DV1 to DV4 are therefore "not run (D dropped under #142)" and **do not count as run variants**. The
+  code for D's variants stays in the tree, tested, and the run does not call it. Section 4 is no longer a run-time behaviour.
+- **Q6, loss.** "Yes, least absolute deviation. It is Lens B §4.2(2) verbatim, and it has no constant to choose after seeing
+  data."
+
+**Added for reporting only, nothing changed** (the ruling's last paragraph): the run reports the Politis–White block length of
+each refit's training residuals beside goalpost 2, because a block of 10 that is too short would make the 90% interval too
+narrow (Lens C measured about 108 days post-2020 for the model's score series). The bootstrap stays as declared (mean block 10,
+section 2(a)). "Whether a longer block is needed is her call, on that figure."
+
+## 10. Amendment of 21 October 2026: the episode floor is read on all days (option (a)), before any fit
+
+Quoting Eleonora's ruling, relayed by the orchestrating session on PR #150
+(<https://github.com/eleonorabjornberg/repo-market-liquidity/pull/150#issuecomment-6326672451>): "option (a) on the episode
+floor. Whether an episode counts is decided on all days, under the declared rule of at least 60 scarce days, the same for every
+variant. The fit then uses that episode's calendar-clean days only. 2025 therefore counts for every variant (77 scarce days),
+and the clean variants fit on its 55 clean days."
+
+Where this section and section 2(a) ("The counted-episode rule is taken over the clean days") or section 9 differ, this section
+decides:
+
+- **Eligibility is read on all days, the same as the baseline.** An episode counts at a cutoff when it has at least 60 days with
+  the all-banks ratio below 13% among the days that have a group week and a left side, dropped or not. The rule is the same for
+  every variant (CV1 to CV4) and for the baseline.
+- **The clean variants (CV1 to CV3) fit on the counted episodes' clean days.** The dropped days of a counted episode leave the fit
+  and the bootstrap; they do not decide whether the episode counts. CV4 fits every day of a counted episode, as before.
+- A refit with no counted episode is not fitted, as before. The training sample size of each variant at each refit is reported.
+
+Nothing has been fitted on real days, so protocol §12 is not touched.
+
+
+## 11. Amendment of 21 October 2026: a final refit on the last row (finding #160, option (b)), before any fit
+
+Quoting Eleonora's ruling on finding #160, relayed by the orchestrating session on PR #150
+(<https://github.com/eleonorabjornberg/repo-market-liquidity/pull/150#issuecomment-6329276565>): "finding #160, option (b). Add one
+final refit on the last row, 2025-12-31, so that the 2025 episode counts. Her words: 'done, but investigate whether we need a
+different schedule'. The investigation is a separate directive and does not hold this run." And the changes it asks for: "the refit
+schedule becomes every 21 observation days from 2020-03-13, plus a final refit on 2025-12-31. This applies to the baseline C and to
+CV1–CV4 alike."
+
+Where this section and the refit dates of section 2 or of `h7-calendar-clean-run.md` differ, this section decides:
+
+- **The schedule is every 21 observation days from 2020-03-13, plus a final refit on 2025-12-31** (`demand_curve.LAST_DAY`, the
+  last row). If the 21-day stride already lands on 2025-12-31 there is no extra refit. It is the same schedule for the baseline C and
+  for CV1 to CV4.
+- **Eligibility is read on all days** (section 10), so the 2025 episode counts at the final refit, and at no earlier one: the last
+  refit of the stride, 2025-12-02, sees 57 scarce days against the floor of 60 (finding #160). The clean variants (CV1 to CV3) then
+  fit the first episode's clean days and the 2025 episode's clean days; CV4 and the baseline fit every day of both.
+- The training sample of each variant at the last two refits is reported, without fitting (`final_refit_samples` in the record's
+  inputs of the run: the days and the episodes counted).
+- The final refit's first served day is the second business day after 2025-12-31, which is after the window of the run, so it serves
+  no day in this run. It is fitted and reported all the same, as the ruling asks. Whether a different schedule is needed is the
+  separate investigation the ruling names; nothing here answers it.
+
+Nothing has been fitted on real days, so protocol §12 is not touched. The run implements this section with no further choice.
+
+## 12. Amendment of 22 October 2026: goalpost 1 is unreadable for C on development data (option 6 of PR #163), before any fit
+
+Quoting Eleonora's ruling, relayed by the orchestrating session on PR #150
+(<https://github.com/eleonorabjornberg/repo-market-liquidity/pull/150#issuecomment-6343728193>): "option 6 of PR #163: '6'.
+Goalpost 1 is treated as unreadable for C on development data and is read prospectively. There is no new refit schedule. This PR is
+re-declared only as far as its record must say this, and then runs once on its current schedule: S1, every 21 observation days from
+2020-03-13 plus the final refit on 2025-12-31, as at 67f2b70." And her broader direction: "refocus".
+
+Where this section and section 5 (goalpost 1), section 9 or section 11 differ, this section decides, for goalpost 1 only:
+
+- **Goalpost 1 is unreadable on development data for the baseline C and for CV1, CV2, CV3 and CV4 alike**, and is **read
+  prospectively**. In the record and on the printed page it is stated as "unreadable on development data, read prospectively
+  (Eleonora, 22 Oct, option 6)". It is not printed as a pass (`holds`) or a fail (`does not hold`), for any of the five.
+- Goalpost 2 (section 5) is read as declared.
+- **Nothing else changes**: not the refit schedule S1 of section 11, not the variants, not the draws, not the exclusion set, not
+  the sample, not the tie rule.
+
+Nothing has been fitted on real days, so protocol §12 is not touched.
