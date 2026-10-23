@@ -170,12 +170,241 @@ class MustShowTests(unittest.TestCase):
                          (0.0, 0.0))
         self.assertEqual(self.pace(date(2025, 12, 15)).signed, -40.0)
 
-    def test_the_pace_is_unquantified_after_the_first_schedule_of_december_2025(self):
-        self.assertIsNone(self.pace(date(2026, 1, 13)).signed)
-        self.assertIsNone(self.pace(date(2026, 9, 3)).signed)
+    def test_the_pace_is_unquantified_only_until_the_first_monthly_amount_is_public(self):
+        """The first schedule covered to 12 January 2026; the January amount was public from the end of 14 January (#158)."""
+        for day in (date(2026, 1, 13), date(2026, 1, 14), date(2026, 1, 15)):
+            self.assertIsNone(self.pace(day).signed, day)
+        self.assertEqual(self.pace(date(2026, 1, 16)).signed, -40.0)
+        self.assertEqual(self.pace(date(2026, 9, 3)).signed, 0.0)
 
     def test_nothing_is_read_before_the_first_cap(self):
         self.assertIsNone(announced_pace.pace_values([date(2017, 9, 20), date(2017, 9, 21)], decision_time=DECISION)[1])
+
+
+#: The monthly operation periods of the Desk's operational-details page (#158): start, end, reserve management
+#: purchases in $bn, reinvestment purchases in $bn. Read from the saved page by eye, apart from the extractor.
+PERIODS = (
+    ("2025-12-12", "2026-01-14", 40, 14.4),
+    ("2026-01-15", "2026-02-12", 40, 15.4),
+    ("2026-02-13", "2026-03-12", 40, 13.4),
+    ("2026-03-13", "2026-04-13", 40, 13.8),
+    ("2026-04-14", "2026-05-13", 25, 15.5),
+    ("2026-05-14", "2026-06-11", 10, 16.3),
+    ("2026-06-12", "2026-07-13", 10, 16.5),
+    ("2026-07-14", "2026-08-13", 10, 17.6),
+    ("2026-08-14", "2026-09-14", 0, 17.0),
+)
+PAGE = "treasury_operational_details_20261023.htm.gz"
+
+
+def previous_weekday(day):
+    day -= timedelta(days=1)
+    while day.weekday() >= 5:
+        day -= timedelta(days=1)
+    return day
+
+
+class RmpScheduleTests(unittest.TestCase):
+    """The monthly reserve management purchase amounts of the Desk's operational-details page (#158, ruling on #156)."""
+
+    def periods(self):
+        return announced_pace.load_rmp_schedule()
+
+    def test_the_schedule_is_the_page_read_by_eye(self):
+        got = [(p.start.isoformat(), p.end.isoformat(), p.rmp_bn, p.reinvestment_bn) for p in self.periods()]
+        self.assertEqual(got, [(a, b, float(c), float(d)) for a, b, c, d in PERIODS])
+
+    def test_the_schedule_ends_at_the_development_end(self):
+        """A period announced on or after the first locked day is not entered (docs/decisions/lockbox.md)."""
+        from repo_liquidity import development
+
+        end = development.development_end()
+        self.assertIsNotNone(end)
+        for period in self.periods():
+            self.assertLessEqual(period.announced_at.date(), end, period.start)
+
+    def test_every_period_is_stated_by_the_saved_page(self):
+        text = page_text(PAGE)
+        for period in self.periods():
+            first, last = (f"{d.month}/{d.day}/{d.year}" for d in (period.start, period.end))
+            at_period = text[text.index(f"{first} - {last}"):]
+            sentence = at_period[:at_period.index("over the noted monthly period")]
+            self.assertIn(f"approximately ${period.reinvestment_bn:.1f} billion in reinvestment purchases", sentence, first)
+            if period.rmp_bn:
+                self.assertIn(f"approximately ${period.rmp_bn:g} billion in reserve management purchases", sentence, first)
+            else:
+                self.assertIn("no reserve management purchases", sentence, first)
+
+    def test_the_fetch_hash_names_the_saved_page_and_the_content_hash_the_values(self):
+        from repo_liquidity import contenthash
+
+        digest = snapshots.hashlib.sha256((NOTES / "pages" / PAGE).read_bytes()).hexdigest()
+        for period in self.periods():
+            self.assertEqual(period.page, PAGE)
+            self.assertEqual(period.fetch_sha256, digest)
+            self.assertEqual(period.content_sha256, contenthash.content_sha256(
+                announced_pace.RMP_CONTENT_COLUMNS,
+                [[period.start.isoformat(), period.end.isoformat(), period.rmp_bn, period.reinvestment_bn]],
+                announced_pace.RMP_PLACES))
+
+    def test_a_changed_value_is_refused(self):
+        """An amount edited without its content hash, or the table without its manifest, is refused (ValueError)."""
+        path = NOTES / "rmp_schedule.csv"
+        original = path.read_bytes()
+        self.assertIn(b",25,", original)
+        try:
+            path.write_bytes(original.replace(b",25,", b",26,", 1))
+            with self.assertRaises(ValueError):
+                announced_pace.load_rmp_schedule()
+        finally:
+            path.write_bytes(original)
+        with tempfile.TemporaryDirectory() as tmp:
+            copy = pathlib.Path(tmp) / "rmp_schedule.csv"
+            copy.write_bytes(original.replace(b",25,", b",26,", 1))
+            copy.with_name(copy.name + ".manifest.json").write_text(
+                json.dumps({"path": copy.name, "sha256": snapshots.hashlib.sha256(copy.read_bytes()).hexdigest()}))
+            with self.assertRaises(ValueError) as caught:
+                announced_pace.load_rmp_schedule(copy)
+            self.assertIn("content_sha256", str(caught.exception))
+
+    def test_the_purchase_rows_are_the_schedule(self):
+        purchases = {p.effective: p for p in announced_pace.load_purchases()}
+        for period in self.periods():
+            row = purchases[period.start]
+            self.assertEqual(row.purchases, (period.rmp_bn, 0.0), period.start)  # reinvestment holds reserves constant
+            self.assertEqual(row.announced_at, period.announced_at, period.start)
+            self.assertEqual(row.status, announced_pace.QUANTIFIED)
+
+    def test_the_publication_instant_is_the_end_of_the_last_business_day_before_the_period(self):
+        """The Desk publishes 'on or around the ninth business day' (its 10 December 2025 statement); every period
+        starts after that day, so the end of the day before the start is taken as the instant."""
+        self.assertIn("ninth business day of each month", page_text("operating_policy_251210a.htm.gz"))
+        for period in self.periods()[1:]:
+            self.assertEqual(period.announced_at, datetime.combine(previous_weekday(period.start), time(23, 59)), period.start)
+            self.assertEqual(period.basis, "end_of_last_business_day_before_period")
+        self.assertEqual(self.periods()[0].announced_at, at("2025-12-10T23:59"))
+
+    def test_no_schedule_existed_later_than_its_publication_instant(self):
+        """Every schedule PDF created before its period began is dated no later than the publication instant, and the
+        rest are re-creations at the end of the period (a PDF created after the start is no evidence of the date)."""
+        from zoneinfo import ZoneInfo
+
+        kinds = set()
+        for period in self.periods():
+            kinds.add(period.evidence_kind)
+            if period.evidence_kind == "pdf_created_before_start":
+                made = period.evidence_created.astimezone(ZoneInfo("America/New_York")).replace(tzinfo=None)
+                self.assertLessEqual(made, period.announced_at, period.start)
+                self.assertLess(made.date(), period.start)
+            elif period.evidence_kind == "pdf_recreated_after_start":
+                self.assertGreaterEqual(period.evidence_created.date(), period.start)
+        self.assertEqual(kinds, {"statement", "pdf_created_before_start", "pdf_recreated_after_start"})
+
+    def test_a_schedule_dated_before_its_evidence_is_refused(self):
+        """Leakage guard on the data (#158): a period cannot be published before the PDF that states it was created.
+
+        The tracked schedule is copied with the publication date of the April period moved to 9 April, a day before its
+        PDF was created (10 April, 17:34 UTC), and its content hash and manifest recomputed so that only this guard can
+        refuse it. `load_rmp_schedule` raises LookAheadError.
+
+        Recorded mutation (23 October 2026): in `announced_pace.load_rmp_schedule`, `if kind == "pdf_created_before_start" and
+        announced < made:` changed to `if False:`. The copy then loads, and this test fails with AssertionError: LookAheadError not raised.
+        """
+        from repo_model.splits import LookAheadError
+
+        text = (NOTES / "rmp_schedule.csv").read_text(encoding="utf-8")
+        self.assertIn("2026-04-13,23:59", text)
+        with tempfile.TemporaryDirectory() as tmp:
+            copy = pathlib.Path(tmp) / "rmp_schedule.csv"
+            copy.write_text(text.replace("2026-04-13,23:59", "2026-04-09,23:59"), encoding="utf-8")
+            scheduled.write_manifest(copy)
+            with self.assertRaises(LookAheadError):
+                announced_pace.load_rmp_schedule(copy)
+
+    def test_an_amount_is_not_read_before_its_publication_instant(self):
+        """Leakage test (#158): a monthly amount is not public before its page's publication instant.
+
+        For every period after the first schedule, at an instant a minute before its publication the row is refused as
+        the row used (LookAheadError) and `read` returns the amount in force before it; at the decision instant of the second weekday
+        after the publication (16:00 the weekday before), the first day it can be read, `read` returns it.
+
+        Recorded mutation (23 October 2026): in `announced_pace._in_force`, `known = [row for row in rows if
+        row.announced_at <= instant and row.effective <= day]` changed to `known = [row for row in rows if
+        row.effective <= day]`. `read` then selects the unpublished amount and its `check_read` raises LookAheadError,
+        so this test fails with LookAheadError: the pace announced 2026-01-14 23:59:00 is read at 2026-01-14
+        23:58:00, before it was public (also `GuardTests.test_every_unannounced_row_is_refused`).
+        """
+        from repo_model.splits import LookAheadError
+
+        rows = announced_pace.load_announced_pace()
+        by_start = {row.effective: row for row in rows}
+        for period in self.periods()[1:]:
+            row = by_start[period.start]
+            self.assertEqual(row.announced_at, period.announced_at)
+            before = period.announced_at - timedelta(minutes=1)
+            with self.assertRaises(LookAheadError, msg=str(period.start)):
+                announced_pace.check_read(rows, before, period.start, used=row)
+            self.assertNotEqual(announced_pace.read(rows, before, period.start), row, period.start)
+            day = period.announced_at.date()
+            for _ in range(2):  # the decision instant is 16:00 the weekday before, so the second weekday after
+                day += timedelta(days=1)
+                while day.weekday() >= 5:
+                    day += timedelta(days=1)
+            read = announced_pace.read(rows, datetime.combine(previous_weekday(day), DECISION), day)
+            self.assertEqual(read, row, period.start)
+            self.assertEqual(read.signed, -float(period.rmp_bn))
+
+    def test_a_superseded_amount_is_refused_once_the_next_is_public(self):
+        """Staleness test (#158): the amount of the month before is refused once the next month's is public.
+
+        For every period after the first schedule, reading the previous period's row on the day after the new amount was
+        public raises StaleReadError, a ValueError.
+
+        Recorded mutation (23 October 2026): in `announced_pace._in_force`, `return max(known, key=lambda row:
+        (row.effective, row.announced_at))` changed to `return min(known, key=lambda row: (row.effective, row.announced_at))`.
+        `read` then returns the oldest admissible row and its `check_read` raises StaleReadError, so this test fails
+        with StaleReadError: the pace effective 2017-10-01 is read on 2026-01-16, after the pace effective 2026-01-15
+        was announced.
+        """
+        from repo_model.asof import StaleReadError
+
+        rows = announced_pace.load_announced_pace()
+        by_start = {row.effective: row for row in rows}
+        periods = self.periods()
+        for earlier, later in zip(periods[:-1], periods[1:]):
+            day = later.announced_at.date() + timedelta(days=2)
+            instant = datetime.combine(previous_weekday(day), DECISION)
+            with self.assertRaises(StaleReadError, msg=str(later.start)):
+                announced_pace.check_read(rows, instant, day, used=by_start[earlier.start])
+            self.assertEqual(announced_pace.read(rows, instant, day), by_start[later.start])
+        self.assertTrue(issubclass(StaleReadError, ValueError))
+
+    def test_the_days_that_were_unquantified_are_quantified(self):
+        """From 16 January 2026 to the development end every weekday reads a signed pace; before it, 13 to 15 January,
+        the pace stays unquantified because the January amount was not yet public."""
+        rows = announced_pace.load_announced_pace()
+        dates = weekdays(date(2026, 1, 12), date(2026, 9, 3))
+        values = announced_pace.pace_values(dates, decision_time=DECISION, rows=rows)
+        unquantified = [day for day, pace in zip(dates, values) if pace is not None and pace.signed is None]
+        self.assertEqual(unquantified, [date(2026, 1, 13), date(2026, 1, 14), date(2026, 1, 15)])
+        expected = {date(2026, 1, 16): -40.0, date(2026, 2, 16): -40.0, date(2026, 3, 16): -40.0,
+                    date(2026, 4, 15): -25.0, date(2026, 5, 15): -10.0, date(2026, 6, 15): -10.0,
+                    date(2026, 7, 15): -10.0, date(2026, 8, 17): 0.0}
+        for day, signed in expected.items():
+            self.assertEqual(values[dates.index(day)].signed, signed, day)
+
+
+class StaleNoteTests(unittest.TestCase):
+    """The two notes that called MBS reinvestment at 0 'marked question Q1' cite Eleonora's ruling of 19 October 2026 (#158)."""
+
+    def test_no_note_calls_mbs_reinvestment_a_marked_question(self):
+        for path in (ROOT / "declarations" / "fomc_announced_pace.json", NOTES / "announced_purchases.csv"):
+            text = path.read_text(encoding="utf-8")
+            self.assertNotIn("marked question Q1", text, path.name)
+            self.assertNotIn("marked question Q2", text, path.name)
+            self.assertIn("19 October 2026", text, path.name)
+        row = [p for p in announced_pace.load_purchases() if p.effective == date(2025, 12, 12)][0]
+        self.assertIn("19 October 2026", row.note)
 
 
 class GuardTests(unittest.TestCase):
@@ -274,7 +503,7 @@ class PublishedTests(unittest.TestCase):
             self.assertEqual(rebuilt, tracked)
         rows = snapshots.read("announced_pace", sha256=tracked["sha256"])
         self.assertEqual(len(rows), tracked["rows"])
-        self.assertEqual(set(tracked["source_inputs"]), {"announced_purchases.csv", "runoff_caps.csv"})
+        self.assertEqual(set(tracked["source_inputs"]), {"announced_purchases.csv", "rmp_schedule.csv", "runoff_caps.csv"})
 
     def test_the_input_is_declared_and_passes_the_parents_validators(self):
         registry = declaration.registry()
