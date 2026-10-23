@@ -4,7 +4,7 @@ Printed from `docs/research/h7-refit-schedule.json` by `scripts/h7_refit_schedul
 
 Window: 1934 scored days, 2018-04-04 to 2025-12-31; the first cutoff is 2020-03-13, and a refit serves from the second business day after its cutoff. A refit that serves no scored day is listed apart and does not count (her ruling of 21 October, addition 1).
 
-Parent pin 08ff67e27bc3d7e357491cf8e1da59793702b3fb, panel digest 6415651da6095e8d2942ab3ff344211b7fa32e7488eff622b04e18d72de822a4. The code that reads the inputs, by sha256: `scripts/h7_calendar_clean.py` 8a82a5e96a9d; `scripts/h7_kink_run.py` 4d7a3f3d05db; `src/repo_liquidity/h7_candidate_c.py` 0bf13caf05aa; `src/repo_liquidity/h7_clean.py` e156dafaeaa2; `src/repo_liquidity/h7_kink.py` f707542fa58b (`h7_kink` and `h7_clean` are in #154 and #150, not yet on `main`).
+Parent pin 08ff67e27bc3d7e357491cf8e1da59793702b3fb, panel digest 6415651da6095e8d2942ab3ff344211b7fa32e7488eff622b04e18d72de822a4. The code that reads the inputs, by sha256: `scripts/h7_calendar_clean.py` 80dd7e1f34d9; `scripts/h7_kink_run.py` da6275b3f2d2; `src/repo_liquidity/h7_candidate_c.py` 0bf13caf05aa; `src/repo_liquidity/h7_clean.py` e156dafaeaa2; `src/repo_liquidity/h7_kink.py` bacaff380ef7 (`h7_kink` and `h7_clean` are on `main` since #154 and #150).
 
 ## Candidates
 

@@ -26,6 +26,10 @@ real day:
 PYTHONPATH=src:<parent>/src python3 -B scripts/h7_kink_run.py --timing
 ```
 
+> **Note, 23 October 2026 (added in #169; the paragraph above is left as declared).** Two things in it are no longer true. The
+> pin is no longer 8fd2cf8: it has been 08ff67e since PR #155. And the run on real days has happened: A's run was PR #154, and its
+> record was restated in PR #168.
+
 Timing (synthetic, 1700 days, four regimes, one core, 20 draws scaled to 2000): the baseline, V1 and V3 about 5 to 7 s per
 refit; V2 and V4 (one intercept, absolute deviation) about 250 to 340 s; V5 and V6 about 160 s. About 72 refits of all seven is an
 upper bound of around 20 hours of core time (early refits have fewer days), so with `--workers 8` it is well over the two hours
