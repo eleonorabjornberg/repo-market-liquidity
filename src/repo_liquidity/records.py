@@ -49,6 +49,7 @@ RECORD_FILES = {
 #: check"). They are not byte-pinned to `RECORD_COMMIT`; their own tests recompute them against the parent's pin.
 OWN_CHECK = {
     "results/h7/calendar-clean.json": "tests/test_h7_clean_record.py",
+    "results/h7/kink.json": "tests/test_h7_kink.py",
     "metadata/phase3_panel_v4_manifest.json": "tests/test_panel.py",
     "results/panel/v4_changes.json": "tests/test_panel.py",
     "results/h10/development.json": "tests/test_h10_step2.py",
