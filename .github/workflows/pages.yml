@@ -1,0 +1,63 @@
+name: pages
+
+# Deploys site/ to GitHub Pages on every push to main (#170). The page is built here, on main, and never committed (as the
+# model repository's #928): site/index.html is gitignored, `scripts/emit_site.py --stamp` builds it from the published
+# records and the parent's published panel at the pin, and tests.yml refuses a pull request that carries a built file
+# (scripts/check_built_outputs.py). A placeholder left unfilled, a figure no record carries, a panel that is not the
+# published one, or a registration digest the code does not reproduce stops the build, so a bad page is never deployed.
+#
+# The repository's Pages source must be set to "GitHub Actions" once, in Settings > Pages (Eleonora's action).
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: deploy site/
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      # The stamp is the latest commit that changed an input, which needs the history.
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.11"
+
+      # As tests.yml: the parent reads its metadata/ relative to its own source tree, so it is checked out at the pinned
+      # commit and installed editable from there. The page reads the parent's panel and h10_live's method digest, which
+      # needs no package beyond the parent.
+      - name: Check out the parent at the pin
+        run: |
+          COMMIT=$(sed -n 's/^PARENT_COMMIT = "\([0-9a-f]*\)"$/\1/p' src/repo_liquidity/__init__.py)
+          git init -q parent && git -C parent remote add origin https://github.com/eleonorabjornberg/repo-market-model
+          git -C parent fetch -q --depth 1 origin "$COMMIT" && git -C parent checkout -q FETCH_HEAD
+          python -m pip install -q -e ./parent
+
+      - name: Build the page, stamped with the latest input commit
+        run: python3 -B scripts/emit_site.py --stamp
+
+      - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
+
+      - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
+        with:
+          path: site
+
+      - id: deployment
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4

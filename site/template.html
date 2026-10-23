@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Repo market liquidity</title>
+<meta name="description" content="Phase three of repo-market-model: how much liquidity banks can deploy (H7m) and what drives pressure episodes (H10). Development records and status, generated from published records only.">
+<style>
+:root{
+  --paper:#F5F7F6; --ink:#16212A; --ink-2:#4B5863; --rule:#D6DCDB; --panel:#E9EEEC; --accent:#1D57A5;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --serif:Georgia,"Times New Roman",serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --paper:#0E1419; --ink:#E4EAEE; --ink-2:#A9B5BD; --rule:#28333B; --panel:#18232B; --accent:#74A9F2; } }
+:root[data-theme="dark"]{ --paper:#0E1419; --ink:#E4EAEE; --ink-2:#A9B5BD; --rule:#28333B; --panel:#18232B; --accent:#74A9F2; }
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 1.0625rem/1.65 var(--serif);-webkit-font-smoothing:antialiased}
+.wrap{max-width:52rem;margin:0 auto;padding:0 16px 64px}
+h1,h2,h3,nav,summary,table,dl,.src,.label,footer{font-family:var(--sans)}
+h1{font-size:clamp(1.9rem,6vw,2.8rem);line-height:1.08;letter-spacing:-.02em;margin:48px 0 12px}
+h2{font-size:1.45rem;line-height:1.2;margin:48px 0 10px;letter-spacing:-.01em}
+h3{font-size:1.1rem;line-height:1.3;margin:28px 0 6px}
+.lede{font-size:1.15rem;color:var(--ink-2);margin:0 0 8px}
+nav{display:flex;flex-wrap:wrap;gap:6px 18px;margin:20px 0 0;padding:10px 0;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);font-size:.9rem}
+a{color:var(--accent)}
+code,.hash{font-family:var(--mono);font-size:.82em;overflow-wrap:anywhere}
+.label{display:inline-block;background:var(--panel);border-left:4px solid var(--accent);padding:4px 10px;border-radius:4px;font-size:.82rem;color:var(--ink-2);margin:4px 0 8px}
+.note{background:var(--panel);border-left:4px solid var(--accent);padding:10px 14px;border-radius:4px;font-size:.95rem}
+.scroll{overflow-x:auto;margin:10px 0}
+table{border-collapse:collapse;width:100%;font-size:.82rem;line-height:1.4}
+caption{text-align:left;font-weight:600;color:var(--ink-2);padding:0 0 6px}
+th,td{text-align:left;vertical-align:top;padding:6px 10px 6px 0;border-bottom:1px solid var(--rule)}
+thead th{font-size:.74rem;color:var(--ink-2)}
+dl{font-size:.88rem;display:grid;grid-template-columns:max-content 1fr;gap:4px 16px}
+dt{color:var(--ink-2)}
+dd{margin:0;overflow-wrap:anywhere}
+ul.inputs{font:.8rem/1.7 var(--sans);padding-left:1.2em;color:var(--ink-2)}
+footer{margin-top:56px;padding-top:14px;border-top:1px solid var(--rule);font-size:.82rem;line-height:1.6;color:var(--ink-2)}
+a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (max-width:560px){dl{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+<h1>Repo market liquidity</h1>
+<p class="lede">Phase three of <a href="{{parent_site}}">repo-market-model</a>. It asks two questions the forecast cannot: how much liquidity banks can deploy (H7m, a slow variable, measured on its own), and what drives each pressure episode (H10, a description after the fact). Every figure on this page is read from a published record or computed by a tested script from the parent&rsquo;s published panel. Nothing here is a verdict.</p>
+<p class="label">Development evidence only. Confirmation is prospective, after registration.</p>
+<nav aria-label="Sections">
+<a href="#show">What the data show</a>
+<a href="#h10">H10</a>
+<a href="#h7m">H7m</a>
+<a href="#status">Status</a>
+<a href="#built">How it is built</a>
+</nav>
+<dl>
+<dt>Parent commit</dt><dd>{{parent_commit}}</dd>
+<dt>Parent panel digest</dt><dd>{{parent_panel}}</dd>
+<dt>Phase three panel, version {{phase3_panel_version}}</dt><dd>{{phase3_panel}}</dd>
+</dl>
+</header>
+<main>
+
+<section id="show">
+<h2>What the data show</h2>
+<p class="label">Descriptive development evidence from the parent&rsquo;s published panel. No verdict.</p>
+
+<h3>Abundance is a range, not a level</h3>
+<p>{{f1_lead}} The spread reacts only near scarcity, which is the kink H7 measures.</p>
+{{f1_table}}
+
+<h3>Scarcity creeps in and is clear only afterwards</h3>
+<p>{{f2_lead}}</p>
+{{f2_table}}
+
+<h3>The SRF ceiling and the reporting dates</h3>
+<p>{{f3_lead}}</p>
+{{f3_table}}
+<p class="note">{{f3_reading}} The page states the figures and that reading, and nothing more.</p>
+</section>
+
+<section id="h10">
+<h2>H10: what drives a pressure episode</h2>
+<p class="label">Tier: {{h10_tier}}. {{h10_not_a_verdict}}</p>
+<p>H10 splits the rise in SOFR minus IORB over each pressure episode into five components: Treasury settlement, the Treasury general account, reserves, quarter-end and a residual. It reads: {{h10_outcome}}.</p>
+{{h10_groups}}
+{{h10_markers}}
+<h3>Sensitivities and the placebo floor</h3>
+{{h10_sensitivity}}
+{{h10_placebo}}
+<h3>Registration</h3>
+<p>The method is frozen and registered. The digest below is computed from the code now and agrees with the re-registration page.</p>
+{{h10_registration}}
+</section>
+
+<section id="h7m">
+<h2>H7m: how much liquidity banks can deploy</h2>
+<p class="label">Tier: {{h7_tier}}, both records. Development evidence, not a verdict.</p>
+<h3>A: the bend of the demand curve</h3>
+<p>The goalposts compare refits on the {{h7_kink_days}} days that every estimator serves. The limits are {{h7_kink_limits}}.</p>
+{{h7_kink_table}}
+<p class="note">{{h7_kink_superseded}}</p>
+<h3>C: bank groups, on calendar-clean days</h3>
+{{h7_clean_table}}
+<p class="note">{{h7_clean_d}}</p>
+</section>
+
+<section id="status">
+<h2>Where each hypothesis stands</h2>
+<p>Read from the plan&rsquo;s step lists and the records on main. A step with no record has not run. H7f, the forecast test of H7, belongs to the model repository.</p>
+{{status_table}}
+</section>
+
+<section id="built">
+<h2>How it is built</h2>
+<ul>
+<li>Nothing on the page is typed. Every figure is read from a published record through one reader that refuses a figure no record carries, or computed by a tested function from the parent&rsquo;s published panel at the pin, after its digest check.</li>
+<li>A placeholder left unfilled is an error, and so is a number typed into the template.</li>
+<li>The page is built on main and never committed. A pull request that carries the built file fails.</li>
+<li>Development evidence is labelled beside each figure. Only prospective confirmation days give a verdict.</li>
+</ul>
+<p>The model repository&rsquo;s page is <a href="{{parent_site}}">here</a>; this repository is <a href="{{repo_url}}">here</a>.</p>
+<details>
+<summary>Records read, with the start of each digest</summary>
+<ul class="inputs">{{inputs}}</ul>
+</details>
+</section>
+
+</main>
+<footer>Stamp: {{stamp}}.</footer>
+</div>
+</body>
+</html>
