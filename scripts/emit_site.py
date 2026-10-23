@@ -226,7 +226,7 @@ def finding_ceiling(rows, srf_rates, first_day, last_day):
             raise ValueError("no %s days from %s to %s" % (name, first_day, last_day))
         row, margin = max(days, key=lambda pair: pair[1])
         out[name] = {"days": len(days), "above": sum(1 for _, m in days if m > 0),
-                     "above_days": [r["date"] for r, m in days if m > 0],
+                     "above_days": [(r["date"], m) for r, m in days if m > 0],
                      "largest": {"date": row["date"], "margin_bp": margin, "spread_bp": spread_bp(row)}}
     return out
 
@@ -372,6 +372,9 @@ def section_findings(rows, records):
          ["Every other day", str(other["days"]), str(other["above"]), num(other["largest"]["margin_bp"], 0),
           other["largest"]["date"]]],
         "Finding three: SOFR against the SRF rate in force")
+    listed = sorted([(d, m, "quarter-end") for d, m in qe["above_days"]] + [(d, m, "other") for d, m in other["above_days"]])
+    out["f3_days"] = table(["Day", "Day type", "SOFR minus SRF rate (bp)"],
+                           [[d, kind, num(m, 0)] for d, m, kind in listed], "Every day SOFR was above the SRF rate in force")
     review_url = "%s/blob/%s/%s" % (PARENT_URL, REVIEW_COMMIT, REVIEW_PATH)
     out["f3_reading"] = ('The five-lens review’s Lens A (row A5) reads it as "%s". That is the reviewer’s '
                          "reading, not a decision record: %s, fixed to commit %s."
