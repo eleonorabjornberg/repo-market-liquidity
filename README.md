@@ -32,6 +32,14 @@ from (`scripts/verify_records.py`).
   ([`docs/decisions/dependencies.md`](docs/decisions/dependencies.md)).
 - It never changes the parent's published model, its pre-registered final test or its live record.
 
+## The results site
+
+[`scripts/emit_site.py`](scripts/emit_site.py) builds one page, `site/index.html`, from the published records and the
+parent's published panel at the pin, in the style of the model repository's page (template: [`site/template.html`](site/template.html)).
+Nothing on it is typed, and the built page is never committed: the pages job builds it on main
+([`.github/workflows/pages.yml`](.github/workflows/pages.yml)). Locally: `python3 scripts/emit_site.py` (the parent
+installed at the pin, as for the tests); `--check` rebuilds it and fails on any error.
+
 ## Licence
 
 MIT, as the parent.
