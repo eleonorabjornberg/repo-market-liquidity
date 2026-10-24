@@ -51,6 +51,7 @@ OWN_CHECK = {
     "results/h7/calendar-clean.json": "tests/test_h7_clean_record.py",
     "results/h7/kink.json": "tests/test_h7_kink.py",
     "results/h7/distribution-account.json": "tests/test_h7_account_record.py",
+    "results/h7/step5-scores.json": "tests/test_h7_step5_record.py",
     "metadata/phase3_panel_v4_manifest.json": "tests/test_panel.py",
     "results/panel/v4_changes.json": "tests/test_panel.py",
     "results/h10/development.json": "tests/test_h10_step2.py",
