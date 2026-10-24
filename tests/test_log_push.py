@@ -209,3 +209,28 @@ class TrackedCorrectionsTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TrackedCorrectionsTests(unittest.TestCase):
+    """The tracked `docs/research/log-corrections.md` (directive #176, finding #175): every corrected entry passes this
+    repository's format check under its own pull request number, the groundwork item of #134 is named, and the plain
+    wording of #114 avoids the word the model's lay-reader page test forbids. Written before the corrections; it failed
+    with `KeyError: 134` first."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.corrections = check_log_entry.parse_corrections(check_log_entry.CORRECTIONS.read_text(encoding="utf-8"))
+
+    def test_each_corrected_entry_passes_under_its_own_number(self):
+        for number, lines in self.corrections.items():
+            self.assertEqual(check_log_entry.check_entry(lines, number, REPO), [], number)
+
+    def test_134_names_the_groundwork_item_and_its_own_pull_request(self):
+        self.assertEqual(self.corrections[134][0],
+                         "### 2026-10-19 [H7] groundwork G8 · eleonorabjornberg/repo-market-liquidity#134")
+
+    def test_114_avoids_the_words_the_models_page_test_forbids(self):
+        text = "\n".join(self.corrections[114]).lower()
+        for gone in ("lockbox", "held out", "blind tier", "post hoc", "decides nothing"):
+            with self.subTest(gone=gone):
+                self.assertNotIn(gone, text)
