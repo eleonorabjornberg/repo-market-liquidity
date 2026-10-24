@@ -16,10 +16,16 @@ or before it and is effective on or before the day (the parent's scheduled-avail
 does not, because it holds reserves constant. MBS paydowns above the MBS cap that the Fed reinvests in Treasuries
 therefore enter at 0 (decided by Eleonora, 19 October 2026, ruling on #130).
 
+**The monthly amounts after December 2025** are the reserve management purchases the Desk's operational-details page
+states for each monthly period (#158; Eleonora's ruling of 21 October 2026 on #156). Each is read as of its publication
+instant and from the period's start; `rmp_schedule.csv` keeps the page's fetch hash and the values' content hash, and
+`load_rmp_schedule` checks them. The page states no publication time: a period is taken as published at the end of the last
+business day before it starts, and never before the schedule PDF that states it was created.
+
 **Where no monthly amount was announced** the row is `unquantified` and its purchases and signed pace are empty: the
-March 2020 plan ("at least $500 billion ... over coming months", then "in the amounts needed"), and the months after
-the first schedule of December 2025, whose later monthly amounts are published only on the Desk's operational-details
-page (marked question Q2). A reader gets `None` for the signed pace there, never a carried-forward amount.
+March 2020 plan ("at least $500 billion ... over coming months", then "in the amounts needed"), and the days from 12 January
+2026 until the January 2026 amount was public (16 January). A reader gets `None` for the signed pace there, never a
+carried-forward amount.
 
 Nothing is wired into an estimator, a score or the panel: H7 steps consume it later. Standard library only.
 """
@@ -27,15 +33,24 @@ Nothing is wired into an estimator, a score or the panel: H7 steps consume it la
 from __future__ import annotations
 
 import csv
+import hashlib
 import io
 from datetime import date, datetime, time, timedelta
 from decimal import Decimal
+from pathlib import Path
 from typing import Dict, List, NamedTuple, Optional, Sequence, Tuple
+from zoneinfo import ZoneInfo
 
-from repo_liquidity import scheduled
+from repo_liquidity import contenthash, scheduled
 
 PACE_TABLE = scheduled.NOTES / "announced_pace.csv"
 PURCHASES_TABLE = scheduled.NOTES / "announced_purchases.csv"
+#: The monthly reserve management purchase amounts of the Desk's operational-details page, with the page's fetch hash and
+#: the values' content hash (#158; `scripts/extract_rmp.py`).
+RMP_TABLE = scheduled.NOTES / "rmp_schedule.csv"
+RMP_CONTENT_COLUMNS = ("period_start", "period_end", "rmp_bn", "reinvestment_bn")
+RMP_PLACES = {"rmp_bn": 3, "reinvestment_bn": 3}
+_RMP_KINDS = ("statement", "pdf_created_before_start", "pdf_recreated_after_start")
 
 PACE_COLUMNS = ("announcement_date", "announcement_time", "timezone", "effective_date", "treasury_cap_bn", "mbs_cap_bn",
                 "treasury_purchases_bn", "mbs_purchases_bn", "signed_pace_bn", "status", "effective_basis", "source_url",
@@ -60,6 +75,24 @@ class Purchase(NamedTuple):
     source_url: str
     page: str
     also_page: str
+
+
+class RmpPeriod(NamedTuple):
+    """One monthly operation period of the Desk's operational-details page (a row of `rmp_schedule.csv`)."""
+
+    start: date
+    end: date
+    rmp_bn: float
+    reinvestment_bn: float
+    announced_at: datetime
+    basis: str
+    evidence_kind: str
+    evidence_url: str
+    evidence_created: Optional[datetime]
+    evidence_sha256: str
+    page: str
+    fetch_sha256: str
+    content_sha256: str
 
 
 class Pace(NamedTuple):
@@ -109,6 +142,53 @@ def load_purchases() -> List[Purchase]:
                             None if row["status"] == UNQUANTIFIED else amounts,
                             tuple(p.strip() for p in row["amount_phrase"].split("||") if p.strip()), row["date_phrase"],
                             row["note"], row["source_url"], row["page"], row["also_page"]))
+    return out
+
+
+def load_rmp_schedule(path: Path = RMP_TABLE) -> List[RmpPeriod]:
+    """The monthly reserve management purchase periods, in file order (#158).
+
+    Each amount is public from its publication instant, which the page does not state: a Desk statement's own day, or
+    the end of the last business day before the period starts (the Desk publishes "on or around the ninth business
+    day"). The schedule PDF's creation time is kept beside it, and a publication instant before that is refused.
+
+    Raises:
+        ValueError: if the table does not match its manifest, a row's content hash does not give its values, its fetch
+            hash is not the saved page's, a period does not start after its announcement day, or its evidence is
+            labelled inconsistently with its dates.
+        LookAheadError: if a period is published before the schedule that states it was created.
+    """
+    from repo_model.splits import LookAheadError
+
+    out = []
+    for row in scheduled._verified_rows(path):
+        announced = _moment({"timezone": row["timezone"], "announcement_date": row["announcement_date"],
+                             "announcement_time": row["announcement_time"]})
+        start, end = date.fromisoformat(row["period_start"]), date.fromisoformat(row["period_end"])
+        if start <= announced.date() or end < start:
+            raise ValueError(f"{path.name}: the period {start} to {end} is not after its announcement {announced}")
+        content = contenthash.content_sha256(RMP_CONTENT_COLUMNS, [[row[c] for c in RMP_CONTENT_COLUMNS]], RMP_PLACES)
+        if content != row["content_sha256"]:
+            raise ValueError(f"{path.name}: {start} stores content_sha256 {row['content_sha256']!r}, the values give "
+                             f"{content!r}")
+        saved = scheduled.NOTES / "pages" / row["page"]
+        if not saved.exists() or hashlib.sha256(saved.read_bytes()).hexdigest() != row["fetch_sha256"]:
+            raise ValueError(f"{path.name}: {start} names a fetch_sha256 that is not the saved page {row['page']}")
+        kind = row["evidence_kind"]
+        if kind not in _RMP_KINDS:
+            raise ValueError(f"{path.name}: evidence_kind {kind!r}")
+        created = None
+        if kind != "statement":
+            created = datetime.fromisoformat(row["evidence_created_utc"].replace("Z", "+00:00"))
+            made = created.astimezone(ZoneInfo("America/New_York")).replace(tzinfo=None)
+            if (kind == "pdf_created_before_start") != (made.date() < start):
+                raise ValueError(f"{path.name}: {start} is labelled {kind} but its schedule was made {made}")
+            if kind == "pdf_created_before_start" and announced < made:
+                raise LookAheadError(f"the period starting {start} is published {announced}, before its schedule was "
+                                     f"created {made}")
+        out.append(RmpPeriod(start, end, float(row["rmp_bn"]), float(row["reinvestment_bn"]), announced, row["basis"], kind,
+                             row["evidence_url"], created, row["evidence_sha256"], row["page"], row["fetch_sha256"],
+                             row["content_sha256"]))
     return out
 
 

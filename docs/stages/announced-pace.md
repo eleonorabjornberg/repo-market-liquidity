@@ -31,9 +31,18 @@ instant and effective on or before the day, the newest of them.
   the MBS cap that are reinvested in Treasuries enter at 0. **Decided by Eleonora, 19 October 2026** ([ruling on #130](https://github.com/eleonorabjornberg/repo-market-liquidity/issues/130#issuecomment-6278307470)): MBS reinvestment counts as 0 (reserve-neutral) in the signed pace.
 - **Unquantified:** a row where no monthly amount was announced has empty purchases and signed pace, and a reader gets
   `None`. These are the March 2020 plan (at least $500 billion and $200 billion "over coming months", then "in the amounts
-  needed") and the months after the first schedule of December 2025, whose later monthly amounts the Desk publishes on its
-  operational-details page; the statements saved here give only the first (about $40 billion for 12 December 2025 to about
-  12 January 2026). This is **marked question Q2**.
+  needed") and the days from 12 to 15 January 2026, after the first schedule of December 2025 (about $40 billion for
+  12 December 2025 to about 12 January 2026) and before the January amount was public.
+- **The monthly reserve management purchases after December 2025** are the amounts the Desk's operational-details page states
+  for each monthly period (**decided by Eleonora, 21 October 2026**, [ruling on #156](https://github.com/eleonorabjornberg/repo-market-liquidity/issues/156#issuecomment-6318942760);
+  built in #158). Each is public from its publication instant and effective from the period's start. The page states
+  no publication time. The Desk publishes the amounts "on or around the ninth business day of each month" (its 10 December 2025
+  statement), which is before every period starts, so a period is taken as published at the end of the last business day before
+  it starts (a day late at worst, never early). `rmp_schedule.csv` records each period's amounts, that instant, the schedule
+  PDF's creation time as evidence (a PDF created after its period began was re-created with the results and is no evidence), the
+  saved page's fetch hash and the values' content hash. The page is a living page saved on 23 October 2026: it holds each period's
+  amounts as they stand then, and an earlier edit of a past row would not show. Periods announced after the development end are
+  not entered.
 
 ## Dates and times
 
