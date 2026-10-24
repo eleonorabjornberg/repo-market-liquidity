@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Refuse a change that carries a file that is built on main (#170, as the model repo's #928).
 
-`site/index.html` is generated from the tree's records and tracked files by the pages job on main
-(`scripts/emit_site.py`), and the tests build their own copy. It is gitignored; a pull request changes the inputs (the
+`site/index.html` and the chart data under `site/data/` are generated from the tree's records and tracked files by
+the pages job on main (`scripts/emit_site.py`), and the tests build their own copy. It is gitignored; a pull request changes the inputs (the
 records, `site/template.html`, the scripts) and nothing else. This check fails when git tracks the built page, or, with
 `--base`, when the change since the merge base adds or edits it (deleting a tracked copy is the cure, so it is allowed).
 
@@ -19,7 +19,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 
 #: The built paths; a trailing slash is a directory.
-BUILT = ("site/index.html",)
+BUILT = ("site/index.html", "site/data/")
 INPUTS = ("the records, site/template.html and the scripts (`python3 scripts/emit_site.py` builds the page locally; "
           "it stays untracked)")
 

@@ -4,3 +4,4 @@ __pycache__/
 /data/
 results/h7/*.parts/
 /site/index.html
+/site/data/
