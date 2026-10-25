@@ -234,3 +234,24 @@ class TrackedCorrectionsTests(unittest.TestCase):
         for gone in ("lockbox", "held out", "blind tier", "post hoc", "decides nothing"):
             with self.subTest(gone=gone):
                 self.assertNotIn(gone, text)
+
+    def test_no_corrected_block_carries_a_phrase_the_models_page_test_forbids(self):
+        """Directive #176, the handover on #180: #114, #174, #61 and #134 are the corrected blocks the model copies."""
+        for number in (114, 174, 61, 134):
+            text = "\n".join(self.corrections[number]).lower().replace("-", " ")
+            for gone in ("decides nothing", "post hoc", "held out", "lockbox", "blind tier", "live record"):
+                with self.subTest(number=number, gone=gone):
+                    self.assertNotIn(gone, text)
+
+    def test_174_and_61_change_only_the_offending_clauses(self):
+        """Putting the merged clauses back gives the merged body's lines (174: Result; 61: Step and the field name)."""
+        r174 = self.corrections[174]
+        self.assertEqual(r174[6].replace("reported only; it settles no question", "reported, decides nothing"),
+                         "- Result: reported, decides nothing")
+        r61 = self.corrections[61]
+        step = r61[2].replace("one read of the locked days", "one lockbox read") \
+                     .replace("the row for the locked final period", "the blind-tier row")
+        self.assertEqual(step, "- Step: H10 step 1 and L1 inputs: one lockbox read from the parent; the attribution "
+                         "entry checks the window is public; the FOMC snapshots re-cut without the blind-tier row")
+        self.assertEqual(r61[7].replace("Against kill", "Against the goalpost or kill"),
+                         "- Against the goalpost or kill: not applicable; nothing scored")

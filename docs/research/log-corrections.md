@@ -60,3 +60,43 @@ the pull request that carried the entry. No figure or sentence is changed.
 - Against kill: not applicable, an input; the page serves one vintage, so first prints are not recoverable
 - Next: a later H7m step reports the RDE beside goalposts 1 and 3 as "external check, not deciding"; the heading's G number waits on Eleonora
 ```
+
+## Corrects the entry of #174 (https://github.com/eleonorabjornberg/repo-market-liquidity/issues/175)
+
+Corrects #174's merged entry (finding #175, directive #176). The only change is the Result line: "reported, decides
+nothing" becomes "reported only; it settles no question", the same meaning without the phrase the model's plain-language
+page test forbids. No figure is changed. Drafted for Eleonora (her ruling of 24 October 2026, that the liquidity side
+rewords).
+
+```research-log
+### 2026-10-23 [H7] step 4 · eleonorabjornberg/repo-market-liquidity#174
+- Directive: eleonorabjornberg/repo-market-liquidity#144, H7m step 4: the account of the bank distribution for A and C (protocol section 8).
+- Step: step 4
+- Tier: development
+- Pins: parent 08ff67e27bc3d7e357491cf8e1da59793702b3fb; panel digest 6415651da6095e8d2942ab3ff344211b7fa32e7488eff622b04e18d72de822a4 (version 4); stage docs/stages/h7-step4.md
+- Tried: aggregate deployable liquidity under the three declared alternatives, per served day with 90% intervals, for C and CV1 to CV4 (shares and draws re-run and equal to the record) and for A's B and V1 to V6 (as defined and through the group machinery); D not reported (#142)
+- Result: reported only; it settles no question
+- Against kill: not applicable (protocol section 8: required, never decisive)
+- Next: step 5 (goalposts under the protocol), after her reading of the marked questions
+```
+
+## Corrects the entry of #61 (https://github.com/eleonorabjornberg/repo-market-liquidity/issues/175)
+
+Corrects #61's merged entry (finding #175, directive #176). Two changes, no figure: the Step line's "one lockbox read
+from the parent" becomes "one read of the locked days from the parent" and "without the blind-tier row" becomes
+"without the row for the locked final period", the same meaning without words the model's plain-language page test
+forbids or would forbid; and the field name `Against the goalpost or kill` becomes `Against kill`, the name the shared
+format has used since PR #84 (as for #76), which this repository's check requires. Drafted for Eleonora (her ruling of
+24 October 2026, that the liquidity side rewords).
+
+```research-log
+### 2026-10-14 [H10] step 1 · eleonorabjornberg/repo-market-liquidity#61
+- Directive: #59 (finding #55)
+- Step: H10 step 1 and L1 inputs: one read of the locked days from the parent; the attribution entry checks the window is public; the FOMC snapshots re-cut without the row for the locked final period
+- Tier: development
+- Pins: parent 09640f5; panel digest unchanged; on_rrp_rate and srf_rate snapshots re-cut (digests in the PR)
+- Tried: synthetic and tracked-panel leakage tests (tests/test_attribution.py, test_h8.py, test_snapshots.py), each with one recorded mutation
+- Result: guards added, snapshots re-cut, nothing scored
+- Against kill: not applicable; nothing scored
+- Next: H10 step 2, after #48 merges and Eleonora decides finding #52
+```
