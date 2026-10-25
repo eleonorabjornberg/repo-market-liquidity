@@ -255,3 +255,45 @@ class TrackedCorrectionsTests(unittest.TestCase):
                          "entry checks the window is public; the FOMC snapshots re-cut without the blind-tier row")
         self.assertEqual(r61[7].replace("Against kill", "Against the goalpost or kill"),
                          "- Against the goalpost or kill: not applicable; nothing scored")
+
+
+class LabelCorrectionTests(unittest.TestCase):
+    """Directive #176, the ruling on #180 (item 1 to 3): eleven merged entries still carry the old field label
+    `Against the goalpost or kill`, and #61's corrected block must lose it too. Each correction changes the label and
+    nothing else, except the headings of #38 and #39 (`[H7] L6 red-main fix`, `[H7] L5 agency securities input`), which
+    take `groundwork G1`. The fixtures `tests/fixtures/research_log/merged_N.txt` are the merged blocks, unedited. Written
+    before the corrections; it failed with `KeyError: 32` first."""
+
+    NUMBERS = (32, 33, 34, 35, 38, 39, 42, 48, 51, 60, 68)
+    HEADINGS = {38: "### 2026-10-13 [H7] groundwork G1 · eleonorabjornberg/repo-market-liquidity#38",
+                39: "### 2026-10-13 [H7] groundwork G1 · eleonorabjornberg/repo-market-liquidity#39"}
+
+    @classmethod
+    def setUpClass(cls):
+        cls.corrections = check_log_entry.parse_corrections(check_log_entry.CORRECTIONS.read_text(encoding="utf-8"))
+        cls.fixtures = ROOT / "tests" / "fixtures" / "research_log"
+
+    def merged(self, number):
+        return (self.fixtures / f"merged_{number}.txt").read_text(encoding="utf-8").splitlines()
+
+    def test_each_one_passes_under_its_own_number_and_has_the_new_label(self):
+        for number in self.NUMBERS + (61,):
+            with self.subTest(pr=number):
+                lines = self.corrections[number]
+                self.assertEqual(check_log_entry.check_entry(lines, number, REPO), [])
+                self.assertFalse(any("goalpost or kill" in line for line in lines))
+
+    def test_only_the_label_differs_from_the_merged_block(self):
+        for number in self.NUMBERS:
+            expected = [line.replace("- Against the goalpost or kill:", "- Against kill:") for line in self.merged(number)]
+            if number in self.HEADINGS:
+                expected[0] = self.HEADINGS[number]
+            with self.subTest(pr=number):
+                self.assertEqual(self.corrections[number], expected)
+
+    def test_no_forbidden_phrase(self):
+        for number in self.NUMBERS + (61,):
+            text = "\n".join(self.corrections[number]).lower().replace("-", " ")
+            for gone in ("decides nothing", "post hoc", "held out", "lockbox", "blind tier", "live record"):
+                with self.subTest(pr=number, gone=gone):
+                    self.assertNotIn(gone, text)

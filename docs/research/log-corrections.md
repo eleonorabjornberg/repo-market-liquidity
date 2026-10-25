@@ -100,3 +100,194 @@ format has used since PR #84 (as for #76), which this repository's check require
 - Against kill: not applicable; nothing scored
 - Next: H10 step 2, after #48 merges and Eleonora decides finding #52
 ```
+
+## Corrects the entry of #32 (https://github.com/eleonorabjornberg/repo-market-liquidity/issues/175)
+
+Corrects #32's merged entry (finding #175, directive #176). The only change is the field name, `Against the goalpost or
+kill` to `Against kill`, which is the name the shared format has used since PR #84 (as for #76); no figure or sentence is changed.
+
+```research-log
+### 2026-10-12 [H7] groundwork G2 · eleonorabjornberg/repo-market-liquidity#32
+- Directive: eleonorabjornberg/repo-market-liquidity#28
+- Step: H7m groundwork G2 (measurement-protocol.md v1), with the plan and the research-log check for H7 and H10
+- Tier: development
+- Pins: model 490f23d4f29c85eb1778f647fa2111855a48bc2b, panel digest 4ddc3882cd6d406b11e1088f8ff6195e16dde175a0ad6818abe40dd5bdac8999, snapshot none
+- Tried: committed the decided plan and protocol text from #20 and wrote the log check; variant count 0
+- Result: plan and rules recorded, nothing scored
+- Against kill: not applicable; M1 (docs/research/plan.md, H7m milestones) is met when this merges
+- Next: H7 step 1 (#22) after repo-market-model#626; H10 step 1 (#23); inputs #25, then #26 and #27
+```
+
+## Corrects the entry of #33 (https://github.com/eleonorabjornberg/repo-market-liquidity/issues/175)
+
+Corrects #33's merged entry (finding #175, directive #176). The only change is the field name, `Against the goalpost or
+kill` to `Against kill`, which is the name the shared format has used since PR #84 (as for #76); no figure or sentence is changed.
+
+```research-log
+### 2026-10-13 [H10] step 1 · eleonorabjornberg/repo-market-liquidity#33
+- Directive: eleonorabjornberg/repo-market-liquidity#23
+- Step: H10 development 1 (method declared)
+- Tier: development
+- Pins: model 490f23d4f29c85eb1778f647fa2111855a48bc2b, panel digest 4ddc3882cd6d406b11e1088f8ff6195e16dde175a0ad6818abe40dd5bdac8999, snapshot none
+- Tried: the method on synthetic episodes with planted shares; variant count 1
+- Result: method declared, nothing applied
+- Against kill: not applicable (descriptive; the outcome rule is fixed in docs/research/plan.md, H10, and is not applied)
+- Next: Eleonora reviews and merges the record, then step 2 applies the frozen method to every development onset once
+```
+
+## Corrects the entry of #34 (https://github.com/eleonorabjornberg/repo-market-liquidity/issues/175)
+
+Corrects #34's merged entry (finding #175, directive #176). The only change is the field name, `Against the goalpost or
+kill` to `Against kill`, which is the name the shared format has used since PR #84 (as for #76); no figure or sentence is changed.
+
+```research-log
+### 2026-10-13 [H7] step 1 · eleonorabjornberg/repo-market-liquidity#34
+- Directive: #25 (L1), groundwork for H7m and H10
+- Step: inputs declared and published as digest-named snapshots; not a hypothesis step
+- Tier: development
+- Pins: parent 490f23d4f29c85eb1778f647fa2111855a48bc2b; panel 4ddc3882cd6d406b11e1088f8ff6195e16dde175a0ad6818abe40dd5bdac8999
+- Tried: parent validators on the three declarations; leakage and staleness guards with recorded mutations; tables checked against federalreserve.gov through 29 Jul 2026 and the 16 Sep 2026 note; snapshots built and rebuilt
+- Result: inputs built, nothing scored
+- Against kill: none applies; no estimate or score
+- Next: L2 (#26), the H.8 bank groups, on the same snapshot convention once Eleonora has reviewed it
+```
+
+## Corrects the entry of #35 (https://github.com/eleonorabjornberg/repo-market-liquidity/issues/175)
+
+Corrects #35's merged entry (finding #175, directive #176). The only change is the field name, `Against the goalpost or
+kill` to `Against kill`, which is the name the shared format has used since PR #84 (as for #76); no figure or sentence is changed.
+
+```research-log
+### 2026-10-13 [H7] step 1 · eleonorabjornberg/repo-market-liquidity#35
+- Directive: eleonorabjornberg/repo-market-liquidity#22
+- Step: H7m development 1 (estimand and estimator)
+- Tier: development
+- Pins: model 09640f5, panel digest 4ddc3882cd6d406b11e1088f8ff6195e16dde175a0ad6818abe40dd5bdac8999, snapshot none
+- Tried: deployable liquidity as the parent's reserves ratio minus the fitted kink of the refit in force, with a bootstrap interval; variant count 1
+- Result: built, nothing scored
+- Against kill: not applicable (no goalpost is read before step 5, docs/decisions/measurement-protocol.md §3-§5)
+- Next: step 2 (candidate C, bank groups) once #26 is merged; step 5 scores R, S, R+S and the estimate under protocol §5
+```
+
+## Corrects the entry of #38 (https://github.com/eleonorabjornberg/repo-market-liquidity/issues/175)
+
+Corrects #38's merged entry (finding #175, directive #176). Two changes, no figure or sentence: the field name `Against
+the goalpost or kill` becomes `Against kill`, as for #76, and the heading's `L6 red-main fix` becomes `groundwork G1`, the
+format's form. The mapping to the plan's groundwork list is a proposal for Eleonora: G1 is the nearest item (the entry
+is groundwork on a pin or an input read at it), and the plan has no item that names it exactly.
+
+```research-log
+### 2026-10-13 [H7] groundwork G1 · eleonorabjornberg/repo-market-liquidity#38
+- Directive: eleonorabjornberg/repo-market-liquidity#36
+- Step: groundwork (L6): snapshot manifests regenerated at parent pin 09640f5; guard for pin bumps
+- Tier: development
+- Pins: model 09640f5bb4063da150e09a285d242cd28db1c136, panel digest 4ddc3882cd6d406b11e1088f8ff6195e16dde175a0ad6818abe40dd5bdac8999, snapshot on_rrp_rate fa35581f…, srf_rate d4ded3b0…, runoff_caps ff413b06… (all unchanged)
+- Tried: rebuilt the three manifests with scripts/build_snapshots.py; variant count 1
+- Result: main green again; nothing scored
+- Against kill: not applicable (no estimate made; docs/decisions/evaluation.md:3)
+- Next: lift the hold on #24 once main's push CI is green
+```
+
+## Corrects the entry of #39 (https://github.com/eleonorabjornberg/repo-market-liquidity/issues/175)
+
+Corrects #39's merged entry (finding #175, directive #176). Two changes, no figure or sentence: the field name `Against
+the goalpost or kill` becomes `Against kill`, as for #76, and the heading's `L5 agency securities input` becomes `groundwork G1`, the
+format's form. The mapping to the plan's groundwork list is a proposal for Eleonora: G1 is the nearest item (the entry
+is groundwork on a pin or an input read at it), and the plan has no item that names it exactly.
+
+```research-log
+### 2026-10-13 [H7] groundwork G1 · eleonorabjornberg/repo-market-liquidity#39
+- Directive: eleonorabjornberg/repo-market-liquidity#30
+- Step: groundwork (L5): agency debt first prints as an input; "agency securities" = agency debt plus MBS (answer 15)
+- Tier: development
+- Pins: model 09640f5bb4063da150e09a285d242cd28db1c136, panel digest 4ddc3882cd6d406b11e1088f8ff6195e16dde175a0ad6818abe40dd5bdac8999, snapshot agency_securities 71921036…, h41_agency_first_print.csv 6c5a387a…
+- Tried: fetched 454 weekly releases (2017-12-27 to 2026-09-02) and cross-checked each page's Treasury and MBS rows against the tracked extracts; variant count 1
+- Result: input built, nothing scored
+- Against kill: not applicable (no estimate made; docs/decisions/evaluation.md:3)
+- Next: H7 step 2 waits on step 1's review (Step by step); L2 and L3 add their sources under declarations/
+```
+
+## Corrects the entry of #42 (https://github.com/eleonorabjornberg/repo-market-liquidity/issues/175)
+
+Corrects #42's merged entry (finding #175, directive #176). The only change is the field name, `Against the goalpost or
+kill` to `Against kill`, which is the name the shared format has used since PR #84 (as for #76); no figure or sentence is changed.
+
+```research-log
+### 2026-10-13 [H7] groundwork G4 · eleonorabjornberg/repo-market-liquidity#42
+- Directive: #26 (L2, H.8 bank-group series as first prints, with answer 17)
+- Step: groundwork G4 for H7m, before step 2 candidate C
+- Tier: development
+- Pins: parent repo-market-model 09640f5; panel 4ddc3882cd6d406b11e1088f8ff6195e16dde175a0ad6818abe40dd5bdac8999; snapshot h8_groups 1069af546ca0c5d3d69190b680dbc617557d3bbac0798f6a1e12d155f9f1f7f9
+- Tried: read cash assets and total assets of large domestic, small domestic and foreign-related banks from all 456 archived H.8 releases, first prints only, and declared the input under the parent's validators
+- Result: inputs built, nothing scored. 452 weeks, 2017-12-27 to 2026-08-19, no hole, no refusal; the groups' total assets sum to the parent's all-banks first print within 0.1 in every week; the lines are restated in 451 of 452 weeks and the large and small groups are reclassified against each other in 13 releases; 43 dated breaks from the notes archive
+- Against kill: no goalpost is tested here; this is an input, not a measurement
+- Next: the quarterly anchor and the weekly scaling (a directive for Eleonora to queue); H7 step 2 candidate C reads this series only after its answer-17 caveat is named in any derived reserves series
+```
+
+## Corrects the entry of #48 (https://github.com/eleonorabjornberg/repo-market-liquidity/issues/175)
+
+Corrects #48's merged entry (finding #175, directive #176). The only change is the field name, `Against the goalpost or
+kill` to `Against kill`, which is the name the shared format has used since PR #84 (as for #76); no figure or sentence is changed.
+
+```research-log
+### 2026-10-14 [H10] step 1 · eleonorabjornberg/repo-market-liquidity#48
+- Directive: #45 (L-series), her ruling on #37
+- Step: H10 step 1 completed: the method's six values recorded as decided; placebo count 5 to 20; fixed-coefficient shares reported
+- Tier: development
+- Pins: parent 09640f5; no panel digest change, no snapshot change
+- Tried: synthetic episodes only (tests/test_attribution.py); no real episode attributed
+- Result: nothing scored; full suite passes
+- Against kill: not applicable; no episode attributed (outcome rule unchanged)
+- Next: H10 step 2 (apply the method to the development onsets), queued only after this PR merges
+```
+
+## Corrects the entry of #51 (https://github.com/eleonorabjornberg/repo-market-liquidity/issues/175)
+
+Corrects #51's merged entry (finding #175, directive #176). The only change is the field name, `Against the goalpost or
+kill` to `Against kill`, which is the name the shared format has used since PR #84 (as for #76); no figure or sentence is changed.
+
+```research-log
+### 2026-10-14 [H7] step 1 · eleonorabjornberg/repo-market-liquidity#51
+- Directive: #47 (G4, H.8 group reclassifications as structural breaks)
+- Step: H7 groundwork G4: the 13 large/small restatements and the 2023 failures read against the H.8 notes; breaks flagged in the h8_groups snapshot
+- Tier: development
+- Pins: parent 09640f5; h8_groups snapshot 326466ae847af5c5be0a462d0a71e6d4022fc792816a1c7f57ad1a9e8ee022fe
+- Tried: the Notes on Data page (43 notes in range) and 26 archived release pages; nothing scored
+- Result: breaks labelled from the notes, nothing scored: 0 labelled, 17 unexplained (13 restatements, 4 failures of 2023)
+- Against kill: not applicable; nothing scored
+- Next: H7 step 2 (candidate C, bank groups), after #43; a rule for a difference across a break is hers
+```
+
+## Corrects the entry of #60 (https://github.com/eleonorabjornberg/repo-market-liquidity/issues/175)
+
+Corrects #60's merged entry (finding #175, directive #176). The only change is the field name, `Against the goalpost or
+kill` to `Against kill`, which is the name the shared format has used since PR #84 (as for #76); no figure or sentence is changed.
+
+```research-log
+### 2026-10-14 [H7] step 1 · eleonorabjornberg/repo-market-liquidity#60
+- Directive: #58 (finding #53)
+- Step: H7m step 1 fix: the as-of estimator runs the parent's rule.check and imports its date extension
+- Tier: development
+- Pins: parent 09640f5; no panel digest change, no snapshot change
+- Tried: synthetic late and stale reads (tests/test_h7_estimator.py); the development estimate path before and after
+- Result: guard added, nothing scored; estimate path byte-identical on the development panel
+- Against kill: not applicable; nothing scored
+- Next: H7 step 2 (#41), after #43, #47 and the parent's fix for finding #54
+```
+
+## Corrects the entry of #68 (https://github.com/eleonorabjornberg/repo-market-liquidity/issues/175)
+
+Corrects #68's merged entry (finding #175, directive #176). The only change is the field name, `Against the goalpost or
+kill` to `Against kill`, which is the name the shared format has used since PR #84 (as for #76); no figure or sentence is changed.
+
+```research-log
+### 2026-10-14 [H7] step 1 · eleonorabjornberg/repo-market-liquidity#68
+- Directive: #65 (finding #54)
+- Step: groundwork before H7 step 2 (#41): bump the parent pin to 53e61af (the fit_level tie fix), regenerate the snapshot manifests
+- Tier: development
+- Pins: parent 53e61af (was 09640f5); panel digest unchanged (4ddc3882…); no snapshot digest moved
+- Tried: re-ran the H7 step 1 real-time path (81 refits, development days to 2025-12-31) at both pins and compared every refit and estimate
+- Result: pin bumped; estimate path unchanged; one refit unfitted at both pins (2019-04-04, too few pairs); nothing scored
+- Against kill: not applicable; nothing scored
+- Next: H7 step 2 (#41), after #43
+```

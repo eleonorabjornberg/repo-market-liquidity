@@ -1,0 +1,9 @@
+### 2026-10-13 [H7] step 1 · eleonorabjornberg/repo-market-liquidity#34
+- Directive: #25 (L1), groundwork for H7m and H10
+- Step: inputs declared and published as digest-named snapshots; not a hypothesis step
+- Tier: development
+- Pins: parent 490f23d4f29c85eb1778f647fa2111855a48bc2b; panel 4ddc3882cd6d406b11e1088f8ff6195e16dde175a0ad6818abe40dd5bdac8999
+- Tried: parent validators on the three declarations; leakage and staleness guards with recorded mutations; tables checked against federalreserve.gov through 29 Jul 2026 and the 16 Sep 2026 note; snapshots built and rebuilt
+- Result: inputs built, nothing scored
+- Against the goalpost or kill: none applies; no estimate or score
+- Next: L2 (#26), the H.8 bank groups, on the same snapshot convention once Eleonora has reviewed it

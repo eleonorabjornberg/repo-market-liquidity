@@ -1,0 +1,9 @@
+### 2026-10-14 [H7] step 1 · eleonorabjornberg/repo-market-liquidity#60
+- Directive: #58 (finding #53)
+- Step: H7m step 1 fix: the as-of estimator runs the parent's rule.check and imports its date extension
+- Tier: development
+- Pins: parent 09640f5; no panel digest change, no snapshot change
+- Tried: synthetic late and stale reads (tests/test_h7_estimator.py); the development estimate path before and after
+- Result: guard added, nothing scored; estimate path byte-identical on the development panel
+- Against the goalpost or kill: not applicable; nothing scored
+- Next: H7 step 2 (#41), after #43, #47 and the parent's fix for finding #54

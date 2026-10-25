@@ -1,0 +1,9 @@
+### 2026-10-14 [H7] step 1 · eleonorabjornberg/repo-market-liquidity#51
+- Directive: #47 (G4, H.8 group reclassifications as structural breaks)
+- Step: H7 groundwork G4: the 13 large/small restatements and the 2023 failures read against the H.8 notes; breaks flagged in the h8_groups snapshot
+- Tier: development
+- Pins: parent 09640f5; h8_groups snapshot 326466ae847af5c5be0a462d0a71e6d4022fc792816a1c7f57ad1a9e8ee022fe
+- Tried: the Notes on Data page (43 notes in range) and 26 archived release pages; nothing scored
+- Result: breaks labelled from the notes, nothing scored: 0 labelled, 17 unexplained (13 restatements, 4 failures of 2023)
+- Against the goalpost or kill: not applicable; nothing scored
+- Next: H7 step 2 (candidate C, bank groups), after #43; a rule for a difference across a break is hers

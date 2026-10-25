@@ -1,0 +1,9 @@
+### 2026-10-14 [H7] step 1 · eleonorabjornberg/repo-market-liquidity#68
+- Directive: #65 (finding #54)
+- Step: groundwork before H7 step 2 (#41): bump the parent pin to 53e61af (the fit_level tie fix), regenerate the snapshot manifests
+- Tier: development
+- Pins: parent 53e61af (was 09640f5); panel digest unchanged (4ddc3882…); no snapshot digest moved
+- Tried: re-ran the H7 step 1 real-time path (81 refits, development days to 2025-12-31) at both pins and compared every refit and estimate
+- Result: pin bumped; estimate path unchanged; one refit unfitted at both pins (2019-04-04, too few pairs); nothing scored
+- Against the goalpost or kill: not applicable; nothing scored
+- Next: H7 step 2 (#41), after #43
