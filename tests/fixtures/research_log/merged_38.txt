@@ -1,0 +1,9 @@
+### 2026-10-13 [H7] L6 red-main fix · eleonorabjornberg/repo-market-liquidity#38
+- Directive: eleonorabjornberg/repo-market-liquidity#36
+- Step: groundwork (L6): snapshot manifests regenerated at parent pin 09640f5; guard for pin bumps
+- Tier: development
+- Pins: model 09640f5bb4063da150e09a285d242cd28db1c136, panel digest 4ddc3882cd6d406b11e1088f8ff6195e16dde175a0ad6818abe40dd5bdac8999, snapshot on_rrp_rate fa35581f…, srf_rate d4ded3b0…, runoff_caps ff413b06… (all unchanged)
+- Tried: rebuilt the three manifests with scripts/build_snapshots.py; variant count 1
+- Result: main green again; nothing scored
+- Against the goalpost or kill: not applicable (no estimate made; docs/decisions/evaluation.md:3)
+- Next: lift the hold on #24 once main's push CI is green

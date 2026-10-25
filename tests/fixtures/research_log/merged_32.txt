@@ -1,0 +1,9 @@
+### 2026-10-12 [H7] groundwork G2 · eleonorabjornberg/repo-market-liquidity#32
+- Directive: eleonorabjornberg/repo-market-liquidity#28
+- Step: H7m groundwork G2 (measurement-protocol.md v1), with the plan and the research-log check for H7 and H10
+- Tier: development
+- Pins: model 490f23d4f29c85eb1778f647fa2111855a48bc2b, panel digest 4ddc3882cd6d406b11e1088f8ff6195e16dde175a0ad6818abe40dd5bdac8999, snapshot none
+- Tried: committed the decided plan and protocol text from #20 and wrote the log check; variant count 0
+- Result: plan and rules recorded, nothing scored
+- Against the goalpost or kill: not applicable; M1 (docs/research/plan.md, H7m milestones) is met when this merges
+- Next: H7 step 1 (#22) after repo-market-model#626; H10 step 1 (#23); inputs #25, then #26 and #27

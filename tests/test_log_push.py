@@ -209,3 +209,91 @@ class TrackedCorrectionsTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TrackedCorrectionsTests(unittest.TestCase):
+    """The tracked `docs/research/log-corrections.md` (directive #176, finding #175): every corrected entry passes this
+    repository's format check under its own pull request number, the groundwork item of #134 is named, and the plain
+    wording of #114 avoids the word the model's lay-reader page test forbids. Written before the corrections; it failed
+    with `KeyError: 134` first."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.corrections = check_log_entry.parse_corrections(check_log_entry.CORRECTIONS.read_text(encoding="utf-8"))
+
+    def test_each_corrected_entry_passes_under_its_own_number(self):
+        for number, lines in self.corrections.items():
+            self.assertEqual(check_log_entry.check_entry(lines, number, REPO), [], number)
+
+    def test_134_names_the_groundwork_item_and_its_own_pull_request(self):
+        self.assertEqual(self.corrections[134][0],
+                         "### 2026-10-19 [H7] groundwork G8 · eleonorabjornberg/repo-market-liquidity#134")
+
+    def test_114_avoids_the_words_the_models_page_test_forbids(self):
+        text = "\n".join(self.corrections[114]).lower()
+        for gone in ("lockbox", "held out", "blind tier", "post hoc", "decides nothing"):
+            with self.subTest(gone=gone):
+                self.assertNotIn(gone, text)
+
+    def test_no_corrected_block_carries_a_phrase_the_models_page_test_forbids(self):
+        """Directive #176, the handover on #180: #114, #174, #61 and #134 are the corrected blocks the model copies."""
+        for number in (114, 174, 61, 134):
+            text = "\n".join(self.corrections[number]).lower().replace("-", " ")
+            for gone in ("decides nothing", "post hoc", "held out", "lockbox", "blind tier", "live record"):
+                with self.subTest(number=number, gone=gone):
+                    self.assertNotIn(gone, text)
+
+    def test_174_and_61_change_only_the_offending_clauses(self):
+        """Putting the merged clauses back gives the merged body's lines (174: Result; 61: Step and the field name)."""
+        r174 = self.corrections[174]
+        self.assertEqual(r174[6].replace("reported only; it settles no question", "reported, decides nothing"),
+                         "- Result: reported, decides nothing")
+        r61 = self.corrections[61]
+        step = r61[2].replace("one read of the locked days", "one lockbox read") \
+                     .replace("the row for the locked final period", "the blind-tier row")
+        self.assertEqual(step, "- Step: H10 step 1 and L1 inputs: one lockbox read from the parent; the attribution "
+                         "entry checks the window is public; the FOMC snapshots re-cut without the blind-tier row")
+        self.assertEqual(r61[7].replace("Against kill", "Against the goalpost or kill"),
+                         "- Against the goalpost or kill: not applicable; nothing scored")
+
+
+class LabelCorrectionTests(unittest.TestCase):
+    """Directive #176, the ruling on #180 (item 1 to 3): eleven merged entries still carry the old field label
+    `Against the goalpost or kill`, and #61's corrected block must lose it too. Each correction changes the label and
+    nothing else, except the headings of #38 and #39 (`[H7] L6 red-main fix`, `[H7] L5 agency securities input`), which
+    take `groundwork G1`. The fixtures `tests/fixtures/research_log/merged_N.txt` are the merged blocks, unedited. Written
+    before the corrections; it failed with `KeyError: 32` first."""
+
+    NUMBERS = (32, 33, 34, 35, 38, 39, 42, 48, 51, 60, 68)
+    HEADINGS = {38: "### 2026-10-13 [H7] groundwork G1 · eleonorabjornberg/repo-market-liquidity#38",
+                39: "### 2026-10-13 [H7] groundwork G1 · eleonorabjornberg/repo-market-liquidity#39"}
+
+    @classmethod
+    def setUpClass(cls):
+        cls.corrections = check_log_entry.parse_corrections(check_log_entry.CORRECTIONS.read_text(encoding="utf-8"))
+        cls.fixtures = ROOT / "tests" / "fixtures" / "research_log"
+
+    def merged(self, number):
+        return (self.fixtures / f"merged_{number}.txt").read_text(encoding="utf-8").splitlines()
+
+    def test_each_one_passes_under_its_own_number_and_has_the_new_label(self):
+        for number in self.NUMBERS + (61,):
+            with self.subTest(pr=number):
+                lines = self.corrections[number]
+                self.assertEqual(check_log_entry.check_entry(lines, number, REPO), [])
+                self.assertFalse(any("goalpost or kill" in line for line in lines))
+
+    def test_only_the_label_differs_from_the_merged_block(self):
+        for number in self.NUMBERS:
+            expected = [line.replace("- Against the goalpost or kill:", "- Against kill:") for line in self.merged(number)]
+            if number in self.HEADINGS:
+                expected[0] = self.HEADINGS[number]
+            with self.subTest(pr=number):
+                self.assertEqual(self.corrections[number], expected)
+
+    def test_no_forbidden_phrase(self):
+        for number in self.NUMBERS + (61,):
+            text = "\n".join(self.corrections[number]).lower().replace("-", " ")
+            for gone in ("decides nothing", "post hoc", "held out", "lockbox", "blind tier", "live record"):
+                with self.subTest(pr=number, gone=gone):
+                    self.assertNotIn(gone, text)

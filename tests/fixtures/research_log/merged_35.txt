@@ -1,0 +1,9 @@
+### 2026-10-13 [H7] step 1 · eleonorabjornberg/repo-market-liquidity#35
+- Directive: eleonorabjornberg/repo-market-liquidity#22
+- Step: H7m development 1 (estimand and estimator)
+- Tier: development
+- Pins: model 09640f5, panel digest 4ddc3882cd6d406b11e1088f8ff6195e16dde175a0ad6818abe40dd5bdac8999, snapshot none
+- Tried: deployable liquidity as the parent's reserves ratio minus the fitted kink of the refit in force, with a bootstrap interval; variant count 1
+- Result: built, nothing scored
+- Against the goalpost or kill: not applicable (no goalpost is read before step 5, docs/decisions/measurement-protocol.md §3-§5)
+- Next: step 2 (candidate C, bank groups) once #26 is merged; step 5 scores R, S, R+S and the estimate under protocol §5

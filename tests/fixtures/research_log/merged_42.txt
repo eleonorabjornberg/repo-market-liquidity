@@ -1,0 +1,9 @@
+### 2026-10-13 [H7] groundwork G4 · eleonorabjornberg/repo-market-liquidity#42
+- Directive: #26 (L2, H.8 bank-group series as first prints, with answer 17)
+- Step: groundwork G4 for H7m, before step 2 candidate C
+- Tier: development
+- Pins: parent repo-market-model 09640f5; panel 4ddc3882cd6d406b11e1088f8ff6195e16dde175a0ad6818abe40dd5bdac8999; snapshot h8_groups 1069af546ca0c5d3d69190b680dbc617557d3bbac0798f6a1e12d155f9f1f7f9
+- Tried: read cash assets and total assets of large domestic, small domestic and foreign-related banks from all 456 archived H.8 releases, first prints only, and declared the input under the parent's validators
+- Result: inputs built, nothing scored. 452 weeks, 2017-12-27 to 2026-08-19, no hole, no refusal; the groups' total assets sum to the parent's all-banks first print within 0.1 in every week; the lines are restated in 451 of 452 weeks and the large and small groups are reclassified against each other in 13 releases; 43 dated breaks from the notes archive
+- Against the goalpost or kill: no goalpost is tested here; this is an input, not a measurement
+- Next: the quarterly anchor and the weekly scaling (a directive for Eleonora to queue); H7 step 2 candidate C reads this series only after its answer-17 caveat is named in any derived reserves series

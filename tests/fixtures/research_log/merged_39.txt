@@ -1,0 +1,9 @@
+### 2026-10-13 [H7] L5 agency securities input · eleonorabjornberg/repo-market-liquidity#39
+- Directive: eleonorabjornberg/repo-market-liquidity#30
+- Step: groundwork (L5): agency debt first prints as an input; "agency securities" = agency debt plus MBS (answer 15)
+- Tier: development
+- Pins: model 09640f5bb4063da150e09a285d242cd28db1c136, panel digest 4ddc3882cd6d406b11e1088f8ff6195e16dde175a0ad6818abe40dd5bdac8999, snapshot agency_securities 71921036…, h41_agency_first_print.csv 6c5a387a…
+- Tried: fetched 454 weekly releases (2017-12-27 to 2026-09-02) and cross-checked each page's Treasury and MBS rows against the tracked extracts; variant count 1
+- Result: input built, nothing scored
+- Against the goalpost or kill: not applicable (no estimate made; docs/decisions/evaluation.md:3)
+- Next: H7 step 2 waits on step 1's review (Step by step); L2 and L3 add their sources under declarations/

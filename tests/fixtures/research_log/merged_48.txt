@@ -1,0 +1,9 @@
+### 2026-10-14 [H10] step 1 · eleonorabjornberg/repo-market-liquidity#48
+- Directive: #45 (L-series), her ruling on #37
+- Step: H10 step 1 completed: the method's six values recorded as decided; placebo count 5 to 20; fixed-coefficient shares reported
+- Tier: development
+- Pins: parent 09640f5; no panel digest change, no snapshot change
+- Tried: synthetic episodes only (tests/test_attribution.py); no real episode attributed
+- Result: nothing scored; full suite passes
+- Against the goalpost or kill: not applicable; no episode attributed (outcome rule unchanged)
+- Next: H10 step 2 (apply the method to the development onsets), queued only after this PR merges
