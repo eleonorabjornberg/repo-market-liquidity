@@ -16,7 +16,7 @@ directive #83), which validates the block once it is copied into that repository
 
 The heading reads `step N` (N from 1 to 6) or, for groundwork, `groundwork G<n>` (`### 2026-10-12 [H10] groundwork
 G3 · owner/repo#NN`); the Directive line names an issue (`#N`); every field is `- Name: value` with a space after the
-colon. The rules are the model repo's, copied, not its code. This check is stricter in three ways, so that an entry
+colon. The rules are the model repo's, copied, not its code (the test count rule, `COUNT_CLAIM`, included: #192). This check is stricter in three ways, so that an entry
 that passes here passes there verbatim: the fields come in this order with no extra line, the tag is one from this
 repository's plan (H7, H10), and the heading cites this pull request's own number. The body is read from the
 `pull_request` event payload (`$GITHUB_EVENT_PATH`), so no API call is made. The changed paths are read from git, as
@@ -55,6 +55,25 @@ GROUNDWORK_FORMAT = "### YYYY-MM-DD [H#] groundwork G<n> · owner/repo#n"
 HEADING = re.compile(r"^### (?P<date>\d{4}-\d{2}-\d{2}) \[(?P<tag>H\d+)\] "
                      r"(?:step (?P<step>\d+)|groundwork (?P<groundwork>G[1-9]\d*)) · "
                      r"(?P<repo>[\w.-]+/[\w.-]+)#(?P<number>\d+)$")
+
+# A numeral that counts tests, as repo-market-model's `COUNT_CLAIM` reads one (`tests/test_docs_freshness.py`, lines
+# 92-110 on its main, 26 Oct 2026; #192): a numeral within two words of "test", "pass" or "assertion", or right before
+# "skipped", except a label (tier 3 tests), an issue reference (#632 tests), a decimal, an amount or the end of a range,
+# a numeral a comma ends, or one a function word follows. Copied, not imported, so the two repositories agree on what a
+# count is: `tests/test_check_log_entry.py` holds the model's source and fails if this drifts.
+_LABELS = ("tier", "tiers", "step", "steps", "stage", "phase", "level", "lead", "leads",
+           "issue", "pr", "rule", "row", "column", "table", "figure", "section", "option")
+_FUNCTION_WORDS = ("a", "an", "the", "on", "in", "at", "to", "for", "by", "with", "under",
+                   "over", "is", "are", "was", "were", "be", "so", "which", "that", "and",
+                   "or", "but", "as", "if", "now", "still", "does", "do", "did", "not", "then")
+COUNT_CLAIM = re.compile(
+    r"(?<![\w#.$/\-–])"
+    + "".join(r"(?<!\b%s\s)" % label for label in _LABELS)
+    + r"(?:\d{1,3}(?:,\d{3})+|\d+)\s+(?:skipped|"
+    r"(?:(?!(?:%s)\b)[A-Za-z][A-Za-z-]*\s+){0,2}" % "|".join(_FUNCTION_WORDS)
+    + r"(?:tests?|passes|assertions?))\b",
+    re.IGNORECASE,
+)
 CORRECTIONS = Path(__file__).resolve().parents[1] / "docs" / "research" / "log-corrections.md"
 CORRECTS = re.compile(r"^## Corrects the entry of #(?P<number>\d+) \((?P<link>https://github\.com/\S+/issues/\d+)\)\s*$")
 FENCE = re.compile(r"^(`{3,}|~{3,})\s*(?P<info>[^`\s]*)\s*$")
@@ -131,6 +150,11 @@ def check_entry(lines, number, repo):
             errors.append("the Directive line names no issue (#N)")
     for extra in fields[len(FIELDS):]:
         errors.append(f"unexpected line after '- Next:': {extra!r}")
+    for line in lines:
+        count = COUNT_CLAIM.search(line)
+        if count:
+            errors.append(f"the line {line.strip()!r} counts tests ({count.group(0)!r}); a log block carries no test "
+                          "count, the model's COUNT_CLAIM refuses one in a published document")
     return errors
 
 

@@ -291,3 +291,21 @@ kill` to `Against kill`, which is the name the shared format has used since PR #
 - Against kill: not applicable; nothing scored
 - Next: H7 step 2 (#41), after #43
 ```
+
+## Corrects the entry of #185 (https://github.com/eleonorabjornberg/repo-market-liquidity/issues/192)
+
+Corrects #185's merged entry (finding #192, directive #192, from model PR #1250). The only change is the Result line: the
+test count is removed, because the model's `COUNT_CLAIM` refuses a numeral counting tests in a published document and
+blocks are copied verbatim. No other line and no figure is changed; nothing was scored.
+
+```research-log
+### 2026-10-26 [H7] groundwork G8 · eleonorabjornberg/repo-market-liquidity#185
+- Directive: #184
+- Step: groundwork, shared research log: the two #76 correction tests collected again, and a guard against a repeated test class name
+- Tier: development
+- Pins: parent 08ff67e27bc3d7e357491cf8e1da59793702b3fb; panel digest unchanged (4ddc3882cd6d406b11e1088f8ff6195e16dde175a0ad6818abe40dd5bdac8999)
+- Tried: renamed the second TrackedCorrectionsTests, moved every class above the main guard, checked #76 among the corrections, added tests/test_class_names.py
+- Result: test_log_push collects the two #76 correction tests again and the full suite passes; nothing scored, no figure or record changed
+- Against kill: not applicable; nothing scored
+- Next: none
+```

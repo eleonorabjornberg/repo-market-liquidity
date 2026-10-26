@@ -11,6 +11,7 @@ the pull request's own number. The check reads the body from the `pull_request` 
 
 import importlib.util
 import json
+import re
 import tempfile
 import unittest
 from pathlib import Path
@@ -191,6 +192,82 @@ class ConvertedEntryTests(unittest.TestCase):
             old = path.read_text(encoding="utf-8").replace("- Against kill:", "- Against the goalpost or kill:")
             with self.subTest(pr=number):
                 self.assertNotEqual(check_log_entry.check_entry(old.splitlines(), number, REPO), [])
+
+
+MODEL_COUNT_CLAIM_SOURCE = r"""
+_LABELS = ("tier", "tiers", "step", "steps", "stage", "phase", "level", "lead", "leads",
+           "issue", "pr", "rule", "row", "column", "table", "figure", "section", "option")
+_FUNCTION_WORDS = ("a", "an", "the", "on", "in", "at", "to", "for", "by", "with", "under",
+                   "over", "is", "are", "was", "were", "be", "so", "which", "that", "and",
+                   "or", "but", "as", "if", "now", "still", "does", "do", "did", "not", "then")
+COUNT_CLAIM = re.compile(
+    r"(?<![\w#.$/\-–])"
+    + "".join(r"(?<!\b%s\s)" % label for label in _LABELS)
+    + r"(?:\d{1,3}(?:,\d{3})+|\d+)\s+(?:skipped|"
+    r"(?:(?!(?:%s)\b)[A-Za-z][A-Za-z-]*\s+){0,2}" % "|".join(_FUNCTION_WORDS)
+    + r"(?:tests?|passes|assertions?))\b",
+    re.IGNORECASE,
+)
+"""
+
+
+class CountClaimTests(unittest.TestCase):
+    """Directive #192 (finding on model PR #1250): a research-log block may not carry a numeral that counts tests.
+
+    The rule is repo-market-model's `COUNT_CLAIM` (`tests/test_docs_freshness.py`, lines 92-110 on its main, seen at
+    origin/main when #192 was written), copied as `MODEL_COUNT_CLAIM_SOURCE` and executed here, so the two repositories
+    agree on what a count is: a numeral within two words of "test", "pass" or "assertion", or right before "skipped",
+    except a label ("tier 3 tests"), an issue reference ("#632 tests"), a decimal, the end of a range or an amount, a
+    numeral a comma ends, or one a function word follows. The script holds its own copy, `COUNT_CLAIM`, and the first
+    test fails if the two drift.
+
+    Written first: on the tree before the guard they failed with `AttributeError: module 'check_log_entry' has no
+    attribute 'COUNT_CLAIM'`.
+
+    Recorded mutation (the guard: `check_entry` refuses a line that counts tests): in `check_entry`, replacing
+    `for line in lines:` of the count loop by `for line in []:` makes `test_an_entry_that_counts_tests_is_refused`
+    fail with `AssertionError: 0 != 1 : []` (sixteen tests fail). Applied and killed when the tests were written.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        namespace = {"re": re}
+        exec(MODEL_COUNT_CLAIM_SOURCE, namespace)
+        cls.model = namespace["COUNT_CLAIM"]
+
+    def test_the_script_holds_the_models_pattern(self):
+        self.assertEqual(check_log_entry.COUNT_CLAIM.pattern, self.model.pattern)
+        self.assertEqual(check_log_entry.COUNT_CLAIM.flags, self.model.flags)
+
+    def test_an_entry_that_counts_tests_is_refused(self):
+        for text in ("test_log_push collects 31 tests (29 before) and the suite passes", "1,473 tests pass",
+                     "OK, 1 skipped", "360 passes", "added 3 assertions"):
+            with self.subTest(text=text):
+                found = errors(body(replaced(6, f"- Result: {text}")))
+                self.assertEqual(len(found), 1, found)
+                self.assertIn("counts tests", found[0])
+
+    def test_every_line_is_read(self):
+        for index in range(len(ENTRY_LINES)):
+            with self.subTest(line=index):
+                lines = list(ENTRY_LINES)
+                lines[index] += " (31 tests)"
+                self.assertTrue(any("counts tests" in e for e in errors(body(lines))))
+
+    def test_what_the_model_does_not_read_as_a_count_passes(self):
+        for text in ("tier 3 tests are reported", "the #632 tests pass", "0.001 check passes", "step 3 test",
+                     "over 2018-2025 test days", "no test is added", "the suite passes", "two tests pass",
+                     "90 offered days skipped"):
+            with self.subTest(text=text):
+                self.assertIsNone(self.model.search(text), text)
+                self.assertEqual(errors(body(replaced(6, f"- Result: {text}"))), [])
+
+    def test_the_guard_agrees_with_the_model_on_every_line_tried(self):
+        for text in ("31 tests", "31 new tests", "a 31 test", "1468 before and 1473 tests", "skipped 1", "1 skipped",
+                     "step 3 tests", "tier 2 passes", "0.5 tests", "$64-66 tests"):
+            with self.subTest(text=text):
+                found = bool(check_log_entry.COUNT_CLAIM.search(text))
+                self.assertEqual(found, bool(self.model.search(text)))
 
 
 class EventTests(unittest.TestCase):
