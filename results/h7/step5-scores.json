@@ -1,0 +1,3986 @@
+{
+  "benchmarks": {
+    "R": {
+      "all: all": {
+        "dropped": 0,
+        "events": 98,
+        "lower": 0.43220033870078317,
+        "point": 0.6275283278619083,
+        "strata": 1,
+        "upper": 0.8439143461178822
+      },
+      "day_type: month_end": {
+        "dropped": 0,
+        "events": 11,
+        "lower": 0.27186615566037736,
+        "point": 0.6588744588744588,
+        "strata": 1,
+        "upper": 1.0
+      },
+      "day_type: ordinary": {
+        "dropped": 0,
+        "events": 73,
+        "lower": 0.3934169513779475,
+        "point": 0.6170155125502067,
+        "strata": 1,
+        "upper": 0.8692552799359603
+      },
+      "day_type: quarter_end": {
+        "dropped": 0,
+        "events": 5,
+        "lower": 0.5217391304347826,
+        "point": 0.7368421052631579,
+        "strata": 1,
+        "upper": 0.8412698412698412
+      },
+      "day_type: tax_date": {
+        "dropped": 0,
+        "events": 9,
+        "lower": 0.41428571428571426,
+        "point": 0.6729390681003584,
+        "strata": 1,
+        "upper": 0.9888059701492538
+      },
+      "era: 2021 on": {
+        "dropped": 0,
+        "events": 31,
+        "lower": 0.9066138664641421,
+        "point": 0.9605130517826825,
+        "strata": 1,
+        "upper": 0.9854804837363134
+      },
+      "regime: 2020": {
+        "dropped": 0,
+        "events": 67,
+        "lower": 0.07941954693322512,
+        "point": 0.3457524408035013,
+        "strata": 1,
+        "upper": 0.6667466793216807
+      },
+      "regime: 2021-23": {
+        "dropped": 1,
+        "events": 0,
+        "lower": 0.5,
+        "point": 0.5,
+        "strata": 0,
+        "upper": 0.5
+      },
+      "regime: 2024": {
+        "dropped": 0,
+        "events": 1,
+        "lower": 0.5,
+        "point": 0.6706827309236948,
+        "strata": 1,
+        "upper": 0.7943548387096775
+      },
+      "regime: 2025-26": {
+        "dropped": 0,
+        "events": 30,
+        "lower": 0.7949610528472799,
+        "point": 0.8837899543378995,
+        "strata": 1,
+        "upper": 0.9435192045269138
+      }
+    },
+    "R+S": {
+      "all: all": {
+        "dropped": 0,
+        "events": 98,
+        "lower": 0.27279538349156923,
+        "point": 0.44910877894386136,
+        "strata": 4,
+        "upper": 0.6105787435917969
+      },
+      "day_type: month_end": {
+        "dropped": 2,
+        "events": 6,
+        "lower": 0.02857142857142858,
+        "point": 0.32456140350877194,
+        "strata": 2,
+        "upper": 0.5513369963369955
+      },
+      "day_type: ordinary": {
+        "dropped": 0,
+        "events": 73,
+        "lower": 0.257873349113769,
+        "point": 0.4640568881188298,
+        "strata": 4,
+        "upper": 0.6648086587505406
+      },
+      "day_type: quarter_end": {
+        "dropped": 1,
+        "events": 4,
+        "lower": 0.3529411764705882,
+        "point": 0.5166666666666666,
+        "strata": 3,
+        "upper": 0.7368421052631579
+      },
+      "day_type: tax_date": {
+        "dropped": 1,
+        "events": 9,
+        "lower": 0.25,
+        "point": 0.6742424242424242,
+        "strata": 3,
+        "upper": 0.875
+      },
+      "era: 2021 on": {
+        "dropped": 1,
+        "events": 31,
+        "lower": 0.31120870284625735,
+        "point": 0.45891538101916785,
+        "strata": 3,
+        "upper": 0.6083490094308849
+      },
+      "regime: 2020": {
+        "dropped": 2,
+        "events": 57,
+        "lower": 0.03174860740361524,
+        "point": 0.17748091603053434,
+        "strata": 2,
+        "upper": 0.38952939753690885
+      },
+      "regime: 2021-23": {
+        "dropped": 2,
+        "events": 0,
+        "lower": 0.5,
+        "point": 0.5,
+        "strata": 0,
+        "upper": 0.5
+      },
+      "regime: 2024": {
+        "dropped": 1,
+        "events": 1,
+        "lower": 0.5,
+        "point": 0.6733870967741935,
+        "strata": 1,
+        "upper": 0.7951807228915663
+      },
+      "regime: 2025-26": {
+        "dropped": 1,
+        "events": 30,
+        "lower": 0.27669213320758346,
+        "point": 0.43878450938465197,
+        "strata": 3,
+        "upper": 0.5756487100002615
+      }
+    },
+    "S": {
+      "all: all": {
+        "dropped": 0,
+        "events": 98,
+        "lower": 0.8654590700673916,
+        "point": 0.9037798217878701,
+        "strata": 1,
+        "upper": 0.9393298866280739
+      },
+      "day_type: month_end": {
+        "dropped": 0,
+        "events": 11,
+        "lower": 0.5,
+        "point": 0.9541125541125541,
+        "strata": 1,
+        "upper": 1.0
+      },
+      "day_type: ordinary": {
+        "dropped": 0,
+        "events": 73,
+        "lower": 0.8682419134722736,
+        "point": 0.9095690173029128,
+        "strata": 1,
+        "upper": 0.9533983223508534
+      },
+      "day_type: quarter_end": {
+        "dropped": 0,
+        "events": 5,
+        "lower": 0.5,
+        "point": 0.7263157894736842,
+        "strata": 1,
+        "upper": 0.8913043478260869
+      },
+      "day_type: tax_date": {
+        "dropped": 0,
+        "events": 9,
+        "lower": 0.5,
+        "point": 0.9032258064516129,
+        "strata": 1,
+        "upper": 0.9927536231884058
+      },
+      "era: 2021 on": {
+        "dropped": 0,
+        "events": 31,
+        "lower": 0.8618600947720034,
+        "point": 0.9484428056027164,
+        "strata": 1,
+        "upper": 0.9866973562847645
+      },
+      "regime: 2020": {
+        "dropped": 0,
+        "events": 67,
+        "lower": 0.5,
+        "point": 0.5906183368869936,
+        "strata": 1,
+        "upper": 0.7286128960170182
+      },
+      "regime: 2021-23": {
+        "dropped": 1,
+        "events": 0,
+        "lower": 0.5,
+        "point": 0.5,
+        "strata": 0,
+        "upper": 0.5
+      },
+      "regime: 2024": {
+        "dropped": 0,
+        "events": 1,
+        "lower": 0.4959514170040486,
+        "point": 0.4979919678714859,
+        "strata": 1,
+        "upper": 0.5
+      },
+      "regime: 2025-26": {
+        "dropped": 0,
+        "events": 30,
+        "lower": 0.8119903917207567,
+        "point": 0.8923135464231354,
+        "strata": 1,
+        "upper": 0.9475714324504647
+      }
+    }
+  },
+  "checks": {
+    "a_equals_r_minus_the_kink": ["B", "V1", "V2", "V3", "V4", "V5", "V6"],
+    "served_days_match_record": ["B", "V1", "V2", "V3", "V4", "V5", "V6", "C", "CV1", "CV2", "CV3", "CV4"],
+    "widths_match_record": ["B", "V1", "V2", "V3", "V4", "V5", "V6", "C", "CV3"]
+  },
+  "decides_nothing": "A development reading is never a verdict (docs/decisions/measurement-protocol.md section 1).",
+  "directive": "repo-market-liquidity#178",
+  "estimators": {
+    "B": {
+      "account_key": "A_B",
+      "calendar_days": "all (provisional: trained on calendar days)",
+      "family": "A",
+      "goalpost_1": {
+        "reading": "as in A's restated record (results/h7/kink.json)",
+        "recorded": {
+          "breaches_note": "not recomputable from this record without a re-run (#166): the record holds the worst gap, not the gap of each day, and the superseded count compared points with a limit in shares",
+          "days_compared": 1426,
+          "holds": false,
+          "limit": 0.5,
+          "missing_refits": 0,
+          "worst": {
+            "day": "2021-07-20",
+            "gap": 6.25
+          }
+        }
+      },
+      "goalpost_2": {
+        "all: all": {
+          "days": 1447,
+          "limit_points": 3.0,
+          "median_points": 3.2499999999999996,
+          "missing": 0,
+          "position": "not under the bar",
+          "served_median_points": 3.2499999999999996,
+          "served_position": "not under the bar"
+        },
+        "day_type: month_end": {
+          "days": 116,
+          "limit_points": 3.0,
+          "median_points": 3.2499999999999996,
+          "missing": 0,
+          "position": "not under the bar",
+          "served_median_points": 3.2499999999999996,
+          "served_position": "not under the bar"
+        },
+        "day_type: ordinary": {
+          "days": 1236,
+          "limit_points": 3.0,
+          "median_points": 3.25,
+          "missing": 0,
+          "position": "not under the bar",
+          "served_median_points": 3.25,
+          "served_position": "not under the bar"
+        },
+        "day_type: quarter_end": {
+          "days": 24,
+          "limit_points": 3.0,
+          "median_points": 3.0,
+          "missing": 0,
+          "position": "not under the bar",
+          "served_median_points": 3.0,
+          "served_position": "not under the bar"
+        },
+        "day_type: tax_date": {
+          "days": 71,
+          "limit_points": 3.0,
+          "median_points": 3.2499999999999996,
+          "missing": 0,
+          "position": "not under the bar",
+          "served_median_points": 3.2499999999999996,
+          "served_position": "not under the bar"
+        },
+        "era: 2021 on": {
+          "days": 1247,
+          "limit_points": 3.0,
+          "median_points": 2.75,
+          "missing": 0,
+          "position": "under the bar",
+          "served_median_points": 2.75,
+          "served_position": "under the bar"
+        },
+        "regime: 2020": {
+          "days": 200,
+          "limit_points": 3.0,
+          "median_points": 3.5,
+          "missing": 0,
+          "position": "not under the bar",
+          "served_median_points": 3.5,
+          "served_position": "not under the bar"
+        },
+        "regime: 2021-23": {
+          "days": 748,
+          "limit_points": 3.0,
+          "median_points": 5.762499999999999,
+          "missing": 0,
+          "position": "not under the bar",
+          "served_median_points": 5.762499999999999,
+          "served_position": "not under the bar"
+        },
+        "regime: 2024": {
+          "days": 250,
+          "limit_points": 3.0,
+          "median_points": 2.25,
+          "missing": 0,
+          "position": "under the bar",
+          "served_median_points": 2.25,
+          "served_position": "under the bar"
+        },
+        "regime: 2025-26": {
+          "days": 249,
+          "limit_points": 3.0,
+          "median_points": 2.5,
+          "missing": 0,
+          "position": "under the bar",
+          "served_median_points": 2.5,
+          "served_position": "under the bar"
+        }
+      },
+      "goalpost_2_recorded_median_points": 3.25,
+      "goalpost_3": {
+        "vs_r": {
+          "all: all": {
+            "dropped": 0,
+            "events": 98,
+            "lower": -0.3230806224149832,
+            "point": -0.20539401824480719,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": -0.10463350956154595
+          },
+          "day_type: month_end": {
+            "dropped": 0,
+            "events": 11,
+            "lower": -0.2790250245740498,
+            "point": -0.1454545454545454,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.0
+          },
+          "day_type: ordinary": {
+            "dropped": 0,
+            "events": 73,
+            "lower": -0.35947308429835206,
+            "point": -0.21968456636709502,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": -0.09824135190555257
+          },
+          "day_type: quarter_end": {
+            "dropped": 0,
+            "events": 5,
+            "lower": -0.275,
+            "point": -0.1578947368421052,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.008403361344537815
+          },
+          "day_type: tax_date": {
+            "dropped": 0,
+            "events": 9,
+            "lower": -0.3393939393939394,
+            "point": -0.18637992831541217,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.0
+          },
+          "era: 2021 on": {
+            "dropped": 0,
+            "events": 31,
+            "lower": -0.2045016406890894,
+            "point": -0.13049129881154495,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": -0.07402776911400834
+          },
+          "regime: 2020": {
+            "dropped": 0,
+            "events": 67,
+            "lower": -0.09456342035098773,
+            "point": 0.08938390753001907,
+            "position": "straddles the MME",
+            "strata": 1,
+            "upper": 0.2725664931405803
+          },
+          "regime: 2021-23": {
+            "dropped": 1,
+            "events": 0,
+            "lower": 0.0,
+            "point": 0.0,
+            "position": "below the MME",
+            "strata": 0,
+            "upper": 0.0
+          },
+          "regime: 2024": {
+            "dropped": 0,
+            "events": 1,
+            "lower": -0.26104417670682734,
+            "point": -0.15662650602409645,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.0
+          },
+          "regime: 2025-26": {
+            "dropped": 0,
+            "events": 30,
+            "lower": -0.034641023928682735,
+            "point": -0.007914764079147596,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.004176637590520073
+          }
+        },
+        "vs_rs": {
+          "all: all": {
+            "dropped": 0,
+            "events": 98,
+            "lower": -0.31224196939986876,
+            "point": -0.09625001342014428,
+            "position": "straddles the MME",
+            "strata": 4,
+            "upper": 0.11278739871734554
+          },
+          "day_type: month_end": {
+            "dropped": 2,
+            "events": 6,
+            "lower": -0.2857142857142857,
+            "point": 0.00877192982456143,
+            "position": "straddles the MME",
+            "strata": 2,
+            "upper": 0.29065382892969077
+          },
+          "day_type: ordinary": {
+            "dropped": 0,
+            "events": 73,
+            "lower": -0.4061546142673593,
+            "point": -0.12856762169504293,
+            "position": "straddles the MME",
+            "strata": 4,
+            "upper": 0.1432078708121514
+          },
+          "day_type: quarter_end": {
+            "dropped": 1,
+            "events": 4,
+            "lower": -0.22812499999999997,
+            "point": 0.13333333333333336,
+            "position": "straddles the MME",
+            "strata": 3,
+            "upper": 0.3333333333333333
+          },
+          "day_type: tax_date": {
+            "dropped": 1,
+            "events": 9,
+            "lower": -0.15,
+            "point": 0.0,
+            "position": "straddles the MME",
+            "strata": 3,
+            "upper": 0.2222222222222222
+          },
+          "era: 2021 on": {
+            "dropped": 1,
+            "events": 31,
+            "lower": -0.24028520204000536,
+            "point": -0.09489756706580518,
+            "position": "below the MME",
+            "strata": 3,
+            "upper": 0.04154140063597727
+          },
+          "regime: 2020": {
+            "dropped": 2,
+            "events": 57,
+            "lower": -0.035294843863471315,
+            "point": 0.14202490960224987,
+            "position": "straddles the MME",
+            "strata": 2,
+            "upper": 0.3301113292392361
+          },
+          "regime: 2021-23": {
+            "dropped": 2,
+            "events": 0,
+            "lower": 0.0,
+            "point": 0.0,
+            "position": "below the MME",
+            "strata": 0,
+            "upper": 0.0
+          },
+          "regime: 2024": {
+            "dropped": 1,
+            "events": 1,
+            "lower": -0.2620967741935484,
+            "point": -0.157258064516129,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.0
+          },
+          "regime: 2025-26": {
+            "dropped": 1,
+            "events": 30,
+            "lower": -0.20906121007612455,
+            "point": -0.07571014492753628,
+            "position": "straddles the MME",
+            "strata": 3,
+            "upper": 0.0672286082772016
+          }
+        },
+        "vs_s": {
+          "all: all": {
+            "dropped": 0,
+            "events": 98,
+            "lower": -0.6388422778409518,
+            "point": -0.481645512170769,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": -0.29548682689417627
+          },
+          "day_type: month_end": {
+            "dropped": 0,
+            "events": 11,
+            "lower": -0.7985016283410779,
+            "point": -0.44069264069264064,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.0
+          },
+          "day_type: ordinary": {
+            "dropped": 0,
+            "events": 73,
+            "lower": -0.6799565851552455,
+            "point": -0.5122380711198011,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": -0.30586623241724137
+          },
+          "day_type: quarter_end": {
+            "dropped": 0,
+            "events": 5,
+            "lower": -0.3968253968253968,
+            "point": -0.1473684210526316,
+            "position": "straddles the MME",
+            "strata": 1,
+            "upper": 0.09668953518907489
+          },
+          "day_type: tax_date": {
+            "dropped": 0,
+            "events": 9,
+            "lower": -0.6846153846153845,
+            "point": -0.41666666666666663,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.0
+          },
+          "era: 2021 on": {
+            "dropped": 0,
+            "events": 31,
+            "lower": -0.18309654159585803,
+            "point": -0.11842105263157887,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": -0.061202050044901216
+          },
+          "regime: 2020": {
+            "dropped": 0,
+            "events": 67,
+            "lower": -0.3235657407726373,
+            "point": -0.15548198855347323,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.004295743954435449
+          },
+          "regime: 2021-23": {
+            "dropped": 1,
+            "events": 0,
+            "lower": 0.0,
+            "point": 0.0,
+            "position": "below the MME",
+            "strata": 0,
+            "upper": 0.0
+          },
+          "regime: 2024": {
+            "dropped": 0,
+            "events": 1,
+            "lower": -0.1385821511853867,
+            "point": 0.016064257028112428,
+            "position": "straddles the MME",
+            "strata": 1,
+            "upper": 0.15060240963855423
+          },
+          "regime: 2025-26": {
+            "dropped": 0,
+            "events": 30,
+            "lower": -0.04926611596210277,
+            "point": -0.016438356164383494,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.005729564553093965
+          }
+        }
+      },
+      "missing_days": 0,
+      "missing_share": 0.0,
+      "served_days": 1447,
+      "status": "scored"
+    },
+    "C": {
+      "account_key": "C",
+      "calendar_days": "all (provisional: trained on calendar days)",
+      "family": "C",
+      "goalpost_1": {
+        "reading": "unreadable on development data, read prospectively (Eleonora, 22 Oct, option 6)"
+      },
+      "goalpost_2": {
+        "all: all": {
+          "days": 1447,
+          "limit_points": 3.0,
+          "median_points": 3.4646000000000003,
+          "missing": 0,
+          "position": "not under the bar",
+          "served_median_points": 3.4646000000000003,
+          "served_position": "not under the bar"
+        },
+        "day_type: month_end": {
+          "days": 116,
+          "limit_points": 3.0,
+          "median_points": 3.4865999999999997,
+          "missing": 0,
+          "position": "not under the bar",
+          "served_median_points": 3.4865999999999997,
+          "served_position": "not under the bar"
+        },
+        "day_type: ordinary": {
+          "days": 1236,
+          "limit_points": 3.0,
+          "median_points": 3.4555000000000002,
+          "missing": 0,
+          "position": "not under the bar",
+          "served_median_points": 3.4555000000000002,
+          "served_position": "not under the bar"
+        },
+        "day_type: quarter_end": {
+          "days": 24,
+          "limit_points": 3.0,
+          "median_points": 3.4282000000000004,
+          "missing": 0,
+          "position": "not under the bar",
+          "served_median_points": 3.4282000000000004,
+          "served_position": "not under the bar"
+        },
+        "day_type: tax_date": {
+          "days": 71,
+          "limit_points": 3.0,
+          "median_points": 3.4751,
+          "missing": 0,
+          "position": "not under the bar",
+          "served_median_points": 3.4751,
+          "served_position": "not under the bar"
+        },
+        "era: 2021 on": {
+          "days": 1247,
+          "limit_points": 3.0,
+          "median_points": 3.4875000000000003,
+          "missing": 0,
+          "position": "not under the bar",
+          "served_median_points": 3.4875000000000003,
+          "served_position": "not under the bar"
+        },
+        "regime: 2020": {
+          "days": 200,
+          "limit_points": 3.0,
+          "median_points": 3.1283000000000003,
+          "missing": 0,
+          "position": "not under the bar",
+          "served_median_points": 3.1283000000000003,
+          "served_position": "not under the bar"
+        },
+        "regime: 2021-23": {
+          "days": 748,
+          "limit_points": 3.0,
+          "median_points": 3.3681,
+          "missing": 0,
+          "position": "not under the bar",
+          "served_median_points": 3.3681,
+          "served_position": "not under the bar"
+        },
+        "regime: 2024": {
+          "days": 250,
+          "limit_points": 3.0,
+          "median_points": 3.6321,
+          "missing": 0,
+          "position": "not under the bar",
+          "served_median_points": 3.6321,
+          "served_position": "not under the bar"
+        },
+        "regime: 2025-26": {
+          "days": 249,
+          "limit_points": 3.0,
+          "median_points": 3.5755,
+          "missing": 0,
+          "position": "not under the bar",
+          "served_median_points": 3.5755,
+          "served_position": "not under the bar"
+        }
+      },
+      "goalpost_2_recorded_median_points": 3.4645494581372045,
+      "goalpost_3": {
+        "vs_r": {
+          "all: all": {
+            "dropped": 0,
+            "events": 98,
+            "lower": -0.0058496781614363206,
+            "point": 0.03130058546769343,
+            "position": "straddles the MME",
+            "strata": 1,
+            "upper": 0.07166686366494027
+          },
+          "day_type: month_end": {
+            "dropped": 0,
+            "events": 11,
+            "lower": -0.003931847968545217,
+            "point": 0.04675324675324677,
+            "position": "straddles the MME",
+            "strata": 1,
+            "upper": 0.09811320754716982
+          },
+          "day_type: ordinary": {
+            "dropped": 0,
+            "events": 73,
+            "lower": -0.011161717346299303,
+            "point": 0.022638664766369443,
+            "position": "straddles the MME",
+            "strata": 1,
+            "upper": 0.0570123469839027
+          },
+          "day_type: quarter_end": {
+            "dropped": 0,
+            "events": 5,
+            "lower": -0.015873015873015872,
+            "point": 0.052631578947368474,
+            "position": "straddles the MME",
+            "strata": 1,
+            "upper": 0.1375
+          },
+          "day_type: tax_date": {
+            "dropped": 0,
+            "events": 9,
+            "lower": -0.007142857142857143,
+            "point": 0.06093189964157708,
+            "position": "straddles the MME",
+            "strata": 1,
+            "upper": 0.11940381796375266
+          },
+          "era: 2021 on": {
+            "dropped": 0,
+            "events": 31,
+            "lower": -0.002495704533122787,
+            "point": 0.002559953310696028,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.011665988251207569
+          },
+          "regime: 2020": {
+            "dropped": 0,
+            "events": 67,
+            "lower": -0.007353127704658728,
+            "point": 0.06963303781842661,
+            "position": "straddles the MME",
+            "strata": 1,
+            "upper": 0.14919712636438914
+          },
+          "regime: 2021-23": {
+            "dropped": 1,
+            "events": 0,
+            "lower": 0.0,
+            "point": 0.0,
+            "position": "below the MME",
+            "strata": 0,
+            "upper": 0.0
+          },
+          "regime: 2024": {
+            "dropped": 0,
+            "events": 1,
+            "lower": -0.09437751004016064,
+            "point": -0.04417670682730923,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.010040160642570281
+          },
+          "regime: 2025-26": {
+            "dropped": 0,
+            "events": 30,
+            "lower": -0.00817626095136676,
+            "point": 0.005555555555555536,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.031582048928357954
+          }
+        },
+        "vs_rs": {
+          "all: all": {
+            "dropped": 0,
+            "events": 98,
+            "lower": 0.005828085666200232,
+            "point": 0.07233760238358271,
+            "position": "straddles the MME",
+            "strata": 4,
+            "upper": 0.16104581232930434
+          },
+          "day_type: month_end": {
+            "dropped": 2,
+            "events": 6,
+            "lower": 0.0,
+            "point": 0.13157894736842107,
+            "position": "straddles the MME",
+            "strata": 2,
+            "upper": 0.2526373626373626
+          },
+          "day_type: ordinary": {
+            "dropped": 0,
+            "events": 73,
+            "lower": 0.005466496666837515,
+            "point": 0.068848297716515,
+            "position": "straddles the MME",
+            "strata": 4,
+            "upper": 0.15897708889825482
+          },
+          "day_type: quarter_end": {
+            "dropped": 1,
+            "events": 4,
+            "lower": 0.0,
+            "point": 0.08333333333333337,
+            "position": "straddles the MME",
+            "strata": 3,
+            "upper": 0.19047619047619047
+          },
+          "day_type: tax_date": {
+            "dropped": 1,
+            "events": 9,
+            "lower": -0.4375,
+            "point": -0.19444444444444445,
+            "position": "below the MME",
+            "strata": 3,
+            "upper": 0.0
+          },
+          "era: 2021 on": {
+            "dropped": 1,
+            "events": 31,
+            "lower": -0.0603891891125894,
+            "point": 0.07606120303637103,
+            "position": "straddles the MME",
+            "strata": 3,
+            "upper": 0.27308683858814126
+          },
+          "regime: 2020": {
+            "dropped": 2,
+            "events": 57,
+            "lower": 0.0,
+            "point": 0.09585509575465377,
+            "position": "straddles the MME",
+            "strata": 2,
+            "upper": 0.20068220948021295
+          },
+          "regime: 2021-23": {
+            "dropped": 2,
+            "events": 0,
+            "lower": 0.0,
+            "point": 0.0,
+            "position": "below the MME",
+            "strata": 0,
+            "upper": 0.0
+          },
+          "regime: 2024": {
+            "dropped": 1,
+            "events": 1,
+            "lower": -0.09475806451612903,
+            "point": -0.04435483870967738,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.010080645161290322
+          },
+          "regime: 2025-26": {
+            "dropped": 1,
+            "events": 30,
+            "lower": -0.0569992606768013,
+            "point": 0.07936992159657873,
+            "position": "straddles the MME",
+            "strata": 3,
+            "upper": 0.2840712777851612
+          }
+        },
+        "vs_s": {
+          "all: all": {
+            "dropped": 0,
+            "events": 98,
+            "lower": -0.4296160835235469,
+            "point": -0.2449509084582684,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": -0.05243699318659195
+          },
+          "day_type: month_end": {
+            "dropped": 0,
+            "events": 11,
+            "lower": -0.5870389858885434,
+            "point": -0.24848484848484853,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.0
+          },
+          "day_type: ordinary": {
+            "dropped": 0,
+            "events": 73,
+            "lower": -0.4792592697026979,
+            "point": -0.2699148399863367,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": -0.052764716857916005
+          },
+          "day_type: quarter_end": {
+            "dropped": 0,
+            "events": 5,
+            "lower": -0.19047619047619047,
+            "point": 0.06315789473684208,
+            "position": "straddles the MME",
+            "strata": 1,
+            "upper": 0.3181818181818182
+          },
+          "day_type: tax_date": {
+            "dropped": 0,
+            "events": 9,
+            "lower": -0.4597327640733712,
+            "point": -0.16935483870967738,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.020522388059701493
+          },
+          "era: 2021 on": {
+            "dropped": 0,
+            "events": 31,
+            "lower": -0.0012956699320335683,
+            "point": 0.014630199490662132,
+            "position": "straddles the MME",
+            "strata": 1,
+            "upper": 0.05562960655817798
+          },
+          "regime: 2020": {
+            "dropped": 0,
+            "events": 67,
+            "lower": -0.3927628370651043,
+            "point": -0.17523285826506568,
+            "position": "straddles the MME",
+            "strata": 1,
+            "upper": 0.05613945312854381
+          },
+          "regime: 2021-23": {
+            "dropped": 1,
+            "events": 0,
+            "lower": 0.0,
+            "point": 0.0,
+            "position": "below the MME",
+            "strata": 0,
+            "upper": 0.0
+          },
+          "regime: 2024": {
+            "dropped": 0,
+            "events": 1,
+            "lower": -0.016288229842446624,
+            "point": 0.12851405622489964,
+            "position": "straddles the MME",
+            "strata": 1,
+            "upper": 0.2469879518072289
+          },
+          "regime: 2025-26": {
+            "dropped": 0,
+            "events": 30,
+            "lower": -0.027446349134945626,
+            "point": -0.0029680365296803624,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.027186859715278962
+          }
+        }
+      },
+      "missing_days": 0,
+      "missing_share": 0.0,
+      "served_days": 1447,
+      "status": "scored"
+    },
+    "CV1": {
+      "account_key": "CV1",
+      "calendar_days": "clean",
+      "family": "C",
+      "goalpost_1": {
+        "reading": "unreadable on development data, read prospectively (Eleonora, 22 Oct, option 6)"
+      },
+      "goalpost_2_recorded_median_points": null,
+      "missing_days": 1447,
+      "missing_share": 1.0,
+      "reason": "the refit in force did not fit on any window day: 69 of 70 refits were not fitted (calendar-clean record, refit status: 1 fitted, 69 not identified); it serves no day and is not re-fitted",
+      "served_days": 0,
+      "status": "not scorable"
+    },
+    "CV2": {
+      "account_key": "CV2",
+      "calendar_days": "clean",
+      "family": "C",
+      "goalpost_1": {
+        "reading": "unreadable on development data, read prospectively (Eleonora, 22 Oct, option 6)"
+      },
+      "goalpost_2_recorded_median_points": null,
+      "missing_days": 1447,
+      "missing_share": 1.0,
+      "reason": "the refit in force did not fit on any window day: 69 of 70 refits were not fitted (calendar-clean record, refit status: 1 fitted, 69 not identified); it serves no day and is not re-fitted",
+      "served_days": 0,
+      "status": "not scorable"
+    },
+    "CV3": {
+      "account_key": "CV3",
+      "calendar_days": "clean",
+      "family": "C",
+      "goalpost_1": {
+        "reading": "unreadable on development data, read prospectively (Eleonora, 22 Oct, option 6)"
+      },
+      "goalpost_2": {
+        "all: all": {
+          "days": 1447,
+          "limit_points": 3.0,
+          "median_points": 2.5442,
+          "missing": 0,
+          "position": "under the bar",
+          "served_median_points": 2.5442,
+          "served_position": "under the bar"
+        },
+        "day_type: month_end": {
+          "days": 116,
+          "limit_points": 3.0,
+          "median_points": 2.5545999999999998,
+          "missing": 0,
+          "position": "under the bar",
+          "served_median_points": 2.5545999999999998,
+          "served_position": "under the bar"
+        },
+        "day_type: ordinary": {
+          "days": 1236,
+          "limit_points": 3.0,
+          "median_points": 2.5439999999999996,
+          "missing": 0,
+          "position": "under the bar",
+          "served_median_points": 2.5439999999999996,
+          "served_position": "under the bar"
+        },
+        "day_type: quarter_end": {
+          "days": 24,
+          "limit_points": 3.0,
+          "median_points": 2.5308,
+          "missing": 0,
+          "position": "under the bar",
+          "served_median_points": 2.5308,
+          "served_position": "under the bar"
+        },
+        "day_type: tax_date": {
+          "days": 71,
+          "limit_points": 3.0,
+          "median_points": 2.5442,
+          "missing": 0,
+          "position": "under the bar",
+          "served_median_points": 2.5442,
+          "served_position": "under the bar"
+        },
+        "era: 2021 on": {
+          "days": 1247,
+          "limit_points": 3.0,
+          "median_points": 2.5534,
+          "missing": 0,
+          "position": "under the bar",
+          "served_median_points": 2.5534,
+          "served_position": "under the bar"
+        },
+        "regime: 2020": {
+          "days": 200,
+          "limit_points": 3.0,
+          "median_points": 2.4147,
+          "missing": 0,
+          "position": "under the bar",
+          "served_median_points": 2.4147,
+          "served_position": "under the bar"
+        },
+        "regime: 2021-23": {
+          "days": 748,
+          "limit_points": 3.0,
+          "median_points": 2.515500000000001,
+          "missing": 0,
+          "position": "under the bar",
+          "served_median_points": 2.515500000000001,
+          "served_position": "under the bar"
+        },
+        "regime: 2024": {
+          "days": 250,
+          "limit_points": 3.0,
+          "median_points": 2.5659,
+          "missing": 0,
+          "position": "under the bar",
+          "served_median_points": 2.5659,
+          "served_position": "under the bar"
+        },
+        "regime: 2025-26": {
+          "days": 249,
+          "limit_points": 3.0,
+          "median_points": 2.6872999999999996,
+          "missing": 0,
+          "position": "under the bar",
+          "served_median_points": 2.6872999999999996,
+          "served_position": "under the bar"
+        }
+      },
+      "goalpost_2_recorded_median_points": 2.5441426626119714,
+      "goalpost_3": {
+        "vs_r": {
+          "all: all": {
+            "dropped": 0,
+            "events": 98,
+            "lower": -0.004332234250355597,
+            "point": 0.03359253263944573,
+            "position": "straddles the MME",
+            "strata": 1,
+            "upper": 0.07472071572010118
+          },
+          "day_type: month_end": {
+            "dropped": 0,
+            "events": 11,
+            "lower": -0.003931847968545217,
+            "point": 0.05021645021645027,
+            "position": "straddles the MME",
+            "strata": 1,
+            "upper": 0.10561141828468561
+          },
+          "day_type: ordinary": {
+            "dropped": 0,
+            "events": 73,
+            "lower": -0.01001131862906189,
+            "point": 0.02482950329214717,
+            "position": "straddles the MME",
+            "strata": 1,
+            "upper": 0.06055301239444456
+          },
+          "day_type: quarter_end": {
+            "dropped": 0,
+            "events": 5,
+            "lower": -0.015873015873015872,
+            "point": 0.052631578947368474,
+            "position": "straddles the MME",
+            "strata": 1,
+            "upper": 0.1375
+          },
+          "day_type: tax_date": {
+            "dropped": 0,
+            "events": 9,
+            "lower": -0.007142857142857143,
+            "point": 0.06093189964157708,
+            "position": "straddles the MME",
+            "strata": 1,
+            "upper": 0.11940381796375266
+          },
+          "era: 2021 on": {
+            "dropped": 0,
+            "events": 31,
+            "lower": -6.112469437652811e-05,
+            "point": 0.006910547538200307,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.018614272751532813
+          },
+          "regime: 2020": {
+            "dropped": 0,
+            "events": 67,
+            "lower": -0.00692445947828826,
+            "point": 0.0871394905173381,
+            "position": "straddles the MME",
+            "strata": 1,
+            "upper": 0.18395607848705733
+          },
+          "regime: 2021-23": {
+            "dropped": 1,
+            "events": 0,
+            "lower": 0.0,
+            "point": 0.0,
+            "position": "below the MME",
+            "strata": 0,
+            "upper": 0.0
+          },
+          "regime: 2024": {
+            "dropped": 0,
+            "events": 1,
+            "lower": -0.06477732793522267,
+            "point": -0.02409638554216864,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.02208835341365462
+          },
+          "regime: 2025-26": {
+            "dropped": 0,
+            "events": 30,
+            "lower": 0.005239672215015256,
+            "point": 0.025494672754946768,
+            "position": "straddles the MME",
+            "strata": 1,
+            "upper": 0.058527334025286364
+          }
+        },
+        "vs_rs": {
+          "all: all": {
+            "dropped": 0,
+            "events": 98,
+            "lower": 0.026155611280628824,
+            "point": 0.10368144575163692,
+            "position": "straddles the MME",
+            "strata": 4,
+            "upper": 0.21174931072689776
+          },
+          "day_type: month_end": {
+            "dropped": 2,
+            "events": 6,
+            "lower": 0.0,
+            "point": 0.16666666666666666,
+            "position": "straddles the MME",
+            "strata": 2,
+            "upper": 0.305270935960591
+          },
+          "day_type: ordinary": {
+            "dropped": 0,
+            "events": 73,
+            "lower": 0.022318541039076753,
+            "point": 0.09586488216860303,
+            "position": "straddles the MME",
+            "strata": 4,
+            "upper": 0.2084442445489597
+          },
+          "day_type: quarter_end": {
+            "dropped": 1,
+            "events": 4,
+            "lower": 0.0,
+            "point": 0.08333333333333337,
+            "position": "straddles the MME",
+            "strata": 3,
+            "upper": 0.19047619047619047
+          },
+          "day_type: tax_date": {
+            "dropped": 1,
+            "events": 9,
+            "lower": -0.4375,
+            "point": -0.19444444444444445,
+            "position": "below the MME",
+            "strata": 3,
+            "upper": 0.0
+          },
+          "era: 2021 on": {
+            "dropped": 1,
+            "events": 31,
+            "lower": -0.006836465110803485,
+            "point": 0.1484205519839372,
+            "position": "straddles the MME",
+            "strata": 3,
+            "upper": 0.36192528945731245
+          },
+          "regime: 2020": {
+            "dropped": 2,
+            "events": 57,
+            "lower": -0.013479475940810452,
+            "point": 0.10188161242801662,
+            "position": "straddles the MME",
+            "strata": 2,
+            "upper": 0.2235975952176513
+          },
+          "regime: 2021-23": {
+            "dropped": 2,
+            "events": 0,
+            "lower": 0.0,
+            "point": 0.0,
+            "position": "below the MME",
+            "strata": 0,
+            "upper": 0.0
+          },
+          "regime: 2024": {
+            "dropped": 1,
+            "events": 1,
+            "lower": -0.06505392400862783,
+            "point": -0.024193548387096753,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.02217741935483871
+          },
+          "regime: 2025-26": {
+            "dropped": 1,
+            "events": 30,
+            "lower": 0.002626114969908791,
+            "point": 0.15793585174625804,
+            "position": "straddles the MME",
+            "strata": 3,
+            "upper": 0.3810204187593293
+          }
+        },
+        "vs_s": {
+          "all: all": {
+            "dropped": 0,
+            "events": 98,
+            "lower": -0.4275578205323495,
+            "point": -0.2426589612865161,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": -0.050080176865130416
+          },
+          "day_type: month_end": {
+            "dropped": 0,
+            "events": 11,
+            "lower": -0.5848655625719845,
+            "point": -0.24502164502164503,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.0
+          },
+          "day_type: ordinary": {
+            "dropped": 0,
+            "events": 73,
+            "lower": -0.4772971627660726,
+            "point": -0.26772400146055897,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": -0.04978704740946798
+          },
+          "day_type: quarter_end": {
+            "dropped": 0,
+            "events": 5,
+            "lower": -0.19047619047619047,
+            "point": 0.06315789473684208,
+            "position": "straddles the MME",
+            "strata": 1,
+            "upper": 0.3181818181818182
+          },
+          "day_type: tax_date": {
+            "dropped": 0,
+            "events": 9,
+            "lower": -0.4597327640733712,
+            "point": -0.16935483870967738,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.020522388059701493
+          },
+          "era: 2021 on": {
+            "dropped": 0,
+            "events": 31,
+            "lower": 0.001668943920189925,
+            "point": 0.01898079371816641,
+            "position": "straddles the MME",
+            "strata": 1,
+            "upper": 0.061642985825486926
+          },
+          "regime: 2020": {
+            "dropped": 0,
+            "events": 67,
+            "lower": -0.3782835691505518,
+            "point": -0.1577264055661542,
+            "position": "straddles the MME",
+            "strata": 1,
+            "upper": 0.07096993330122267
+          },
+          "regime: 2021-23": {
+            "dropped": 1,
+            "events": 0,
+            "lower": 0.0,
+            "point": 0.0,
+            "position": "below the MME",
+            "strata": 0,
+            "upper": 0.0
+          },
+          "regime: 2024": {
+            "dropped": 0,
+            "events": 1,
+            "lower": 0.0,
+            "point": 0.14859437751004023,
+            "position": "straddles the MME",
+            "strata": 1,
+            "upper": 0.2692772952853591
+          },
+          "regime: 2025-26": {
+            "dropped": 0,
+            "events": 30,
+            "lower": -0.0053281360858423,
+            "point": 0.01697108066971087,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.047817925899805276
+          }
+        }
+      },
+      "missing_days": 0,
+      "missing_share": 0.0,
+      "served_days": 1447,
+      "status": "scored"
+    },
+    "CV4": {
+      "account_key": "CV4",
+      "calendar_days": "all (provisional: trained on calendar days)",
+      "family": "C",
+      "goalpost_1": {
+        "reading": "unreadable on development data, read prospectively (Eleonora, 22 Oct, option 6)"
+      },
+      "goalpost_2_recorded_median_points": null,
+      "missing_days": 1447,
+      "missing_share": 1.0,
+      "reason": "the refit in force did not fit on any window day: 69 of 70 refits were not fitted (calendar-clean record, refit status: 1 fitted, 69 not identified); it serves no day and is not re-fitted",
+      "served_days": 0,
+      "status": "not scorable"
+    },
+    "V1": {
+      "account_key": "A_V1",
+      "calendar_days": "clean",
+      "family": "A",
+      "goalpost_1": {
+        "reading": "as in A's restated record (results/h7/kink.json)",
+        "recorded": {
+          "breaches_note": "not recomputable from this record without a re-run (#166): the record holds the worst gap, not the gap of each day, and the superseded count compared points with a limit in shares",
+          "days_compared": 1300,
+          "holds": false,
+          "limit": 0.5,
+          "missing_refits": 4,
+          "worst": {
+            "day": "2022-11-22",
+            "gap": 3.5000000000000004
+          }
+        }
+      },
+      "goalpost_2": {
+        "all: all": {
+          "days": 1447,
+          "limit_points": 3.0,
+          "median_points": 2.25,
+          "missing": 84,
+          "position": "under the bar",
+          "served_median_points": 2.25,
+          "served_position": "under the bar"
+        },
+        "day_type: month_end": {
+          "days": 116,
+          "limit_points": 3.0,
+          "median_points": 2.25,
+          "missing": 5,
+          "position": "under the bar",
+          "served_median_points": 2.25,
+          "served_position": "under the bar"
+        },
+        "day_type: ordinary": {
+          "days": 1236,
+          "limit_points": 3.0,
+          "median_points": 2.25,
+          "missing": 74,
+          "position": "under the bar",
+          "served_median_points": 2.25,
+          "served_position": "under the bar"
+        },
+        "day_type: quarter_end": {
+          "days": 24,
+          "limit_points": 3.0,
+          "median_points": 2.25,
+          "missing": 3,
+          "position": "under the bar",
+          "served_median_points": 2.25,
+          "served_position": "under the bar"
+        },
+        "day_type: tax_date": {
+          "days": 71,
+          "limit_points": 3.0,
+          "median_points": 2.25,
+          "missing": 2,
+          "position": "under the bar",
+          "served_median_points": 2.25,
+          "served_position": "under the bar"
+        },
+        "era: 2021 on": {
+          "days": 1247,
+          "limit_points": 3.0,
+          "median_points": 2.25,
+          "missing": 63,
+          "position": "under the bar",
+          "served_median_points": 2.25,
+          "served_position": "under the bar"
+        },
+        "regime: 2020": {
+          "days": 200,
+          "limit_points": 3.0,
+          "median_points": 3.0,
+          "missing": 21,
+          "position": "not under the bar",
+          "served_median_points": 2.75,
+          "served_position": "under the bar"
+        },
+        "regime: 2021-23": {
+          "days": 748,
+          "limit_points": 3.0,
+          "median_points": 5.0,
+          "missing": 63,
+          "position": "not under the bar",
+          "served_median_points": 4.75,
+          "served_position": "not under the bar"
+        },
+        "regime: 2024": {
+          "days": 250,
+          "limit_points": 3.0,
+          "median_points": 2.25,
+          "missing": 0,
+          "position": "under the bar",
+          "served_median_points": 2.25,
+          "served_position": "under the bar"
+        },
+        "regime: 2025-26": {
+          "days": 249,
+          "limit_points": 3.0,
+          "median_points": 2.25,
+          "missing": 0,
+          "position": "under the bar",
+          "served_median_points": 2.25,
+          "served_position": "under the bar"
+        }
+      },
+      "goalpost_2_recorded_median_points": 2.249999999999999,
+      "goalpost_3": {
+        "vs_r": {
+          "all: all": {
+            "dropped": 0,
+            "events": 98,
+            "lower": -0.4441639340212807,
+            "point": -0.2656918957353141,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": -0.11039774645684916
+          },
+          "day_type: month_end": {
+            "dropped": 0,
+            "events": 11,
+            "lower": -0.33419913419913416,
+            "point": -0.19740259740259736,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.0
+          },
+          "day_type: ordinary": {
+            "dropped": 0,
+            "events": 73,
+            "lower": -0.5167102280994942,
+            "point": -0.29672905452361037,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": -0.10432491603509775
+          },
+          "day_type: quarter_end": {
+            "dropped": 0,
+            "events": 5,
+            "lower": -0.2,
+            "point": -0.07894736842105254,
+            "position": "straddles the MME",
+            "strata": 1,
+            "upper": 0.10504201680672269
+          },
+          "day_type: tax_date": {
+            "dropped": 0,
+            "events": 9,
+            "lower": -0.34661210990502034,
+            "point": -0.19713261648745517,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.0
+          },
+          "era: 2021 on": {
+            "dropped": 0,
+            "events": 31,
+            "lower": -0.23977678031560967,
+            "point": -0.16541542869269954,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": -0.09911432537542915
+          },
+          "regime: 2020": {
+            "dropped": 0,
+            "events": 67,
+            "lower": -0.4532200207500753,
+            "point": -0.05347323532712378,
+            "position": "straddles the MME",
+            "strata": 1,
+            "upper": 0.26117660050244296
+          },
+          "regime: 2021-23": {
+            "dropped": 1,
+            "events": 0,
+            "lower": 0.0,
+            "point": 0.0,
+            "position": "below the MME",
+            "strata": 0,
+            "upper": 0.0
+          },
+          "regime: 2024": {
+            "dropped": 0,
+            "events": 1,
+            "lower": 0.0,
+            "point": 0.0,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.0
+          },
+          "regime: 2025-26": {
+            "dropped": 0,
+            "events": 30,
+            "lower": -0.034641023928682735,
+            "point": -0.007914764079147596,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.004176637590520073
+          }
+        },
+        "vs_rs": {
+          "all: all": {
+            "dropped": 0,
+            "events": 98,
+            "lower": -0.31780766891340506,
+            "point": -0.08969469379711202,
+            "position": "straddles the MME",
+            "strata": 4,
+            "upper": 0.13181646379643758
+          },
+          "day_type: month_end": {
+            "dropped": 2,
+            "events": 6,
+            "lower": -0.2625328947368421,
+            "point": 0.04385964912280701,
+            "position": "straddles the MME",
+            "strata": 2,
+            "upper": 0.3384615384615385
+          },
+          "day_type: ordinary": {
+            "dropped": 0,
+            "events": 73,
+            "lower": -0.4158286648959985,
+            "point": -0.12470551529775836,
+            "position": "straddles the MME",
+            "strata": 4,
+            "upper": 0.15748007131864517
+          },
+          "day_type: quarter_end": {
+            "dropped": 1,
+            "events": 4,
+            "lower": -0.125,
+            "point": 0.1916666666666667,
+            "position": "straddles the MME",
+            "strata": 3,
+            "upper": 0.3666666666666667
+          },
+          "day_type: tax_date": {
+            "dropped": 1,
+            "events": 9,
+            "lower": -0.2,
+            "point": -0.030303030303030276,
+            "position": "straddles the MME",
+            "strata": 3,
+            "upper": 0.2222222222222222
+          },
+          "era: 2021 on": {
+            "dropped": 1,
+            "events": 31,
+            "lower": -0.22981796050190859,
+            "point": -0.08860444754314996,
+            "position": "below the MME",
+            "strata": 3,
+            "upper": 0.04806674393957971
+          },
+          "regime: 2020": {
+            "dropped": 2,
+            "events": 57,
+            "lower": -0.015349933504489436,
+            "point": 0.1864872103923932,
+            "position": "straddles the MME",
+            "strata": 2,
+            "upper": 0.3940807902108211
+          },
+          "regime: 2021-23": {
+            "dropped": 2,
+            "events": 0,
+            "lower": 0.0,
+            "point": 0.0,
+            "position": "below the MME",
+            "strata": 0,
+            "upper": 0.0
+          },
+          "regime: 2024": {
+            "dropped": 1,
+            "events": 1,
+            "lower": 0.0,
+            "point": 0.0,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.0
+          },
+          "regime: 2025-26": {
+            "dropped": 1,
+            "events": 30,
+            "lower": -0.20906121007612455,
+            "point": -0.07571014492753628,
+            "position": "straddles the MME",
+            "strata": 3,
+            "upper": 0.0672286082772016
+          }
+        },
+        "vs_s": {
+          "all: all": {
+            "dropped": 0,
+            "events": 79,
+            "lower": -0.6544690377079992,
+            "point": -0.48544895303442565,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": -0.27862983590049234
+          },
+          "day_type: month_end": {
+            "dropped": 0,
+            "events": 10,
+            "lower": -0.7990566037735849,
+            "point": -0.4638613861386139,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.0
+          },
+          "day_type: ordinary": {
+            "dropped": 0,
+            "events": 56,
+            "lower": -0.7071803057704984,
+            "point": -0.5278028933092225,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": -0.2883630656328027
+          },
+          "day_type: quarter_end": {
+            "dropped": 0,
+            "events": 5,
+            "lower": -0.4166666666666667,
+            "point": -0.15000000000000002,
+            "position": "straddles the MME",
+            "strata": 1,
+            "upper": 0.15387443438913986
+          },
+          "day_type: tax_date": {
+            "dropped": 0,
+            "events": 8,
+            "lower": -0.6730769230769231,
+            "point": -0.3811475409836066,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.0
+          },
+          "era: 2021 on": {
+            "dropped": 0,
+            "events": 31,
+            "lower": -0.23973656741037971,
+            "point": -0.16348655680832602,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": -0.08769510938989944
+          },
+          "regime: 2020": {
+            "dropped": 0,
+            "events": 48,
+            "lower": -0.33638118537166367,
+            "point": -0.10424618320610685,
+            "position": "straddles the MME",
+            "strata": 1,
+            "upper": 0.16956298013876503
+          },
+          "regime: 2021-23": {
+            "dropped": 1,
+            "events": 0,
+            "lower": 0.0,
+            "point": 0.0,
+            "position": "below the MME",
+            "strata": 0,
+            "upper": 0.0
+          },
+          "regime: 2024": {
+            "dropped": 0,
+            "events": 1,
+            "lower": 0.0,
+            "point": 0.17269076305220887,
+            "position": "straddles the MME",
+            "strata": 1,
+            "upper": 0.29518072289156627
+          },
+          "regime: 2025-26": {
+            "dropped": 0,
+            "events": 30,
+            "lower": -0.04926611596210277,
+            "point": -0.016438356164383494,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.005729564553093965
+          }
+        }
+      },
+      "missing_days": 84,
+      "missing_share": 0.0580511402902557,
+      "served_days": 1363,
+      "status": "scored"
+    },
+    "V2": {
+      "account_key": "A_V2",
+      "calendar_days": "all (provisional: trained on calendar days)",
+      "family": "A",
+      "goalpost_1": {
+        "reading": "as in A's restated record (results/h7/kink.json)",
+        "recorded": {
+          "breaches_note": "not recomputable from this record without a re-run (#166): the record holds the worst gap, not the gap of each day, and the superseded count compared points with a limit in shares",
+          "days_compared": 1300,
+          "holds": false,
+          "limit": 0.5,
+          "missing_refits": 5,
+          "worst": {
+            "day": "2022-12-22",
+            "gap": 3.0
+          }
+        }
+      },
+      "goalpost_2": {
+        "all: all": {
+          "days": 1447,
+          "limit_points": 3.0,
+          "median_points": 2.75,
+          "missing": 105,
+          "position": "under the bar",
+          "served_median_points": 2.75,
+          "served_position": "under the bar"
+        },
+        "day_type: month_end": {
+          "days": 116,
+          "limit_points": 3.0,
+          "median_points": 2.75,
+          "missing": 8,
+          "position": "under the bar",
+          "served_median_points": 2.75,
+          "served_position": "under the bar"
+        },
+        "day_type: ordinary": {
+          "days": 1236,
+          "limit_points": 3.0,
+          "median_points": 2.75,
+          "missing": 88,
+          "position": "under the bar",
+          "served_median_points": 2.75,
+          "served_position": "under the bar"
+        },
+        "day_type: quarter_end": {
+          "days": 24,
+          "limit_points": 3.0,
+          "median_points": 2.75,
+          "missing": 2,
+          "position": "under the bar",
+          "served_median_points": 2.75,
+          "served_position": "under the bar"
+        },
+        "day_type: tax_date": {
+          "days": 71,
+          "limit_points": 3.0,
+          "median_points": 2.75,
+          "missing": 7,
+          "position": "under the bar",
+          "served_median_points": 2.75,
+          "served_position": "under the bar"
+        },
+        "era: 2021 on": {
+          "days": 1247,
+          "limit_points": 3.0,
+          "median_points": 2.75,
+          "missing": 63,
+          "position": "under the bar",
+          "served_median_points": 2.749999999999999,
+          "served_position": "under the bar"
+        },
+        "regime: 2020": {
+          "days": 200,
+          "limit_points": 3.0,
+          "median_points": 4.0,
+          "missing": 42,
+          "position": "not under the bar",
+          "served_median_points": 3.75,
+          "served_position": "not under the bar"
+        },
+        "regime: 2021-23": {
+          "days": 748,
+          "limit_points": 3.0,
+          "median_points": 2.75,
+          "missing": 63,
+          "position": "under the bar",
+          "served_median_points": 2.4999999999999996,
+          "served_position": "under the bar"
+        },
+        "regime: 2024": {
+          "days": 250,
+          "limit_points": 3.0,
+          "median_points": 1.0125000000000002,
+          "missing": 0,
+          "position": "under the bar",
+          "served_median_points": 1.0125000000000002,
+          "served_position": "under the bar"
+        },
+        "regime: 2025-26": {
+          "days": 249,
+          "limit_points": 3.0,
+          "median_points": 2.75,
+          "missing": 0,
+          "position": "under the bar",
+          "served_median_points": 2.75,
+          "served_position": "under the bar"
+        }
+      },
+      "goalpost_2_recorded_median_points": 2.7499999999999996,
+      "goalpost_3": {
+        "vs_r": {
+          "all: all": {
+            "dropped": 0,
+            "events": 98,
+            "lower": -0.4898536725427127,
+            "point": -0.31067230450371397,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": -0.150915829597379
+          },
+          "day_type: month_end": {
+            "dropped": 0,
+            "events": 11,
+            "lower": -0.36690186459395174,
+            "point": -0.22770562770562772,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.0
+          },
+          "day_type: ordinary": {
+            "dropped": 0,
+            "events": 73,
+            "lower": -0.5496352438830266,
+            "point": -0.3351747370404834,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": -0.14274519145549672
+          },
+          "day_type: quarter_end": {
+            "dropped": 0,
+            "events": 5,
+            "lower": -0.25,
+            "point": -0.1105263157894737,
+            "position": "straddles the MME",
+            "strata": 1,
+            "upper": 0.09098548510313105
+          },
+          "day_type: tax_date": {
+            "dropped": 0,
+            "events": 9,
+            "lower": -0.4872881355932204,
+            "point": -0.3279569892473118,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.0
+          },
+          "era: 2021 on": {
+            "dropped": 0,
+            "events": 31,
+            "lower": -0.25695781644504173,
+            "point": -0.1805629244482173,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": -0.11324662205767062
+          },
+          "regime: 2020": {
+            "dropped": 0,
+            "events": 67,
+            "lower": -0.5510348589046845,
+            "point": -0.1447648973179217,
+            "position": "straddles the MME",
+            "strata": 1,
+            "upper": 0.1949203098128273
+          },
+          "regime: 2021-23": {
+            "dropped": 1,
+            "events": 0,
+            "lower": 0.0,
+            "point": 0.0,
+            "position": "below the MME",
+            "strata": 0,
+            "upper": 0.0
+          },
+          "regime: 2024": {
+            "dropped": 0,
+            "events": 1,
+            "lower": 0.0,
+            "point": 0.0,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.0
+          },
+          "regime: 2025-26": {
+            "dropped": 0,
+            "events": 30,
+            "lower": -0.03605015673981191,
+            "point": -0.010045662100456654,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.0004848093083387201
+          }
+        },
+        "vs_rs": {
+          "all: all": {
+            "dropped": 0,
+            "events": 98,
+            "lower": -0.40296486441347873,
+            "point": -0.17373930787873074,
+            "position": "straddles the MME",
+            "strata": 4,
+            "upper": 0.06528610111289357
+          },
+          "day_type: month_end": {
+            "dropped": 2,
+            "events": 6,
+            "lower": -0.44170274170274154,
+            "point": -0.09649122807017542,
+            "position": "straddles the MME",
+            "strata": 2,
+            "upper": 0.24242424242424243
+          },
+          "day_type: ordinary": {
+            "dropped": 0,
+            "events": 73,
+            "lower": -0.48354917117181173,
+            "point": -0.2000854298587208,
+            "position": "straddles the MME",
+            "strata": 4,
+            "upper": 0.09223436064661078
+          },
+          "day_type: quarter_end": {
+            "dropped": 1,
+            "events": 4,
+            "lower": -0.1875,
+            "point": 0.15833333333333338,
+            "position": "straddles the MME",
+            "strata": 3,
+            "upper": 0.3541666666666667
+          },
+          "day_type: tax_date": {
+            "dropped": 1,
+            "events": 9,
+            "lower": -0.42857142857142855,
+            "point": -0.21212121212121213,
+            "position": "straddles the MME",
+            "strata": 3,
+            "upper": 0.2
+          },
+          "era: 2021 on": {
+            "dropped": 1,
+            "events": 31,
+            "lower": -0.23336868026741026,
+            "point": -0.11026504741289622,
+            "position": "below the MME",
+            "strata": 3,
+            "upper": -0.003027597402597442
+          },
+          "regime: 2020": {
+            "dropped": 2,
+            "events": 57,
+            "lower": -0.1970864808908287,
+            "point": 0.07405919378599168,
+            "position": "straddles the MME",
+            "strata": 2,
+            "upper": 0.3144809043209694
+          },
+          "regime: 2021-23": {
+            "dropped": 2,
+            "events": 0,
+            "lower": 0.0,
+            "point": 0.0,
+            "position": "below the MME",
+            "strata": 0,
+            "upper": 0.0
+          },
+          "regime: 2024": {
+            "dropped": 1,
+            "events": 1,
+            "lower": 0.0,
+            "point": 0.0,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.0
+          },
+          "regime: 2025-26": {
+            "dropped": 1,
+            "events": 30,
+            "lower": -0.21205695346320347,
+            "point": -0.09565217391304351,
+            "position": "below the MME",
+            "strata": 3,
+            "upper": 0.009259259259259259
+          }
+        },
+        "vs_s": {
+          "all: all": {
+            "dropped": 0,
+            "events": 62,
+            "lower": -0.6494306135200774,
+            "point": -0.46122101814516125,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": -0.22954411708578443
+          },
+          "day_type: month_end": {
+            "dropped": 0,
+            "events": 8,
+            "lower": -0.7548076923076923,
+            "point": -0.406875,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.0
+          },
+          "day_type: ordinary": {
+            "dropped": 0,
+            "events": 43,
+            "lower": -0.7053987065223314,
+            "point": -0.4987372408713037,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": -0.2258375684111437
+          },
+          "day_type: quarter_end": {
+            "dropped": 0,
+            "events": 5,
+            "lower": -0.42105263157894735,
+            "point": -0.16470588235294115,
+            "position": "straddles the MME",
+            "strata": 1,
+            "upper": 0.125
+          },
+          "day_type: tax_date": {
+            "dropped": 0,
+            "events": 6,
+            "lower": -0.7868852459016393,
+            "point": -0.47270114942528735,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.0
+          },
+          "era: 2021 on": {
+            "dropped": 0,
+            "events": 31,
+            "lower": -0.2576614832535885,
+            "point": -0.17960160031334804,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": -0.10455934944966223
+          },
+          "regime: 2020": {
+            "dropped": 0,
+            "events": 31,
+            "lower": -0.33453998938652374,
+            "point": -0.12001524003048009,
+            "position": "straddles the MME",
+            "strata": 1,
+            "upper": 0.1403669021118721
+          },
+          "regime: 2021-23": {
+            "dropped": 1,
+            "events": 0,
+            "lower": 0.0,
+            "point": 0.0,
+            "position": "below the MME",
+            "strata": 0,
+            "upper": 0.0
+          },
+          "regime: 2024": {
+            "dropped": 0,
+            "events": 1,
+            "lower": 0.0,
+            "point": 0.17269076305220887,
+            "position": "straddles the MME",
+            "strata": 1,
+            "upper": 0.29518072289156627
+          },
+          "regime: 2025-26": {
+            "dropped": 0,
+            "events": 30,
+            "lower": -0.05159165035877364,
+            "point": -0.018569254185692552,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.004258435039002713
+          }
+        }
+      },
+      "missing_days": 105,
+      "missing_share": 0.07256392536281962,
+      "served_days": 1342,
+      "status": "scored"
+    },
+    "V3": {
+      "account_key": "A_V3",
+      "calendar_days": "all (provisional: trained on calendar days)",
+      "family": "A",
+      "goalpost_1": {
+        "reading": "as in A's restated record (results/h7/kink.json)",
+        "recorded": {
+          "breaches_note": "not recomputable from this record without a re-run (#166): the record holds the worst gap, not the gap of each day, and the superseded count compared points with a limit in shares",
+          "days_compared": 1342,
+          "holds": false,
+          "limit": 0.5,
+          "missing_refits": 3,
+          "worst": {
+            "day": "2021-09-17",
+            "gap": 8.75
+          }
+        }
+      },
+      "goalpost_2": {
+        "all: all": {
+          "days": 1447,
+          "limit_points": 3.0,
+          "median_points": 2.5000000000000004,
+          "missing": 63,
+          "position": "under the bar",
+          "served_median_points": 2.5000000000000004,
+          "served_position": "under the bar"
+        },
+        "day_type: month_end": {
+          "days": 116,
+          "limit_points": 3.0,
+          "median_points": 2.5000000000000004,
+          "missing": 5,
+          "position": "under the bar",
+          "served_median_points": 2.5000000000000004,
+          "served_position": "under the bar"
+        },
+        "day_type: ordinary": {
+          "days": 1236,
+          "limit_points": 3.0,
+          "median_points": 2.5000000000000004,
+          "missing": 56,
+          "position": "under the bar",
+          "served_median_points": 2.5000000000000004,
+          "served_position": "under the bar"
+        },
+        "day_type: quarter_end": {
+          "days": 24,
+          "limit_points": 3.0,
+          "median_points": 2.6250000000000004,
+          "missing": 2,
+          "position": "under the bar",
+          "served_median_points": 2.5,
+          "served_position": "under the bar"
+        },
+        "day_type: tax_date": {
+          "days": 71,
+          "limit_points": 3.0,
+          "median_points": 2.5000000000000004,
+          "missing": 0,
+          "position": "under the bar",
+          "served_median_points": 2.5000000000000004,
+          "served_position": "under the bar"
+        },
+        "era: 2021 on": {
+          "days": 1247,
+          "limit_points": 3.0,
+          "median_points": 2.75,
+          "missing": 63,
+          "position": "under the bar",
+          "served_median_points": 2.5000000000000004,
+          "served_position": "under the bar"
+        },
+        "regime: 2020": {
+          "days": 200,
+          "limit_points": 3.0,
+          "median_points": 2.2500000000000004,
+          "missing": 0,
+          "position": "under the bar",
+          "served_median_points": 2.2500000000000004,
+          "served_position": "under the bar"
+        },
+        "regime: 2021-23": {
+          "days": 748,
+          "limit_points": 3.0,
+          "median_points": 8.0,
+          "missing": 0,
+          "position": "not under the bar",
+          "served_median_points": 8.0,
+          "served_position": "not under the bar"
+        },
+        "regime: 2024": {
+          "days": 250,
+          "limit_points": 3.0,
+          "median_points": 2.4749999999999996,
+          "missing": 1,
+          "position": "under the bar",
+          "served_median_points": 2.4749999999999996,
+          "served_position": "under the bar"
+        },
+        "regime: 2025-26": {
+          "days": 249,
+          "limit_points": 3.0,
+          "median_points": 2.5000000000000004,
+          "missing": 62,
+          "position": "under the bar",
+          "served_median_points": 2.5000000000000004,
+          "served_position": "under the bar"
+        }
+      },
+      "goalpost_2_recorded_median_points": 2.4999999999999996,
+      "goalpost_3": {
+        "vs_r": {
+          "all: all": {
+            "dropped": 0,
+            "events": 98,
+            "lower": -0.1927106304072464,
+            "point": -0.11119347664936985,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": -0.03248722900232107
+          },
+          "day_type: month_end": {
+            "dropped": 0,
+            "events": 11,
+            "lower": -0.26666666666666666,
+            "point": -0.09610389610389602,
+            "position": "straddles the MME",
+            "strata": 1,
+            "upper": 0.054550011392116585
+          },
+          "day_type: ordinary": {
+            "dropped": 0,
+            "events": 73,
+            "lower": -0.208643293723373,
+            "point": -0.11573752341016975,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": -0.030623666887226026
+          },
+          "day_type: quarter_end": {
+            "dropped": 0,
+            "events": 5,
+            "lower": -0.25,
+            "point": -0.06842105263157894,
+            "position": "straddles the MME",
+            "strata": 1,
+            "upper": 0.14814814814814814
+          },
+          "day_type: tax_date": {
+            "dropped": 0,
+            "events": 9,
+            "lower": -0.268359460558841,
+            "point": -0.13440860215053763,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.0
+          },
+          "era: 2021 on": {
+            "dropped": 0,
+            "events": 31,
+            "lower": -0.24271313849089224,
+            "point": -0.1645400042444822,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": -0.08677257316055313
+          },
+          "regime: 2020": {
+            "dropped": 0,
+            "events": 67,
+            "lower": 0.0282718837535014,
+            "point": 0.15334979239142632,
+            "position": "straddles the MME",
+            "strata": 1,
+            "upper": 0.29653591579861105
+          },
+          "regime: 2021-23": {
+            "dropped": 1,
+            "events": 0,
+            "lower": 0.0,
+            "point": 0.0,
+            "position": "below the MME",
+            "strata": 0,
+            "upper": 0.0
+          },
+          "regime: 2024": {
+            "dropped": 0,
+            "events": 1,
+            "lower": 0.0,
+            "point": 0.004016064257028051,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.008064516129032258
+          },
+          "regime: 2025-26": {
+            "dropped": 0,
+            "events": 30,
+            "lower": -0.03166674100505501,
+            "point": -0.0012176560121764934,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.03114949456322945
+          }
+        },
+        "vs_rs": {
+          "all: all": {
+            "dropped": 0,
+            "events": 98,
+            "lower": -0.17362286219043765,
+            "point": 0.00396015684763754,
+            "position": "straddles the MME",
+            "strata": 4,
+            "upper": 0.16672066670739918
+          },
+          "day_type: month_end": {
+            "dropped": 2,
+            "events": 6,
+            "lower": 0.0,
+            "point": 0.23684210526315788,
+            "position": "straddles the MME",
+            "strata": 2,
+            "upper": 0.381578947368421
+          },
+          "day_type: ordinary": {
+            "dropped": 0,
+            "events": 73,
+            "lower": -0.23846889041371078,
+            "point": -0.015126297216094686,
+            "position": "straddles the MME",
+            "strata": 4,
+            "upper": 0.18020896033133235
+          },
+          "day_type: quarter_end": {
+            "dropped": 1,
+            "events": 4,
+            "lower": -0.10717787114845936,
+            "point": 0.00833333333333336,
+            "position": "straddles the MME",
+            "strata": 3,
+            "upper": 0.18421052631578946
+          },
+          "day_type: tax_date": {
+            "dropped": 1,
+            "events": 9,
+            "lower": -0.11428571428571428,
+            "point": -0.020202020202020183,
+            "position": "below the MME",
+            "strata": 3,
+            "upper": 0.0
+          },
+          "era: 2021 on": {
+            "dropped": 1,
+            "events": 31,
+            "lower": -0.21729444984218596,
+            "point": -0.0844885919896662,
+            "position": "straddles the MME",
+            "strata": 3,
+            "upper": 0.05369163948980381
+          },
+          "regime: 2020": {
+            "dropped": 2,
+            "events": 57,
+            "lower": 0.03910422579781747,
+            "point": 0.18313914557385833,
+            "position": "straddles the MME",
+            "strata": 2,
+            "upper": 0.35151786640582133
+          },
+          "regime: 2021-23": {
+            "dropped": 2,
+            "events": 0,
+            "lower": 0.0,
+            "point": 0.0,
+            "position": "below the MME",
+            "strata": 0,
+            "upper": 0.0
+          },
+          "regime: 2024": {
+            "dropped": 1,
+            "events": 1,
+            "lower": 0.0,
+            "point": 0.0040322580645161255,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.008163265306122448
+          },
+          "regime: 2025-26": {
+            "dropped": 1,
+            "events": 30,
+            "lower": -0.20261769085971534,
+            "point": -0.07178664765977669,
+            "position": "straddles the MME",
+            "strata": 3,
+            "upper": 0.08073311237373731
+          }
+        },
+        "vs_s": {
+          "all: all": {
+            "dropped": 0,
+            "events": 98,
+            "lower": -0.574242817775641,
+            "point": -0.4115394991589171,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": -0.2371461780997699
+          },
+          "day_type: month_end": {
+            "dropped": 0,
+            "events": 11,
+            "lower": -0.7318181818181818,
+            "point": -0.41318181818181815,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.0
+          },
+          "day_type: ordinary": {
+            "dropped": 0,
+            "events": 73,
+            "lower": -0.6142341601530034,
+            "point": -0.4341116927151007,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": -0.23902076557185595
+          },
+          "day_type: quarter_end": {
+            "dropped": 0,
+            "events": 5,
+            "lower": -0.4385964912280702,
+            "point": -0.08823529411764708,
+            "position": "straddles the MME",
+            "strata": 1,
+            "upper": 0.21904761904761907
+          },
+          "day_type: tax_date": {
+            "dropped": 0,
+            "events": 9,
+            "lower": -0.6304347826086957,
+            "point": -0.3646953405017921,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.0
+          },
+          "era: 2021 on": {
+            "dropped": 0,
+            "events": 31,
+            "lower": -0.24591444942044258,
+            "point": -0.1631228492292197,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": -0.07225369258194456
+          },
+          "regime: 2020": {
+            "dropped": 0,
+            "events": 67,
+            "lower": -0.3117677994803993,
+            "point": -0.09151610369206598,
+            "position": "straddles the MME",
+            "strata": 1,
+            "upper": 0.12956464480102445
+          },
+          "regime: 2021-23": {
+            "dropped": 1,
+            "events": 0,
+            "lower": 0.0,
+            "point": 0.0,
+            "position": "below the MME",
+            "strata": 0,
+            "upper": 0.0
+          },
+          "regime: 2024": {
+            "dropped": 0,
+            "events": 1,
+            "lower": 0.0,
+            "point": 0.17540322580645157,
+            "position": "straddles the MME",
+            "strata": 1,
+            "upper": 0.29554655870445345
+          },
+          "regime: 2025-26": {
+            "dropped": 0,
+            "events": 30,
+            "lower": -0.06585592546188572,
+            "point": -0.022292993630573243,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.007749426078971511
+          }
+        }
+      },
+      "missing_days": 63,
+      "missing_share": 0.043538355217691775,
+      "served_days": 1384,
+      "status": "scored"
+    },
+    "V4": {
+      "account_key": "A_V4",
+      "calendar_days": "clean",
+      "family": "A",
+      "goalpost_1": {
+        "reading": "as in A's restated record (results/h7/kink.json)",
+        "recorded": {
+          "breaches_note": "not recomputable from this record without a re-run (#166): the record holds the worst gap, not the gap of each day, and the superseded count compared points with a limit in shares",
+          "days_compared": 1321,
+          "holds": false,
+          "limit": 0.5,
+          "missing_refits": 4,
+          "worst": {
+            "day": "2022-12-22",
+            "gap": 3.5000000000000004
+          }
+        }
+      },
+      "goalpost_2": {
+        "all: all": {
+          "days": 1447,
+          "limit_points": 3.0,
+          "median_points": 2.5,
+          "missing": 84,
+          "position": "under the bar",
+          "served_median_points": 2.5,
+          "served_position": "under the bar"
+        },
+        "day_type: month_end": {
+          "days": 116,
+          "limit_points": 3.0,
+          "median_points": 2.5,
+          "missing": 6,
+          "position": "under the bar",
+          "served_median_points": 2.5,
+          "served_position": "under the bar"
+        },
+        "day_type: ordinary": {
+          "days": 1236,
+          "limit_points": 3.0,
+          "median_points": 2.5,
+          "missing": 70,
+          "position": "under the bar",
+          "served_median_points": 2.5,
+          "served_position": "under the bar"
+        },
+        "day_type: quarter_end": {
+          "days": 24,
+          "limit_points": 3.0,
+          "median_points": 2.5,
+          "missing": 2,
+          "position": "under the bar",
+          "served_median_points": 2.375,
+          "served_position": "under the bar"
+        },
+        "day_type: tax_date": {
+          "days": 71,
+          "limit_points": 3.0,
+          "median_points": 2.5,
+          "missing": 6,
+          "position": "under the bar",
+          "served_median_points": 2.25,
+          "served_position": "under the bar"
+        },
+        "era: 2021 on": {
+          "days": 1247,
+          "limit_points": 3.0,
+          "median_points": 2.25,
+          "missing": 42,
+          "position": "under the bar",
+          "served_median_points": 2.25,
+          "served_position": "under the bar"
+        },
+        "regime: 2020": {
+          "days": 200,
+          "limit_points": 3.0,
+          "median_points": 3.75,
+          "missing": 42,
+          "position": "not under the bar",
+          "served_median_points": 3.75,
+          "served_position": "not under the bar"
+        },
+        "regime: 2021-23": {
+          "days": 748,
+          "limit_points": 3.0,
+          "median_points": 4.0,
+          "missing": 42,
+          "position": "not under the bar",
+          "served_median_points": 2.999999999999999,
+          "served_position": "under the bar"
+        },
+        "regime: 2024": {
+          "days": 250,
+          "limit_points": 3.0,
+          "median_points": 1.0,
+          "missing": 0,
+          "position": "under the bar",
+          "served_median_points": 1.0,
+          "served_position": "under the bar"
+        },
+        "regime: 2025-26": {
+          "days": 249,
+          "limit_points": 3.0,
+          "median_points": 2.5,
+          "missing": 0,
+          "position": "under the bar",
+          "served_median_points": 2.5,
+          "served_position": "under the bar"
+        }
+      },
+      "goalpost_2_recorded_median_points": 2.4999999999999996,
+      "goalpost_3": {
+        "vs_r": {
+          "all: all": {
+            "dropped": 0,
+            "events": 98,
+            "lower": -0.5033283950688752,
+            "point": -0.3229754466649521,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": -0.16205516780820176
+          },
+          "day_type: month_end": {
+            "dropped": 0,
+            "events": 11,
+            "lower": -0.3923642676767677,
+            "point": -0.24329004329004322,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.0
+          },
+          "day_type: ordinary": {
+            "dropped": 0,
+            "events": 73,
+            "lower": -0.5627994606918638,
+            "point": -0.3470241110024853,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": -0.15252556254372396
+          },
+          "day_type: quarter_end": {
+            "dropped": 0,
+            "events": 5,
+            "lower": -0.30434782608695654,
+            "point": -0.1578947368421052,
+            "position": "straddles the MME",
+            "strata": 1,
+            "upper": 0.05925925925925926
+          },
+          "day_type: tax_date": {
+            "dropped": 0,
+            "events": 9,
+            "lower": -0.5,
+            "point": -0.3387096774193548,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.0
+          },
+          "era: 2021 on": {
+            "dropped": 0,
+            "events": 31,
+            "lower": -0.2752031557105298,
+            "point": -0.1950074278438031,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": -0.12515496656514552
+          },
+          "regime: 2020": {
+            "dropped": 0,
+            "events": 67,
+            "lower": -0.565554413096192,
+            "point": -0.171249018067557,
+            "position": "straddles the MME",
+            "strata": 1,
+            "upper": 0.1520040261139134
+          },
+          "regime: 2021-23": {
+            "dropped": 1,
+            "events": 0,
+            "lower": 0.0,
+            "point": 0.0,
+            "position": "below the MME",
+            "strata": 0,
+            "upper": 0.0
+          },
+          "regime: 2024": {
+            "dropped": 0,
+            "events": 1,
+            "lower": -0.04435483870967742,
+            "point": -0.02008032128514059,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.0
+          },
+          "regime: 2025-26": {
+            "dropped": 0,
+            "events": 30,
+            "lower": -0.03588968787116763,
+            "point": -0.009589041095890427,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.0016297262059973923
+          }
+        },
+        "vs_rs": {
+          "all: all": {
+            "dropped": 0,
+            "events": 98,
+            "lower": -0.4126352982034073,
+            "point": -0.1872014165279176,
+            "position": "below the MME",
+            "strata": 4,
+            "upper": 0.04760562625931796
+          },
+          "day_type: month_end": {
+            "dropped": 2,
+            "events": 6,
+            "lower": -0.44568181818181796,
+            "point": -0.11403508771929825,
+            "position": "straddles the MME",
+            "strata": 2,
+            "upper": 0.1875
+          },
+          "day_type: ordinary": {
+            "dropped": 0,
+            "events": 73,
+            "lower": -0.49282904029674024,
+            "point": -0.21317407359935706,
+            "position": "straddles the MME",
+            "strata": 4,
+            "upper": 0.07512610161634163
+          },
+          "day_type: quarter_end": {
+            "dropped": 1,
+            "events": 4,
+            "lower": -0.30434782608695654,
+            "point": 0.10000000000000003,
+            "position": "straddles the MME",
+            "strata": 3,
+            "upper": 0.3333333333333333
+          },
+          "day_type: tax_date": {
+            "dropped": 1,
+            "events": 9,
+            "lower": -0.49112103174603167,
+            "point": -0.2424242424242424,
+            "position": "straddles the MME",
+            "strata": 3,
+            "upper": 0.2
+          },
+          "era: 2021 on": {
+            "dropped": 1,
+            "events": 31,
+            "lower": -0.23958254923098563,
+            "point": -0.11038749131867036,
+            "position": "below the MME",
+            "strata": 3,
+            "upper": -0.0004972701176345682
+          },
+          "regime: 2020": {
+            "dropped": 2,
+            "events": 57,
+            "lower": -0.21204975898342604,
+            "point": 0.042453461899022354,
+            "position": "straddles the MME",
+            "strata": 2,
+            "upper": 0.2704092890609354
+          },
+          "regime: 2021-23": {
+            "dropped": 2,
+            "events": 0,
+            "lower": 0.0,
+            "point": 0.0,
+            "position": "below the MME",
+            "strata": 0,
+            "upper": 0.0
+          },
+          "regime: 2024": {
+            "dropped": 1,
+            "events": 1,
+            "lower": -0.044534412955465584,
+            "point": -0.020161290322580627,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.0
+          },
+          "regime: 2025-26": {
+            "dropped": 1,
+            "events": 30,
+            "lower": -0.2113175125313283,
+            "point": -0.09165217391304352,
+            "position": "below the MME",
+            "strata": 3,
+            "upper": 0.016256129747626153
+          }
+        },
+        "vs_s": {
+          "all: all": {
+            "dropped": 0,
+            "events": 62,
+            "lower": -0.6448733963102784,
+            "point": -0.4632850660782028,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": -0.23907695483345842
+          },
+          "day_type: month_end": {
+            "dropped": 0,
+            "events": 8,
+            "lower": -0.7512004112239961,
+            "point": -0.41360294117647056,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.0
+          },
+          "day_type: ordinary": {
+            "dropped": 0,
+            "events": 43,
+            "lower": -0.7087814988136579,
+            "point": -0.4993994491499099,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": -0.23603570482246955
+          },
+          "day_type: quarter_end": {
+            "dropped": 0,
+            "events": 5,
+            "lower": -0.456140350877193,
+            "point": -0.21764705882352944,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.04708683473389315
+          },
+          "day_type: tax_date": {
+            "dropped": 0,
+            "events": 6,
+            "lower": -0.765625,
+            "point": -0.4689265536723164,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.0
+          },
+          "era: 2021 on": {
+            "dropped": 0,
+            "events": 31,
+            "lower": -0.27167169831576843,
+            "point": -0.19063581909105898,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": -0.11677667470690697
+          },
+          "regime: 2020": {
+            "dropped": 0,
+            "events": 31,
+            "lower": -0.380201383891728,
+            "point": -0.17995935991871986,
+            "position": "straddles the MME",
+            "strata": 1,
+            "upper": 0.07293209527500966
+          },
+          "regime: 2021-23": {
+            "dropped": 1,
+            "events": 0,
+            "lower": 0.0,
+            "point": 0.0,
+            "position": "below the MME",
+            "strata": 0,
+            "upper": 0.0
+          },
+          "regime: 2024": {
+            "dropped": 0,
+            "events": 1,
+            "lower": -0.004016064257028112,
+            "point": 0.15261044176706828,
+            "position": "straddles the MME",
+            "strata": 1,
+            "upper": 0.27309236947791166
+          },
+          "regime: 2025-26": {
+            "dropped": 0,
+            "events": 30,
+            "lower": -0.05145414204996753,
+            "point": -0.018112633181126325,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.005071842287366338
+          }
+        }
+      },
+      "missing_days": 84,
+      "missing_share": 0.0580511402902557,
+      "served_days": 1363,
+      "status": "scored"
+    },
+    "V5": {
+      "account_key": "A_V5",
+      "calendar_days": "clean",
+      "family": "A",
+      "goalpost_1": {
+        "reading": "as in A's restated record (results/h7/kink.json)",
+        "recorded": {
+          "breaches_note": "not recomputable from this record without a re-run (#166): the record holds the worst gap, not the gap of each day, and the superseded count compared points with a limit in shares",
+          "days_compared": 1258,
+          "holds": false,
+          "limit": 0.5,
+          "missing_refits": 6,
+          "worst": {
+            "day": "2022-11-22",
+            "gap": 5.499999999999999
+          }
+        }
+      },
+      "goalpost_2": {
+        "all: all": {
+          "days": 1447,
+          "limit_points": 3.0,
+          "median_points": 2.2500000000000004,
+          "missing": 126,
+          "position": "under the bar",
+          "served_median_points": 2.25,
+          "served_position": "under the bar"
+        },
+        "day_type: month_end": {
+          "days": 116,
+          "limit_points": 3.0,
+          "median_points": 2.25,
+          "missing": 10,
+          "position": "under the bar",
+          "served_median_points": 2.0,
+          "served_position": "under the bar"
+        },
+        "day_type: ordinary": {
+          "days": 1236,
+          "limit_points": 3.0,
+          "median_points": 2.2500000000000004,
+          "missing": 109,
+          "position": "under the bar",
+          "served_median_points": 2.25,
+          "served_position": "under the bar"
+        },
+        "day_type: quarter_end": {
+          "days": 24,
+          "limit_points": 3.0,
+          "median_points": 2.5000000000000004,
+          "missing": 3,
+          "position": "under the bar",
+          "served_median_points": 2.5,
+          "served_position": "under the bar"
+        },
+        "day_type: tax_date": {
+          "days": 71,
+          "limit_points": 3.0,
+          "median_points": 2.25,
+          "missing": 4,
+          "position": "under the bar",
+          "served_median_points": 1.9999999999999998,
+          "served_position": "under the bar"
+        },
+        "era: 2021 on": {
+          "days": 1247,
+          "limit_points": 3.0,
+          "median_points": 2.0,
+          "missing": 126,
+          "position": "under the bar",
+          "served_median_points": 1.7500000000000002,
+          "served_position": "under the bar"
+        },
+        "regime: 2020": {
+          "days": 200,
+          "limit_points": 3.0,
+          "median_points": 2.5,
+          "missing": 0,
+          "position": "under the bar",
+          "served_median_points": 2.5,
+          "served_position": "under the bar"
+        },
+        "regime: 2021-23": {
+          "days": 748,
+          "limit_points": 3.0,
+          "median_points": 6.85,
+          "missing": 63,
+          "position": "not under the bar",
+          "served_median_points": 3.8125,
+          "served_position": "not under the bar"
+        },
+        "regime: 2024": {
+          "days": 250,
+          "limit_points": 3.0,
+          "median_points": 1.5,
+          "missing": 1,
+          "position": "under the bar",
+          "served_median_points": 1.5,
+          "served_position": "under the bar"
+        },
+        "regime: 2025-26": {
+          "days": 249,
+          "limit_points": 3.0,
+          "median_points": 2.0000000000000004,
+          "missing": 62,
+          "position": "under the bar",
+          "served_median_points": 2.0,
+          "served_position": "under the bar"
+        }
+      },
+      "goalpost_2_recorded_median_points": 2.249999999999999,
+      "goalpost_3": {
+        "vs_r": {
+          "all: all": {
+            "dropped": 0,
+            "events": 98,
+            "lower": -0.2130175923558562,
+            "point": -0.1199414532306622,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": -0.03223305952247533
+          },
+          "day_type: month_end": {
+            "dropped": 0,
+            "events": 11,
+            "lower": -0.3274336283185841,
+            "point": -0.129004329004329,
+            "position": "straddles the MME",
+            "strata": 1,
+            "upper": 0.06476688031756865
+          },
+          "day_type: ordinary": {
+            "dropped": 0,
+            "events": 73,
+            "lower": -0.21581744497515226,
+            "point": -0.11318154513009572,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": -0.014631950473001098
+          },
+          "day_type: quarter_end": {
+            "dropped": 0,
+            "events": 5,
+            "lower": -0.30526315789473685,
+            "point": -0.14210526315789473,
+            "position": "straddles the MME",
+            "strata": 1,
+            "upper": 0.08571428571428572
+          },
+          "day_type: tax_date": {
+            "dropped": 0,
+            "events": 9,
+            "lower": -0.3606060606060606,
+            "point": -0.1774193548387097,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.0
+          },
+          "era: 2021 on": {
+            "dropped": 0,
+            "events": 31,
+            "lower": -0.32181569173245117,
+            "point": -0.23664314516129037,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": -0.15294532784085693
+          },
+          "regime: 2020": {
+            "dropped": 0,
+            "events": 67,
+            "lower": 0.17211073751970773,
+            "point": 0.4329480417461564,
+            "position": "at or above the MME",
+            "strata": 1,
+            "upper": 0.6705843630132676
+          },
+          "regime: 2021-23": {
+            "dropped": 1,
+            "events": 0,
+            "lower": 0.0,
+            "point": 0.0,
+            "position": "below the MME",
+            "strata": 0,
+            "upper": 0.0
+          },
+          "regime: 2024": {
+            "dropped": 0,
+            "events": 1,
+            "lower": 0.0,
+            "point": 0.004016064257028051,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.008064516129032258
+          },
+          "regime: 2025-26": {
+            "dropped": 0,
+            "events": 30,
+            "lower": -0.03166674100505501,
+            "point": -0.0012176560121764934,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.03114949456322945
+          }
+        },
+        "vs_rs": {
+          "all: all": {
+            "dropped": 0,
+            "events": 98,
+            "lower": 0.0058870011663598185,
+            "point": 0.19493848343415096,
+            "position": "straddles the MME",
+            "strata": 4,
+            "upper": 0.38184743177145103
+          },
+          "day_type: month_end": {
+            "dropped": 2,
+            "events": 6,
+            "lower": 0.0,
+            "point": 0.41228070175438597,
+            "position": "straddles the MME",
+            "strata": 2,
+            "upper": 0.611111111111111
+          },
+          "day_type: ordinary": {
+            "dropped": 0,
+            "events": 73,
+            "lower": -0.0004607744918961684,
+            "point": 0.2213989452621858,
+            "position": "straddles the MME",
+            "strata": 4,
+            "upper": 0.4340902590926792
+          },
+          "day_type: quarter_end": {
+            "dropped": 1,
+            "events": 4,
+            "lower": -0.17142857142857143,
+            "point": -0.05833333333333329,
+            "position": "straddles the MME",
+            "strata": 3,
+            "upper": 0.1111111111111111
+          },
+          "day_type: tax_date": {
+            "dropped": 1,
+            "events": 9,
+            "lower": 0.0,
+            "point": 0.06060606060606063,
+            "position": "straddles the MME",
+            "strata": 3,
+            "upper": 0.14285714285714285
+          },
+          "era: 2021 on": {
+            "dropped": 1,
+            "events": 31,
+            "lower": -0.23146469694445704,
+            "point": -0.09309695795398965,
+            "position": "below the MME",
+            "strata": 3,
+            "upper": 0.044242733250147416
+          },
+          "regime: 2020": {
+            "dropped": 2,
+            "events": 57,
+            "lower": 0.24624256906455538,
+            "point": 0.5166733627963038,
+            "position": "at or above the MME",
+            "strata": 2,
+            "upper": 0.7429776818642813
+          },
+          "regime: 2021-23": {
+            "dropped": 2,
+            "events": 0,
+            "lower": 0.0,
+            "point": 0.0,
+            "position": "below the MME",
+            "strata": 0,
+            "upper": 0.0
+          },
+          "regime: 2024": {
+            "dropped": 1,
+            "events": 1,
+            "lower": 0.0,
+            "point": 0.0040322580645161255,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.008163265306122448
+          },
+          "regime: 2025-26": {
+            "dropped": 1,
+            "events": 30,
+            "lower": -0.20261769085971534,
+            "point": -0.07178664765977669,
+            "position": "straddles the MME",
+            "strata": 3,
+            "upper": 0.08073311237373731
+          }
+        },
+        "vs_s": {
+          "all: all": {
+            "dropped": 0,
+            "events": 98,
+            "lower": -0.6085814489976161,
+            "point": -0.4443239274450581,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": -0.2717453300067224
+          },
+          "day_type: month_end": {
+            "dropped": 0,
+            "events": 11,
+            "lower": -0.7880305360633151,
+            "point": -0.47129186602870815,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.0
+          },
+          "day_type: ordinary": {
+            "dropped": 0,
+            "events": 73,
+            "lower": -0.6423855120960245,
+            "point": -0.4545306854513789,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": -0.26160044005397576
+          },
+          "day_type: quarter_end": {
+            "dropped": 0,
+            "events": 5,
+            "lower": -0.5514705882352942,
+            "point": -0.19374999999999998,
+            "position": "straddles the MME",
+            "strata": 1,
+            "upper": 0.11818181818181818
+          },
+          "day_type: tax_date": {
+            "dropped": 0,
+            "events": 9,
+            "lower": -0.7318392945851963,
+            "point": -0.4415708812260536,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.0
+          },
+          "era: 2021 on": {
+            "dropped": 0,
+            "events": 31,
+            "lower": -0.3486549742416168,
+            "point": -0.25500147972773013,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": -0.155271879922656
+          },
+          "regime: 2020": {
+            "dropped": 0,
+            "events": 67,
+            "lower": 0.004716943275673996,
+            "point": 0.18808214566266412,
+            "position": "straddles the MME",
+            "strata": 1,
+            "upper": 0.32481165615652025
+          },
+          "regime: 2021-23": {
+            "dropped": 1,
+            "events": 0,
+            "lower": 0.0,
+            "point": 0.0,
+            "position": "below the MME",
+            "strata": 0,
+            "upper": 0.0
+          },
+          "regime: 2024": {
+            "dropped": 0,
+            "events": 1,
+            "lower": 0.0,
+            "point": 0.17540322580645157,
+            "position": "straddles the MME",
+            "strata": 1,
+            "upper": 0.29554655870445345
+          },
+          "regime: 2025-26": {
+            "dropped": 0,
+            "events": 30,
+            "lower": -0.06585592546188572,
+            "point": -0.022292993630573243,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.007749426078971511
+          }
+        }
+      },
+      "missing_days": 126,
+      "missing_share": 0.08707671043538355,
+      "served_days": 1321,
+      "status": "scored"
+    },
+    "V6": {
+      "account_key": "A_V6",
+      "calendar_days": "clean",
+      "family": "A",
+      "goalpost_1": {
+        "reading": "as in A's restated record (results/h7/kink.json)",
+        "recorded": {
+          "breaches_note": "not recomputable from this record without a re-run (#166): the record holds the worst gap, not the gap of each day, and the superseded count compared points with a limit in shares",
+          "days_compared": 1006,
+          "holds": false,
+          "limit": 0.5,
+          "missing_refits": 17,
+          "worst": {
+            "day": "2020-10-15",
+            "gap": 2.0000000000000004
+          }
+        }
+      },
+      "goalpost_2": {
+        "all: all": {
+          "days": 1447,
+          "limit_points": 3.0,
+          "median_points": 2.75,
+          "missing": 357,
+          "position": "under the bar",
+          "served_median_points": 1.75,
+          "served_position": "under the bar"
+        },
+        "day_type: month_end": {
+          "days": 116,
+          "limit_points": 3.0,
+          "median_points": 2.625,
+          "missing": 27,
+          "position": "under the bar",
+          "served_median_points": 1.7500000000000002,
+          "served_position": "under the bar"
+        },
+        "day_type: ordinary": {
+          "days": 1236,
+          "limit_points": 3.0,
+          "median_points": 2.75,
+          "missing": 307,
+          "position": "under the bar",
+          "served_median_points": 1.75,
+          "served_position": "under the bar"
+        },
+        "day_type: quarter_end": {
+          "days": 24,
+          "limit_points": 3.0,
+          "median_points": 2.75,
+          "missing": 8,
+          "position": "under the bar",
+          "served_median_points": 1.75,
+          "served_position": "under the bar"
+        },
+        "day_type: tax_date": {
+          "days": 71,
+          "limit_points": 3.0,
+          "median_points": 1.75,
+          "missing": 15,
+          "position": "under the bar",
+          "served_median_points": 1.75,
+          "served_position": "under the bar"
+        },
+        "era: 2021 on": {
+          "days": 1247,
+          "limit_points": 3.0,
+          "median_points": 2.0,
+          "missing": 357,
+          "position": "under the bar",
+          "served_median_points": 1.75,
+          "served_position": "under the bar"
+        },
+        "regime: 2020": {
+          "days": 200,
+          "limit_points": 3.0,
+          "median_points": 2.75,
+          "missing": 0,
+          "position": "under the bar",
+          "served_median_points": 2.75,
+          "served_position": "under the bar"
+        },
+        "regime: 2021-23": {
+          "days": 748,
+          "limit_points": 3.0,
+          "median_points": 8.5,
+          "missing": 294,
+          "position": "not under the bar",
+          "served_median_points": 2.75,
+          "served_position": "under the bar"
+        },
+        "regime: 2024": {
+          "days": 250,
+          "limit_points": 3.0,
+          "median_points": 1.7499999999999996,
+          "missing": 1,
+          "position": "under the bar",
+          "served_median_points": 1.7499999999999996,
+          "served_position": "under the bar"
+        },
+        "regime: 2025-26": {
+          "days": 249,
+          "limit_points": 3.0,
+          "median_points": 1.7499999999999998,
+          "missing": 62,
+          "position": "under the bar",
+          "served_median_points": 1.5,
+          "served_position": "under the bar"
+        }
+      },
+      "goalpost_2_recorded_median_points": 1.7500000000000002,
+      "goalpost_3": {
+        "vs_r": {
+          "all: all": {
+            "dropped": 0,
+            "events": 98,
+            "lower": -0.017114565733379893,
+            "point": 0.03958714694180121,
+            "position": "straddles the MME",
+            "strata": 1,
+            "upper": 0.10582119560713107
+          },
+          "day_type: month_end": {
+            "dropped": 0,
+            "events": 11,
+            "lower": -0.04481792717086835,
+            "point": 0.03982683982683988,
+            "position": "straddles the MME",
+            "strata": 1,
+            "upper": 0.1481679540503067
+          },
+          "day_type: ordinary": {
+            "dropped": 0,
+            "events": 73,
+            "lower": -0.019003572655585367,
+            "point": 0.04401700844532919,
+            "position": "straddles the MME",
+            "strata": 1,
+            "upper": 0.11944175059370263
+          },
+          "day_type: quarter_end": {
+            "dropped": 0,
+            "events": 5,
+            "lower": -0.043478260869565216,
+            "point": 0.05789473684210533,
+            "position": "straddles the MME",
+            "strata": 1,
+            "upper": 0.1956521739130435
+          },
+          "day_type: tax_date": {
+            "dropped": 0,
+            "events": 9,
+            "lower": -0.1205139652014652,
+            "point": -0.008960573476702538,
+            "position": "straddles the MME",
+            "strata": 1,
+            "upper": 0.09575655395136762
+          },
+          "era: 2021 on": {
+            "dropped": 0,
+            "events": 31,
+            "lower": -0.04635796891787318,
+            "point": -0.018078841256366718,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.0
+          },
+          "regime: 2020": {
+            "dropped": 0,
+            "events": 67,
+            "lower": 0.07592489620741746,
+            "point": 0.2515991471215352,
+            "position": "at or above the MME",
+            "strata": 1,
+            "upper": 0.4571865737759831
+          },
+          "regime: 2021-23": {
+            "dropped": 1,
+            "events": 0,
+            "lower": 0.0,
+            "point": 0.0,
+            "position": "below the MME",
+            "strata": 0,
+            "upper": 0.0
+          },
+          "regime: 2024": {
+            "dropped": 0,
+            "events": 1,
+            "lower": 0.0,
+            "point": 0.004016064257028051,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.008064516129032258
+          },
+          "regime: 2025-26": {
+            "dropped": 0,
+            "events": 30,
+            "lower": -0.0009639228005045097,
+            "point": 0.0066971080669711025,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.032995669834457356
+          }
+        },
+        "vs_rs": {
+          "all: all": {
+            "dropped": 0,
+            "events": 98,
+            "lower": 0.0381914461842604,
+            "point": 0.16003416688494254,
+            "position": "straddles the MME",
+            "strata": 4,
+            "upper": 0.29991167738808633
+          },
+          "day_type: month_end": {
+            "dropped": 2,
+            "events": 6,
+            "lower": 0.0,
+            "point": 0.3245614035087719,
+            "position": "straddles the MME",
+            "strata": 2,
+            "upper": 0.5
+          },
+          "day_type: ordinary": {
+            "dropped": 0,
+            "events": 73,
+            "lower": 0.03568739623894408,
+            "point": 0.17412384417884935,
+            "position": "straddles the MME",
+            "strata": 4,
+            "upper": 0.3357600389994197
+          },
+          "day_type: quarter_end": {
+            "dropped": 1,
+            "events": 4,
+            "lower": 0.0,
+            "point": 0.07500000000000001,
+            "position": "straddles the MME",
+            "strata": 3,
+            "upper": 0.22727272727272727
+          },
+          "day_type: tax_date": {
+            "dropped": 1,
+            "events": 9,
+            "lower": -0.1,
+            "point": 0.030303030303030276,
+            "position": "straddles the MME",
+            "strata": 3,
+            "upper": 0.18181818181818182
+          },
+          "era: 2021 on": {
+            "dropped": 1,
+            "events": 31,
+            "lower": -0.020637953203414633,
+            "point": -0.006025585939083422,
+            "position": "below the MME",
+            "strata": 3,
+            "upper": 0.0028122453372695483
+          },
+          "regime: 2020": {
+            "dropped": 2,
+            "events": 57,
+            "lower": 0.09890443782083126,
+            "point": 0.3002544529262086,
+            "position": "at or above the MME",
+            "strata": 2,
+            "upper": 0.525008620689655
+          },
+          "regime: 2021-23": {
+            "dropped": 2,
+            "events": 0,
+            "lower": 0.0,
+            "point": 0.0,
+            "position": "below the MME",
+            "strata": 0,
+            "upper": 0.0
+          },
+          "regime: 2024": {
+            "dropped": 1,
+            "events": 1,
+            "lower": 0.0,
+            "point": 0.0040322580645161255,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.008163265306122448
+          },
+          "regime: 2025-26": {
+            "dropped": 1,
+            "events": 30,
+            "lower": -0.010716205837173578,
+            "point": 0.0035756711808030287,
+            "position": "below the MME",
+            "strata": 3,
+            "upper": 0.03142343789254558
+          }
+        },
+        "vs_s": {
+          "all: all": {
+            "dropped": 0,
+            "events": 98,
+            "lower": -0.5435299410884631,
+            "point": -0.3383753703094141,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": -0.12090636312727204
+          },
+          "day_type: month_end": {
+            "dropped": 0,
+            "events": 11,
+            "lower": -0.7413793103448276,
+            "point": -0.3496503496503497,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.0
+          },
+          "day_type: ordinary": {
+            "dropped": 0,
+            "events": 73,
+            "lower": -0.5918184592273914,
+            "point": -0.35128344642171305,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": -0.1037431196599526
+          },
+          "day_type: quarter_end": {
+            "dropped": 0,
+            "events": 5,
+            "lower": -0.4166666666666667,
+            "point": -0.05454545454545445,
+            "position": "straddles the MME",
+            "strata": 1,
+            "upper": 0.24358974358974358
+          },
+          "day_type: tax_date": {
+            "dropped": 0,
+            "events": 9,
+            "lower": -0.6516763848396501,
+            "point": -0.32978723404255317,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.0
+          },
+          "era: 2021 on": {
+            "dropped": 0,
+            "events": 31,
+            "lower": -0.060222182139536624,
+            "point": -0.023376769687183163,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.004971753432494253
+          },
+          "regime: 2020": {
+            "dropped": 0,
+            "events": 67,
+            "lower": -0.21560720931891272,
+            "point": 0.006733251038042898,
+            "position": "straddles the MME",
+            "strata": 1,
+            "upper": 0.18910594557785546
+          },
+          "regime: 2021-23": {
+            "dropped": 1,
+            "events": 0,
+            "lower": 0.0,
+            "point": 0.0,
+            "position": "below the MME",
+            "strata": 0,
+            "upper": 0.0
+          },
+          "regime: 2024": {
+            "dropped": 0,
+            "events": 1,
+            "lower": 0.0,
+            "point": 0.17540322580645157,
+            "position": "straddles the MME",
+            "strata": 1,
+            "upper": 0.29554655870445345
+          },
+          "regime: 2025-26": {
+            "dropped": 0,
+            "events": 30,
+            "lower": -0.04185067034780127,
+            "point": -0.011252653927813161,
+            "position": "below the MME",
+            "strata": 1,
+            "upper": 0.013970887310048148
+          }
+        }
+      },
+      "missing_days": 357,
+      "missing_share": 0.24671734623358674,
+      "served_days": 1090,
+      "status": "scored"
+    }
+  },
+  "note": "Generated by scripts/h7_step5.py; never edited by hand.",
+  "pins": {
+    "effr_series_sha256": "0b59d4e07ac43885f09ac212eb43da30feefa49221db1072b33532e271782ae1",
+    "first_day": "2018-04-03",
+    "last_day": "2026-09-03",
+    "panel_sha256": "6415651da6095e8d2942ab3ff344211b7fa32e7488eff622b04e18d72de822a4",
+    "panel_version": 4,
+    "parent_commit": "08ff67e27bc3d7e357491cf8e1da59793702b3fb",
+    "rows": 2104
+  },
+  "settings": {
+    "block_length": 10,
+    "draws": 10000,
+    "estimate_unit": "share of bank assets (account points / 100)",
+    "event_floor": 10,
+    "interval": "the 5th and 95th percentiles of the resamples, no look spent",
+    "lower_level": 0.05,
+    "mme": 0.05,
+    "seed": 20261024,
+    "stress_event_bn": 1.0,
+    "upper_level": 0.95,
+    "width_limit_points": 3.0
+  },
+  "sources": {
+    "calendar_clean": {
+      "path": "results/h7/calendar-clean.json",
+      "sha256": "c3acfc90f9e4fd60c548768a17f7a2b0b86315bdf95118de7e4c56303e04608c"
+    },
+    "distribution_account": {
+      "path": "results/h7/distribution-account.json",
+      "sha256": "5b8ee596d16ccf6277f7174e109746c342bbfad270d10cfd9071fa9a8ebd20e8"
+    },
+    "kink": {
+      "path": "results/h7/kink.json",
+      "sha256": "c37bf6b6f16a620b5708bf2eb6746be444454049477d981567e9db7f08de1fce"
+    }
+  },
+  "splits": {
+    "all: all": {
+      "days": 1447,
+      "events": 98,
+      "first_day": "2020-03-17",
+      "kind": "all",
+      "label": "all",
+      "last_day": "2025-12-31",
+      "under_event_floor": false
+    },
+    "day_type: month_end": {
+      "days": 116,
+      "events": 11,
+      "first_day": "2020-03-30",
+      "kind": "day_type",
+      "label": "month_end",
+      "last_day": "2025-12-30",
+      "under_event_floor": false
+    },
+    "day_type: ordinary": {
+      "days": 1236,
+      "events": 73,
+      "first_day": "2020-03-17",
+      "kind": "day_type",
+      "label": "ordinary",
+      "last_day": "2025-12-29",
+      "under_event_floor": false
+    },
+    "day_type: quarter_end": {
+      "days": 24,
+      "events": 5,
+      "first_day": "2020-03-31",
+      "kind": "day_type",
+      "label": "quarter_end",
+      "last_day": "2025-12-31",
+      "under_event_floor": true
+    },
+    "day_type: tax_date": {
+      "days": 71,
+      "events": 9,
+      "first_day": "2020-04-15",
+      "kind": "day_type",
+      "label": "tax_date",
+      "last_day": "2025-12-17",
+      "under_event_floor": true
+    },
+    "era: 2021 on": {
+      "days": 1247,
+      "events": 31,
+      "first_day": "2021-01-04",
+      "kind": "era",
+      "label": "2021 on",
+      "last_day": "2025-12-31",
+      "under_event_floor": false
+    },
+    "regime: 2020": {
+      "days": 200,
+      "events": 67,
+      "first_day": "2020-03-17",
+      "kind": "regime",
+      "label": "2020",
+      "last_day": "2020-12-31",
+      "under_event_floor": false
+    },
+    "regime: 2021-23": {
+      "days": 748,
+      "events": 0,
+      "first_day": "2021-01-04",
+      "kind": "regime",
+      "label": "2021-23",
+      "last_day": "2023-12-29",
+      "under_event_floor": true
+    },
+    "regime: 2024": {
+      "days": 250,
+      "events": 1,
+      "first_day": "2024-01-02",
+      "kind": "regime",
+      "label": "2024",
+      "last_day": "2024-12-31",
+      "under_event_floor": true
+    },
+    "regime: 2025-26": {
+      "days": 249,
+      "events": 30,
+      "first_day": "2025-01-02",
+      "kind": "regime",
+      "label": "2025-26",
+      "last_day": "2025-12-31",
+      "under_event_floor": false
+    }
+  },
+  "stage": "docs/stages/h7-step5.md",
+  "tier": "development",
+  "variant_count": {
+    "declared_and_not_run": ["D", "DV1", "DV2", "DV3", "DV4"],
+    "estimators_in_play": 12,
+    "not_scorable": ["CV1", "CV2", "CV4"],
+    "recorded_additions": {
+      "calendar_clean_record": 4,
+      "kink_record": 6
+    },
+    "scored": ["B", "V1", "V2", "V3", "V4", "V5", "V6", "C", "CV3"],
+    "stages_2_to_6": "stated by no record; not counted here",
+    "variants_in_play": 10
+  },
+  "window": {
+    "days": 1447,
+    "dropped_unlabelled": {
+      "no label": 0,
+      "no ratio": 0,
+      "no state": 0
+    },
+    "events": 98,
+    "first_day": "2020-03-17",
+    "labelled_days_before_the_first_served_day": 123,
+    "last_day": "2025-12-31",
+    "s_levels": {
+      "0": 1041,
+      "1": 313,
+      "2": 41,
+      "3": 52
+    }
+  }
+}
