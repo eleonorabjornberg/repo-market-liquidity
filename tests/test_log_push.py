@@ -190,12 +190,12 @@ class PushTests(unittest.TestCase):
 
 
 class TrackedCorrectionsTests(unittest.TestCase):
-    """The corrections file in the tree: #76's entry, corrected, passes the model repo's format."""
+    """The corrections file in the tree: #76's entry, corrected, passes the model repo's format (among the others)."""
 
     def test_the_tracked_correction_of_76_passes(self):
         text = (ROOT / "docs" / "research" / "log-corrections.md").read_text(encoding="utf-8")
         corrections = check_log_entry.parse_corrections(text)
-        self.assertEqual(sorted(corrections), [76])
+        self.assertIn(76, corrections)
         self.assertEqual(check_log_entry.check_entry(corrections[76], 76, REPO), [])
         self.assertIn("/issues/96", text)
 
@@ -207,11 +207,8 @@ class TrackedCorrectionsTests(unittest.TestCase):
                          "docs/decisions/measurement-protocol.md §5 and §9 unchanged")
 
 
-if __name__ == "__main__":
-    unittest.main()
 
-
-class TrackedCorrectionsTests(unittest.TestCase):
+class TrackedCorrectionFormatTests(unittest.TestCase):
     """The tracked `docs/research/log-corrections.md` (directive #176, finding #175): every corrected entry passes this
     repository's format check under its own pull request number, the groundwork item of #134 is named, and the plain
     wording of #114 avoids the word the model's lay-reader page test forbids. Written before the corrections; it failed
@@ -297,3 +294,7 @@ class LabelCorrectionTests(unittest.TestCase):
             for gone in ("decides nothing", "post hoc", "held out", "lockbox", "blind tier", "live record"):
                 with self.subTest(pr=number, gone=gone):
                     self.assertNotIn(gone, text)
+
+
+if __name__ == "__main__":
+    unittest.main()
