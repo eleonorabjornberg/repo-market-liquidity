@@ -296,5 +296,72 @@ class LabelCorrectionTests(unittest.TestCase):
                     self.assertNotIn(gone, text)
 
 
+class CountCorrectionTests(unittest.TestCase):
+    """Directive #192 (model PR #1250): #185's merged entry counted tests in its Result line, which the model's
+    `COUNT_CLAIM` refuses in a published document. The correction changes that line and no other; the block carries no
+    numeral that counts tests. Written before the correction; it failed with `KeyError: 185` first."""
+
+    #: The Result line and the other eight lines of #185's merged block, as merged (PR #185's body).
+    MERGED = [
+        "### 2026-10-26 [H7] groundwork G8 · eleonorabjornberg/repo-market-liquidity#185",
+        "- Directive: #184",
+        "- Step: groundwork, shared research log: the two #76 correction tests collected again, and a guard against a "
+        "repeated test class name",
+        "- Tier: development",
+        "- Pins: parent 08ff67e27bc3d7e357491cf8e1da59793702b3fb; panel digest unchanged "
+        "(4ddc3882cd6d406b11e1088f8ff6195e16dde175a0ad6818abe40dd5bdac8999)",
+        "- Tried: renamed the second TrackedCorrectionsTests, moved every class above the main guard, checked #76 among "
+        "the corrections, added tests/test_class_names.py",
+        "- Result: test_log_push collects 31 tests (29 before) and the full suite passes; nothing scored, no figure or "
+        "record changed",
+        "- Against kill: not applicable; nothing scored",
+        "- Next: none",
+    ]
+    RESULT = ("- Result: test_log_push collects the two #76 correction tests again and the full suite passes; nothing "
+              "scored, no figure or record changed")
+
+    @classmethod
+    def setUpClass(cls):
+        text = check_log_entry.CORRECTIONS.read_text(encoding="utf-8")
+        cls.text = text
+        cls.corrections = check_log_entry.parse_corrections(text)
+
+    def test_the_merged_block_is_what_the_check_refuses(self):
+        self.assertTrue(any("counts tests" in e for e in check_log_entry.check_entry(self.MERGED, 185, REPO)))
+
+    def test_185_is_corrected_and_passes_under_its_own_number(self):
+        self.assertEqual(check_log_entry.check_entry(self.corrections[185], 185, REPO), [])
+
+    def test_only_the_result_line_differs(self):
+        expected = list(self.MERGED)
+        expected[6] = self.RESULT
+        self.assertEqual(self.corrections[185], expected)
+
+    def test_the_section_cites_this_issue_and_says_what_changed(self):
+        heading = "## Corrects the entry of #185 (https://github.com/eleonorabjornberg/repo-market-liquidity/issues/192)"
+        self.assertIn(heading, self.text.splitlines())
+        note = self.text.split(heading)[1].split("```research-log")[0]
+        self.assertIn("test count is removed", note)
+
+    def test_no_numeral_counts_tests_in_it(self):
+        # The model's COUNT_CLAIM, via the script's copy (CountClaimTests holds the model's source and compares).
+        for line in self.corrections[185]:
+            self.assertIsNone(check_log_entry.COUNT_CLAIM.search(line), line)
+
+    def test_no_forbidden_phrase(self):
+        text = "\n".join(self.corrections[185]).lower().replace("-", " ")
+        for gone in ("decides nothing", "post hoc", "held out", "lockbox", "blind tier", "live record"):
+            with self.subTest(gone=gone):
+                self.assertNotIn(gone, text)
+
+    def test_the_push_check_reads_the_correction_in_place_of_185s_body(self):
+        merged_body = "Summary.\n\n```research-log\n" + "\n".join(self.MERGED) + "\n```\n"
+        files = ["tests/test_log_push.py", "docs/decisions/x.md"]
+        pulls = {185: ("c" * 40, merged_body, files)}
+        event = {"before": "0" * 40, "after": "c" * 40}
+        self.assertEqual(len(check_log_entry.run_push(event, REPO, FakeGitHub(pulls), {})), 1)
+        self.assertEqual(check_log_entry.run_push(event, REPO, FakeGitHub(pulls), self.corrections), [])
+
+
 if __name__ == "__main__":
     unittest.main()
