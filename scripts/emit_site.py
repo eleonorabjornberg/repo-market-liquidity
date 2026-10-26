@@ -18,6 +18,14 @@ development records, and where each hypothesis stands. Nothing on the page is ty
   own metadata (which step has a record on main). GitHub is not read at build time.
 * Development evidence is labelled as such beside each figure. No verdict is shown: confirmation is prospective only.
 
+The design pass (directive #177): the template adopts the model site's visual system (typography, colours, light and dark
+themes, navigation; its CSS and structure copied from repo-market-model at `MODEL_TEMPLATE_COMMIT`, presentation only,
+none of the parent's generator is imported), draws a chart per finding, H10 and H7m with d3 (the model template's library
+at its pinned version), and opens with a short "Start here" whose terms come from `docs/visual/glossary.json`. Every
+plotted value is built by a `chart_*` function below from a record or from the published panel and is written to
+`site/data/<chart>.json` (gitignored, built); the page embeds the same bytes, so it also opens from a file. `--check`
+regenerates each data file and fails on a stale one.
+
 The page is built on main and never committed (#928 in the model repo): it is gitignored, the pages job builds it
 (`--stamp`), the tests build their own copy, and `scripts/check_built_outputs.py` refuses a pull request that carries it.
 
@@ -46,11 +54,29 @@ import repo_liquidity  # noqa: E402
 
 TEMPLATE = ROOT / "site" / "template.html"
 OUTPUT = ROOT / "site" / "index.html"
+DATA_DIR = ROOT / "site" / "data"
+GLOSSARY = ROOT / "docs" / "visual" / "glossary.json"
+
+#: The model repo commit the template's CSS and structure were copied from (directive #177). Presentation only.
+MODEL_TEMPLATE_COMMIT = "5cabbff39470099a510ebe16dc825a592e29448b"
+#: The prefixes a glossary source may start with: primary sources, as the model repo's `emit_visual.ALLOWED_SOURCES`.
+ALLOWED_SOURCES = (
+    "https://www.federalreserve.gov/",
+    "https://www.newyorkfed.org/",
+    "https://tellerwindow.newyorkfed.org/",
+    "https://home.treasury.gov/",
+    "https://fiscaldata.treasury.gov/",
+    "https://github.com/eleonorabjornberg/repo-market-model/",
+)
+#: The charts, in page order; each has a data file `site/data/<name>.json`.
+CHARTS = ("abundance", "scarcity", "ceiling", "h10", "h7m")
 
 #: The model repo's site, linked from this page. The link back is a model-repo change.
 PARENT_SITE = "https://eleonorabjornberg.github.io/repo-market-model/"
 REPO_URL = "https://github.com/eleonorabjornberg/repo-market-liquidity"
 PARENT_URL = "https://github.com/eleonorabjornberg/repo-market-model"
+#: Her three questions on the first version of the page (PR #173) and the defaults they carry until she rules (#177, item 4).
+DEFAULTS_PR_URL = REPO_URL + "/pull/173"
 
 #: Eleonora's registration of H10 at the new pin: her own comment on #23 (not an app post), naming this repository's
 #: commit. Pointers only; the digest and the pin come from the code and the re-registration page.
@@ -238,6 +264,232 @@ def load_srf_rates(records):
     if hashlib.sha256(data.encode("utf-8")).hexdigest() != manifest["sha256"]:
         raise ValueError("snapshots/srf_rate: the file is not the one its manifest names")
     return [(r["effective_date"], Decimal(r["rate_percent"])) for r in csv.DictReader(data.splitlines())]
+
+
+# ------------------------------------------------------------------------------------------------------------- charts
+#
+# One builder per chart, each returning plain data (numbers as floats, dates as ISO strings) and an `alt` text for the
+# chart's `<svg>`. A builder reads only the panel rows, the SRF snapshot and the records through `Records.figure`, so a
+# chart whose data they cannot yield raises (ValueError, or FigureError, which is one) and the page does not build.
+
+
+def _num(value, places=4):
+    """A Decimal or number as a float rounded to `places` (stable bytes in the data files)."""
+    return float(round(Decimal(str(value)), places))
+
+
+def chart_abundance(rows, first_year, last_year):
+    """Finding one: one point per panel day of the window, `[date, reserves ($bn), SOFR minus IORB (bp)]`, and the floor."""
+    window = [r for days in _years(rows, first_year, last_year).values() for r in days]
+    points = [[r["date"], _num(r["reserve_balances"], 1), _num(spread_bp(r), 2)] for r in window]
+    reserves = [p[1] for p in points]
+    return {
+        "floor_bp": int(FLOOR_BP), "first_year": first_year, "last_year": last_year, "points": points,
+        "alt": "Scatter of SOFR minus IORB in basis points against reserve balances in trillions of dollars, one dot per "
+               "panel day from %d to %d, coloured by year. %d days; reserves from %s to %s tn; the dots sit on a line %s bp "
+               "below IORB." % (first_year, last_year, len(points), tn(min(reserves)), tn(max(reserves)), num(-FLOOR_BP, 0))}
+
+
+def chart_scarcity(rows, first_year, last_year, marker_date, marker_label=None):
+    """Finding two: each year's mean of SOFR minus IORB (bp) with that year's mean reserves ($bn), and a dated marker."""
+    found = finding_scarcity(rows, first_year, last_year)
+    years = [{"year": y["year"], "days": y["days"], "mean_bp": _num(y["mean_bp"], 4),
+              "reserves_mean_bn": _num(y["reserves_mean_bn"], 1)} for y in found["years"]]
+    label = marker_label or "the date the record marks"
+    return {
+        "years": years, "marker": {"date": marker_date, "label": label},
+        "alt": "Yearly mean of SOFR minus IORB in basis points, %s, drawn as one level line per year from %d to %d, with a "
+               "dashed vertical line on %s: %s." % (", ".join("%d %s" % (y["year"], num(y["mean_bp"], 1)) for y in years),
+                                                    first_year, last_year, marker_date, label)}
+
+
+def chart_ceiling(rows, srf_rates, first_day, last_day):
+    """Finding three: per panel day with an SRF rate in force, `[date, SOFR %, SRF rate %, quarter-end 0/1, above 0/1]`."""
+    srf_rates = sorted(srf_rates)
+    points = []
+    for row in rows:
+        if not first_day <= row["date"] <= last_day:
+            continue
+        in_force = [rate for effective, rate in srf_rates if effective <= row["date"]]
+        if not in_force:
+            continue
+        sofr = Decimal(row["sofr"])
+        points.append([row["date"], _num(sofr, 2), _num(in_force[-1], 2), 1 if row["quarter_end"] == "1" else 0,
+                       1 if sofr > in_force[-1] else 0])
+    if not points:
+        raise ValueError("no SRF rate is in force on any panel day from %s to %s" % (first_day, last_day))
+    quarter_ends = [p for p in points if p[3]]
+    above = [p for p in points if p[4]]
+    return {
+        "first": points[0][0], "last": points[-1][0], "points": points,
+        "alt": "Line chart of SOFR and of the SRF rate in force, in percent, from %s to %s, with the %d quarter-end days "
+               "marked. SOFR was above the SRF rate on %d of %d quarter-end days and on %d other days."
+               % (points[0][0], points[-1][0], len(quarter_ends), sum(1 for p in quarter_ends if p[4]), len(quarter_ends),
+                  sum(1 for p in above if not p[3]))}
+
+
+def chart_h10(records):
+    """H10: for each group of development onsets, the episodes counted out of all episodes and its 90% Wilson interval.
+
+    Every leaf is read through `Records.figure`, so a record that lacks one refuses the chart (FigureError).
+    """
+    path = "results/h10/development.json"
+    groups = []
+    for label, keys in (("All development onsets", ("summary",)),
+                        ("ON RRP depleted", ("summary", "splits", "regime", "depleted")),
+                        ("ON RRP abundant", ("summary", "splits", "regime", "abundant")),
+                        ("Quarter-end onsets", ("summary", "splits", "day_type", "quarter-end")),
+                        ("Other onsets", ("summary", "splits", "day_type", "other"))):
+        episodes = records.figure(path, *keys, "episodes")
+        counted = records.figure(path, *keys, "counted")
+        low, high = records.figure(path, *keys, "intervals", "counted")
+        groups.append({"label": label, "episodes": episodes, "counted": counted,
+                       "share": _num(Decimal(counted) / episodes, 4), "low": _num(low, 4), "high": _num(high, 4)})
+    return {
+        "groups": groups, "level": 90,
+        "alt": "Dot and interval chart: the share of H10 development onsets whose episode is counted (residual under the bar "
+               "and beating the null), with a 90 percent interval, for %s." % "; ".join(
+                   "%s %d of %d" % (g["label"], g["counted"], g["episodes"]) for g in groups)}
+
+
+def chart_h7m(records):
+    """H7m, candidate A's kink record: each estimator's worst refit gap and median interval width against its limit."""
+    kink = "results/h7/kink.json"
+    common = records.figure(kink, "summaries", "B", "common_served_days")
+    comparison = records.figure(kink, "comparison")
+    baseline = {"name": "Baseline B", "gap": _num(common["worst_gap_points"], 2),
+                "gap_holds": bool(common["goalpost_1"]["holds"]), "width": _num(common["goalpost_2"]["median"], 2),
+                "width_holds": bool(common["goalpost_2"]["holds"])}
+    estimators = [baseline]
+    for name in sorted(comparison):
+        node = comparison[name]
+        estimators.append({"name": name, "gap": _num(node["worst_gap_points"], 2), "gap_holds": bool(node["goalpost_1_holds"]),
+                           "width": _num(node["median_width_points"], 2), "width_holds": bool(node["goalpost_2_holds"])})
+    return {
+        "estimators": estimators, "limit_gap": _num(common["goalpost_1"]["limit"], 2),
+        "limit_width": _num(common["goalpost_2"]["limit"], 2), "days": records.figure(kink, "same_served_days"),
+        "alt": "Two dot charts, one row per estimator, on the %s days every estimator serves: the worst gap between "
+               "consecutive refits against its limit of %s points, and the median width of the 90 percent interval against "
+               "its limit of %s points. %s." % (
+                   records.figure(kink, "same_served_days"), num(common["goalpost_1"]["limit"], 1),
+                   num(common["goalpost_2"]["limit"], 1),
+                   "; ".join("%s gap %s, width %s" % (e["name"], num(e["gap"], 2), num(e["width"], 2)) for e in estimators))}
+
+
+def chart_data(rows, records):
+    """Every chart's data, keyed by `CHARTS`. The windows are the findings' own, and the dates come from records."""
+    first, last = ABUNDANCE_YEARS
+    y0, y1 = SCARCITY_YEARS
+    floor_date = records.figure("docs/research/h7-refit-schedule.json", "entry_dates", "C", "episode:%d" % y1)
+    episode_floor = records.figure("docs/research/h7-refit-schedule.json", "episode_floor")
+    window_end = records.figure("results/h7/kink.json", "window_end")
+    srf = load_srf_rates(records)
+    charts = {
+        "abundance": chart_abundance(rows, first, last),
+        "scarcity": chart_scarcity(rows, y0, y1, floor_date,
+                                   "C's %d episode reaches its floor of %d scarce days on %s" % (y1, episode_floor, floor_date)),
+        "ceiling": chart_ceiling(rows, srf, srf[0][0], window_end),
+        "h10": chart_h10(records),
+        "h7m": chart_h7m(records),
+    }
+    if sorted(charts) != sorted(CHARTS):
+        raise ValueError("the charts built are not the charts the page lists")
+    return charts
+
+
+def chart_json(charts):
+    """The charts as one JSON text, safe inside a <script> element and the same bytes for the same data."""
+    return json.dumps(charts, sort_keys=True, separators=(",", ":"), ensure_ascii=False).replace("<", "\\u003c")
+
+
+def chart_file_text(chart):
+    """One chart's data file: sorted keys, two-space indent, trailing newline."""
+    return json.dumps(chart, sort_keys=True, indent=2, ensure_ascii=False) + "\n"
+
+
+def write_chart_files(charts, directory=DATA_DIR):
+    """Write `<directory>/<chart>.json` for every chart."""
+    directory = Path(directory)
+    directory.mkdir(parents=True, exist_ok=True)
+    for name, chart in charts.items():
+        (directory / (name + ".json")).write_text(chart_file_text(chart), encoding="utf-8")
+
+
+def check_glossary(glossary):
+    """Every glossary term has a unique key, a printed form, a definition, a pattern and a primary source (ValueError)."""
+    seen = set()
+    for entry in glossary["terms"]:
+        key = entry.get("key", "")
+        if not re.fullmatch(r"\w+", key) or key in seen:
+            raise ValueError("glossary entry %s has no unique key" % entry)
+        seen.add(key)
+        for field in ("term", "text", "definition"):
+            if not str(entry.get(field, "")).strip():
+                raise ValueError("glossary term %r has no %s" % (key, field))
+        if not entry.get("match"):
+            raise ValueError("glossary term %r lists no pattern" % key)
+        if not any(str(entry.get("src", "")).startswith(prefix) for prefix in ALLOWED_SOURCES):
+            raise ValueError("glossary term %r has no primary-source URL" % key)
+
+
+def dfn_fills(glossary):
+    """`{{dfn_<key>}}`: the term as a <dfn> with a keyboard-reachable disclosure for its definition (the model repo's form).
+
+    The definition is in the page, not in a `title`: the term is an inline control (`role="button"`, in the tab order)
+    that toggles it by tap, Enter or Space, and Esc closes it.
+    """
+    out = {}
+    for entry in glossary["terms"]:
+        key = entry["key"]
+        out["dfn_" + key] = (
+            '<dfn id="term-%(k)s" data-term="%(k)s"><span class="term" role="button" tabindex="0" aria-expanded="false" '
+            'aria-controls="def-%(k)s">%(text)s</span></dfn>'
+            '<span class="def" id="def-%(k)s" role="note" hidden> <b>%(term)s:</b> %(definition)s <a href="%(src)s">Source</a>'
+            '</span><!--/def-->' % {"k": key, "text": esc(entry["text"]), "term": esc(entry["term"]),
+                                    "definition": esc(entry["definition"]), "src": esc(entry["src"])})
+    return out
+
+
+def caption(title, sub):
+    return '<figcaption><div class="t">%s</div><div class="s">%s</div></figcaption>' % (esc(title), esc(sub))
+
+
+def section_charts(charts, records):
+    """The captions, the chart data and the notes the template places around the charts."""
+    label = "Descriptive development evidence"
+    a, s, c, h, m = (charts[n] for n in CHARTS)
+    reserves = [p[1] for p in a["points"]]
+    out = {}
+    out["caption_abundance"] = caption(
+        "Each day's spread against reserves, %d to %d" % (a["first_year"], a["last_year"]),
+        "%s from the parent's published panel: one dot per panel day (%d), coloured by year. The line is %s bp below IORB; "
+        "reserves ran from %s to %s tn. No verdict." % (label, len(a["points"]), num(-a["floor_bp"], 0), tn(min(reserves) ),
+                                                      tn(max(reserves))))
+    out["caption_scarcity"] = caption(
+        "The yearly mean spread, %d to %d" % (s["years"][0]["year"], s["years"][-1]["year"]),
+        "%s from the parent's published panel: each level line is one calendar year's mean of SOFR minus IORB. The dashed "
+        "line is the date in docs/research/h7-refit-schedule.json at which C's %d episode reaches its floor. No verdict."
+        % (label, s["years"][-1]["year"]))
+    out["caption_ceiling"] = caption(
+        "SOFR against the SRF rate in force, quarter-end days marked",
+        "%s from the parent's published panel and this repository's SRF-rate snapshot, %s to %s. Quarter-end is the panel's "
+        "own flag. No verdict." % (label, c["first"], c["last"]))
+    out["caption_h10"] = caption(
+        "H10: the episodes counted, by group of development onsets",
+        "%s: the share of onsets whose residual is under the bar and which beat the selection-aware null, with a Wilson "
+        "%d%% interval, from results/h10/development.json. Not a verdict." % (label, h["level"]))
+    out["caption_h7m"] = caption(
+        "H7m, candidate A: the goalposts on the days every estimator serves",
+        "%s from results/h7/kink.json, %s days. A filled dot is a goalpost the record says holds; an open dot, one it says "
+        "does not. Not a verdict." % (label, m["days"]))
+    out["chart_json"] = chart_json(charts)
+    out["chart_files"] = "".join("<li>%s</li>" % code("site/data/%s.json" % n) for n in CHARTS)
+    out["defaults_note"] = (
+        "Defaults carried from the three questions on %s, until Eleonora rules: finding three's wording is the review's "
+        "own, with its citation; its day types are the panel's quarter-end flag and every other day; the page keeps the "
+        "values it computes where they differ from the relayed ones."
+        % link(DEFAULTS_PR_URL, "the first version of this page"))
+    return out
 
 
 # ------------------------------------------------------------------------------------------------- the registration
@@ -563,14 +815,21 @@ def render(template_text, values):
     return re.sub(r"\{\{([a-z0-9_]+)\}\}", lambda m: values[m.group(1)], template_text)
 
 
-def build(rows, stamp=None, records=None):
+def build(rows, stamp=None, records=None, template_text=None, glossary=None):
     """The page, as a string, from the panel rows and the records. Deterministic for fixed inputs and `stamp`."""
     records = Records() if records is None else records
-    typed = typed_numbers(TEMPLATE.read_text(encoding="utf-8"))
+    template_text = TEMPLATE.read_text(encoding="utf-8") if template_text is None else template_text
+    typed = typed_numbers(template_text)
     if typed:
         raise ValueError("site/template.html carries typed numbers: %s" % ", ".join(typed))
+    if glossary is None:
+        glossary = json.loads(GLOSSARY.read_text(encoding="utf-8"))
+    check_glossary(glossary)
     reg = registration()
     values = {}
+    values.update(dfn_fills(glossary))
+    charts = chart_data(rows, records)
+    values.update(section_charts(charts, records))
     values.update(section_findings(rows, records))
     values.update(section_h10(records, reg))
     values.update(section_h7(records))
@@ -587,7 +846,7 @@ def build(rows, stamp=None, records=None):
     })
     values["inputs"] = "".join("<li>%s <span class=\"hash\">%s</span></li>" % (code(path), esc(digest[:12]))
                                for path, digest in records.inputs())
-    return render(TEMPLATE.read_text(encoding="utf-8"), values)
+    return render(template_text, values)
 
 
 def latest_input_commit(paths):
@@ -602,19 +861,26 @@ def latest_input_commit(paths):
     return out
 
 
-def check(rows, output=OUTPUT):
-    """Problems with the page: it does not build, it is not what the inputs build (stale), or a built file is tracked."""
+def check(rows, output=OUTPUT, data_dir=DATA_DIR):
+    """Problems with the page: it does not build, it is not what the inputs build (stale), a chart's data file is stale,
+    or a built file is tracked. An absent page or data file is not an error (they are built, not committed)."""
     problems = []
     try:
         page = build(rows)
+        charts = chart_data(rows, Records())
     except ValueError as error:
         return ["the page does not build: %s" % error]
+    for name, chart in charts.items():
+        path = Path(data_dir) / (name + ".json")
+        if path.exists() and path.read_text(encoding="utf-8") != chart_file_text(chart):
+            problems.append("%s is stale: it is not what the inputs build; rebuild it with scripts/emit_site.py" % path.name)
     output = Path(output)
     if output.exists() and output.read_text(encoding="utf-8") != page:
         problems.append("%s is stale: it is not what the inputs build; rebuild it with scripts/emit_site.py" % output.name)
-    tracked = subprocess.run(["git", "ls-files", "site/index.html"], cwd=ROOT, capture_output=True, text=True).stdout
+    tracked = subprocess.run(["git", "ls-files", "site/index.html", "site/data"], cwd=ROOT, capture_output=True,
+                             text=True).stdout
     if tracked.strip():
-        problems.append("site/index.html is tracked; it is built on main and never committed")
+        problems.append("%s is tracked; it is built on main and never committed" % ", ".join(tracked.split()))
     return problems
 
 
@@ -640,7 +906,8 @@ def main(argv=None):
         records = Records()
     page = build(rows, stamp=stamp, records=records)
     Path(args.output).write_text(page, encoding="utf-8")
-    print("wrote %s" % args.output)
+    write_chart_files(chart_data(rows, Records()), Path(args.output).parent / "data")
+    print("wrote %s and %d chart data files" % (args.output, len(CHARTS)))
     return 0
 
 

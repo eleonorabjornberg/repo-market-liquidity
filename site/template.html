@@ -4,107 +4,220 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Repo market liquidity</title>
-<meta name="description" content="Phase three of repo-market-model: how much liquidity banks can deploy (H7m) and what drives pressure episodes (H10). Development records and status, generated from published records only.">
+<meta name="description" content="Phase three of repo-market-model: how much cash banks can deploy (H7m) and what drives pressure episodes (H10). Development records, a chart per finding and where each hypothesis stands, generated from published records only.">
+<!-- Presentation (the CSS and the structure of the masthead, contents, figures, glossary terms, tables and footer) is copied
+     from repo-market-model's site/template.html at commit 5cabbff39470099a510ebe16dc825a592e29448b (directive 177). No
+     code of the parent's generator is imported; scripts/emit_site.py is this repository's own. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
 <style>
 :root{
-  --paper:#F5F7F6; --ink:#16212A; --ink-2:#4B5863; --rule:#D6DCDB; --panel:#E9EEEC; --accent:#1D57A5;
-  --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
-  --serif:Georgia,"Times New Roman",serif;
+  --paper:#F5F7F6; --ink:#16212A; --ink-2:#4B5863; --ink-3:#5B6771; --rule:#D6DCDB; --panel:#E9EEEC;
+  --sofr:#1D57A5; --pressure:#B3261E; --band:#E3E9ED;
+  --sans:"Public Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
   --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
 }
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
-  --paper:#0E1419; --ink:#E4EAEE; --ink-2:#A9B5BD; --rule:#28333B; --panel:#18232B; --accent:#74A9F2; } }
-:root[data-theme="dark"]{ --paper:#0E1419; --ink:#E4EAEE; --ink-2:#A9B5BD; --rule:#28333B; --panel:#18232B; --accent:#74A9F2; }
-*,*::before,*::after{box-sizing:border-box}
-body{margin:0;background:var(--paper);color:var(--ink);font:400 1.0625rem/1.65 var(--serif);-webkit-font-smoothing:antialiased}
-.wrap{max-width:52rem;margin:0 auto;padding:0 16px 64px}
-h1,h2,h3,nav,summary,table,dl,.src,.label,footer{font-family:var(--sans)}
-h1{font-size:clamp(1.9rem,6vw,2.8rem);line-height:1.08;letter-spacing:-.02em;margin:48px 0 12px}
-h2{font-size:1.45rem;line-height:1.2;margin:48px 0 10px;letter-spacing:-.01em}
-h3{font-size:1.1rem;line-height:1.3;margin:28px 0 6px}
-.lede{font-size:1.15rem;color:var(--ink-2);margin:0 0 8px}
-nav{display:flex;flex-wrap:wrap;gap:6px 18px;margin:20px 0 0;padding:10px 0;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);font-size:.9rem}
-a{color:var(--accent)}
-code,.hash{font-family:var(--mono);font-size:.82em;overflow-wrap:anywhere}
-.label{display:inline-block;background:var(--panel);border-left:4px solid var(--accent);padding:4px 10px;border-radius:4px;font-size:.82rem;color:var(--ink-2);margin:4px 0 8px}
-.note{background:var(--panel);border-left:4px solid var(--accent);padding:10px 14px;border-radius:4px;font-size:.95rem}
+  --paper:#0E1419; --ink:#E4EAEE; --ink-2:#A9B5BD; --ink-3:#8794A0; --rule:#28333B; --panel:#18232B;
+  --sofr:#74A9F2; --pressure:#F2675B; --band:#162029; } }
+:root[data-theme="dark"]{
+  --paper:#0E1419; --ink:#E4EAEE; --ink-2:#A9B5BD; --ink-3:#8794A0; --rule:#28333B; --panel:#18232B;
+  --sofr:#74A9F2; --pressure:#F2675B; --band:#162029; }
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 1.125rem/1.65 var(--serif);-webkit-font-smoothing:antialiased;font-kerning:normal;text-rendering:optimizeLegibility;counter-reset:fig sec}
+.wrap{max-width:44rem;margin:0 auto;padding:0 20px}
+.prose{max-width:66ch}
+p{hyphens:auto;-webkit-hyphens:auto}
+h1,h2,h3{font-family:var(--serif)}
+.ui,button,summary,table,figcaption,.tip,nav,dl,.label,.note,footer,ul.inputs,ul.key{font-family:var(--sans)}
+.masthead{margin:72px 0 0}
+.kicker{font-family:var(--sans);font-size:.74rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2);margin:0 0 18px}
+h1{font-weight:600;font-size:clamp(2.4rem,7vw,3.6rem);line-height:1.04;letter-spacing:-.015em;margin:0 0 18px;max-width:16ch}
+.dek{font-size:1.32rem;line-height:1.45;font-style:italic;color:var(--ink-2);margin:0 0 22px;max-width:36em}
+.byline{font-family:var(--sans);font-size:.8rem;color:var(--ink-3);letter-spacing:.02em;margin:0;padding:12px 0 0;border-top:1px solid var(--rule)}
+nav{margin:34px 0 8px}
+nav ol{list-style:none;margin:0;padding:0;counter-reset:nav}
+nav li{font-size:.92rem;color:var(--ink);display:flex;gap:12px;align-items:baseline;padding:3px 0;counter-increment:nav}
+nav li::before{content:counter(nav);font-weight:600;color:var(--sofr);font-variant-numeric:tabular-nums;min-width:1.6em;text-align:right;flex:none}
+nav li a{color:inherit;text-decoration:none;font-weight:500}
+nav li a:hover{text-decoration:underline;text-decoration-color:var(--rule);text-underline-offset:3px}
+nav li small{font-size:.8rem;color:var(--ink-3);margin-left:.5em}
+nav li small::before{content:"\2014\00a0"}
+.toc{margin:56px 0 0;padding:20px 0 4px;border-top:1px solid var(--rule)}
+.toc .toc-h{font-family:var(--sans);font-size:.74rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2);margin:0 0 12px;display:block}
+section{margin:96px 0 0;counter-increment:sec}
+#start{margin-top:64px;padding:20px 22px 22px;background:var(--panel);border-radius:10px}
+#start h2{margin-bottom:12px;font-size:clamp(1.35rem,3.4vw,1.7rem)}
+#start p{margin:0;font-size:1.05rem}
+h2{font-size:clamp(1.6rem,4vw,2.1rem);font-weight:600;letter-spacing:-.01em;line-height:1.15;margin:0 0 18px;display:flex;gap:.55em;align-items:baseline}
+h2 .n::before{content:counter(sec);font-family:var(--sans);font-size:.62em;color:var(--sofr);font-weight:600;font-variant-numeric:tabular-nums}
+h3{font-size:1.15rem;line-height:1.3;margin:40px 0 6px;font-weight:600}
+.lede{font-size:1.12rem;line-height:1.55;margin:0 0 8px}
+.label{display:inline-block;background:var(--panel);border-left:4px solid var(--sofr);padding:4px 10px;border-radius:4px;font-size:.82rem;color:var(--ink-2);margin:4px 0 12px}
+.note{font-size:.88rem;line-height:1.5;color:var(--ink-2);background:var(--panel);border-left:4px solid var(--sofr);padding:10px 14px;border-radius:4px;margin:14px 0 0;max-width:74ch}
+figure{margin:28px 0 12px;counter-increment:fig;clear:both}
+figcaption .t{font-weight:600;font-size:.98rem;letter-spacing:-.005em}
+figcaption .t::before{content:"Figure " counter(fig) ". ";color:var(--ink-2);font-weight:600}
+figcaption .s{font-size:.84rem;color:var(--ink-2);margin-top:2px;line-height:1.5}
+figcaption{margin-bottom:10px}
+.chart{position:relative;width:100%}
+.chart svg{display:block;overflow:visible;max-width:100%;font-family:var(--sans);font-variant-numeric:tabular-nums}
+.chart .axis text,.chart .lab{font-size:11px;fill:var(--ink-3)}
+.chart .axis path,.chart .axis line{stroke:var(--rule)}
+.chart .grid line{stroke:var(--rule)}
+.chart .ttl{font-size:11px;fill:var(--ink-2);font-weight:600}
+.tip{position:absolute;pointer-events:none;background:var(--paper);border:1px solid var(--rule);border-radius:6px;padding:8px 10px;font-size:.8rem;line-height:1.45;box-shadow:0 6px 18px -8px rgba(0,0,0,.35);opacity:0;transition:opacity .08s;z-index:2;max-width:260px}
+.tip b{font-weight:600}
+ul.key{list-style:none;display:flex;flex-wrap:wrap;gap:4px 16px;padding:0;margin:10px 0 0;font-size:.8rem;color:var(--ink-2)}
+ul.key li{display:inline-flex;gap:6px;align-items:center}
+ul.key i{display:inline-block;width:10px;height:10px;border-radius:50%;background:currentColor}
+ul.key i.ring{background:none;border:2px solid currentColor;width:10px;height:10px}
+ul.key i.bar{border-radius:0;width:16px;height:2px}
+details{margin:22px 0 0;padding-top:4px;max-width:74ch}
+details.wide{max-width:none}
+summary{cursor:pointer;font-size:.92rem;font-weight:600;color:var(--ink-2);list-style-position:outside}
+details[open] summary{color:var(--ink)}
+button:focus-visible,summary:focus-visible,a:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--sofr);outline-offset:2px}
 .scroll{overflow-x:auto;margin:10px 0}
 table{border-collapse:collapse;width:100%;font-size:.82rem;line-height:1.4}
 caption{text-align:left;font-weight:600;color:var(--ink-2);padding:0 0 6px}
-th,td{text-align:left;vertical-align:top;padding:6px 10px 6px 0;border-bottom:1px solid var(--rule)}
-thead th{font-size:.74rem;color:var(--ink-2)}
-dl{font-size:.88rem;display:grid;grid-template-columns:max-content 1fr;gap:4px 16px}
+th,td{text-align:left;vertical-align:top;padding:7px 10px 7px 0;border-bottom:1px solid var(--rule)}
+thead th{font-size:.74rem;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-2);font-weight:600}
+code,.hash{font-family:var(--mono);font-size:.8em;overflow-wrap:anywhere}
+dl{font-size:.86rem;display:grid;grid-template-columns:max-content 1fr;gap:4px 16px}
 dt{color:var(--ink-2)}
 dd{margin:0;overflow-wrap:anywhere}
-ul.inputs{font:.8rem/1.7 var(--sans);padding-left:1.2em;color:var(--ink-2)}
-footer{margin-top:56px;padding-top:14px;border-top:1px solid var(--rule);font-size:.82rem;line-height:1.6;color:var(--ink-2)}
-a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-@media (max-width:560px){dl{grid-template-columns:1fr}}
+ul.inputs{font-size:.8rem;line-height:1.7;padding-left:1.2em;color:var(--ink-2)}
+ul.guards{font-family:var(--sans);font-size:.92rem;color:var(--ink-2);padding-left:1.2em;max-width:74ch}
+ul.guards li{margin:0 0 8px}
+dfn{font-style:normal}
+dfn .term{cursor:pointer;font-weight:600;border-bottom:1px dotted var(--ink-2)}
+dfn .term[aria-expanded="true"]{border-bottom-style:solid}
+dfn .term:focus-visible{outline:2px solid var(--sofr);outline-offset:2px;border-radius:2px}
+.def{display:block;margin:6px 0 8px;padding:8px 12px;border-left:3px solid var(--sofr);background:var(--paper);font-family:var(--sans);font-size:.88rem;line-height:1.5;color:var(--ink)}
+.def[hidden]{display:none}
+.def a{color:var(--ink-2)}
+a{color:var(--sofr)}
+footer{margin:110px 0 60px;border-top:1px solid var(--rule);padding-top:18px;font-size:.8rem;color:var(--ink-3);max-width:74ch;line-height:1.6}
+footer code{word-break:break-all}
+@media (max-width:720px){ .toc li small{display:block;margin-left:0} .toc li small::before{content:""} }
+@media (max-width:560px){ body{font-size:1.04rem} .wrap{padding:0 16px} .masthead{margin-top:44px} .dek{font-size:1.14rem} section{margin-top:72px} #start{padding:16px 16px 18px} dl{grid-template-columns:1fr} }
 </style>
 </head>
 <body>
 <div class="wrap">
-<header>
+
+<header class="masthead">
+<p class="kicker">Phase three of <a href="{{parent_site}}">repo-market-model</a></p>
 <h1>Repo market liquidity</h1>
-<p class="lede">Phase three of <a href="{{parent_site}}">repo-market-model</a>. It asks two questions the forecast cannot: how much liquidity banks can deploy (H7m, a slow variable, measured on its own), and what drives each pressure episode (H10, a description after the fact). Every figure on this page is read from a published record or computed by a tested script from the parent&rsquo;s published panel. Nothing here is a verdict.</p>
+<p class="dek">How much cash can banks lend before the price of overnight money starts to rise, and what moves it when it does.</p>
+<p class="byline">Every figure and every chart on this page is read from a published record or computed by a tested script from the parent&rsquo;s published panel. Nothing here is a verdict.</p>
 <p class="label">Development evidence only. Confirmation is prospective, after registration.</p>
-<nav aria-label="Sections">
-<a href="#show">What the data show</a>
-<a href="#h10">H10</a>
-<a href="#h7m">H7m</a>
-<a href="#status">Status</a>
-<a href="#built">How it is built</a>
-</nav>
-<dl>
-<dt>Parent commit</dt><dd>{{parent_commit}}</dd>
-<dt>Parent panel digest</dt><dd>{{parent_panel}}</dd>
-<dt>Phase three panel, version {{phase3_panel_version}}</dt><dd>{{phase3_panel}}</dd>
-</dl>
 </header>
+
+<nav class="toc" aria-label="Sections">
+<span class="toc-h">On this page</span>
+<ol>
+<li><span><a href="#start">Start here</a><small>What this page asks, in plain words</small></span></li>
+<li><span><a href="#show">What the data show</a><small>Three findings, a chart each</small></span></li>
+<li><span><a href="#h10">H10</a><small>What drives a pressure episode</small></span></li>
+<li><span><a href="#h7m">H7m</a><small>How much cash banks can deploy</small></span></li>
+<li><span><a href="#status">Where each hypothesis stands</a></span></li>
+<li><span><a href="#built">How it is built</a></span></li>
+</ol>
+</nav>
+
 <main>
 
+<!-- start-here -->
+<section id="start">
+<h2><span class="n"></span>Start here</h2>
+<div class="prose">
+<p>The Fed pays banks interest on the {{dfn_reserves}} they keep with it, at the rate called {{dfn_iorb}}, while {{dfn_sofr}} measures what {{dfn_overnight}} borrowing against Treasury securities costs in the {{dfn_repo}} market. The gap between the two, counted in {{dfn_bp}}, is the spread the model repository forecasts. This repository asks two questions that forecast cannot: how much cash banks can deploy before the spread starts to rise (H7m), and what moved it during each episode of pressure (H10). The Fed&rsquo;s own lender of last resort for this market is {{dfn_srf}}, and one of the findings below asks how often SOFR rose above its rate. Every chart is descriptive development evidence; only days after registration can confirm or refute anything.</p>
+</div>
+</section>
+<!-- /start-here -->
+
 <section id="show">
-<h2>What the data show</h2>
+<h2><span class="n"></span>What the data show</h2>
 <p class="label">Descriptive development evidence from the parent&rsquo;s published panel. No verdict.</p>
 
 <h3>Abundance is a range, not a level</h3>
-<p>{{f1_lead}} The spread reacts only near scarcity, which is the kink H7 measures.</p>
+<p class="prose">{{f1_lead}} The spread reacts only near scarcity, which is the kink H7 measures.</p>
+<figure>
+{{caption_abundance}}
+<div class="chart" id="chart-abundance"><div class="tip"></div></div>
+<ul class="key" id="key-abundance" aria-label="Years"></ul>
+</figure>
+<details class="wide"><summary>The numbers behind the chart</summary>
 {{f1_table}}
+</details>
 
 <h3>Scarcity creeps in and is clear only afterwards</h3>
-<p>{{f2_lead}}</p>
+<p class="prose">{{f2_lead}}</p>
+<figure>
+{{caption_scarcity}}
+<div class="chart" id="chart-scarcity"><div class="tip"></div></div>
+</figure>
+<details class="wide"><summary>The numbers behind the chart</summary>
 {{f2_table}}
+</details>
 
 <h3>The SRF ceiling and the reporting dates</h3>
-<p>{{f3_lead}}</p>
+<p class="prose">{{f3_lead}}</p>
+<figure>
+{{caption_ceiling}}
+<div class="chart" id="chart-ceiling"><div class="tip"></div></div>
+<ul class="key" id="key-ceiling" aria-label="Marks"></ul>
+</figure>
+<details class="wide"><summary>The numbers behind the chart</summary>
 {{f3_table}}
-<details>
+</details>
+<details class="wide">
 <summary>Every day above the SRF rate</summary>
 {{f3_days}}
 </details>
 <p class="note">{{f3_reading}} The page states the figures and that reading, and nothing more.</p>
+<p class="note">{{defaults_note}}</p>
 </section>
 
 <section id="h10">
-<h2>H10: what drives a pressure episode</h2>
+<h2><span class="n"></span>H10: what drives a pressure episode</h2>
 <p class="label">Tier: {{h10_tier}}. {{h10_not_a_verdict}}</p>
-<p>H10 splits the rise in SOFR minus IORB over each pressure episode into five components: Treasury settlement, the Treasury general account, reserves, quarter-end and a residual. It reads: {{h10_outcome}}.</p>
+<p class="prose">H10 splits the rise in SOFR minus IORB over each pressure episode into five components: Treasury settlement, {{dfn_tga}}, reserves, quarter-end and a residual. It reads: {{h10_outcome}}. The groups below separate the episodes that began while {{dfn_on_rrp}} still held cash from those that began when it did not.</p>
+<figure>
+{{caption_h10}}
+<div class="chart" id="chart-h10"><div class="tip"></div></div>
+</figure>
+<details class="wide" open><summary>The table behind the chart, with the other two counts</summary>
 {{h10_groups}}
+</details>
 {{h10_markers}}
 <h3>Sensitivities and the placebo floor</h3>
 {{h10_sensitivity}}
 {{h10_placebo}}
 <h3>Registration</h3>
-<p>The method is frozen and registered. The digest below is computed from the code now and agrees with the re-registration page.</p>
+<p class="prose">The method is frozen and registered. The digest below is computed from the code now and agrees with the re-registration page.</p>
 {{h10_registration}}
 </section>
 
 <section id="h7m">
-<h2>H7m: how much liquidity banks can deploy</h2>
+<h2><span class="n"></span>H7m: how much liquidity banks can deploy</h2>
 <p class="label">Tier: {{h7_tier}}, both records. Development evidence, not a verdict.</p>
 <h3>A: the bend of the demand curve</h3>
-<p>The goalposts compare refits on the {{h7_kink_days}} days that every estimator serves. The limits are {{h7_kink_limits}}.</p>
+<p class="prose">The goalposts compare refits on the {{h7_kink_days}} days that every estimator serves. The limits are {{h7_kink_limits}}.</p>
+<figure>
+{{caption_h7m}}
+<div class="chart" id="chart-h7m"><div class="tip"></div></div>
+</figure>
+<details class="wide"><summary>The table behind the chart</summary>
 {{h7_kink_table}}
+</details>
 <p class="note">{{h7_kink_superseded}}</p>
 <h3>C: bank groups, on calendar-clean days</h3>
 {{h7_clean_table}}
@@ -112,28 +225,225 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
 </section>
 
 <section id="status">
-<h2>Where each hypothesis stands</h2>
-<p>Read from the plan&rsquo;s step lists and the records on main. A step with no record has not run. H7f, the forecast test of H7, belongs to the model repository.</p>
+<h2><span class="n"></span>Where each hypothesis stands</h2>
+<p class="prose">Read from the plan&rsquo;s step lists and the records on main. A step with no record has not run. H7f, the forecast test of H7, belongs to the model repository.</p>
 {{status_table}}
 </section>
 
 <section id="built">
-<h2>How it is built</h2>
-<ul>
+<h2><span class="n"></span>How it is built</h2>
+<ul class="guards">
 <li>Nothing on the page is typed. Every figure is read from a published record through one reader that refuses a figure no record carries, or computed by a tested function from the parent&rsquo;s published panel at the pin, after its digest check.</li>
+<li>Every chart is drawn from a data file written by the same script and embedded in the page. A chart whose data the records cannot yield stops the build; a data file that is not what the inputs build fails the check.</li>
 <li>A placeholder left unfilled is an error, and so is a number typed into the template.</li>
-<li>The page is built on main and never committed. A pull request that carries the built file fails.</li>
+<li>The page is built on main and never committed. A pull request that carries the built file or its data fails.</li>
 <li>Development evidence is labelled beside each figure. Only prospective confirmation days give a verdict.</li>
 </ul>
 <p>The model repository&rsquo;s page is <a href="{{parent_site}}">here</a>; this repository is <a href="{{repo_url}}">here</a>.</p>
 <details>
+<summary>Chart data files</summary>
+<ul class="inputs">{{chart_files}}</ul>
+</details>
+<details>
 <summary>Records read, with the start of each digest</summary>
 <ul class="inputs">{{inputs}}</ul>
+</details>
+<details>
+<summary>Pins</summary>
+<dl>
+<dt>Parent commit</dt><dd>{{parent_commit}}</dd>
+<dt>Parent panel digest</dt><dd>{{parent_panel}}</dd>
+<dt>Phase three panel, version {{phase3_panel_version}}</dt><dd>{{phase3_panel}}</dd>
+</dl>
 </details>
 </section>
 
 </main>
 <footer>Stamp: {{stamp}}.</footer>
 </div>
+
+<script>
+const D = {{chart_json}};
+const parse = d3.utcParse("%Y-%m-%d"), fmtDay = d3.utcFormat("%-d %b %Y");
+const MINUS = "−";
+const f = (v, p = 1) => v.toFixed(p).replace("-", MINUS);
+const s = (v, p = 1) => (v > 0 ? "+" : "") + f(v, p);
+const tnf = bn => (bn / 1000).toFixed(2);
+const RAMP = ["#6B5BA8", "#3B78C0", "#2F9E9A", "#6DB05A", "#C9A227"];
+const NARROW = 560;
+
+function frame(id, heightOf, margin) {
+  const host = d3.select("#chart-" + id); host.select("svg").remove();
+  const W = Math.max(260, Math.floor(host.node().clientWidth)), H = heightOf(W);
+  const svg = host.append("svg").attr("width", W).attr("height", H).attr("viewBox", `0 0 ${W} ${H}`)
+    .attr("role", "img").attr("aria-label", D[id].alt);
+  return {host, svg, W, H, m: margin(W)};
+}
+function tipAt(host, html, px, py) {
+  const tip = host.select(".tip").html(html).style("opacity", 1);
+  const w = host.node().clientWidth, tw = tip.node().offsetWidth;
+  tip.style("left", Math.max(0, Math.min(w - tw, px + 14)) + "px").style("top", Math.max(0, py - 70) + "px");
+}
+const hideTip = host => host.select(".tip").style("opacity", 0);
+function axisTitle(svg, text, x, y, anchor) {
+  svg.append("text").attr("class", "ttl").attr("x", x).attr("y", y).attr("text-anchor", anchor || "start").text(text);
+}
+function gridY(svg, y, m, W, ticks) {
+  svg.append("g").attr("class", "grid").selectAll("line").data(ticks).join("line")
+    .attr("x1", m.l).attr("x2", W - m.r).attr("y1", d => y(d)).attr("y2", d => y(d))
+    .style("stroke", d => d === 0 ? "var(--ink-3)" : "var(--rule)");
+}
+
+// ---- Figure: the spread against reserves, one dot per day, coloured by year.
+function drawAbundance() {
+  const A = D.abundance;
+  const pts = A.points.map(p => ({date: p[0], year: +p[0].slice(0, 4), res: p[1] / 1000, bp: p[2]}));
+  const {host, svg, W, H, m} = frame("abundance", w => w < NARROW ? 320 : 400, w => ({t: 26, r: 14, b: 44, l: 44}));
+  const x = d3.scaleLinear(d3.extent(pts, p => p.res), [m.l, W - m.r]).nice();
+  const y = d3.scaleLinear([d3.min(pts, p => p.bp), d3.max(pts, p => p.bp)], [H - m.b, m.t]).nice();
+  const color = d3.scaleSequential(d3.interpolateRgbBasis(RAMP)).domain([A.first_year, A.last_year]);
+  gridY(svg, y, m, W, y.ticks(6));
+  svg.append("g").attr("class", "axis").attr("transform", `translate(0,${H - m.b})`).call(d3.axisBottom(x).ticks(W < NARROW ? 5 : 8));
+  svg.append("g").attr("class", "axis").attr("transform", `translate(${m.l},0)`).call(d3.axisLeft(y).ticks(6).tickFormat(v => f(v, 0)));
+  axisTitle(svg, "SOFR minus IORB (bp)", m.l, m.t - 12);
+  axisTitle(svg, "Reserve balances ($ tn)", (m.l + W - m.r) / 2, H - 8, "middle");
+  svg.append("line").attr("x1", m.l).attr("x2", W - m.r).attr("y1", y(A.floor_bp)).attr("y2", y(A.floor_bp))
+    .style("stroke", "var(--pressure)").style("stroke-dasharray", "5 4").style("stroke-width", 1.2);
+  svg.append("text").attr("class", "lab").attr("x", W - m.r - 4).attr("y", y(A.floor_bp) + 14).attr("text-anchor", "end")
+    .style("fill", "var(--pressure)").text(`the floor, ${f(A.floor_bp, 0)} bp`);
+  svg.append("g").selectAll("circle").data(pts).join("circle").attr("cx", p => x(p.res)).attr("cy", p => y(p.bp)).attr("r", 3.2)
+    .style("fill", p => color(p.year)).style("fill-opacity", .45).style("stroke", p => color(p.year)).style("stroke-opacity", .8);
+  const qt = d3.quadtree().x(p => x(p.res)).y(p => y(p.bp)).addAll(pts);
+  svg.append("rect").attr("x", m.l).attr("y", m.t).attr("width", W - m.l - m.r).attr("height", H - m.t - m.b).style("fill", "none")
+    .style("pointer-events", "all").on("pointermove", ev => {
+      const [px, py] = d3.pointer(ev), p = qt.find(px, py, 24);
+      if (!p) return hideTip(host);
+      tipAt(host, `<b>${fmtDay(parse(p.date))}</b><br>Spread ${s(p.bp, 0)} bp<br>Reserves $${p.res.toFixed(2)} tn`, x(p.res), y(p.bp));
+    }).on("pointerleave", () => hideTip(host));
+  d3.select("#key-abundance").html("").selectAll("li").data(d3.range(A.first_year, A.last_year + 1)).join("li")
+    .html(yr => `<i style="color:${color(yr)}"></i>${yr}`);
+}
+
+// ---- Figure: the yearly mean spread, with the record's date marked.
+function drawScarcity() {
+  const S = D.scarcity;
+  const {host, svg, W, H, m} = frame("scarcity", w => w < NARROW ? 300 : 360, w => ({t: 34, r: 16, b: 34, l: 44}));
+  const first = parse(S.years[0].year + "-01-01"), last = parse(S.years.at(-1).year + "-12-31");
+  const x = d3.scaleUtc([first, last], [m.l, W - m.r]);
+  const means = S.years.map(v => v.mean_bp);
+  const y = d3.scaleLinear([Math.min(0, d3.min(means)) - 2, Math.max(0, d3.max(means)) + 3], [H - m.b, m.t]).nice();
+  gridY(svg, y, m, W, y.ticks(6));
+  svg.append("g").attr("class", "axis").attr("transform", `translate(0,${H - m.b})`).call(d3.axisBottom(x).ticks(d3.utcYear.every(1)).tickFormat(d3.utcFormat("%Y")));
+  svg.append("g").attr("class", "axis").attr("transform", `translate(${m.l},0)`).call(d3.axisLeft(y).ticks(6).tickFormat(v => f(v, 0)));
+  axisTitle(svg, "Mean SOFR minus IORB (bp)", m.l, m.t - 18);
+  S.years.forEach(v => {
+    const a = x(parse(v.year + "-01-01")), b = x(parse(v.year + "-12-31")), cy = y(v.mean_bp);
+    svg.append("line").attr("x1", a + 3).attr("x2", b - 3).attr("y1", cy).attr("y2", cy).style("stroke", "var(--sofr)").style("stroke-width", 4).style("stroke-linecap", "round");
+    svg.append("text").attr("x", (a + b) / 2).attr("y", cy - 10).attr("text-anchor", "middle").style("font-size", "12px").style("font-weight", 600).style("fill", "var(--ink)").text(f(v.mean_bp, 1));
+    svg.append("text").attr("class", "lab").attr("x", (a + b) / 2).attr("y", cy + 18).attr("text-anchor", "middle").text(W < NARROW ? `$${tnf(v.reserves_mean_bn)}` : `reserves $${tnf(v.reserves_mean_bn)} tn`);
+    svg.append("rect").attr("x", a).attr("y", m.t).attr("width", b - a).attr("height", H - m.t - m.b).style("fill", "none").style("pointer-events", "all")
+      .on("pointermove", () => tipAt(host, `<b>${v.year}</b><br>Mean spread ${f(v.mean_bp, 2)} bp<br>Mean reserves $${tnf(v.reserves_mean_bn)} tn<br>${v.days} panel days`, (a + b) / 2, cy))
+      .on("pointerleave", () => hideTip(host));
+  });
+  const mx = x(parse(S.marker.date));
+  svg.append("line").attr("x1", mx).attr("x2", mx).attr("y1", m.t).attr("y2", H - m.b).style("stroke", "var(--pressure)").style("stroke-dasharray", "5 4").style("stroke-width", 1.4);
+  const words = S.marker.label.split(" "), lines = [[]];
+  words.forEach(wd => { const cur = lines.at(-1); if ((cur.join(" ") + " " + wd).length > (W < NARROW ? 24 : 46)) lines.push([wd]); else cur.push(wd); });
+  const t = svg.append("text").attr("class", "lab").attr("text-anchor", "end").style("fill", "var(--pressure)");
+  lines.forEach((ln, i) => t.append("tspan").attr("x", mx - 6).attr("y", m.t + 12 + i * 13).text(ln.join(" ")));
+}
+
+// ---- Figure: SOFR against the SRF rate, with quarter-end days marked.
+function drawCeiling() {
+  const C = D.ceiling;
+  const pts = C.points.map(p => ({date: parse(p[0]), sofr: p[1], srf: p[2], qe: p[3] === 1, above: p[4] === 1}));
+  const {host, svg, W, H, m} = frame("ceiling", w => w < NARROW ? 320 : 400, w => ({t: 26, r: 14, b: 30, l: 40}));
+  const x = d3.scaleUtc(d3.extent(pts, p => p.date), [m.l, W - m.r]);
+  const y = d3.scaleLinear([0, d3.max(pts, p => Math.max(p.sofr, p.srf)) * 1.05], [H - m.b, m.t]).nice();
+  gridY(svg, y, m, W, y.ticks(6));
+  svg.append("g").attr("class", "axis").attr("transform", `translate(0,${H - m.b})`).call(d3.axisBottom(x).ticks(W < NARROW ? 4 : 7).tickFormat(d3.utcFormat("%Y")));
+  svg.append("g").attr("class", "axis").attr("transform", `translate(${m.l},0)`).call(d3.axisLeft(y).ticks(6).tickFormat(v => f(v, 1)));
+  axisTitle(svg, "Percent", m.l, m.t - 12);
+  svg.append("path").datum(pts).attr("d", d3.line().curve(d3.curveStepAfter).x(p => x(p.date)).y(p => y(p.srf))).style("fill", "none").style("stroke", "var(--ink-2)").style("stroke-width", 1.6).style("stroke-dasharray", "6 3");
+  svg.append("path").datum(pts).attr("d", d3.line().x(p => x(p.date)).y(p => y(p.sofr))).style("fill", "none").style("stroke", "var(--sofr)").style("stroke-width", 1.2);
+  svg.append("g").selectAll("circle").data(pts.filter(p => p.qe)).join("circle").attr("cx", p => x(p.date)).attr("cy", p => y(p.sofr))
+    .attr("r", p => p.above ? 5 : 3.6).style("fill", p => p.above ? "var(--pressure)" : "var(--paper)").style("stroke", p => p.above ? "var(--pressure)" : "var(--ink)").style("stroke-width", 1.5);
+  svg.append("g").selectAll("circle").data(pts.filter(p => p.above && !p.qe)).join("circle").attr("cx", p => x(p.date)).attr("cy", p => y(p.sofr))
+    .attr("r", 3).style("fill", "var(--pressure)").style("fill-opacity", .6);
+  const bis = d3.bisector(p => p.date).center;
+  svg.append("rect").attr("x", m.l).attr("y", m.t).attr("width", W - m.l - m.r).attr("height", H - m.t - m.b).style("fill", "none").style("pointer-events", "all")
+    .on("pointermove", ev => {
+      const [px] = d3.pointer(ev), p = pts[bis(pts, x.invert(px))];
+      tipAt(host, `<b>${fmtDay(p.date)}</b>${p.qe ? " (quarter-end)" : ""}<br>SOFR ${p.sofr.toFixed(2)}%<br>SRF rate ${p.srf.toFixed(2)}%${p.above ? `<br><span style="color:var(--pressure)">SOFR above the SRF rate by ${((p.sofr - p.srf) * 100).toFixed(0)} bp</span>` : ""}`, x(p.date), y(p.sofr));
+    }).on("pointerleave", () => hideTip(host));
+  d3.select("#key-ceiling").html(`<li style="color:var(--sofr)"><i class="bar"></i>SOFR</li><li><i class="bar" style="background:none;border-top:2px dashed currentColor;height:0"></i>SRF rate in force</li><li><i class="ring" style="color:var(--ink)"></i>Quarter-end day</li><li style="color:var(--pressure)"><i></i>SOFR above the SRF rate</li>`);
+}
+
+// ---- Figure: H10, the share of episodes counted, with its interval, by group.
+function drawH10() {
+  const G = D.h10.groups;
+  const {host, svg, W, H, m} = frame("h10", w => (w < NARROW ? 62 : 40) * G.length + 52, w => ({t: 8, r: w < NARROW ? 14 : 70, b: 34, l: w < NARROW ? 12 : 150}));
+  const x = d3.scaleLinear([0, 1], [m.l, W - m.r]);
+  const rowH = (H - m.t - m.b) / G.length, nar = W < NARROW;
+  svg.append("g").attr("class", "grid").selectAll("line").data(x.ticks(5)).join("line").attr("x1", d => x(d)).attr("x2", d => x(d)).attr("y1", m.t).attr("y2", H - m.b);
+  svg.append("g").attr("class", "axis").attr("transform", `translate(0,${H - m.b})`).call(d3.axisBottom(x).ticks(5).tickFormat(d3.format(".0%")));
+  G.forEach((g, i) => {
+    const cy = m.t + i * rowH + (nar ? rowH * .66 : rowH / 2);
+    svg.append("text").attr("x", nar ? m.l : m.l - 12).attr("y", nar ? cy - 18 : cy + 4).attr("text-anchor", nar ? "start" : "end").style("font-size", "12px").style("fill", "var(--ink)").text(g.label);
+    svg.append("line").attr("x1", x(g.low)).attr("x2", x(g.high)).attr("y1", cy).attr("y2", cy).style("stroke", "var(--sofr)").style("stroke-width", 3).style("stroke-linecap", "round").style("stroke-opacity", .55);
+    svg.append("circle").attr("cx", x(g.share)).attr("cy", cy).attr("r", 5.5).style("fill", "var(--sofr)");
+    svg.append("text").attr("class", "lab").attr("x", nar ? x(g.high) + 8 : W - m.r + 10).attr("y", cy + 4).style("fill", "var(--ink-2)").text(`${g.counted} of ${g.episodes}`);
+    svg.append("rect").attr("x", 0).attr("y", m.t + i * rowH).attr("width", W).attr("height", rowH).style("fill", "none").style("pointer-events", "all")
+      .on("pointermove", () => tipAt(host, `<b>${g.label}</b><br>${g.counted} of ${g.episodes} episodes counted<br>Share ${d3.format(".0%")(g.share)}<br>${D.h10.level}% interval ${d3.format(".0%")(g.low)} to ${d3.format(".0%")(g.high)}`, x(g.share), cy))
+      .on("pointerleave", () => hideTip(host));
+  });
+}
+
+// ---- Figure: H7m candidate A, each estimator against the two goalpost limits.
+function drawH7m() {
+  const M = D.h7m, E = M.estimators;
+  const panels = [{key: "gap", ok: "gap_holds", limit: M.limit_gap, title: "Worst gap between consecutive refits (points)"},
+                  {key: "width", ok: "width_holds", limit: M.limit_width, title: "Median width of the 90% interval (points)"}];
+  const rowH = 24, head = 30, gapBetween = 30;
+  const {host, svg, W, H, m} = frame("h7m", w => 2 * (head + E.length * rowH) + gapBetween + 34, w => ({t: 0, r: 24, b: 30, l: w < NARROW ? 80 : 104}));
+  panels.forEach((pn, k) => {
+    const top = k * (head + E.length * rowH + gapBetween);
+    const x = d3.scaleLinear([0, Math.max(pn.limit, d3.max(E, e => e[pn.key])) * 1.1], [m.l, W - m.r]).nice();
+    axisTitle(svg, pn.title, m.l - (W < NARROW ? 70 : 94), top + 12);
+    svg.append("g").attr("class", "grid").selectAll("line").data(x.ticks(5)).join("line").attr("x1", d => x(d)).attr("x2", d => x(d)).attr("y1", top + head - 6).attr("y2", top + head + E.length * rowH);
+    svg.append("g").attr("class", "axis").attr("transform", `translate(0,${top + head + E.length * rowH})`).call(d3.axisBottom(x).ticks(5));
+    svg.append("line").attr("x1", x(pn.limit)).attr("x2", x(pn.limit)).attr("y1", top + head - 6).attr("y2", top + head + E.length * rowH).style("stroke", "var(--pressure)").style("stroke-dasharray", "5 4").style("stroke-width", 1.4);
+    svg.append("text").attr("class", "lab").attr("x", x(pn.limit) + 4).attr("y", top + head + 2).style("fill", "var(--pressure)").text(`limit ${pn.limit}`);
+    E.forEach((e, i) => {
+      const cy = top + head + i * rowH + rowH / 2 + 4;
+      svg.append("text").attr("x", m.l - 10).attr("y", cy + 4).attr("text-anchor", "end").style("font-size", "12px").style("fill", "var(--ink)").text(e.name);
+      svg.append("line").attr("x1", x(0)).attr("x2", x(e[pn.key])).attr("y1", cy).attr("y2", cy).style("stroke", "var(--sofr)").style("stroke-opacity", .35).style("stroke-width", 2);
+      svg.append("circle").attr("cx", x(e[pn.key])).attr("cy", cy).attr("r", 5.5).style("fill", e[pn.ok] ? "var(--sofr)" : "var(--paper)").style("stroke", "var(--sofr)").style("stroke-width", 2);
+      svg.append("rect").attr("x", 0).attr("y", cy - rowH / 2).attr("width", W).attr("height", rowH).style("fill", "none").style("pointer-events", "all")
+        .on("pointermove", () => tipAt(host, `<b>${e.name}</b><br>${pn.title}: ${e[pn.key].toFixed(2)}<br>Limit ${pn.limit}: the record says it ${e[pn.ok] ? "holds" : "does not hold"}`, x(e[pn.key]), cy))
+        .on("pointerleave", () => hideTip(host));
+    });
+  });
+}
+
+// ---- Glossary terms: Enter, Space or a tap opens the definition in place; Esc closes it and returns focus.
+document.querySelectorAll("dfn .term").forEach(b => {
+  const def = document.getElementById(b.getAttribute("aria-controls"));
+  const set = open => { b.setAttribute("aria-expanded", String(open)); def.hidden = !open; };
+  const toggle = () => set(b.getAttribute("aria-expanded") !== "true");
+  b.addEventListener("click", toggle);
+  b.addEventListener("keydown", ev => {
+    if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); toggle(); }
+    if (ev.key === "Escape") set(false);
+  });
+  def.addEventListener("keydown", ev => { if (ev.key === "Escape") { set(false); b.focus(); } });
+});
+
+const DRAW = [drawAbundance, drawScarcity, drawCeiling, drawH10, drawH7m];
+let drawnAt = 0, timer = null;
+function drawAll() { drawnAt = document.documentElement.clientWidth; DRAW.forEach(fn => fn()); }
+drawAll();
+addEventListener("resize", () => { clearTimeout(timer); timer = setTimeout(() => { if (document.documentElement.clientWidth !== drawnAt) drawAll(); }, 120); });
+</script>
 </body>
 </html>
