@@ -3,6 +3,7 @@
 
     PYTHONPATH=src:<parent at 08ff67e>/src python3 -B scripts/h7_account.py [--replications 2000] [--workers 1]
         [--output results/h7/distribution-account.json] [--page docs/research/h7-distribution-account.md]
+    PYTHONPATH=src:<parent at 08ff67e>/src python3 -B scripts/h7_account.py --withdraw [--output ...] [--page ...]
     PYTHONPATH=src:<parent at 08ff67e>/src python3 -B scripts/h7_account.py --render [--check]
 
 Reports aggregate deployable liquidity under the three declared alternatives of protocol section 8, per served day, for the
@@ -17,6 +18,8 @@ and scores nothing; the tier is "development".
   and compared with the tracked record's shares. CV1, CV2 and CV4 are not identified at any stride refit and serve no day: their
   accounts come from the record's own fitted flags, and the final refit (which serves no window day) needs no draws.
 * A's kinks, intervals and fitted flags are read from the kink record, not re-fitted.
+* The reading "A through the group machinery" is withdrawn (#182, ruling of 26 October 2026, #186): a run builds no such row, and
+  `--withdraw` restates the superseded record without them, re-running nothing.
 * The served-day counts of every estimator are compared with the tracked records' own.
 """
 
@@ -48,6 +51,13 @@ RERUN = ("C", "CV3")
 D_NOT_REPORTED = "not reported (D dropped under #142)"
 READING = ("A through step 2's group machinery, with A's single kink read as every group's buffer share (shares = (k, k, k)), is a "
            "marked reading (docs/stages/h7-step4.md section 2). It is reported beside A as defined, never in its place.")
+#: The record this one replaces, as 4c37e36 published it (#144, PR #174), kept under `archive/`; the reading is withdrawn (#182, #186).
+SUPERSEDED_SHA256 = "5b8ee596d16ccf6277f7174e109746c342bbfad270d10cfd9071fa9a8ebd20e8"
+SUPERSEDED_REASON = ("the rows of \"A through the group machinery\" are withdrawn for the base mismatch (#182): they subtracted A's kink, "
+                     "fitted on the all-banks ratio R, from group reserves over group assets. Every other row and field is "
+                     "copied as it was, nothing is re-fitted (Eleonora's ruling on repo-market-liquidity#182, 26 October 2026, "
+                     "directive #186). The superseded record is kept as it was in archive/h7-distribution-account-5b8ee596/.")
+ARCHIVE = ROOT / "archive" / "h7-distribution-account-5b8ee596" / "distribution-account.json"
 A_AS_DEFINED = ("A as defined is R - k. It has no per-group term, so no redistribution of the same reserves over the groups changes "
                 "it: all three alternatives give the same figure.")
 SOURCES = {"calendar_clean": CLEAN, "kink": KINK}
@@ -146,7 +156,6 @@ def build(args):
         _check_served(f"A {name}", own, recorded["served_days"])
         checks["served_days_match_record"].append(f"A_{name}")
         accounts[f"A_{name}"] = ("A as defined", own)
-        accounts[f"Ag_{name}"] = ("A through the group machinery", account.account_a_grouped(name, days, a_cutoffs, refits))
 
     estimators = {}
     for key, (kind, built) in accounts.items():
@@ -165,6 +174,8 @@ def build(args):
         "sources": {name: {"path": str(path.relative_to(ROOT)), "sha256": _sha(path)} for name, path in SOURCES.items()},
         "checks": checks,
         "readings": {"a_as_defined": A_AS_DEFINED, "a_through_groups": READING},
+        "withdrawn": account.withdrawal_entry([f"Ag_{name}" for name in kink["estimators"]]),
+        "superseded": {"sha256": SUPERSEDED_SHA256, "reason": SUPERSEDED_REASON},
         "not_reported": {name: D_NOT_REPORTED for name in ("D",) + tuple("D" + v.id[1:] for v in h.VARIANTS)},
         "estimators": estimators,
     }
@@ -175,6 +186,15 @@ def build(args):
 
 def _fmt(value, places=2):
     return "n/a" if value is None else f"{value:.{places}f}"
+
+
+def _reading_lines(record):
+    """The paragraph on the second reading: a marked reading, or, once withdrawn, the label, the reason and the superseded record."""
+    if "withdrawn" not in record:
+        return [f"**Marked reading, for Eleonora.** {record['readings']['a_through_groups']}"]
+    return [f"**{record['withdrawn']['label']}.** The reading \"A through the group machinery\" is no longer reported: "
+            f"{record['withdrawn']['reason']}", "",
+            f"This record replaces the one with sha256 `{record['superseded']['sha256']}`: {record['superseded']['reason']}"]
 
 
 def markdown(record):
@@ -191,7 +211,7 @@ def markdown(record):
              "The three alternatives for how the same reserves spread over the three H.8 groups: `as_observed`, "
              "`all_large_domestic`, `proportional_to_assets` (protocol section 8). Each keeps the week's total reserves.", "",
              f"**A as defined.** {record['readings']['a_as_defined']}", "",
-             f"**Marked reading, for Eleonora.** {record['readings']['a_through_groups']}", "",
+             *_reading_lines(record), "",
              "## Days served", "",
              "| Estimator | View | Calendar days | Served | Missing | Break-week days |", "|---|---|---|---|---|---|"]
     for name, e in record["estimators"].items():
@@ -237,15 +257,31 @@ def markdown(record):
     return "\n".join(lines)
 
 
+def withdraw(output):
+    """Rewrite `output` without the rows of the withdrawn reading (`account.withdraw_group_reading`); only the superseded record."""
+    raw = output.read_bytes()
+    if _sha(output) != SUPERSEDED_SHA256:
+        print(f"{output} is not the record with sha256 {SUPERSEDED_SHA256}: nothing withdrawn", file=sys.stderr)
+        return 1
+    record = account.withdraw_group_reading(json.loads(raw), superseded=SUPERSEDED_SHA256, reason=SUPERSEDED_REASON)
+    output.write_text(account.dump_record(record), encoding="utf-8")
+    print(f"withdrew the group reading from {output}; now render the page")
+    return 0
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser()
     parser.add_argument("--replications", type=int, default=demand_curve.REPLICATIONS)
     parser.add_argument("--workers", type=int, default=1)
     parser.add_argument("--output", type=Path, default=OUTPUT)
     parser.add_argument("--page", type=Path, default=PAGE)
+    parser.add_argument("--withdraw", action="store_true",
+                        help="withdraw the group reading from the superseded record (#186); runs nothing, refuses any other record")
     parser.add_argument("--render", action="store_true", help="print the page from the record; run nothing")
     parser.add_argument("--check", action="store_true", help="with --render: write nothing, exit 1 if the page is stale")
     args = parser.parse_args(argv)
+    if args.withdraw:
+        return withdraw(args.output)
     if args.render:
         text = markdown(json.loads(args.output.read_text(encoding="utf-8")))
         if args.check:

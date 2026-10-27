@@ -96,3 +96,21 @@ edited by hand. The record is listed in `repo_liquidity.records.OWN_CHECK` with 
 Command (from a tree with the parent at the pin `08ff67e`, about twenty minutes on four cores; the whole of it is under the two-hour line, so it ran in the cloud):
 
     PYTHONPATH=src:<parent at 08ff67e>/src python3 -B scripts/h7_account.py
+
+## 6. Note, 26 October 2026 (finding #182, directive #186): the reading in section 2 is withdrawn
+
+The second reading of section 2, "A through step 2's group machinery" (the rows `Ag_B`, `Ag_V1` to `Ag_V6` of the first record), is
+withdrawn, under Eleonora's ruling of 26 October 2026 on finding #182 (option (a)). The text above is left as it was written.
+
+Why: A's kink `k` was fitted on the parent's all-banks reserves ratio R, and the reading subtracts it from the three groups' reserves
+over the groups' assets. That group base sits about one point of bank assets below R: day by day, the proportional reading minus
+max(A, 0) had a median of -0.98 points. Most of the reading's 805 days at zero (for the baseline) therefore came from the base
+mismatch and not from the distribution, so section 2's sentence that the per-group clip at zero "is where the distribution matters"
+does not stand for that reading. A as defined (`R - k`) and C are not affected.
+
+What changed: `results/h7/distribution-account.json` and its page are republished without those rows and name the record they replace
+(sha256 `5b8ee596d16ccf6277f7174e109746c342bbfad270d10cfd9071fa9a8ebd20e8`, kept as it was under
+`archive/h7-distribution-account-5b8ee596/`). Every A, V1 to V6 and C row and every other field is equal to that record. Nothing is
+re-fitted. Step 5 reads only A as defined and C, so its record is unchanged and keeps the sha256 of the account it read as its pin
+(`docs/stages/h7-step5.md`, `tests/test_h7_step5_record.py`). The function `account_a_grouped` stays in the code as what the superseded
+record was made with; nothing publishes its figures.

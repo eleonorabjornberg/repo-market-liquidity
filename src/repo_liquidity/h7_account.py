@@ -10,6 +10,8 @@ Three views are built from refits that earlier steps made:
 * `account_c`: C or a calendar-clean variant of C, from its refits' shares and bootstrap draws (`h7_candidate_c.RefitC`).
 * `account_a_own`: A as defined, `R - k`. It has no per-group term, so every alternative gives the same figure.
 * `account_a_grouped`: A's kink read as every group's buffer share, through step 2's machinery (a marked reading, step 4 section 2).
+  Withdrawn from the published record for the base mismatch (#182, ruling of 26 October 2026, #186): the function stays, as the code
+  the superseded record was made with, and nothing publishes its figures (`withdraw_group_reading`).
 
 A refit serves from the second business day after its cutoff to the day before the next refit serves from, as in every earlier
 step. Reads nothing but through the days `h7_candidate_c.sample_c` gives (the parent's as-of rule, and its lockbox refusal).
@@ -17,6 +19,7 @@ step. Reads nothing but through the days `h7_candidate_c.sample_c` gives (the pa
 
 from __future__ import annotations
 
+import copy
 import json
 from datetime import date
 from typing import Dict, List, Mapping, NamedTuple, Optional, Sequence, Tuple
@@ -225,6 +228,9 @@ def account_a_own(name: str, days: Sequence[c.DayC], cutoffs: Sequence[date], re
 def account_a_grouped(name: str, days: Sequence[c.DayC], cutoffs: Sequence[date], refits: Sequence[ARefit]) -> Account:
     """A's kink read as every group's buffer share, through step 2's machinery (a marked reading, step 4 section 2).
 
+    Withdrawn from the published record (#182, #186): `k` was fitted on the parent's all-banks ratio R, and this subtracts it from
+    group reserves over group assets, a base about one point of bank assets lower. Not called by `scripts/h7_account.py` any more.
+
     Each group's reserves above `k` of its own assets, never negative, over the groups' total assets, under each alternative.
     The aggregate does not increase with `k`, so the interval is the aggregate at the kink's upper end (lower bound) and lower
     end (upper bound). A day needs a ratio (A serves only where it has one) and a group week.
@@ -358,6 +364,42 @@ def _dump(value, depth: int) -> str:
         items = [f"{pad}{_dump(v, depth + 1)}" for v in value]
         return "[\n" + ",\n".join(items) + "\n" + "  " * depth + "]"
     return json.dumps(value, allow_nan=False)
+
+
+GROUP_VIEW = "A through the group machinery"
+WITHDRAWN_LABEL = "withdrawn: base mismatch (#182)"
+WITHDRAWN_REASON = ("A's kink k was fitted on the parent's all-banks reserves ratio R, but this reading subtracts it from the three "
+                    "groups' reserves over the groups' assets, a base about one point of bank assets lower: day by day, the "
+                    "proportional reading minus max(A, 0) has a median of -0.98 points, so most of its days at zero came from the "
+                    "base mismatch and not from the distribution (finding #182). Withdrawn under Eleonora's ruling of 26 October "
+                    "2026, option (a); nothing is re-fitted, and A as defined, C and every other row and field are unchanged.")
+
+
+def withdrawal_entry(keys: Sequence[str]) -> Dict[str, object]:
+    """The record's `withdrawn` entry: the label, the reason and the names of the rows that were withdrawn, and no figure."""
+    return {"label": WITHDRAWN_LABEL, "reason": WITHDRAWN_REASON, "estimators": list(keys)}
+
+
+def withdraw_group_reading(record: Mapping, *, superseded: str, reason: str) -> Dict:
+    """The record without the rows of "A through the group machinery", and nothing else changed (#186, ruling on #182, option (a)).
+
+    Every other estimator and every other field is copied as it is. Two fields are added: `withdrawn`, which names the removed rows
+    and says why (it holds no figure), and `superseded`, the sha256 of the record this one replaces and the reason. The input is
+    not changed.
+
+    Raises:
+        ValueError: the record has already been withdrawn from, or has no row of that view.
+    """
+    if "withdrawn" in record or "superseded" in record:
+        raise ValueError("this record has already been republished")
+    removed = [key for key, entry in record["estimators"].items() if entry["view"] == GROUP_VIEW]
+    if not removed:
+        raise ValueError(f"the record has no row of the view {GROUP_VIEW!r}")
+    out = {key: copy.deepcopy(value) for key, value in record.items() if key != "estimators"}
+    out["estimators"] = {key: copy.deepcopy(entry) for key, entry in record["estimators"].items() if key not in removed}
+    out["withdrawn"] = withdrawal_entry(removed)
+    out["superseded"] = {"sha256": superseded, "reason": reason}
+    return out
 
 
 def dump_record(record: Mapping) -> str:

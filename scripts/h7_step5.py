@@ -58,6 +58,16 @@ def _sha(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def _source_sha(name, path, record):
+    """The sha256 step 5 records for a source. For the account it is that of the record step 5 read figures from: the account was
+    republished without the rows of "A through the group machinery" (#182, #186), which step 5 never reads, and it names the record
+    it replaces. Every row step 5 reads is byte-equal in both (`tests/test_h7_step5_record.py`), so no step-5 figure moves and the
+    pin stays what it was."""
+    if name == "distribution_account" and "superseded" in record:
+        return record["superseded"]["sha256"]
+    return _sha(path)
+
+
 def _check_pins(pins, records):
     """Every tracked record was made at this tree's parent pin, panel and window."""
     for name, record in records.items():
@@ -182,7 +192,8 @@ def build(draws=s5.DRAWS):
                      "width_limit_points": s5.WIDTH_LIMIT_POINTS, "estimate_unit": "share of bank assets (account points / 100)",
                      "interval": "the 5th and 95th percentiles of the resamples, no look spent",
                      "stress_event_bn": gp.MATERIAL_USE_BN},
-        "sources": {name: {"path": str(path.relative_to(ROOT)), "sha256": _sha(path)} for name, path in SOURCES.items()},
+        "sources": {name: {"path": str(path.relative_to(ROOT)), "sha256": _source_sha(name, path, acc if name == "distribution_account" else {})}
+                    for name, path in SOURCES.items()},
         "checks": checks,
         "splits": scored["splits"], "benchmarks": scored["benchmarks"], "estimators": scored["estimators"],
         "variant_count": {

@@ -25,6 +25,7 @@ PAGE = ROOT / "docs" / "research" / "h7-step5.md"
 KINK = ROOT / "results" / "h7" / "kink.json"
 CLEAN = ROOT / "results" / "h7" / "calendar-clean.json"
 ACCOUNT = ROOT / "results" / "h7" / "distribution-account.json"
+SUPERSEDED = ROOT / "archive" / "h7-distribution-account-5b8ee596" / "distribution-account.json"
 A_IDS = ("B", "V1", "V2", "V3", "V4", "V5", "V6")
 C_IDS = ("C", "CV1", "CV2", "CV3", "CV4")
 NOT_SCORABLE = ("CV1", "CV2", "CV4")
@@ -58,8 +59,30 @@ class RecordTests(unittest.TestCase):
         self.assertEqual(self.record["pins"]["panel_sha256"], panel.load_manifest(4)["sha256"])
         for name, source in self.record["sources"].items():
             path = ROOT / source["path"]
+            if name == "distribution_account":
+                continue  # its pin is checked in `test_the_account_pin_is_the_record_it_read_or_the_one_that_withdrew_a_reading_from_it`
             self.assertEqual(hashlib.sha256(path.read_bytes()).hexdigest(), source["sha256"], name)
         self.assertEqual(set(self.record["sources"]), {"kink", "calendar_clean", "distribution_account"})
+
+    def test_the_account_pin_is_the_record_it_read_or_the_one_that_withdrew_a_reading_from_it(self):
+        """#186 (ruling on #182, option (a)): the account was republished without the rows of "A through the group machinery". Step 5
+        reads only A as defined and C, so its pin stays the sha256 of the account it read, and the republished account must name
+        that sha256 as superseded, hold every estimator step 5 reads byte-equal to the archived copy (`SUPERSEDED`), and have the
+        pins and window step 5 checks. Recorded mutation, 26 October 2026: in the archived copy, change one `A_V1` figure; this
+        test fails with `AssertionError: '404a2a2b...' != '5b8ee596...'` on the archived copy's sha256 (its first guard). Written before the pin was changed: it
+        failed with `AssertionError: 'f32e...' != '5b8e...'` first."""
+        recorded = self.record["sources"]["distribution_account"]["sha256"]
+        current = json.loads(ACCOUNT.read_text(encoding="utf-8"))
+        if hashlib.sha256(ACCOUNT.read_bytes()).hexdigest() == recorded:
+            return
+        self.assertEqual(current["superseded"]["sha256"], recorded)
+        self.assertEqual(hashlib.sha256(SUPERSEDED.read_bytes()).hexdigest(), recorded)
+        old = json.loads(SUPERSEDED.read_text(encoding="utf-8"))
+        for name in list(self.record["estimators"]):
+            key = {**{i: f"A_{i}" for i in A_IDS}, **{i: i for i in C_IDS}}[name]
+            self.assertEqual(current["estimators"][key], old["estimators"][key], key)
+        for field in ("pins", "window_end", "first_served_day", "last_served_day"):
+            self.assertEqual(current[field], old[field], field)
 
     def test_the_settings_are_the_declared_ones(self):
         s = self.record["settings"]
