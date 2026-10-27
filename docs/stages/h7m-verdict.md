@@ -76,6 +76,6 @@ The record states the rule's result and nothing more. It makes no claim about wh
 - `results/h7/step5-scores.json` (`1364be1485f9fcdf186e8ef5e191ac565dfaed2305f9ff55120da23fff0be0c1`)
 - `results/h7/kink.json` (`c37bf6b6f16a620b5708bf2eb6746be444454049477d981567e9db7f08de1fce`)
 - `results/h7/calendar-clean.json` (`c3acfc90f9e4fd60c548768a17f7a2b0b86315bdf95118de7e4c56303e04608c`)
-- `results/h7/distribution-account.json` (`5b8ee596d16ccf6277f7174e109746c342bbfad270d10cfd9071fa9a8ebd20e8`)
+- `results/h7/distribution-account.json` (`f32e4c8433525071e150b2d43f030e43b22aa3961a9ecd6c6b118b5032bbf922`)
 
 Regenerate with `python3 -B scripts/h7_verdict.py` (`--check` exits 1 if the record or this page is stale). Neither is edited by hand. The record is listed in `repo_liquidity.records.OWN_CHECK` with `tests/test_h7_verdict.py`.
