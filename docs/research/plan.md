@@ -224,6 +224,13 @@ with R+S alone.
 - **Done when #28 merges:** M1.
 - **Open:** M2–M12.
 
+**Note (26 October 2026).** Step 5 is done (#178, PR #181). Under her ruling of 26 October on #181 (option (a)), the stage verdict is
+**not testable as stated**: no candidate is eligible after steps 2–5 (`docs/stages/h7m-verdict.md`, `results/h7/verdict.json`,
+directive #187), by the rule at `:185` and `:193` above and the eligibility of `docs/decisions/measurement-protocol.md:51`.
+Milestone markers, as the records show them: M0–M7 are reached (M5 as "recorded as not buildable"); M8 and later do not apply,
+since nothing can be registered. The text above is the state of 12 October and is not rewritten. The plan's consequence for H7f
+(`:193-194`) is the model repository's to act on, and is not an action here.
+
 ### H7f (model repo, stated here for completeness)
 
 Owned and scored there under eleonorabjornberg/repo-market-model#640 §9: the H5 primary candidate with and without the
