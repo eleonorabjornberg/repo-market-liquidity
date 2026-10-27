@@ -520,5 +520,69 @@ class PhoneWidthTests(unittest.TestCase):
         self.assertNotRegex(script, r'\.attr\("width", ?\d{4,}')
 
 
+class LaptopWidthTests(unittest.TestCase):
+    """The page uses a laptop screen (#188): the wrap is at least 64rem, running text keeps its caps, the phone rules
+    are untouched, and the charts redraw at the container's width.
+
+    Tests first: written before the template changed, `test_the_built_page_wrap_is_not_narrower_than_64rem` failed with
+    `AssertionError: 44.0 not greater than or equal to 64` (the wrap was 44rem).
+
+    Recorded mutation (a new guard on the layout): the `.wrap` rule's `max-width:72rem` put back to `max-width:44rem`.
+    `test_the_built_page_wrap_is_not_narrower_than_64rem` then failed with `AssertionError: 44.0 not greater than or
+    equal to 64`.
+    """
+
+    #: The two phone rules as they stood before this directive; a change to either is a change to the phones.
+    PHONE_RULES = (
+        "@media (max-width:720px){ .toc li small{display:block;margin-left:0} .toc li small::before{content:\"\"} }",
+        "@media (max-width:560px){ body{font-size:1.04rem} .wrap{padding:0 16px} .masthead{margin-top:44px} "
+        ".dek{font-size:1.14rem} section{margin-top:72px} #start{padding:16px 16px 18px} dl{grid-template-columns:1fr} }",
+    )
+    page = None
+
+    @classmethod
+    def setUpClass(cls):
+        cls.page = emit_site.build(published_panel())
+
+    def rule(self, selector):
+        found = re.search(r"(?m)^" + re.escape(selector) + r"\{([^}]*)\}", self.page)
+        self.assertIsNotNone(found, selector)
+        return found.group(1)
+
+    def test_the_built_page_wrap_is_not_narrower_than_64rem(self):
+        width = re.search(r"max-width:([\d.]+)rem", self.rule(".wrap"))
+        self.assertIsNotNone(width)
+        self.assertGreaterEqual(float(width.group(1)), 64)
+
+    def test_the_phone_media_rules_are_unchanged(self):
+        for rule in self.PHONE_RULES:
+            with self.subTest(rule=rule[:24]):
+                self.assertIn(rule, self.page)
+
+    def test_running_text_keeps_its_caps(self):
+        self.assertIn("max-width:66ch", self.rule(".prose"))
+        self.assertIn("max-width:16ch", self.rule("h1"))
+        self.assertIn("max-width:36em", self.rule(".dek"))
+        for selector in (".note", "details", "ul.guards", "footer"):
+            with self.subTest(selector=selector):
+                self.assertIn("max-width:74ch", self.rule(selector))
+
+    def test_text_that_would_run_the_full_width_is_capped(self):
+        for selector in (".byline", "#start", ".lede", "#built>p"):
+            with self.subTest(selector=selector):
+                self.assertRegex(self.rule(selector), r"max-width:\d+ch")
+
+    def test_wide_blocks_are_not_capped(self):
+        self.assertIn("max-width:none", self.rule("details.wide"))
+        self.assertNotIn("max-width", self.rule("table"))
+        self.assertNotIn("max-width", self.rule(".chart"))
+
+    def test_the_charts_redraw_at_the_container_width_not_a_fixed_one(self):
+        script = self.page[self.page.index("<script>"):]
+        self.assertIn("host.node().clientWidth", script)
+        self.assertIn('addEventListener("resize"', script)
+        self.assertNotRegex(script, r"\b(?:W|width) ?= ?(?:7\d\d|6\d\d)\b")
+
+
 if __name__ == "__main__":
     unittest.main()
