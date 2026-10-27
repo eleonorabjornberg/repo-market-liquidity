@@ -16,6 +16,7 @@ carries replaced by `return None`. `FigureReaderTests.test_a_path_no_record_carr
 from __future__ import annotations
 
 import copy
+import hashlib
 import json
 import unittest
 from pathlib import Path
@@ -196,6 +197,18 @@ class TrackedRecordTests(unittest.TestCase):
 
     def test_the_sources_are_the_tracked_files_as_they_are(self):
         self.assertEqual(self.record["sources"], v.source_digests(ROOT))
+
+    def test_the_account_digest_is_the_account_on_main_not_the_archived_one(self):
+        """The step-4 account pinned in the verdict is the republished one (#190), not the superseded record (#174).
+
+        Mutation recorded: restoring `sources.distribution_account.sha256` in `results/h7/verdict.json` to the archived
+        digest `5b8ee596...20e8` made this test fail with AssertionError.
+        """
+        pinned = self.record["sources"]["distribution_account"]["sha256"]
+        account = ROOT / "results" / "h7" / "distribution-account.json"
+        archived = ROOT / "archive" / "h7-distribution-account-5b8ee596" / "distribution-account.json"
+        self.assertEqual(pinned, hashlib.sha256(account.read_bytes()).hexdigest())
+        self.assertNotEqual(pinned, hashlib.sha256(archived.read_bytes()).hexdigest())
 
     def test_the_quotes_are_the_files_lines(self):
         quotes = self.record["rule"]["quotes"]

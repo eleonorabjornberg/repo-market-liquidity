@@ -1,0 +1,827 @@
+{
+  "beside": {
+    "B": {
+      "vs_rs_point": {
+        "path": [
+          "estimators",
+          "B",
+          "goalpost_3",
+          "vs_rs",
+          "all: all",
+          "point"
+        ],
+        "source": "step5",
+        "value": -0.09625001342014428
+      },
+      "vs_rs_position": "straddles the MME",
+      "vs_s_point": {
+        "path": [
+          "estimators",
+          "B",
+          "goalpost_3",
+          "vs_s",
+          "all: all",
+          "point"
+        ],
+        "source": "step5",
+        "value": -0.481645512170769
+      }
+    },
+    "C": {
+      "vs_rs_point": {
+        "path": [
+          "estimators",
+          "C",
+          "goalpost_3",
+          "vs_rs",
+          "all: all",
+          "point"
+        ],
+        "source": "step5",
+        "value": 0.07233760238358271
+      },
+      "vs_rs_position": "straddles the MME",
+      "vs_s_point": {
+        "path": [
+          "estimators",
+          "C",
+          "goalpost_3",
+          "vs_s",
+          "all: all",
+          "point"
+        ],
+        "source": "step5",
+        "value": -0.2449509084582684
+      }
+    },
+    "CV3": {
+      "vs_rs_point": {
+        "path": [
+          "estimators",
+          "CV3",
+          "goalpost_3",
+          "vs_rs",
+          "all: all",
+          "point"
+        ],
+        "source": "step5",
+        "value": 0.10368144575163692
+      },
+      "vs_rs_position": "straddles the MME",
+      "vs_s_point": {
+        "path": [
+          "estimators",
+          "CV3",
+          "goalpost_3",
+          "vs_s",
+          "all: all",
+          "point"
+        ],
+        "source": "step5",
+        "value": -0.2426589612865161
+      }
+    },
+    "V1": {
+      "vs_rs_point": {
+        "path": [
+          "estimators",
+          "V1",
+          "goalpost_3",
+          "vs_rs",
+          "all: all",
+          "point"
+        ],
+        "source": "step5",
+        "value": -0.08969469379711202
+      },
+      "vs_rs_position": "straddles the MME",
+      "vs_s_point": {
+        "path": [
+          "estimators",
+          "V1",
+          "goalpost_3",
+          "vs_s",
+          "all: all",
+          "point"
+        ],
+        "source": "step5",
+        "value": -0.48544895303442565
+      }
+    },
+    "V2": {
+      "vs_rs_point": {
+        "path": [
+          "estimators",
+          "V2",
+          "goalpost_3",
+          "vs_rs",
+          "all: all",
+          "point"
+        ],
+        "source": "step5",
+        "value": -0.17373930787873074
+      },
+      "vs_rs_position": "straddles the MME",
+      "vs_s_point": {
+        "path": [
+          "estimators",
+          "V2",
+          "goalpost_3",
+          "vs_s",
+          "all: all",
+          "point"
+        ],
+        "source": "step5",
+        "value": -0.46122101814516125
+      }
+    },
+    "V3": {
+      "vs_rs_point": {
+        "path": [
+          "estimators",
+          "V3",
+          "goalpost_3",
+          "vs_rs",
+          "all: all",
+          "point"
+        ],
+        "source": "step5",
+        "value": 0.00396015684763754
+      },
+      "vs_rs_position": "straddles the MME",
+      "vs_s_point": {
+        "path": [
+          "estimators",
+          "V3",
+          "goalpost_3",
+          "vs_s",
+          "all: all",
+          "point"
+        ],
+        "source": "step5",
+        "value": -0.4115394991589171
+      }
+    },
+    "V4": {
+      "vs_rs_point": {
+        "path": [
+          "estimators",
+          "V4",
+          "goalpost_3",
+          "vs_rs",
+          "all: all",
+          "point"
+        ],
+        "source": "step5",
+        "value": -0.1872014165279176
+      },
+      "vs_rs_position": "below the MME",
+      "vs_s_point": {
+        "path": [
+          "estimators",
+          "V4",
+          "goalpost_3",
+          "vs_s",
+          "all: all",
+          "point"
+        ],
+        "source": "step5",
+        "value": -0.4632850660782028
+      }
+    },
+    "V5": {
+      "vs_rs_point": {
+        "path": [
+          "estimators",
+          "V5",
+          "goalpost_3",
+          "vs_rs",
+          "all: all",
+          "point"
+        ],
+        "source": "step5",
+        "value": 0.19493848343415096
+      },
+      "vs_rs_position": "straddles the MME",
+      "vs_s_point": {
+        "path": [
+          "estimators",
+          "V5",
+          "goalpost_3",
+          "vs_s",
+          "all: all",
+          "point"
+        ],
+        "source": "step5",
+        "value": -0.4443239274450581
+      }
+    },
+    "V6": {
+      "vs_rs_point": {
+        "path": [
+          "estimators",
+          "V6",
+          "goalpost_3",
+          "vs_rs",
+          "all: all",
+          "point"
+        ],
+        "source": "step5",
+        "value": 0.16003416688494254
+      },
+      "vs_rs_position": "straddles the MME",
+      "vs_s_point": {
+        "path": [
+          "estimators",
+          "V6",
+          "goalpost_3",
+          "vs_s",
+          "all: all",
+          "point"
+        ],
+        "source": "step5",
+        "value": -0.3383753703094141
+      }
+    }
+  },
+  "beside_note": "reported as development evidence; not the reason for the verdict",
+  "directive": "repo-market-liquidity#187",
+  "eligible": [],
+  "estimators": {
+    "B": {
+      "eligible": false,
+      "family": "A",
+      "goalpost_1": {
+        "holds": false,
+        "limit_points": {
+          "path": [
+            "estimators",
+            "B",
+            "goalpost_1",
+            "recorded",
+            "limit"
+          ],
+          "source": "step5",
+          "value": 0.5
+        },
+        "reading": "as in A's restated record (results/h7/kink.json)",
+        "worst_day": "2021-07-20",
+        "worst_gap_points": {
+          "path": [
+            "estimators",
+            "B",
+            "goalpost_1",
+            "recorded",
+            "worst",
+            "gap"
+          ],
+          "source": "step5",
+          "value": 6.25
+        }
+      },
+      "goalpost_2": {
+        "holds": false,
+        "limit_points": {
+          "path": [
+            "estimators",
+            "B",
+            "goalpost_2",
+            "all: all",
+            "limit_points"
+          ],
+          "source": "step5",
+          "value": 3.0
+        },
+        "median_points": {
+          "path": [
+            "estimators",
+            "B",
+            "goalpost_2",
+            "all: all",
+            "median_points"
+          ],
+          "source": "step5",
+          "value": 3.2499999999999996
+        }
+      },
+      "reason": "goalpost 1 does not hold on the development walk-forward: the restated record's worst real-time gap is at or above the limit",
+      "status": "ineligible: goalpost 1 does not hold"
+    },
+    "C": {
+      "eligible": false,
+      "family": "C",
+      "goalpost_1": {
+        "reading": "unreadable on development data, read prospectively (Eleonora, 22 Oct, option 6)"
+      },
+      "goalpost_2": {
+        "holds": false,
+        "limit_points": {
+          "path": [
+            "estimators",
+            "C",
+            "goalpost_2",
+            "all: all",
+            "limit_points"
+          ],
+          "source": "step5",
+          "value": 3.0
+        },
+        "median_points": {
+          "path": [
+            "estimators",
+            "C",
+            "goalpost_2",
+            "all: all",
+            "median_points"
+          ],
+          "source": "step5",
+          "value": 3.4646000000000003
+        }
+      },
+      "reason": "goalpost 2 does not hold: the median width of the daily 90% interval is not under the bar",
+      "status": "ineligible: goalpost 2 does not hold"
+    },
+    "CV1": {
+      "eligible": false,
+      "family": "C",
+      "reason": "the refit in force did not fit on any window day: 69 of 70 refits were not fitted (calendar-clean record, refit status: 1 fitted, 69 not identified); it serves no day and is not re-fitted",
+      "status": "not scorable"
+    },
+    "CV2": {
+      "eligible": false,
+      "family": "C",
+      "reason": "the refit in force did not fit on any window day: 69 of 70 refits were not fitted (calendar-clean record, refit status: 1 fitted, 69 not identified); it serves no day and is not re-fitted",
+      "status": "not scorable"
+    },
+    "CV3": {
+      "eligible": false,
+      "family": "C",
+      "goalpost_1": {
+        "reading": "unreadable on development data, read prospectively (Eleonora, 22 Oct, option 6)"
+      },
+      "goalpost_2": {
+        "holds": true,
+        "limit_points": {
+          "path": [
+            "estimators",
+            "CV3",
+            "goalpost_2",
+            "all: all",
+            "limit_points"
+          ],
+          "source": "step5",
+          "value": 3.0
+        },
+        "median_points": {
+          "path": [
+            "estimators",
+            "CV3",
+            "goalpost_2",
+            "all: all",
+            "median_points"
+          ],
+          "source": "step5",
+          "value": 2.5442
+        }
+      },
+      "reason": "goalpost 2 holds; goalpost 1 is unreadable on development data (her option 6 of 22 October), so it cannot be shown to hold and the candidate is not eligible",
+      "status": "ineligible: goalpost 1 is unreadable on development data"
+    },
+    "CV4": {
+      "eligible": false,
+      "family": "C",
+      "reason": "the refit in force did not fit on any window day: 69 of 70 refits were not fitted (calendar-clean record, refit status: 1 fitted, 69 not identified); it serves no day and is not re-fitted",
+      "status": "not scorable"
+    },
+    "V1": {
+      "eligible": false,
+      "family": "A",
+      "goalpost_1": {
+        "holds": false,
+        "limit_points": {
+          "path": [
+            "estimators",
+            "V1",
+            "goalpost_1",
+            "recorded",
+            "limit"
+          ],
+          "source": "step5",
+          "value": 0.5
+        },
+        "reading": "as in A's restated record (results/h7/kink.json)",
+        "worst_day": "2022-11-22",
+        "worst_gap_points": {
+          "path": [
+            "estimators",
+            "V1",
+            "goalpost_1",
+            "recorded",
+            "worst",
+            "gap"
+          ],
+          "source": "step5",
+          "value": 3.5000000000000004
+        }
+      },
+      "goalpost_2": {
+        "holds": true,
+        "limit_points": {
+          "path": [
+            "estimators",
+            "V1",
+            "goalpost_2",
+            "all: all",
+            "limit_points"
+          ],
+          "source": "step5",
+          "value": 3.0
+        },
+        "median_points": {
+          "path": [
+            "estimators",
+            "V1",
+            "goalpost_2",
+            "all: all",
+            "median_points"
+          ],
+          "source": "step5",
+          "value": 2.25
+        }
+      },
+      "reason": "goalpost 1 does not hold on the development walk-forward: the restated record's worst real-time gap is at or above the limit",
+      "status": "ineligible: goalpost 1 does not hold"
+    },
+    "V2": {
+      "eligible": false,
+      "family": "A",
+      "goalpost_1": {
+        "holds": false,
+        "limit_points": {
+          "path": [
+            "estimators",
+            "V2",
+            "goalpost_1",
+            "recorded",
+            "limit"
+          ],
+          "source": "step5",
+          "value": 0.5
+        },
+        "reading": "as in A's restated record (results/h7/kink.json)",
+        "worst_day": "2022-12-22",
+        "worst_gap_points": {
+          "path": [
+            "estimators",
+            "V2",
+            "goalpost_1",
+            "recorded",
+            "worst",
+            "gap"
+          ],
+          "source": "step5",
+          "value": 3.0
+        }
+      },
+      "goalpost_2": {
+        "holds": true,
+        "limit_points": {
+          "path": [
+            "estimators",
+            "V2",
+            "goalpost_2",
+            "all: all",
+            "limit_points"
+          ],
+          "source": "step5",
+          "value": 3.0
+        },
+        "median_points": {
+          "path": [
+            "estimators",
+            "V2",
+            "goalpost_2",
+            "all: all",
+            "median_points"
+          ],
+          "source": "step5",
+          "value": 2.75
+        }
+      },
+      "reason": "goalpost 1 does not hold on the development walk-forward: the restated record's worst real-time gap is at or above the limit",
+      "status": "ineligible: goalpost 1 does not hold"
+    },
+    "V3": {
+      "eligible": false,
+      "family": "A",
+      "goalpost_1": {
+        "holds": false,
+        "limit_points": {
+          "path": [
+            "estimators",
+            "V3",
+            "goalpost_1",
+            "recorded",
+            "limit"
+          ],
+          "source": "step5",
+          "value": 0.5
+        },
+        "reading": "as in A's restated record (results/h7/kink.json)",
+        "worst_day": "2021-09-17",
+        "worst_gap_points": {
+          "path": [
+            "estimators",
+            "V3",
+            "goalpost_1",
+            "recorded",
+            "worst",
+            "gap"
+          ],
+          "source": "step5",
+          "value": 8.75
+        }
+      },
+      "goalpost_2": {
+        "holds": true,
+        "limit_points": {
+          "path": [
+            "estimators",
+            "V3",
+            "goalpost_2",
+            "all: all",
+            "limit_points"
+          ],
+          "source": "step5",
+          "value": 3.0
+        },
+        "median_points": {
+          "path": [
+            "estimators",
+            "V3",
+            "goalpost_2",
+            "all: all",
+            "median_points"
+          ],
+          "source": "step5",
+          "value": 2.5000000000000004
+        }
+      },
+      "reason": "goalpost 1 does not hold on the development walk-forward: the restated record's worst real-time gap is at or above the limit",
+      "status": "ineligible: goalpost 1 does not hold"
+    },
+    "V4": {
+      "eligible": false,
+      "family": "A",
+      "goalpost_1": {
+        "holds": false,
+        "limit_points": {
+          "path": [
+            "estimators",
+            "V4",
+            "goalpost_1",
+            "recorded",
+            "limit"
+          ],
+          "source": "step5",
+          "value": 0.5
+        },
+        "reading": "as in A's restated record (results/h7/kink.json)",
+        "worst_day": "2022-12-22",
+        "worst_gap_points": {
+          "path": [
+            "estimators",
+            "V4",
+            "goalpost_1",
+            "recorded",
+            "worst",
+            "gap"
+          ],
+          "source": "step5",
+          "value": 3.5000000000000004
+        }
+      },
+      "goalpost_2": {
+        "holds": true,
+        "limit_points": {
+          "path": [
+            "estimators",
+            "V4",
+            "goalpost_2",
+            "all: all",
+            "limit_points"
+          ],
+          "source": "step5",
+          "value": 3.0
+        },
+        "median_points": {
+          "path": [
+            "estimators",
+            "V4",
+            "goalpost_2",
+            "all: all",
+            "median_points"
+          ],
+          "source": "step5",
+          "value": 2.5
+        }
+      },
+      "reason": "goalpost 1 does not hold on the development walk-forward: the restated record's worst real-time gap is at or above the limit",
+      "status": "ineligible: goalpost 1 does not hold"
+    },
+    "V5": {
+      "eligible": false,
+      "family": "A",
+      "goalpost_1": {
+        "holds": false,
+        "limit_points": {
+          "path": [
+            "estimators",
+            "V5",
+            "goalpost_1",
+            "recorded",
+            "limit"
+          ],
+          "source": "step5",
+          "value": 0.5
+        },
+        "reading": "as in A's restated record (results/h7/kink.json)",
+        "worst_day": "2022-11-22",
+        "worst_gap_points": {
+          "path": [
+            "estimators",
+            "V5",
+            "goalpost_1",
+            "recorded",
+            "worst",
+            "gap"
+          ],
+          "source": "step5",
+          "value": 5.499999999999999
+        }
+      },
+      "goalpost_2": {
+        "holds": true,
+        "limit_points": {
+          "path": [
+            "estimators",
+            "V5",
+            "goalpost_2",
+            "all: all",
+            "limit_points"
+          ],
+          "source": "step5",
+          "value": 3.0
+        },
+        "median_points": {
+          "path": [
+            "estimators",
+            "V5",
+            "goalpost_2",
+            "all: all",
+            "median_points"
+          ],
+          "source": "step5",
+          "value": 2.2500000000000004
+        }
+      },
+      "reason": "goalpost 1 does not hold on the development walk-forward: the restated record's worst real-time gap is at or above the limit",
+      "status": "ineligible: goalpost 1 does not hold"
+    },
+    "V6": {
+      "eligible": false,
+      "family": "A",
+      "goalpost_1": {
+        "holds": false,
+        "limit_points": {
+          "path": [
+            "estimators",
+            "V6",
+            "goalpost_1",
+            "recorded",
+            "limit"
+          ],
+          "source": "step5",
+          "value": 0.5
+        },
+        "reading": "as in A's restated record (results/h7/kink.json)",
+        "worst_day": "2020-10-15",
+        "worst_gap_points": {
+          "path": [
+            "estimators",
+            "V6",
+            "goalpost_1",
+            "recorded",
+            "worst",
+            "gap"
+          ],
+          "source": "step5",
+          "value": 2.0000000000000004
+        }
+      },
+      "goalpost_2": {
+        "holds": true,
+        "limit_points": {
+          "path": [
+            "estimators",
+            "V6",
+            "goalpost_2",
+            "all: all",
+            "limit_points"
+          ],
+          "source": "step5",
+          "value": 3.0
+        },
+        "median_points": {
+          "path": [
+            "estimators",
+            "V6",
+            "goalpost_2",
+            "all: all",
+            "median_points"
+          ],
+          "source": "step5",
+          "value": 2.75
+        }
+      },
+      "reason": "goalpost 1 does not hold on the development walk-forward: the restated record's worst real-time gap is at or above the limit",
+      "status": "ineligible: goalpost 1 does not hold"
+    }
+  },
+  "hypothesis": "H7",
+  "mme": {
+    "path": [
+      "settings",
+      "mme"
+    ],
+    "source": "step5",
+    "value": 0.05
+  },
+  "not_claimed": "The record states the rule's result and nothing more. It makes no claim about whether scarcity can be measured, and says nothing about the outcome of H7f.",
+  "note": "Generated by scripts/h7_verdict.py; never edited by hand.",
+  "plan_consequence": {
+    "note": "H7f is the model repository's. This is stated as the plan's consequence, not an action here.",
+    "quote": "Effort then goes to H7f with R+S alone.",
+    "source": "docs/research/plan.md:193-194"
+  },
+  "question": "H7m",
+  "rule": {
+    "eligibility": "goalposts 1 and 2 hold on the development walk-forward, and the distribution account exists",
+    "quotes": [
+      {
+        "file": "docs/research/plan.md",
+        "lines": [
+          185,
+          186
+        ],
+        "text": "- **Not testable as stated:** no candidate meets the stability and sharpness goalposts in development, so nothing can\n  be registered."
+      },
+      {
+        "file": "docs/research/plan.md",
+        "lines": [
+          193,
+          194
+        ],
+        "text": "In development, \"no eligible candidate after steps 2\u20135\" ends H7m as not testable as stated. Effort then goes to H7f\nwith R+S alone."
+      },
+      {
+        "file": "docs/decisions/measurement-protocol.md",
+        "lines": [
+          51,
+          51
+        ],
+        "text": "- **Eligibility in development.** Goalposts 1 and 2 hold on the development walk-forward, and the distribution account (\u00a78) exists."
+      }
+    ],
+    "result": "no candidate is eligible after steps 2 to 5"
+  },
+  "ruling": {
+    "by": "Eleonora",
+    "date": "2026-10-26",
+    "on": "repo-market-liquidity#181",
+    "option": "(a)",
+    "relayed_by": "the model orchestrator",
+    "wording": "yep"
+  },
+  "sources": {
+    "calendar_clean": {
+      "path": "results/h7/calendar-clean.json",
+      "sha256": "c3acfc90f9e4fd60c548768a17f7a2b0b86315bdf95118de7e4c56303e04608c"
+    },
+    "distribution_account": {
+      "path": "results/h7/distribution-account.json",
+      "sha256": "5b8ee596d16ccf6277f7174e109746c342bbfad270d10cfd9071fa9a8ebd20e8"
+    },
+    "kink": {
+      "path": "results/h7/kink.json",
+      "sha256": "c37bf6b6f16a620b5708bf2eb6746be444454049477d981567e9db7f08de1fce"
+    },
+    "step5": {
+      "path": "results/h7/step5-scores.json",
+      "sha256": "1364be1485f9fcdf186e8ef5e191ac565dfaed2305f9ff55120da23fff0be0c1"
+    }
+  },
+  "stage": "docs/stages/h7m-verdict.md",
+  "tier": "development",
+  "verdict": "not testable as stated"
+}
