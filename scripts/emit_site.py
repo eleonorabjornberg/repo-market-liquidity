@@ -6,7 +6,8 @@ development records, and where each hypothesis stands. Nothing on the page is ty
 
 * Every figure is read from a published record on main through one reader, `Records.figure`, which refuses a figure no
   record carries. The records are `results/h10/` (development, the two ON RRP sensitivities and the 2 bp placebo
-  floor), `results/h7/kink.json`, `results/h7/calendar-clean.json` and `docs/research/h7-refit-schedule.json`.
+  floor), `results/h7/kink.json`, `results/h7/calendar-clean.json`, `results/h7/distribution-account.json`,
+  `results/h7/step5-scores.json`, `results/h7/verdict.json` and `docs/research/h7-refit-schedule.json`.
 * The three findings in "What the data show" are computed by the functions below from the parent's published panel,
   rebuilt from the parent's tracked fixtures at the pin and refused unless its SHA-256 is the published digest
   (`load_panel`), and from this repository's SRF-rate snapshot, refused unless its bytes match its manifest.
@@ -16,7 +17,10 @@ development records, and where each hypothesis stands. Nothing on the page is ty
   fail on one. A placeholder left unfilled is an error, and so is a value the template does not use.
 * The status table is read from `docs/research/plan.md` (each hypothesis's development steps) and from the records'
   own metadata (which step has a record on main). GitHub is not read at build time.
-* Development evidence is labelled as such beside each figure. No verdict is shown: confirmation is prospective only.
+* Development evidence is labelled as such beside each figure. No forecast or measurement claim is confirmed here:
+  confirmation is prospective only. The one verdict shown is H7m's stage verdict, a development-tier outcome printed from
+  `results/h7/verdict.json` (directive #194; the wording of this sentence and of the page's byline is a marked question
+  for Eleonora in that pull request).
 
 The design pass (directive #177): the template adopts the model site's visual system (typography, colours, light and dark
 themes, navigation; its CSS and structure copied from repo-market-model at `MODEL_TEMPLATE_COMMIT`, presentation only,
@@ -98,11 +102,16 @@ FLOOR_BP = Decimal(-10)
 
 #: Which record carries each development step of a hypothesis (the status table). A step with no entry has no record.
 STEP_RECORDS = {
-    "H7m": {1: "results/h7/kink.json", 2: "results/h7/calendar-clean.json"},
+    "H7m": {1: "results/h7/kink.json", 2: "results/h7/calendar-clean.json", 4: "results/h7/distribution-account.json",
+            5: "results/h7/step5-scores.json"},
     "H10": {1: "docs/decisions/h10-method.md", 2: "results/h10/development.json", 3: "results/h10/development.json"},
 }
 #: A step the records say was not built, with the record and keys that say so.
 STEP_NOT_BUILT = {("H7m", 3): ("results/h7/calendar-clean.json", "not_run", "D")}
+#: The record of a hypothesis's stage outcome (directive #194): the status table's last row for it, and the verdict
+#: paragraph of the H7m section. Read from the record only; the page types no verdict.
+STAGE_OUTCOMES = {"H7m": "results/h7/verdict.json"}
+VERDICT_RECORD = STAGE_OUTCOMES["H7m"]
 #: The plan's section for each hypothesis: the heading that opens it and the heading that ends it.
 PLAN_SECTIONS = {"H7m": ("### H7m", "### H7f"), "H10": ("## H10.", "## The parent's exit criterion")}
 
@@ -742,6 +751,28 @@ def section_h7(records):
     return out
 
 
+def section_verdict(records):
+    """H7m's stage verdict as the record words it (directive #194): the paragraph above the chart and the byline's phrase.
+
+    Everything is read from `results/h7/verdict.json`: the verdict, its tier, the rule's result, the plan's quoted rule
+    with its line numbers, the stage page it links, and `not_claimed`, which binds the page (it says nothing beyond it).
+    """
+    verdict = records.figure(VERDICT_RECORD, "verdict")
+    tier = records.figure(VERDICT_RECORD, "tier")
+    result = records.figure(VERDICT_RECORD, "rule", "result")
+    quote = records.figure(VERDICT_RECORD, "rule", "quotes", 0)
+    stage = records.figure(VERDICT_RECORD, "stage")
+    not_claimed = records.figure(VERDICT_RECORD, "not_claimed")
+    text = re.sub(r"\s+", " ", re.sub(r"^\s*-\s*|\*\*", "", quote["text"])).strip()
+    cite = "%s:%s-%s" % (quote["file"], quote["lines"][0], quote["lines"][1])
+    paragraph = (
+        '<p class="prose">H7m&rsquo;s stage verdict, read from its record, is <strong>%s</strong> (%s tier): %s. The plan&rsquo;s '
+        'rule (%s): &ldquo;%s&rdquo; Read the %s. %s</p>'
+        % (esc(verdict), esc(tier), esc(result), code(cite), esc(text), link(REPO_URL + "/blob/main/" + stage, "stage page"),
+           esc(not_claimed)))
+    return {"h7_verdict": paragraph, "h7_verdict_phrase": esc(verdict)}
+
+
 def plan_steps(plan_text, hypothesis):
     """(number, title) of the development steps the plan lists for `hypothesis` (`PLAN_SECTIONS`)."""
     start, end = PLAN_SECTIONS[hypothesis]
@@ -785,6 +816,13 @@ def section_status(records):
                 records.text(path)
                 state = "%s (decision record)" % code(path)
             body.append([hypothesis, str(number), esc(title), state])
+        if hypothesis in STAGE_OUTCOMES:
+            path = STAGE_OUTCOMES[hypothesis]
+            body.append([hypothesis, "Stage outcome", "The verdict after the development steps",
+                         "%s, %s, %s, %s: %s" % (code(path), esc(records.figure(path, "directive")),
+                                                 esc(records.figure(path, "tier")),
+                                                 link(REPO_URL + "/blob/main/" + records.figure(path, "stage"), "stage page"),
+                                                 esc(records.figure(path, "verdict")))])
     return {"status_table": table(["Hypothesis", "Step", "Plan step", "Record on main"], body,
                                   "Each hypothesis's development steps (docs/research/plan.md) and the record that carries each")}
 
@@ -833,6 +871,7 @@ def build(rows, stamp=None, records=None, template_text=None, glossary=None):
     values.update(section_findings(rows, records))
     values.update(section_h10(records, reg))
     values.update(section_h7(records))
+    values.update(section_verdict(records))
     values.update(section_status(records))
     manifest = "metadata/phase3_panel_v4_manifest.json"
     values.update({
