@@ -117,7 +117,7 @@ footer code{word-break:break-all}
 <p class="kicker">Phase three of <a href="{{parent_site}}">repo-market-model</a></p>
 <h1>Repo market liquidity</h1>
 <p class="dek">How much cash can banks lend before the price of overnight money starts to rise, and what moves it when it does.</p>
-<p class="byline">Every figure and every chart on this page is read from a published record or computed by a tested script from the parent&rsquo;s published panel. Nothing here is a verdict.</p>
+<p class="byline">Every figure and every chart on this page is read from a published record or computed by a tested script from the parent&rsquo;s published panel. No forecast or measurement claim is confirmed here. H7m&rsquo;s stage verdict, {{h7_verdict_phrase}}, is printed from its record.</p>
 <p class="label">Development evidence only. Confirmation is prospective, after registration.</p>
 </header>
 
@@ -209,7 +209,8 @@ footer code{word-break:break-all}
 
 <section id="h7m">
 <h2><span class="n"></span>H7m: how much liquidity banks can deploy</h2>
-<p class="label">Tier: {{h7_tier}}, both records. Development evidence, not a verdict.</p>
+<p class="label">Tier: {{h7_tier}}. The stage verdict below is read from its record. The kink chart and tables are development evidence, not a verdict.</p>
+{{h7_verdict}}
 <h3>A: the bend of the demand curve</h3>
 <p class="prose">The goalposts compare refits on the {{h7_kink_days}} days that every estimator serves. The limits are {{h7_kink_limits}}.</p>
 <figure>
@@ -238,7 +239,7 @@ footer code{word-break:break-all}
 <li>Every chart is drawn from a data file written by the same script and embedded in the page. A chart whose data the records cannot yield stops the build; a data file that is not what the inputs build fails the check.</li>
 <li>A placeholder left unfilled is an error, and so is a number typed into the template.</li>
 <li>The page is built on main and never committed. A pull request that carries the built file or its data fails.</li>
-<li>Development evidence is labelled beside each figure. Only prospective confirmation days give a verdict.</li>
+<li>Development evidence is labelled beside each figure. Only prospective confirmation days confirm a claim; H7m&rsquo;s stage verdict is a development-tier outcome printed from its record.</li>
 </ul>
 <p>The model repository&rsquo;s page is <a href="{{parent_site}}">here</a>; this repository is <a href="{{repo_url}}">here</a>.</p>
 <details>

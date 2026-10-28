@@ -337,6 +337,102 @@ class ChartDataTests(unittest.TestCase):
                 emit_site.chart_h7m(emit_site.Records(root))
 
 
+def _verdict_root(tmp, verdict=None):
+    """A records root for the H7m verdict and the status table: the real results and plan, copied, so a test can change one."""
+    import shutil
+
+    root = pathlib.Path(tmp)
+    shutil.copytree(ROOT / "results", root / "results")
+    for relative in ("docs/research/plan.md", "docs/stages/h7m-verdict.md"):
+        (root / relative).parent.mkdir(parents=True, exist_ok=True)
+        (root / relative).write_bytes((ROOT / relative).read_bytes())
+    for relative in ("docs/decisions/h10-method.md",):
+        (root / relative).parent.mkdir(parents=True, exist_ok=True)
+        (root / relative).write_bytes((ROOT / relative).read_bytes())
+    if verdict is not None:
+        path = root / "results/h7/verdict.json"
+        record = json.loads(path.read_text())
+        record["verdict"] = verdict
+        path.write_text(json.dumps(record))
+    return root
+
+
+FORBIDDEN_PHRASES = ("decides nothing", "post hoc", "held out", "lockbox", "blind tier", "live record")
+
+
+class H7mVerdictTests(unittest.TestCase):
+    """Directive #194: the page shows H7m's recorded end (steps 4 and 5 and the stage verdict), read from the records.
+
+    Written before the generator changed. They failed first: `section_verdict` did not exist (`AttributeError`), and
+    the status table had no row for step 4 or 5 or for the stage outcome.
+
+    Recorded mutation: in `section_verdict`, `records.figure(VERDICT_RECORD, "verdict")` replaced by the typed string
+    `"not testable as stated"`. `test_the_verdict_follows_the_record` then failed with `AssertionError: 'inconclusive'
+    not found in ...` (the page kept printing the typed verdict after the record changed).
+    """
+
+    def test_the_built_page_carries_the_verdict_the_record_holds(self):
+        record = json.loads((ROOT / "results/h7/verdict.json").read_text())
+        page = emit_site.build(published_panel())
+        self.assertIn(emit_site.esc(record["verdict"]), page)
+        self.assertEqual(record["verdict"], "not testable as stated")
+        self.assertIn(emit_site.esc(record["not_claimed"]), page)
+        self.assertIn("docs/stages/h7m-verdict.md", page)
+
+    def test_the_verdict_follows_the_record(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            records = emit_site.Records(_verdict_root(tmp, verdict="inconclusive"))
+            values = emit_site.section_verdict(records)
+        self.assertIn("inconclusive", " ".join(values.values()))
+        self.assertNotIn("not testable as stated", " ".join(values.values()))
+
+    def test_a_missing_verdict_record_is_refused(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = _verdict_root(tmp)
+            (root / "results/h7/verdict.json").unlink()
+            with self.assertRaises(emit_site.FigureError):
+                emit_site.section_verdict(emit_site.Records(root))
+            with self.assertRaises(emit_site.FigureError):
+                emit_site.section_status(emit_site.Records(root))
+
+    def test_the_plan_rule_is_quoted_from_the_record(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            values = emit_site.section_verdict(emit_site.Records(_verdict_root(tmp)))
+        text = " ".join(values.values())
+        self.assertIn("Not testable as stated:", text)
+        self.assertIn("so nothing can be registered", text)
+        self.assertIn("docs/research/plan.md", text)
+
+    def test_the_status_table_has_the_h7m_rows_for_steps_four_and_five_and_the_stage_outcome(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            table = emit_site.section_status(emit_site.Records(_verdict_root(tmp)))["status_table"]
+        rows = re.findall(r"<tr>(.*?)</tr>", table)
+        h7m = [re.findall(r"<td>(.*?)</td>", r) for r in rows if r.startswith("<td>H7m</td>")]
+        by_step = {r[1]: r for r in h7m}
+        self.assertIn("results/h7/distribution-account.json", by_step["4"][3])
+        self.assertIn("results/h7/step5-scores.json", by_step["5"][3])
+        outcome = by_step["Stage outcome"]
+        self.assertIn("not testable as stated", outcome[3])
+        self.assertIn("docs/stages/h7m-verdict.md", outcome[3])
+        self.assertIn("repo-market-liquidity#187", outcome[3])
+
+    def test_the_page_makes_no_claim_beyond_the_record_and_carries_no_forbidden_phrase_or_count(self):
+        page = emit_site.build(published_panel())
+        visible = re.sub(r"(?is)<(style|script)\b.*?</\1>", " ", page)
+        visible = re.sub(r"(?s)<[^>]*>", " ", visible).lower().replace("-", " ")
+        for phrase in FORBIDDEN_PHRASES:
+            with self.subTest(phrase=phrase):
+                self.assertNotIn(phrase, visible)
+        self.assertNotRegex(visible, r"\b\d[\d,]*\s+(unit\s+)?tests?\b")
+        section = page[page.index('<section id="h7m">'):page.index('<section id="status">')]
+        self.assertNotIn("whether scarcity can be measured is", section.lower())
+
+    def test_the_wording_that_said_nothing_here_is_a_verdict_is_gone_for_h7m(self):
+        page = emit_site.build(published_panel())
+        self.assertNotIn("Nothing here is a verdict", page)
+        self.assertIn("No forecast or measurement claim is confirmed here", page)
+
+
 class ChartFileTests(unittest.TestCase):
     """Each chart's data is a file the page reads; --check regenerates it and fails on a stale one."""
 
@@ -391,7 +487,9 @@ class TemplateGuardTests(unittest.TestCase):
     def test_every_chart_and_finding_is_labelled_development_evidence(self):
         page = emit_site.build(published_panel())
         self.assertGreaterEqual(page.lower().count("descriptive development evidence"), 5)
-        self.assertNotRegex(page.lower(), r"\bconfirmed\b|\bverdict:")
+        # The one allowed use of "confirmed" is the draft byline's negation (directive #194, a marked question for her).
+        lowered = page.lower().replace("no forecast or measurement claim is confirmed here", "")
+        self.assertNotRegex(lowered, r"\bconfirmed\b|\bverdict:")
 
     def test_the_charts_use_only_the_model_templates_library_at_its_pinned_version(self):
         text = (ROOT / "site" / "template.html").read_text(encoding="utf-8")
