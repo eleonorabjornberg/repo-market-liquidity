@@ -215,7 +215,7 @@ with R+S alone.
 - Prospective days, refits and stress events logged.
 
 **Where H7m stands (12 October 2026)**
-- **Current step:** groundwork. Step 1 is #22, which waits only on eleonorabjornberg/repo-market-model#626
+- **Current step:** closed (stage verdict, PR #191; Phase 3 exit not met, this PR). Groundwork, as of 12 October: step 1 is #22, which waits only on eleonorabjornberg/repo-market-model#626
   (eleonorabjornberg/repo-market-model#640 is closed). The inputs it needs first are #25, then #26 and #27.
 - **Term repos outstanding** are not in the model repo's `fed_liquidity`; they are filed there as
   eleonorabjornberg/repo-market-model#659. Until it merges, no step here uses take-up as outstanding amounts. H7m's
@@ -328,6 +328,8 @@ a1685ac). Eleonora made it Phase 3's verdict on 7 Oct (`docs/decisions/evaluatio
 
 **It stays a deliverable inside H7m (Q2 (a)).** H7m's stability and sharpness goalposts cover its first half, and step 4
 (the distribution account) its second. The distribution account is required for registration but decides nothing.
+
+**Outcome (29 October 2026).** Not met on development, and H7m is closed, by her ruling of 28 October: `docs/stages/phase3-exit.md` (drafted for her; in force once she merges it).
 
 ## Prior work (development evidence only, never a verdict)
 
