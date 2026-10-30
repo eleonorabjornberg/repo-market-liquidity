@@ -55,6 +55,8 @@ OWN_CHECK = {
     "results/h7/verdict.json": "tests/test_h7_verdict.py",
     "metadata/phase3_panel_v4_manifest.json": "tests/test_panel.py",
     "results/panel/v4_changes.json": "tests/test_panel.py",
+    "metadata/phase3_panel_v5_manifest.json": "tests/test_panel.py",
+    "results/panel/v5_changes.json": "tests/test_panel.py",
     "results/h10/development.json": "tests/test_h10_step2.py",
     "results/h10/sensitivity_onrrp_interaction.json": "tests/test_h10_step3.py",
     "results/h10/sensitivity_onrrp_regimes.json": "tests/test_h10_regimes.py",
