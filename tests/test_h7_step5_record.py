@@ -174,7 +174,12 @@ class RecordTests(unittest.TestCase):
                 for key in ("effr_series_sha256", "rows", "first_day", "last_day"):
                     self.assertEqual(record["pins"][key], pins[key], (name, key))
 
-        with mock.patch.object(self.script, "_check_pins", window_and_rows):
+        from repo_liquidity import panel
+
+        real = panel.load_manifest
+        # `h7_clean.build_rows` is frozen and reads version 4's manifest; at this pin the same columns are version 5.
+        redirect = lambda version, _real=real: _real(panel.CURRENT_VERSION if version == 4 else version)  # noqa: E731
+        with mock.patch.object(self.script, "_check_pins", window_and_rows), mock.patch.object(panel, "load_manifest", redirect):
             again = self.script.build(draws=40)
         self.assertEqual(again["window"], self.record["window"])
         self.assertEqual(again["splits"], self.record["splits"])
