@@ -63,7 +63,9 @@ def stub_rule(lag_days=2):
     )
 
 
-FAST = dict(draws=20, null_draws=20)
+#: `registered_digest` is the digest of this tree: these tests exercise the computation, not the registration guard (#200),
+#: which `tests/test_h10_registration.py` tests, so that a refusal here is never the guard's.
+FAST = dict(draws=20, null_draws=20, registered_digest=h10_live.method_digest())
 
 
 def without_stamp(row):

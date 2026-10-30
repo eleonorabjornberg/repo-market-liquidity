@@ -5,7 +5,7 @@ and publishes the row it returns. This module runs no schedule, writes no log an
 about the method: the method is `docs/decisions/h10-method.md` (sections 1 to 10) and the code is
 `repo_liquidity.attribution` and `repo_liquidity.h10_apply`; this module only calls them with the report instant fixed.
 
-**The report instant** is the decision instant (16:00) of a panel day at most `REPORT_DAYS` (10) panel days after the onset
+**The report instant** is the decision instant (`h10_apply.DECISION_TIME`, 18:00) of a panel day at most `REPORT_DAYS` (10) panel days after the onset
 (plan, Q7; record section 3). Everything read is read as of that instant (record section 6): the window's spread and drivers
 must have been public (`attribution.check_window_public`, through the parent's `InformationRule`), and the fitting sample,
 the placebo windows and the selection null use only windows already public then. Rows after the last public day are cut off
@@ -25,7 +25,7 @@ from datetime import date
 from pathlib import Path
 from typing import List, Optional, Sequence, Tuple
 
-from repo_liquidity import PANEL_SHA256, PARENT_COMMIT, attribution, h10_apply, parent_root
+from repo_liquidity import PANEL_SHA256, PARENT_COMMIT, attribution, h10_apply, h10_registration, parent_root
 from repo_liquidity.attribution import BASELINE_DAYS, DRIVERS_WITH_ON_RRP, WINDOW_DAYS
 from repo_liquidity.h10_apply import REPORT_DAYS
 from repo_model.contract import ON_RRP_DEPLETION_BREAK_BN
@@ -185,7 +185,8 @@ def last_public_start(rule, dates: Sequence[date], report_index: int, onset_inde
 
 
 def attribute_onset(panel_rows, rule, onset_date: date, report_date: date, *, draws: int = attribution.DRAWS,
-                    null_draws: int = attribution.NULL_DRAWS, allow_unpinned_parent: bool = False) -> dict:
+                    null_draws: int = attribution.NULL_DRAWS, allow_unpinned_parent: bool = False,
+                    registered_digest: str = h10_registration.REGISTERED_DIGEST) -> dict:
     """Attribute one onset with the frozen method, as of the decision instant of `report_date`. A JSON-able row in the
     columns of the development table (`results/h10/development.json`), plus the method digest and the parent pin.
 
@@ -199,8 +200,11 @@ def attribute_onset(panel_rows, rule, onset_date: date, report_date: date, *, dr
             not public at the report instant.
         ValueError: the onset or report date is not a day of the rows; the report is before the onset or more than
             `REPORT_DAYS` panel days after it (plan, Q7); the onset is not an onset under the parent's rule; the imported
-            `repo_model` is not a clean checkout of `PARENT_COMMIT` (unless `allow_unpinned_parent`, which the row records).
+            `repo_model` is not a clean checkout of `PARENT_COMMIT` (unless `allow_unpinned_parent`, which the row records); this
+            code's `method_digest()` is not the digest registered on #23 (`h10_registration.REGISTERED_DIGEST`, #200). The
+            live job passes nothing for `registered_digest`; only a test of the computation passes another.
     """
+    h10_registration.check_registered(method_digest(), registered_digest)
     imported_commit, imported_clean = check_parent_at_pin(allow_unpinned_parent)
     rows = list(panel_rows)
     dates = [row.date for row in rows]
