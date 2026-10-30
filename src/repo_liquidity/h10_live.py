@@ -9,7 +9,7 @@ about the method: the method is `docs/decisions/h10-method.md` (sections 1 to 10
 (plan, Q7; record section 3). Everything read is read as of that instant (record section 6): the window's spread and drivers
 must have been public (`attribution.check_window_public`, through the parent's `InformationRule`), and the fitting sample,
 the placebo windows and the selection null use only windows already public then. Rows after the last public day are cut off
-before any of them is built.
+before any of them is built. A row dated after the report day is refused, not cut off (`check_no_row_after_report`).
 
 **Development evidence only until the confirmation design is decided and a registration is made, which is Eleonora's
 attested act.** Standard library only.
@@ -28,6 +28,7 @@ from typing import List, Optional, Sequence, Tuple
 from repo_liquidity import PANEL_SHA256, PARENT_COMMIT, attribution, h10_apply, h10_registration, parent_root
 from repo_liquidity.attribution import BASELINE_DAYS, DRIVERS_WITH_ON_RRP, WINDOW_DAYS
 from repo_liquidity.h10_apply import REPORT_DAYS
+from repo_model import lockbox
 from repo_model.contract import ON_RRP_DEPLETION_BREAK_BN
 from repo_model.splits import LookAheadError
 
@@ -43,7 +44,7 @@ METHOD_FILES: Tuple[Tuple[str, Path], ...] = (
 )
 #: The parent code a live result depends on, read from the imported `repo_model` tree and named in the digest by the pinned
 #: commit and the file: the onset rule, the pressure onsets it is cross-checked with, `InformationRule`, the contract that
-#: holds `ON_RRP_DEPLETION_BREAK_BN`, and the stationary bootstrap. Guards that only refuse a run (the lockbox) are not a part.
+#: holds `ON_RRP_DEPLETION_BREAK_BN`, and the stationary bootstrap. Guards that only refuse a run are not a part of the parent's side.
 PARENT_METHOD_FILES: Tuple[str, ...] = (
     "src/repo_model/onset.py",
     "src/repo_model/pressure.py",
@@ -161,6 +162,43 @@ def check_parent_at_pin(allow_unpinned_parent: bool) -> Tuple[Optional[str], Opt
     return commit, clean
 
 
+# --------------------------------------------------------------------------- the guards of the live read (#200)
+
+#: The locked tiers of the parent's lockbox (`metadata/lockbox.json`) that the live path may read: the open-ended `blind` tier.
+#: No comparison scores it (scoring protocol #640, section 3 of its rulings: scoring confirmation days opens them, by her own
+#: attested action), so a day in it does not refuse the live path (Eleonora, 30 October 2026, repo-market-model#1324, option 2).
+#: A locked tier not named here is refused through `lockbox.require_unlocked`.
+LIVE_READABLE_TIERS: Tuple[str, ...] = ("blind",)
+
+
+def check_no_row_after_report(dates: Sequence[date], report_date: date) -> None:
+    """Refuse any row dated after the report day: no day after the report instant is read.
+
+    Raises:
+        LookAheadError: a row is dated after `report_date`.
+    """
+    late = [day for day in dates if day > report_date]
+    if late:
+        raise LookAheadError(f"the rows hold {len(late)} day(s) after the report day {report_date} (first {min(late)}); "
+                             f"a live attribution reads no day after its report instant")
+
+
+def check_scored_tiers(dates: Sequence[date]) -> None:
+    """Refuse a day in a locked tier of the parent's lockbox that the live path may not read (`LIVE_READABLE_TIERS` are read).
+
+    Raises:
+        LookAheadError: a day is in a locked tier a comparison scores.
+    """
+    readable = [tier for tier in lockbox.load_lockbox(lockbox.DEFAULT_LOCKBOX) if tier.name in LIVE_READABLE_TIERS]
+    scored = [day for day in dates if lockbox.locked_tier(day, readable) is None]
+    lockbox.require_unlocked(scored, where="h10_live")
+
+
+def check_live_dates(dates) -> None:
+    """The lockbox check the live path makes in place of `attribution.check_development`."""
+    check_scored_tiers(list(dates))
+
+
 # --------------------------------------------------------------------------- the entry point
 
 
@@ -196,8 +234,9 @@ def attribute_onset(panel_rows, rule, onset_date: date, report_date: date, *, dr
     "not attributable" with the reason, never dropped.
 
     Raises:
-        LookAheadError: a day of the rows is in a locked tier of the parent's lockbox, or an input of the onset's window was
-            not public at the report instant.
+        LookAheadError: a row is dated after `report_date` (checked first, before any fit, placebo or null is built); a day
+            of the rows is in a locked tier of the parent's lockbox that a comparison scores (the open-ended `blind` tier is
+            not refused, `LIVE_READABLE_TIERS`); or an input of the onset's window was not public at the report instant.
         ValueError: the onset or report date is not a day of the rows; the report is before the onset or more than
             `REPORT_DAYS` panel days after it (plan, Q7); the onset is not an onset under the parent's rule; the imported
             `repo_model` is not a clean checkout of `PARENT_COMMIT` (unless `allow_unpinned_parent`, which the row records); this
@@ -208,11 +247,12 @@ def attribute_onset(panel_rows, rule, onset_date: date, report_date: date, *, dr
     imported_commit, imported_clean = check_parent_at_pin(allow_unpinned_parent)
     rows = list(panel_rows)
     dates = [row.date for row in rows]
-    attribution.check_development(dates)
+    if report_date < onset_date:
+        raise ValueError(f"the report {report_date} is before the onset {onset_date}")
+    check_no_row_after_report(dates, report_date)
+    check_scored_tiers(dates)
     onset_index = _index(dates, onset_date, "onset")
     report_index = _index(dates, report_date, "report")
-    if report_index < onset_index:
-        raise ValueError(f"the report {report_date} is before the onset {onset_date}")
     if report_index - onset_index > REPORT_DAYS:
         raise ValueError(f"the onset {onset_date} is more than {REPORT_DAYS} panel days before the report {report_date}")
     last = last_public_start(rule, dates, report_index, onset_index)
@@ -220,7 +260,7 @@ def attribute_onset(panel_rows, rule, onset_date: date, report_date: date, *, dr
         visible = rows[: report_index + 1]
     else:
         visible = rows[: last + WINDOW_DAYS]
-    onsets = attribution.cross_check_onsets(visible)
+    onsets = attribution.cross_check_onsets(visible, check=check_live_dates)
     if onset_index not in onsets:
         raise ValueError(f"{onset_date} is not an onset under the parent's rule")
 

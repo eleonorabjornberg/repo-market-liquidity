@@ -108,15 +108,18 @@ def series_from_rows(rows, drivers: Sequence[str] = DRIVERS) -> Dict[str, List[O
     return columns
 
 
-def episode_onsets(rows) -> List[int]:
-    """Row positions of the pressure onsets: `repo_model.onset.onset_flags`, the onset group's own module."""
+def episode_onsets(rows, *, check=None) -> List[int]:
+    """Row positions of the pressure onsets: `repo_model.onset.onset_flags`, the onset group's own module.
+
+    `check` is called with the rows' dates before anything is read; the default is `check_development`. The live entry point
+    passes its own (`h10_live.check_live_dates`, #200)."""
     from repo_model.onset import onset_flags
 
-    check_development(row.date for row in rows)
+    (check_development if check is None else check)(row.date for row in rows)
     return [index for index, flag in enumerate(onset_flags(rows)) if flag]
 
 
-def cross_check_onsets(rows) -> List[int]:
+def cross_check_onsets(rows, *, check=None) -> List[int]:
     """`episode_onsets`, after checking it gives the onset days of `repo_model.pressure.onsets` at +5 bp.
 
     Raises:
@@ -125,7 +128,7 @@ def cross_check_onsets(rows) -> List[int]:
     from repo_model.onset import ONSET_THRESHOLD_BP
     from repo_model.pressure import onsets
 
-    found = episode_onsets(rows)
+    found = episode_onsets(rows, check=check)
     dates = [row.date for row in rows]
     other = list(onsets(rows, ONSET_THRESHOLD_BP, dates))
     if [dates[i] for i in found] != other:

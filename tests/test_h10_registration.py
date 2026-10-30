@@ -44,7 +44,7 @@ class RegisteredDigestTests(unittest.TestCase):
 
     def test_the_entry_point_gives_a_row_when_the_digest_is_the_registered_one(self):
         rows, onset = make_rows(), date(2025, 1, 1) + timedelta(days=100)
-        row = h10_live.attribute_onset(rows, stub_rule(), onset, onset + timedelta(days=10), **FAST)
+        row = h10_live.attribute_onset(rows[:111], stub_rule(), onset, onset + timedelta(days=10), **FAST)
         self.assertEqual(row["method_digest"], h10_live.method_digest())
 
     def test_the_check_names_both_digests(self):

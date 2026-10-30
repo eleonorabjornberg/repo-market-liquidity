@@ -78,7 +78,7 @@ class PageStatesTheDigestTests(unittest.TestCase):
     def test_the_page_says_which_parts_changed_since_the_registration(self):
         changed = sorted(key for key, (old, new) in parts_table().items() if old != new)
         self.assertEqual(changed, sorted([
-            "src/repo_liquidity/h10_apply.py", "src/repo_liquidity/h10_live.py", "src/repo_model/onset.py",
+            "src/repo_liquidity/attribution.py", "src/repo_liquidity/h10_apply.py", "src/repo_liquidity/h10_live.py", "src/repo_model/onset.py",
             "src/repo_model/asof.py", "constants"]))
 
     def test_the_record_part_is_the_method_record_registered_on_23(self):
