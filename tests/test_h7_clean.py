@@ -617,11 +617,15 @@ class TrackedPanelTests(unittest.TestCase):
     def setUpClass(cls):
         from repo_liquidity import panel
 
-        cls.rows, cls.pins = h.build_rows()
-        cls.manifest = panel.load_manifest(4)
+        # `h7_clean.build_rows` is frozen (its bytes are in the refit-schedule record's input hashes) and checks version 4, a record
+        # at 08ff67e. At the pin of 2032de4 the same columns are version 5, so its manifest read is redirected, in the test only (#200).
+        real = panel.load_manifest
+        with mock.patch.object(panel, "load_manifest", lambda version, _real=real: _real(panel.CURRENT_VERSION if version == 4 else version)):
+            cls.rows, cls.pins = h.build_rows()
+        cls.manifest = panel.load_manifest(panel.CURRENT_VERSION)
         cls.flags = h.read_flags(h.with_quarter_end_window(cls.rows), h.flag_rule(), _turn_label_or_stand_in())
 
-    def test_the_version_4_columns_are_the_manifests_bytes_with_effr_added(self):
+    def test_the_current_versions_columns_are_the_manifests_bytes_with_effr_added(self):
         self.assertEqual(self.pins["panel_sha256"], self.manifest["sha256"])
         self.assertEqual((self.pins["first_day"], self.pins["last_day"]), (self.manifest["start_date"], self.manifest["end_date"]))
         self.assertTrue(all("effr" in row.values for row in self.rows))

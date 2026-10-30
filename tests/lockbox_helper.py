@@ -22,3 +22,15 @@ def moved_lockbox(blind_start: date):
         path.write_text(json.dumps(declaration), encoding="utf-8")
         with mock.patch.object(lockbox, "DEFAULT_LOCKBOX", path):
             yield
+
+
+@contextlib.contextmanager
+def reclosed_near_blind():
+    """Patch `repo_model.lockbox.DEFAULT_LOCKBOX` to the tracked declaration with the near-blind tier locked again (not opened)."""
+    declaration = json.loads(lockbox.DEFAULT_LOCKBOX.read_text(encoding="utf-8"))
+    declaration["tiers"][0]["opened"] = None
+    with tempfile.TemporaryDirectory() as tmp:
+        path = pathlib.Path(tmp) / "lockbox.json"
+        path.write_text(json.dumps(declaration), encoding="utf-8")
+        with mock.patch.object(lockbox, "DEFAULT_LOCKBOX", path):
+            yield

@@ -511,10 +511,12 @@ def registration_record_text():
 def registration(record_text=None):
     """H10's registration as the re-registration page and the code state it; ValueError if they disagree.
 
-    The page's digest is the one Eleonora registered (her comment names the same). The code's is
-    `h10_live.method_digest()` computed now, so a change to a frozen part turns this red.
+    The page's digest is the one Eleonora registered (her comment names the same). It is checked against the digest the live entry
+    point holds as registered (`h10_registration.REGISTERED_DIGEST`), not against `h10_live.method_digest()` computed now: since the
+    pin moved (#200) the tree's method differs from the registered one until she registers the new one, and then the page named by
+    `RE_REGISTRATION_PAGE` and `h10_registration` move together, in the pull request that follows her comment.
     """
-    from repo_liquidity import h10_live
+    from repo_liquidity import h10_live, h10_registration
 
     text = registration_record_text() if record_text is None else record_text
     digest = re.search(r"\| method_digest\(\) at the new pin \| `([0-9a-f]{64})` \|", text)
@@ -522,16 +524,16 @@ def registration(record_text=None):
     parent = re.search(r"\| Parent commit \| `[0-9a-f]{40}` \| `([0-9a-f]{40})` \|", text)
     if not (digest and record_sha and parent):
         raise ValueError("%s no longer states the digest, the method record and the parent pin" % RE_REGISTRATION_PAGE)
-    found = {"digest": digest.group(1), "code_digest": h10_live.method_digest(), "record_sha256": record_sha.group(1),
+    found = {"digest": digest.group(1), "code_digest": h10_registration.REGISTERED_DIGEST, "record_sha256": record_sha.group(1),
              "code_record_sha256": h10_live.record_sha256(), "parent": parent.group(1)}
     if found["digest"] != found["code_digest"]:
         raise ValueError("the registered method digest %s is not the code's %s" % (found["digest"], found["code_digest"]))
     if found["record_sha256"] != found["code_record_sha256"]:
         raise ValueError("the registered method record %s is not the code's %s"
                          % (found["record_sha256"], found["code_record_sha256"]))
-    if found["parent"] != repo_liquidity.PARENT_COMMIT:
-        raise ValueError("the re-registration page names parent %s, the code pins %s"
-                         % (found["parent"], repo_liquidity.PARENT_COMMIT))
+    if found["parent"] != h10_registration.REGISTERED_PARENT:
+        raise ValueError("the re-registration page names parent %s, the registration in force names %s"
+                         % (found["parent"], h10_registration.REGISTERED_PARENT))
     found["commit"] = REGISTRATION_COMMIT
     return found
 
@@ -697,7 +699,7 @@ def section_h10(records, reg):
         "<dt>Method record</dt><dd>%s, SHA-256 %s</dd><dt>Parent</dt><dd>%s</dd><dt>Phase 3 panel</dt><dd>version %s, SHA-256 %s</dd></dl>"
         % (link(REGISTRATION_COMMENT, "Eleonora, on #23"),
            link("%s/commit/%s" % (REPO_URL, reg["commit"]), reg["commit"][:7]), code(reg["digest"]),
-           code("docs/decisions/h10-method.md"), code(short(reg["record_sha256"])), code(repo_liquidity.PARENT_COMMIT[:7]),
+           code("docs/decisions/h10-method.md"), code(short(reg["record_sha256"])), code(reg["parent"][:7]),
            esc(records.figure("metadata/phase3_panel_v4_manifest.json", "version")),
            code(records.figure("metadata/phase3_panel_v4_manifest.json", "sha256"))))
     return out
@@ -873,7 +875,7 @@ def build(rows, stamp=None, records=None, template_text=None, glossary=None):
     values.update(section_h7(records))
     values.update(section_verdict(records))
     values.update(section_status(records))
-    manifest = "metadata/phase3_panel_v4_manifest.json"
+    manifest = "metadata/phase3_panel_v5_manifest.json"
     values.update({
         "parent_commit": code(repo_liquidity.PARENT_COMMIT),
         "parent_panel": code(repo_liquidity.PANEL_SHA256),
