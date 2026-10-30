@@ -16,9 +16,12 @@ import unittest
 from datetime import date
 from pathlib import Path
 
-from repo_liquidity import PARENT_COMMIT, development, panel
+from repo_liquidity import development, panel
 from repo_liquidity import goalposts as gp
 
+#: The pin the record was made at (08ff67e, panel version 4). `PARENT_COMMIT` moved to 2032de4 in #200; a published record is never
+#: edited, so the check is against the pin the record itself names.
+RECORD_PARENT_COMMIT = "08ff67e27bc3d7e357491cf8e1da59793702b3fb"
 ROOT = Path(__file__).resolve().parents[1]
 RECORD = ROOT / "results" / "h7" / "step5-scores.json"
 PAGE = ROOT / "docs" / "research" / "h7-step5.md"
@@ -55,7 +58,7 @@ class RecordTests(unittest.TestCase):
         self.assertIn("never a verdict", self.record["decides_nothing"])
 
     def test_it_was_made_at_this_pin_and_panel_from_the_tracked_records_as_they_are(self):
-        self.assertEqual(self.record["pins"]["parent_commit"], PARENT_COMMIT)
+        self.assertEqual(self.record["pins"]["parent_commit"], RECORD_PARENT_COMMIT)
         self.assertEqual(self.record["pins"]["panel_sha256"], panel.load_manifest(4)["sha256"])
         for name, source in self.record["sources"].items():
             path = ROOT / source["path"]
@@ -160,7 +163,19 @@ class RecordTests(unittest.TestCase):
         self.assertTrue(any(row["under_event_floor"] for row in self.record["splits"].values()))
 
     def test_the_point_figures_are_what_the_parent_and_the_tracked_records_give(self):
-        again = self.script.build(draws=40)
+        """The records were made at 08ff67e on panel version 4; the tree is at 2032de4 on version 5 (#200). The script's own
+        pin check (`_check_pins`: every tracked record was made at this tree's pin and panel) would refuse that, rightly, so it is
+        relaxed here to the window and the rows: the figures are recomputed at the new pin and must equal the records'
+        (version 5 differs from version 4 in `srf_take_up` alone, which no H7 figure reads)."""
+        from unittest import mock
+
+        def window_and_rows(pins, records):
+            for name, record in records.items():
+                for key in ("effr_series_sha256", "rows", "first_day", "last_day"):
+                    self.assertEqual(record["pins"][key], pins[key], (name, key))
+
+        with mock.patch.object(self.script, "_check_pins", window_and_rows):
+            again = self.script.build(draws=40)
         self.assertEqual(again["window"], self.record["window"])
         self.assertEqual(again["splits"], self.record["splits"])
         for name, rows in self.record["benchmarks"].items():

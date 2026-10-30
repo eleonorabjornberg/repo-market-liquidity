@@ -941,15 +941,16 @@ EFFR_ROOT = "nyfed_effr_inputs"
 
 
 def build_rows():
-    """The measurement panel's rows (version 4's columns, byte for byte) with the parent's opt-in `effr` column added.
+    """The measurement panel's rows (the current version's columns, byte for byte) with the parent's opt-in `effr` column added.
 
-    Built as `panel.build` builds version 4 from the tracked fixtures, with no network, except that the parent's EFFR snapshots
-    are read as well and `effr` is a requested column. Returns the rows and a dict of the pins: the parent's commit, the
-    version-4 digest the rows reproduce (checked against its manifest) and the digest of the `effr` series.
+    Built as `panel.build` builds the current version (5 since the pin moved to 2032de4, #200; version 4 was the version at
+    08ff67e, where the closed H7 records were made) from the tracked fixtures, with no network, except that the parent's EFFR
+    snapshots are read as well and `effr` is a requested column. Returns the rows and a dict of the pins: the parent's commit,
+    the version and digest the rows reproduce (checked against its manifest) and the digest of the `effr` series.
 
     Raises:
-        ValueError: the version-4 columns do not reproduce the manifest's digest, a column is refused, or the dates are not
-            the published panel's.
+        ValueError: the current version's columns do not reproduce the manifest's digest, a column is refused, or the dates are
+            not the published panel's.
     """
     import hashlib
     import json
@@ -977,15 +978,15 @@ def build_rows():
     if built.refusals:
         raise ValueError(f"the build refused {dict(built.refusals)}")
     observations = scheduled.with_scheduled(built.observations, decision_time=decision)
-    manifest = panel.load_manifest(4)
+    manifest = panel.load_manifest(panel.CURRENT_VERSION)
     with tempfile.TemporaryDirectory() as tmp:
         path = Path(tmp) / "v1.csv"
         panel._write(observations, manifest["columns"], path)
         digest = hashlib.sha256(path.read_bytes()).hexdigest()
     if digest != manifest["sha256"]:
-        raise ValueError(f"the version-4 columns of these rows are {digest}, not the manifest's {manifest['sha256']}")
+        raise ValueError(f"the version-{panel.CURRENT_VERSION} columns of these rows are {digest}, not the manifest's {manifest['sha256']}")
     effr = "".join(f"{row.date.isoformat()},{row.values.get('effr')}\n" for row in observations)
-    pins = {"parent_commit": panel._parent_commit(), "panel_version": 4, "panel_sha256": digest,
+    pins = {"parent_commit": panel._parent_commit(), "panel_version": panel.CURRENT_VERSION, "panel_sha256": digest,
             "effr_series_sha256": hashlib.sha256(effr.encode()).hexdigest(), "rows": len(observations),
             "first_day": observations[0].date.isoformat(), "last_day": observations[-1].date.isoformat()}
     return observations, pins

@@ -17,14 +17,14 @@ with h10_apply.real_rule() as rule:                     # the parent's Informati
     row = h10_live.attribute_onset(rows, rule, onset_date, report_date)
 ```
 
-`h10_live.attribute_onset(panel_rows, rule, onset_date, report_date, *, draws=10_000, null_draws=1_000, allow_unpinned_parent=False) -> dict`
+`h10_live.attribute_onset(panel_rows, rule, onset_date, report_date, *, draws=10_000, null_draws=1_000, allow_unpinned_parent=False, registered_digest=h10_registration.REGISTERED_DIGEST) -> dict`
 
 | | |
 |---|---|
 | **Inputs** | `panel_rows`: the parent's `DailyObservation` rows in date order (`repo_model.data.load_daily_panel`). `rule`: the parent's `InformationRule` over `spread_bps` and the five drivers, at the decision instant, 18:00 (`h10_apply.DECISION_TIME`, one line; `h10_apply.real_rule`). `onset_date`: a day the parent's onset rule flags. `report_date`: the panel day the episode is reported on. `draws` and `null_draws` are the method's values; a caller does not change them. `allow_unpinned_parent` is the explicit override of the pin check below; the row records it. |
 | **What is read** | Only what was public at the decision instant of `report_date` (`h10-method.md` section 6). The window's spread and drivers are checked with `attribution.check_window_public`. The fitting sample, the placebo windows and the selection null use only the windows already public then; rows after the last public day are cut off before any of them is built and are never read. |
 | **Output** | One JSON-able row in the columns of the development table (`results/h10/development.json`, one entry of `episodes`), plus `method_digest`, `parent_commit`, `parent_panel_sha256`, `last_day_read`, the floored placebo reading and the stamp (below). An onset that cannot be attributed (an input missing, no rise in the spread, a singular fit) is returned as `"not attributable"` with its `reason`, never dropped; in the outcome rule it stays in the denominator as a miss. |
-| **Raises** | `LookAheadError`: a day of the rows is in a locked tier of the parent's lockbox, or an input of the onset's window was not public at the report instant. `ValueError`: the onset or report date is not a day of the rows; the report is before the onset, or **more than 10 panel days after it** (plan, Q7); the day is not an onset under the parent's rule (`onset_flags`, cross-checked with `pressure.onsets`); the imported `repo_model` is not a clean checkout of `PARENT_COMMIT` and no override is passed. |
+| **Raises** | `LookAheadError`: a day of the rows is in a locked tier of the parent's lockbox, or an input of the onset's window was not public at the report instant. `ValueError`: the onset or report date is not a day of the rows; the report is before the onset, or **more than 10 panel days after it** (plan, Q7); the day is not an onset under the parent's rule (`onset_flags`, cross-checked with `pressure.onsets`); the imported `repo_model` is not a clean checkout of `PARENT_COMMIT` and no override is passed; **this code's method digest is not the registered one** (`h10_registration.REGISTERED_DIGEST`, #200; the section "Between the pin move and a new registration" below). |
 
 **The two placebo readings.** `h10-method.md` section 10, rule 3 (PR #88), requires both. `placebo` is the unfloored reading
 under the name `results/h10/development.json` uses; `placebo_floored` is the reading over the placebo windows whose spread rise
@@ -90,3 +90,19 @@ The model repo's live-record job calls `attribute_onset` at **this repository's 
 holds the parent's pin) and stores the row beside the digest the row carries. This repository keeps no log, runs no
 schedule and does not write to the model repo. The pin and the panel digest in the row are the parent's, as this repository
 reads them (`repo_liquidity.PARENT_COMMIT`, `PANEL_SHA256`).
+
+## Between the pin move and a new registration (#200)
+
+The registration in force is Eleonora's of 22 October 2026 on #23: method digest `43bf1303164c3c085b33ccf762268b721a5bddc9d7a4dcf68524c67ea33d15bb`,
+this repository at commit `7838483`, the parent at `08ff67e` (`docs/research/h10-reregistration.md`). When the pin moved to
+the post-#1312 parent (2032de4, decision instant 18:00) and H10's own instant moved with it (`h10_apply.DECISION_TIME`, her ruling of
+29 October 2026), `main` began to carry a method whose digest is not that one. The new method is registered only when she posts it on
+#23 herself (`docs/research/h10-reregistration-2.md` prepares the text).
+
+**Until then a live H10 run uses the registered code, and never `main`:** this repository at `7838483` with the parent checked out
+at `08ff67e`, which together give the registered digest. The entry point enforces it. `attribute_onset` calls
+`h10_registration.check_registered(method_digest(), registered_digest)` before it computes anything, and raises `ValueError` for a
+digest that is not `h10_registration.REGISTERED_DIGEST`. That constant is in `src/repo_liquidity/h10_registration.py`, which the
+method digest does not cover (a registered digest in a covered file could never equal itself). Her new registration updates it,
+in the pull request that follows her comment on #23, and no other change does. The live job passes nothing for `registered_digest`;
+a test of the computation passes the digest of its own tree.

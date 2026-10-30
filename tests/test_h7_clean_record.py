@@ -15,8 +15,11 @@ import unittest
 from datetime import date
 from pathlib import Path
 
-from repo_liquidity import PARENT_COMMIT, development, panel
+from repo_liquidity import development, panel
 
+#: The pin the record was made at (08ff67e, panel version 4). `PARENT_COMMIT` moved to 2032de4 in #200; a published record is never
+#: edited, so the check is against the pin the record itself names.
+RECORD_PARENT_COMMIT = "08ff67e27bc3d7e357491cf8e1da59793702b3fb"
 ROOT = Path(__file__).resolve().parents[1]
 RECORD = ROOT / "results" / "h7" / "calendar-clean.json"
 PAGE = ROOT / "docs" / "research" / "h7-calendar-clean.md"
@@ -41,7 +44,7 @@ class RecordTests(unittest.TestCase):
         self.assertEqual(set(self.record["not_run"].values()), {"not run (D dropped under #142)"})
 
     def test_it_was_made_at_this_pin_and_panel(self):
-        self.assertEqual(self.record["pins"]["parent_commit"], PARENT_COMMIT)
+        self.assertEqual(self.record["pins"]["parent_commit"], RECORD_PARENT_COMMIT)
         self.assertEqual(self.record["pins"]["panel_sha256"], panel.load_manifest(4)["sha256"])
 
     def test_it_read_no_locked_day(self):

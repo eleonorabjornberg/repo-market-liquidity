@@ -106,7 +106,7 @@ class EndToEndTests(unittest.TestCase):
     def setUpClass(cls):
         cls.tmp = tempfile.TemporaryDirectory()
         cls.path = pathlib.Path(cls.tmp.name) / "phase3_panel.csv"
-        cls.manifest = panel.build(cls.path, version=4)
+        cls.manifest = panel.build(cls.path, version=5)
         from repo_model.data import load_daily_panel
 
         cls.rows = load_daily_panel(cls.path)

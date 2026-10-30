@@ -618,10 +618,10 @@ class TrackedPanelTests(unittest.TestCase):
         from repo_liquidity import panel
 
         cls.rows, cls.pins = h.build_rows()
-        cls.manifest = panel.load_manifest(4)
+        cls.manifest = panel.load_manifest(panel.CURRENT_VERSION)
         cls.flags = h.read_flags(h.with_quarter_end_window(cls.rows), h.flag_rule(), _turn_label_or_stand_in())
 
-    def test_the_version_4_columns_are_the_manifests_bytes_with_effr_added(self):
+    def test_the_current_versions_columns_are_the_manifests_bytes_with_effr_added(self):
         self.assertEqual(self.pins["panel_sha256"], self.manifest["sha256"])
         self.assertEqual((self.pins["first_day"], self.pins["last_day"]), (self.manifest["start_date"], self.manifest["end_date"]))
         self.assertTrue(all("effr" in row.values for row in self.rows))
