@@ -9,11 +9,11 @@ The guards are consistency guards (the page cannot state a digest the code does 
 use), not leakage or availability guards. Recorded mutations (30 October 2026, CPython 3.11, the parent at 2032de4, applied in the
 working tree and reverted):
 
-* in `src/repo_liquidity/h10_apply.py`, `DECISION_TIME = time(18, 0)` changed to `DECISION_TIME = time(17, 0)`:
-  `test_the_new_digest_in_the_page_is_the_one_the_code_gives_at_the_pin` failed with `AssertionError` (the digest moved), and
-  `test_the_page_states_the_decision_instant_the_code_uses` failed with `AssertionError` ('18:00:00' != '17:00:00').
-* the same file, `REPORT_DAYS = 10` changed to `REPORT_DAYS = 11`: `test_the_new_digest_in_the_page_is_the_one_the_code_gives_at_the_pin`
-  failed with `AssertionError`.
+* in `src/repo_liquidity/h10_apply.py`, `DECISION_TIME = time(18, 0)` changed to `DECISION_TIME = time(17, 0)`: four tests failed with
+  `AssertionError`: `test_the_new_digest_in_the_page_is_the_one_the_code_gives_at_the_pin` (the digest moved),
+  `test_each_part_in_the_page_is_the_sha256_of_the_part_at_the_pin`, `test_the_paste_ready_text_carries_the_commit_the_digest_the_pin_and_the_instant`
+  and `test_the_page_states_the_decision_instant_the_code_uses` (`time(17, 0) != time(18, 0)`).
+* the same file, `REPORT_DAYS = 10` changed to `REPORT_DAYS = 11`: three tests failed with `AssertionError`: the digest, the parts and the paste-ready text.
 """
 
 import hashlib
