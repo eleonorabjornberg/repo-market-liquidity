@@ -5,7 +5,7 @@ as-of guards (`repo_model.asof`), never re-implemented here.
 """
 
 #: The parent commit this repository is pinned to (pyproject.toml).
-PARENT_COMMIT = "08ff67e27bc3d7e357491cf8e1da59793702b3fb"
+PARENT_COMMIT = "2032de4a7d7802289bc5a78dfc02599752bc7c5c"
 
 #: The parent's published panel digest at that commit (its metadata/funding_panel_manifest.json).
 PANEL_SHA256 = "4ddc3882cd6d406b11e1088f8ff6195e16dde175a0ad6818abe40dd5bdac8999"

@@ -11,8 +11,10 @@ Versions 2 and 3 also read the 2019 to 2021 repo operations through `repo_liquid
 2026 in favour of the parent's `repo_model.fed_liquidity` (`docs/decisions/data-meaning.md`). Their manifests are
 development records: they are verified at the commit and parent pin they were made from (`scripts/verify_records.py`),
 and this module no longer builds them. Version 1 is a record too since the pin moved to 08ff67e (#149): the parent's
-Desk test-trade rule changed 391 of its `srf_take_up` rows, so the same build now gives version 4
-(`docs/stages/panel-v4.md`).
+Desk test-trade rule changed 391 of its `srf_take_up` rows, so the same build then gave version 4
+(`docs/stages/panel-v4.md`). Version 4 is a record in its turn since the pin moved to 2032de4 (#200): the parent's
+afternoon test-trade rule changed 32 `srf_take_up` rows and its decision instant is 18:00, so the same build now gives
+version 5 (`docs/stages/panel-v5.md`).
 
 Before anything else the build checks that the published columns, built alone, reproduce the parent's published
 panel digest, as the parent's `scripts/scarcity_validation.py` does. Phase 3's built columns are then priced by the
@@ -45,11 +47,15 @@ MANIFEST_V3 = ROOT / "metadata" / "phase3_panel_v3_manifest.json"
 #: (`results/panel/v4_changes.json`), so version 1 no longer rebuilds at this pin and stays as published. The numbers 2
 #: and 3 were taken by the Stage 1a correction and Stage 1b, so this is version 4.
 MANIFEST_V4 = ROOT / "metadata" / "phase3_panel_v4_manifest.json"
-MANIFESTS = {1: MANIFEST, 2: MANIFEST_V2, 3: MANIFEST_V3, 4: MANIFEST_V4}
+#: Version 4's build at the pin of 2032de4 (#200; the pin moved with the parent's decision instant, 16:00 to 18:00, #1312):
+#: the same columns and dates. The parent's afternoon test-trade rule (its #938) moved 32 `srf_take_up` rows
+#: (`results/panel/v5_changes.json`), so version 4 no longer rebuilds at this pin and stays as published.
+MANIFEST_V5 = ROOT / "metadata" / "phase3_panel_v5_manifest.json"
+MANIFESTS = {1: MANIFEST, 2: MANIFEST_V2, 3: MANIFEST_V3, 4: MANIFEST_V4, 5: MANIFEST_V5}
 #: The versions kept only as records (see the module docstring).
-RECORD_VERSIONS = (1, 2, 3)
+RECORD_VERSIONS = (1, 2, 3, 4)
 #: The version the readers build at the current pin.
-CURRENT_VERSION = 4
+CURRENT_VERSION = 5
 H41_EXTRACT = ROOT / "tests" / "fixtures" / "snapshots" / "h41" / "h41_treasury_first_print.csv"
 H41_MBS_EXTRACT = ROOT / "tests" / "fixtures" / "snapshots" / "h41" / "h41_mbs_first_print.csv"
 PARENT_RAW_ROOTS = ("funding_inputs", "on_rrp_inputs", "h8_inputs", "srf_inputs")
@@ -90,9 +96,9 @@ def _parent_rows(workdir: Path, roots=PARENT_RAW_ROOTS):
 def build(output: Path, version: int) -> Dict:
     """Build the panel to `output` (CSV) and return its manifest.
 
-    Version 4 is Stage 1a's panel (version 1) built at the pin of 08ff67e. Versions 1 to 3 are records only
-    (`RECORD_VERSIONS`): version 1 is verified at the commit and parent pin it was made from, and a rebuild at this
-    pin is version 4, not version 1.
+    Version 5 is Stage 1a's panel (version 1) built at the pin of 2032de4. Versions 1 to 4 are records only
+    (`RECORD_VERSIONS`): each is verified at the commit and parent pin it was made from, and a rebuild at this pin is
+    version 5, not an earlier one.
 
     Raises:
         ValueError: for a version that is not built here, if the published columns do not reproduce the parent's
@@ -163,6 +169,7 @@ def build(output: Path, version: int) -> Dict:
         "sha256": digest,
         "version": version,
         "v1_sha256": load_manifest(1)["sha256"],
+        "v4_sha256": load_manifest(4)["sha256"],
     }
     return manifest
 

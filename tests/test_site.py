@@ -25,6 +25,8 @@ import tempfile
 import unittest
 from decimal import Decimal
 
+from repo_liquidity import h10_registration
+
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 
 
@@ -195,7 +197,8 @@ class RegistrationTests(unittest.TestCase):
     def test_the_registered_digest_in_the_record_is_the_code_s(self):
         registration = emit_site.registration()
         self.assertEqual(registration["digest"], registration["code_digest"])
-        self.assertEqual(registration["parent"], emit_site.repo_liquidity.PARENT_COMMIT)
+        self.assertEqual(registration["code_digest"], h10_registration.REGISTERED_DIGEST)
+        self.assertEqual(registration["parent"], h10_registration.REGISTERED_PARENT)
 
     def test_a_record_digest_the_code_does_not_reproduce_is_refused(self):
         with self.assertRaises(ValueError):

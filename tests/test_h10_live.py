@@ -22,6 +22,8 @@ from repo_model.splits import LookAheadError
 from repo_liquidity import PARENT_COMMIT, attribution, h10_apply, h10_live
 from repo_liquidity.attribution import DRIVERS_WITH_ON_RRP, SPREAD, WINDOW_DAYS
 
+from lockbox_helper import reclosed_near_blind
+
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 RECORD = ROOT / "docs" / "decisions" / "h10-method.md"
 BASE = datetime(2026, 1, 1)
@@ -63,7 +65,9 @@ def stub_rule(lag_days=2):
     )
 
 
-FAST = dict(draws=20, null_draws=20)
+#: `registered_digest` is the digest of this tree: these tests exercise the computation, not the registration guard (#200),
+#: which `tests/test_h10_registration.py` tests, so that a refusal here is never the guard's.
+FAST = dict(draws=20, null_draws=20, registered_digest=h10_live.method_digest())
 
 
 def without_stamp(row):
@@ -81,7 +85,7 @@ class EntryPointTests(unittest.TestCase):
     def attribute(self, rows=None, report_offset=10, **kwargs):
         rows = self.rows if rows is None else rows
         report = rows[100 + report_offset].date
-        return h10_live.attribute_onset(rows, self.rule, self.onset, report, **{**FAST, **kwargs})
+        return h10_live.attribute_onset(rows[: 100 + report_offset + 1], self.rule, self.onset, report, **{**FAST, **kwargs})
 
     def test_one_onset_gives_a_json_row_in_the_published_tables_columns(self):
         row = self.attribute()
@@ -120,15 +124,15 @@ class EntryPointTests(unittest.TestCase):
 
     def test_a_report_before_the_onset_or_off_the_panel_is_refused(self):
         with self.assertRaises(ValueError):
-            h10_live.attribute_onset(self.rows, self.rule, self.onset, self.rows[99].date, **FAST)
+            h10_live.attribute_onset(self.rows[:100], self.rule, self.onset, self.rows[99].date, **FAST)
         with self.assertRaises(ValueError):
             h10_live.attribute_onset(self.rows, self.rule, self.onset, date(2031, 1, 1), **FAST)
 
     def test_a_day_that_is_not_an_onset_is_refused(self):
         with self.assertRaises(ValueError):
-            h10_live.attribute_onset(self.rows, self.rule, self.rows[101].date, self.rows[110].date, **FAST)
+            h10_live.attribute_onset(self.rows[:111], self.rule, self.rows[101].date, self.rows[110].date, **FAST)
         with self.assertRaises(ValueError):
-            h10_live.attribute_onset(self.rows, self.rule, date(2020, 1, 1), self.rows[110].date, **FAST)
+            h10_live.attribute_onset(self.rows[:111], self.rule, date(2020, 1, 1), self.rows[110].date, **FAST)
 
     def test_a_window_not_public_at_the_report_instant_is_leakage(self):
         """Leakage guard: the onset's own window must be public at the report instant (`h10-method.md` section 6).
@@ -155,11 +159,12 @@ class EntryPointTests(unittest.TestCase):
             altered[t] = SimpleNamespace(date=altered[t].date, spread_bps=altered[t].spread_bps + 3.0, values=values)
         self.assertEqual(without_stamp(self.attribute(altered)), without_stamp(self.attribute()))
 
-    def test_rows_after_the_report_day_are_never_read(self):
-        altered = list(self.rows)
-        for t in range(111, 300):
+    def test_the_rows_handed_in_end_at_the_report_day(self):
+        """The rows the live job hands in end on the report day: rows beyond it are refused, not trimmed (finding on 2500ecd)."""
+        altered = list(self.rows[:111])
+        for t in (109, 110):
             altered[t] = SimpleNamespace(date=altered[t].date, spread_bps=99.0, values=dict(altered[t].values, tga=1e6))
-        self.assertEqual(without_stamp(self.attribute(altered)), without_stamp(self.attribute()))
+        self.assertEqual(without_stamp(self.attribute(altered)), without_stamp(self.attribute(self.rows[:111])))
 
     def test_a_publicly_visible_row_does_move_the_result(self):
         altered = list(self.rows)
@@ -167,19 +172,54 @@ class EntryPointTests(unittest.TestCase):
         altered[60] = SimpleNamespace(date=altered[60].date, spread_bps=altered[60].spread_bps + 4.0, values=values)
         self.assertNotEqual(self.attribute(altered)["explained_share"], self.attribute()["explained_share"])
 
-    def test_a_locked_day_in_the_rows_is_leakage(self):
-        """Leakage guard: the days handed in are checked against the parent's lockbox, the unread ones after the report too.
+    def test_a_row_after_the_report_instant_is_leakage(self):
+        """Leakage guard: no day after the report instant is read; a row dated after `report_date` is refused before any fit,
+        placebo or null is built (ruling on 2500ecd, replacing the lockbox refusal).
 
-        Recorded mutation (directive #87): in `h10_live.attribute_onset`, the call `attribution.check_development(dates)`
-        replaced by `pass`. This test then fails with AssertionError: LookAheadError not raised.
+        Recorded mutation: in `h10_live.check_no_row_after_report`, `if late:` changed to `if False:`. This test then fails
+        with AssertionError: LookAheadError not raised (the late rows are cut off silently).
         """
-        rows = make_rows(start=date(2026, 9, 4) - timedelta(days=200))
-        self.assertEqual(rows[199].date, date(2026, 9, 3))
+        rows = make_rows(start=date(2026, 9, 4) - timedelta(days=50))
+        with mock.patch.object(attribution, "attribute", side_effect=AssertionError("fitted")), \
+                mock.patch.object(attribution, "selection_null", side_effect=AssertionError("null built")):
+            with self.assertRaises(LookAheadError) as caught:
+                h10_live.attribute_onset(rows[:112], self.rule, rows[100].date, rows[110].date, **FAST)
+        self.assertIn(rows[111].date.isoformat(), str(caught.exception))
         with self.assertRaises(LookAheadError):
-            h10_live.attribute_onset(rows, self.rule, rows[100].date, rows[110].date, **FAST)
+            h10_live.attribute_onset(self.rows, self.rule, self.onset, self.rows[110].date, **FAST)
+
+    def test_a_live_attribution_reaching_into_the_blind_tier_succeeds(self):
+        """The blind tier (from 2026-09-04) is not refused (Eleonora, 30 October 2026, repo-market-model#1324, option 2): a
+        locked tier that no comparison scores does not refuse the live path. The report day is in it."""
+        rows = make_rows(start=date(2026, 9, 4) - timedelta(days=50))
+        self.assertLess(rows[49].date, date(2026, 9, 4))
+        self.assertGreaterEqual(rows[50].date, date(2026, 9, 4))
+        row = h10_live.attribute_onset(rows[:111], self.rule, rows[100].date, rows[110].date, **FAST)
+        self.assertEqual(row["status"], "attributed")
+        self.assertGreaterEqual(date.fromisoformat(row["report_day"]), date(2026, 9, 4))
+
+    def test_a_day_in_a_tier_that_a_comparison_scores_is_refused(self):
+        """Leakage guard: a locked tier the live path may not read stays refused through `lockbox.require_unlocked`. Today no
+        locked tier is scored by a comparison (the near-blind tier is opened, #151; the blind tier is read, by ruling), so the
+        declaration is patched to lock the near-blind tier again, and the same rows succeed under the tracked declaration.
+
+        Recorded mutation: in `h10_live.check_scored_tiers`, the call `lockbox.require_unlocked(scored, ...)` replaced by `pass`.
+        This test then fails with AssertionError: LookAheadError not raised.
+        """
+        rows = make_rows(start=date(2026, 1, 1))[:111]
+        self.assertEqual(h10_live.attribute_onset(rows, self.rule, rows[100].date, rows[110].date, **FAST)["status"], "attributed")
+        with reclosed_near_blind():
+            with self.assertRaises(LookAheadError) as caught:
+                h10_live.attribute_onset(rows, self.rule, rows[100].date, rows[110].date, **FAST)
+        self.assertIn("near_blind", str(caught.exception))
+
+    def test_the_development_path_still_refuses_a_locked_day(self):
+        """`h10_apply` keeps `check_development` (development ends on 2025-12-31)."""
+        with self.assertRaises(LookAheadError):
+            attribution.check_development([date(2026, 9, 4)])
 
     def test_a_not_attributable_onset_is_reported_with_its_reason_never_dropped(self):
-        flat = [SimpleNamespace(date=r.date, spread_bps=r.spread_bps, values=r.values) for r in self.rows]
+        flat = [SimpleNamespace(date=r.date, spread_bps=r.spread_bps, values=r.values) for r in self.rows[:111]]
         for t in range(100, 105):
             flat[t] = SimpleNamespace(date=flat[t].date, spread_bps=flat[t].spread_bps, values=dict(flat[t].values, tga=None))
         row = self.attribute(flat)
@@ -195,7 +235,7 @@ class FlooredPlaceboTests(unittest.TestCase):
     def setUpClass(cls):
         cls.rows = make_rows()
         cls.rule = stub_rule()
-        cls.row = h10_live.attribute_onset(cls.rows, cls.rule, cls.rows[100].date, cls.rows[110].date, **FAST)
+        cls.row = h10_live.attribute_onset(cls.rows[:111], cls.rule, cls.rows[100].date, cls.rows[110].date, **FAST)
 
     def test_the_row_carries_both_readings_under_the_published_tables_names(self):
         """The unfloored reading keeps `placebo`, the name of `results/h10/development.json`; the floored one is
@@ -237,11 +277,11 @@ class StampTests(unittest.TestCase):
         cls.rule = stub_rule()
 
     def attribute(self, rows=None, **kwargs):
-        rows = self.rows if rows is None else rows
+        rows = self.rows[:111] if rows is None else rows
         return h10_live.attribute_onset(rows, self.rule, rows[100].date, rows[110].date, **{**FAST, **kwargs})
 
     def test_the_row_carries_a_sha256_of_the_rows_it_was_given(self):
-        """The rows given are hashed whole (also the days after the report, which are never read): a caller that hands a
+        """The rows given are hashed whole (also the days between the last public day and the report, which are never read): a caller that hands a
         different panel gets a different stamp.
 
         Recorded mutation (directive #121): in `h10_live.attribute_onset`, `rows_sha256(rows)` replaced by
@@ -249,10 +289,10 @@ class StampTests(unittest.TestCase):
         given).
         """
         row = self.attribute()
-        self.assertEqual(row["panel_rows_sha256"], h10_live.rows_sha256(self.rows))
+        self.assertEqual(row["panel_rows_sha256"], h10_live.rows_sha256(self.rows[:111]))
         self.assertRegex(row["panel_rows_sha256"], r"^[0-9a-f]{64}$")
-        altered = list(self.rows)
-        altered[250] = SimpleNamespace(date=altered[250].date, spread_bps=altered[250].spread_bps + 1.0, values=altered[250].values)
+        altered = list(self.rows[:111])
+        altered[110] = SimpleNamespace(date=altered[110].date, spread_bps=altered[110].spread_bps + 1.0, values=altered[110].values)
         self.assertNotEqual(self.attribute(altered)["panel_rows_sha256"], row["panel_rows_sha256"])
         self.assertEqual(self.attribute()["panel_rows_sha256"], row["panel_rows_sha256"])
 
@@ -420,7 +460,7 @@ class MethodDigestTests(unittest.TestCase):
         self.assertNotEqual(shown[1], PUBLISHED_IN_78)
 
     def test_the_row_carries_the_digest_and_the_parent_pin(self):
-        row = h10_live.attribute_onset(make_rows(), stub_rule(), date(2025, 1, 1) + timedelta(days=100),
+        row = h10_live.attribute_onset(make_rows()[:111], stub_rule(), date(2025, 1, 1) + timedelta(days=100),
                                        date(2025, 1, 1) + timedelta(days=110), **FAST)
         self.assertEqual(row["method_digest"], h10_live.method_digest())
 
@@ -436,28 +476,30 @@ class PanelTests(unittest.TestCase):
     def test_a_development_onset_is_attributed_at_its_report_day_under_the_real_rule(self):
         start = self.onsets[3]
         with h10_apply.real_rule() as rule:
-            row = h10_live.attribute_onset(self.rows, rule, self.rows[start].date, self.rows[start + 10].date, **FAST)
+            row = h10_live.attribute_onset(self.rows[: start + 11], rule, self.rows[start].date, self.rows[start + 10].date, **FAST)
         self.assertIn(row["status"], ("attributed", "not attributable"))
         self.assertEqual(row["onset"], self.rows[start].date.isoformat())
         self.assertEqual(row["regime"] in ("depleted", "abundant"), True)
 
-    def test_the_published_development_rows_are_called_the_published_panel(self):
+    def test_the_rows_are_called_the_published_panel_only_when_they_are_the_whole_of_it(self):
+        """The rows handed in end on the report day (the look-ahead guard), so they are the whole published panel only when the
+        report day is its last day. The stamp compares the rows with the whole panel; it is never a prefix match."""
         start = self.onsets[3]
+        rows = self.rows[: start + 11]
         with h10_apply.real_rule() as rule:
-            row = h10_live.attribute_onset(self.rows, rule, self.rows[start].date, self.rows[start + 10].date, **FAST)
-        self.assertIs(row["rows_are_published_panel"], True)
-        self.assertEqual(row["panel_rows_sha256"], h10_live.rows_sha256(self.rows))
-        self.assertEqual(row["panel_rows_sha256"], h10_live.published_panel_rows_sha256())
-        shorter = self.rows[:-1]
-        with h10_apply.real_rule() as rule:
-            row = h10_live.attribute_onset(shorter, rule, shorter[start].date, shorter[start + 10].date, **FAST)
-        self.assertIs(row["rows_are_published_panel"], False)
+            row = h10_live.attribute_onset(rows, rule, rows[start].date, rows[start + 10].date, **FAST)
+            self.assertIs(row["rows_are_published_panel"], False)
+            self.assertEqual(row["panel_rows_sha256"], h10_live.rows_sha256(rows))
+            with mock.patch.object(h10_live, "published_panel_rows_sha256", return_value=h10_live.rows_sha256(rows)):
+                row = h10_live.attribute_onset(rows, rule, rows[start].date, rows[start + 10].date, **FAST)
+            self.assertIs(row["rows_are_published_panel"], True)
+        self.assertEqual(h10_live.published_panel_rows_sha256(), h10_live.rows_sha256(self.rows))
 
     def test_a_report_the_real_rule_has_not_yet_seen_the_window_in_is_leakage(self):
         start = self.onsets[3]
         with h10_apply.real_rule() as rule:
             with self.assertRaises(LookAheadError):
-                h10_live.attribute_onset(self.rows, rule, self.rows[start].date, self.rows[start + 1].date, **FAST)
+                h10_live.attribute_onset(self.rows[: start + 2], rule, self.rows[start].date, self.rows[start + 1].date, **FAST)
 
 
 if __name__ == "__main__":

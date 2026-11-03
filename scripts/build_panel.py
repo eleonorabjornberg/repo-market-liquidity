@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """Build the Phase 3 measurement panel and write its manifest.
 
-    PYTHONPATH=src python3 scripts/build_panel.py [--version 4] [--output data/processed/phase3_panel.csv] [--check]
+    PYTHONPATH=src python3 scripts/build_panel.py [--version 5] [--output data/processed/phase3_panel.csv] [--check]
 
 Builds from tracked fixtures alone (the parent's at the pin, and this repository's), with no network. Writes the
 panel CSV (not tracked) and the version's manifest under `metadata/` (tracked, generated, never edited by hand).
-`--check` writes nothing and exits 1 if the build differs from the tracked manifest. Version 4, the default, is
-Stage 1a's panel built at the current pin (`metadata/phase3_panel_v4_manifest.json`); versions 1 to 3 are records that
+`--check` writes nothing and exits 1 if the build differs from the tracked manifest. Version 5, the default, is
+Stage 1a's panel built at the current pin (`metadata/phase3_panel_v5_manifest.json`); versions 1 to 4 are records that
 `panel.build` refuses (`scripts/verify_records.py` checks them at their own pin). Nothing is scored.
 """
 

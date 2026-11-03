@@ -34,14 +34,18 @@ SENSITIVITY_RECORD = ROOT / "results" / "h10" / "sensitivity_onrrp_interaction.j
 REGIMES_RECORD = ROOT / "results" / "h10" / "sensitivity_onrrp_regimes.json"
 PLACEBO_FLOOR_RECORD = ROOT / "results" / "h10" / "placebo_floor_2bp.json"
 STAGE_DOC = ROOT / "docs" / "stages" / "h10-step2.md"
-#: The panel the application reads: the published columns plus the built ON RRP take-up, to the development end. Version 4
-#: since the pin moved to 08ff67e (#149; Eleonora, 21 October 2026): version 1 is a record that no longer rebuilds, and the
-#: published H10 records name it (`panel.version` in each), so a reader that checks one against its panel passes that version.
-PANEL_VERSION = 4
+#: The panel the application reads: the published columns plus the built ON RRP take-up, to the development end. Version 5
+#: since the pin moved to 2032de4 (#200; Eleonora, 29 October 2026): versions 1 and 4 are records that no longer rebuild, and
+#: the published H10 records name the one they were made on (`panel.version` in each), so a reader that checks one against
+#: its panel passes that version.
+PANEL_VERSION = 5
 #: An episode is reported within 10 business days of its onset (the plan, Q7; the record, section 3). The report instant is
-#: that panel day's decision instant, 16:00, and the window's inputs must be public by then.
+#: that panel day's decision instant, 18:00, and the window's inputs must be public by then.
 REPORT_DAYS = 10
-DECISION_TIME = time(16, 0)
+#: The decision instant, New York wall clock: 18:00 since the parent moved its own from 16:00 (repo-market-model#1312), and
+#: H10's moved with it (Eleonora, 29 October 2026, her ruling (a) on #200). The one line that fixes it; the other readings below
+#: follow this constant. The development records were made at 16:00 and stand as records of that instant.
+DECISION_TIME = time(18, 0)
 #: The interval on a count of episodes: Wilson's score interval at the method's 90% level, treating the episodes as
 #: independent (they cluster at quarter-ends, so it is optimistic; stated in the stage document).
 INTERVAL_LEVEL = attribution.LEVEL
@@ -201,7 +205,7 @@ def load_development(version: int = PANEL_VERSION):
 @contextmanager
 def real_rule():
     """The parent's as-of rule over the spread and the five drivers, under Phase 3's declaration (ON RRP take-up from the
-    New York Fed's operation results), at the 16:00 decision instant."""
+    New York Fed's operation results), at the decision instant (`DECISION_TIME`)."""
     from repo_model.asof import InformationRule
 
     with declaration.phase3_declaration():
