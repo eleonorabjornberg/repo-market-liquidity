@@ -82,11 +82,11 @@ PARENT_URL = "https://github.com/eleonorabjornberg/repo-market-model"
 #: Her three questions on the first version of the page (PR #173) and the defaults they carry until she rules (#177, item 4).
 DEFAULTS_PR_URL = REPO_URL + "/pull/173"
 
-#: Eleonora's registration of H10 at the new pin: her own comment on #23 (not an app post), naming this repository's
+#: Eleonora's registration of H10 of 3 November 2026 (the second; the first, of 22 October, was at 7838483): her own comment on #23 (not an app post), naming this repository's
 #: commit. Pointers only; the digest and the pin come from the code and the re-registration page.
-REGISTRATION_COMMIT = "783848316995d4f2d425abea0c6bd0be3e157c26"
-REGISTRATION_COMMENT = "https://github.com/eleonorabjornberg/repo-market-liquidity/issues/23#issuecomment-6353434164"
-RE_REGISTRATION_PAGE = "docs/research/h10-reregistration.md"
+REGISTRATION_COMMIT = "ba1860cb096b3c7f92a6975e6908be7a480e459c"
+REGISTRATION_COMMENT = "https://github.com/eleonorabjornberg/repo-market-liquidity/issues/23#issuecomment-6618862828"
+RE_REGISTRATION_PAGE = "docs/research/h10-reregistration-2.md"
 
 #: The five-lens review's Lens A, row A5 (model repo, PR #958), fixed to the commit that added it. It is after this
 #: repository's parent pin, so it is cited by link and not read through the pin. A reviewer's reading, not a decision.
@@ -521,7 +521,7 @@ def registration(record_text=None):
     text = registration_record_text() if record_text is None else record_text
     digest = re.search(r"\| method_digest\(\) at the new pin \| `([0-9a-f]{64})` \|", text)
     record_sha = re.search(r"\| record_sha256\(\) \| `([0-9a-f]{64})` \|", text)
-    parent = re.search(r"\| Parent commit \| `[0-9a-f]{40}` \| `([0-9a-f]{40})` \|", text)
+    parent = re.search(r"\| Parent commit \| `[0-9a-f]{40}` \| `([0-9a-f]{40})`[^|]*\|", text)
     if not (digest and record_sha and parent):
         raise ValueError("%s no longer states the digest, the method record and the parent pin" % RE_REGISTRATION_PAGE)
     found = {"digest": digest.group(1), "code_digest": h10_registration.REGISTERED_DIGEST, "record_sha256": record_sha.group(1),
@@ -700,8 +700,8 @@ def section_h10(records, reg):
         % (link(REGISTRATION_COMMENT, "Eleonora, on #23"),
            link("%s/commit/%s" % (REPO_URL, reg["commit"]), reg["commit"][:7]), code(reg["digest"]),
            code("docs/decisions/h10-method.md"), code(short(reg["record_sha256"])), code(reg["parent"][:7]),
-           esc(records.figure("metadata/phase3_panel_v4_manifest.json", "version")),
-           code(records.figure("metadata/phase3_panel_v4_manifest.json", "sha256"))))
+           esc(records.figure("metadata/phase3_panel_v5_manifest.json", "version")),
+           code(records.figure("metadata/phase3_panel_v5_manifest.json", "sha256"))))
     return out
 
 
