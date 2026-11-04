@@ -160,7 +160,7 @@ but the registration in force is the one of 22 October. **A live H10 run in that
 `08ff67e`, which together give digest `43bf1303…15bb`. It does not use `main`.
 
 This is enforced, not only stated: `h10_live.attribute_onset` calls `h10_registration.check_registered(method_digest(), registered_digest)` before it reads
-anything, and raises `ValueError` when this code's digest is not `h10_registration.REGISTERED_DIGEST` (`43bf1303…15bb` today). On `main` it therefore refuses until
+anything, and raises `ValueError` when this code's digest is not `h10_registration.REGISTERED_DIGEST` (`43bf1303…15bb` when this page was written; `54b5f151…8770` since her registration of 3 November 2026 and #202). On `main` it therefore refuses until
 her registration updates that constant in the pull request that follows it (`src/repo_liquidity/h10_registration.py`; no other change does). The live
 job passes nothing for `registered_digest`. `tests/test_h10_registration.py` tests the refusal, with a recorded mutation. **The 22 October method refuses every live day:** `7838483` calls `check_development` on the days it reads, and every live day is in the blind tier, so no live row can be produced in the gap, by that code or by a mistake. A job that calls this repository at a commit it pins can keep calling `7838483` (panel version 4, the parent at `08ff67e`), or pause; it cannot produce an H10 row from `main` by accident.
 

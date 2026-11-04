@@ -19,13 +19,14 @@ import pathlib
 import re
 import unittest
 
-from repo_liquidity import h10_registration
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 RECORD = ROOT / "docs" / "research" / "h10-reregistration.md"
 OLD_PIN = "8fd2cf8c72e7d5c6e81c509651b684b690054a6f"
 #: The pin and the Phase 3 panel the page was written at (the registration of 22 October 2026).
-PAGE_PIN = h10_registration.REGISTERED_PARENT
+PAGE_PIN = "08ff67e27bc3d7e357491cf8e1da59793702b3fb"
+#: The digest registered on 22 October 2026, which the page records. It was `h10_registration.REGISTERED_DIGEST` until #202 set the 3 November one.
+REGISTERED_DIGEST_22_OCT = "43bf1303164c3c085b33ccf762268b721a5bddc9d7a4dcf68524c67ea33d15bb"
 PAGE_PANEL_SHA256 = "4ddc3882cd6d406b11e1088f8ff6195e16dde175a0ad6818abe40dd5bdac8999"
 REGISTERED_RECORD_SHA256 = "642fe092ca6d553fb5e12e263162869b096fa19e6cb7bb46c79c43cbc0fb67a9"
 OLD_DIGEST = "cc7bab6ea31ef51c839b17b237a8b92bd12afa60c191fe91f15d33286a1249b1"
@@ -52,11 +53,11 @@ def parts_table() -> dict:
 
 class RecordStatesTheDigestTests(unittest.TestCase):
     def test_the_digest_in_the_record_is_the_registered_one(self):
-        self.assertEqual(stated("method_digest() at the new pin"), h10_registration.REGISTERED_DIGEST)
+        self.assertEqual(stated("method_digest() at the new pin"), REGISTERED_DIGEST_22_OCT)
 
     def test_the_old_digest_in_the_record_is_the_one_registered_on_19_october_and_differs(self):
         self.assertEqual(stated("method_digest() at 8fd2cf8, registered on #23"), OLD_DIGEST)
-        self.assertNotEqual(OLD_DIGEST, h10_registration.REGISTERED_DIGEST)
+        self.assertNotEqual(OLD_DIGEST, REGISTERED_DIGEST_22_OCT)
 
     def test_the_record_names_the_pin_and_the_panel_digest_it_was_written_at(self):
         text = RECORD.read_text(encoding="utf-8")
@@ -75,7 +76,7 @@ class RecordStatesTheDigestTests(unittest.TestCase):
     def test_the_paste_ready_text_carries_the_digest_and_the_pin(self):
         text = RECORD.read_text(encoding="utf-8")
         paste = text.split("## The registration text", 1)[1]
-        for needle in (h10_registration.REGISTERED_DIGEST, PAGE_PIN, PAGE_PANEL_SHA256, REGISTERED_RECORD_SHA256, "new declaration"):
+        for needle in (REGISTERED_DIGEST_22_OCT, PAGE_PIN, PAGE_PANEL_SHA256, REGISTERED_RECORD_SHA256, "new declaration"):
             self.assertIn(needle, paste)
 
 

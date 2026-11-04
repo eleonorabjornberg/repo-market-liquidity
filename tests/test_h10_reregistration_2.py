@@ -3,7 +3,7 @@
 `docs/research/h10-reregistration-2.md` states the method digest at the tree this module runs in, the digest registered on #23
 on 22 October 2026 (`43bf1303...15bb`), the digest's parts and the sha256 of each part at both, and the decision instant. This
 module checks the page against the tree. It registers nothing: the registration is Eleonora's attested act on #23, and until she
-makes it the registration of 22 October stands (`repo_liquidity.h10_registration`).
+made it, and #202 set `repo_liquidity.h10_registration` to the digest this page states.
 
 The guards are consistency guards (the page cannot state a digest the code does not give, nor an instant the code does not
 use), not leakage or availability guards. Recorded mutations (30 October 2026, CPython 3.11, the parent at 2032de4, applied in the
@@ -57,7 +57,7 @@ class PageStatesTheDigestTests(unittest.TestCase):
 
     def test_the_registered_digest_in_the_page_is_the_one_h10_registration_holds_and_differs(self):
         self.assertEqual(stated("method_digest() as registered on #23, 22 October 2026"), OLD_DIGEST)
-        self.assertEqual(OLD_DIGEST, h10_registration.REGISTERED_DIGEST)
+        self.assertEqual(stated("method_digest() at the new pin"), h10_registration.REGISTERED_DIGEST)  # since #202
         self.assertNotEqual(OLD_DIGEST, h10_live.method_digest())
 
     def test_the_page_names_both_pins_and_the_panel_digests(self):
