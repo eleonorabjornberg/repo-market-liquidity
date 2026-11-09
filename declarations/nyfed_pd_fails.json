@@ -1,0 +1,37 @@
+{
+  "nyfed_pd_fails": {
+    "access": "public",
+    "availability_provenance": {
+      "note": "Recorded 9 November 2026 for #204 (H10 with new drivers, step 1). The availability is copied from the parent's nyfed_pd_financing declaration (repo-market-model metadata/sources_measurement.json at the pin 2032de4, #630), which reads the same New York Fed Primary Dealer Statistics export and declares it for the same two series; this entry narrows it to the fails and renames the source so that the parent's financing entry, which is off in every published declaration, is not duplicated here. repo_liquidity.h10_drivers_2.check_declared_fails_lag compares this lag with the published schedule. The export keeps no vintages, so a later restatement cannot be seen; the six-business-day lag is the published schedule, not a measurement. The parent's note records that none of the fails weeks is withheld ('*'). No snapshot of these two series is tracked or built here: this step declares the input and its guards, and the data are read in step 2 (a Phase 3 panel version 6, named in docs/decisions/h10-method-2.md).",
+      "publication": "New York Fed Primary Dealer Statistics release schedule: the figures for a Wednesday as-of date are published on the Thursday of the following week, six business days later; 16:30 ET is the conservative instant taken within that day."
+    },
+    "coverage": [
+      "primary dealer fails to deliver and to receive US Treasuries (excluding TIPS), cumulative over the week to the Wednesday as-of date"
+    ],
+    "field_frequencies": {
+      "PDFTD-UST": "weekly",
+      "PDFTR-UST": "weekly"
+    },
+    "fields": [
+      "PDFTD-UST",
+      "PDFTR-UST"
+    ],
+    "frequency": "weekly",
+    "identities": [],
+    "limitation": "Collateral scarcity, not cash scarcity: data-meaning row 8 keeps it on its own axis, apart from cash scarcity, and H10 labels it so (docs/decisions/h10-method-2.md). Values are USD millions in the export and USD billions in the columns pd_fails_deliver_ust and pd_fails_receive_ust, as the parent's new_sources adapter names them. Fails are cumulative over the week to the as-of date, so a weekly level, not a daily one. They are the 'UST' total lines, Treasuries excluding TIPS; the export's own series names are the only definition used. The Primary Dealer Statistics were reported on the FR 2004 form; data-meaning row 8 cites the FR 2004 fails. Phase 3 only; not in the parent's published declaration.",
+    "provider": "Federal Reserve Bank of New York",
+    "release_lag": {
+      "available_time": "16:30",
+      "basis": "ref_date",
+      "days": 6,
+      "note": "Copied from the parent's nyfed_pd_financing.release_lag (and so from nyfed_fr2004's), #630. Six business days from a Wednesday as-of date is the Thursday of the following week, 16:30 New York time, on the New York Fed's published Primary Dealer Statistics release schedule; the lag rests on that schedule and not on a measurement of the snapshot. Business days are panel rows, as for every business-day source. worst_case_calendar_days is the parent's 12 (the widest span of its market-holiday table, #361).",
+      "timezone": "America/New_York",
+      "unit": "business_days",
+      "worst_case_calendar_days": 12
+    },
+    "reviewed_note": "Structural-zero semantics are not applicable to a weekly count of fails; the empty declaration is not a finding.",
+    "structural_zeros": [],
+    "structural_zeros_reviewed": false,
+    "url": "https://www.newyorkfed.org/markets/counterparties/primary-dealers-statistics"
+  }
+}

@@ -62,6 +62,11 @@ def _fields():
         # #132: the NY Fed's reserve demand elasticity, an external check on H7m goalposts 1 and 3 (`repo_liquidity.rde`),
         # read through `snapshots/rde/`. Not built columns of any panel.
         **{field: (("nyfed_rde", field),) for field in _rde_fields()},
+        # #204: the primary dealers' Treasury fails, weekly, read through `declarations/nyfed_pd_fails.json` (the lag is
+        # the parent's `nyfed_pd_financing`). A driver of H10's second declaration (`docs/decisions/h10-method-2.md`)
+        # only; not built columns of any panel.
+        "pd_fails_deliver_ust": (("nyfed_pd_fails", "PDFTD-UST"),),
+        "pd_fails_receive_ust": (("nyfed_pd_fails", "PDFTR-UST"),),
         "temp_repo_take_up": (("nyfed_temp_repo", "temp_repo_take_up"),),
         "temp_repo_term_take_up": (("nyfed_temp_repo", "temp_repo_term_take_up"),),
         "temp_repo_term_outstanding": (("nyfed_temp_repo", "temp_repo_term_outstanding"),),
