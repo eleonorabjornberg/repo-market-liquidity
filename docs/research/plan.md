@@ -320,6 +320,16 @@ reported, never a forecast claim.
 
 ---
 
+## HX (provisional label). A dispersion- or volume-based liquidity measure (draft)
+
+**Draft for Eleonora's review (#205); in force only once she merges it.** Her ruling of 9 November 2026: judged under
+`docs/decisions/measurement-protocol.md` v1 with no protocol change; a provisional name; dispersion and volume both inputs, one
+primary. **Step 1 only:** the hypothesis, its inputs and its prior-work check, in
+[`dispersion-volume-hypothesis.md`](dispersion-volume-hypothesis.md). Nothing is scored. The label, and the tag it takes in the
+research log, are hers to set.
+
+---
+
 ## The parent's exit criterion
 
 The parent's Phase 3 exit criterion is "stable posterior intervals for aggregate effective liquidity, with a clear
