@@ -159,8 +159,9 @@ class ReportWindowTests(unittest.TestCase):
 
     def test_every_new_input_is_public_by_this_declarations_report_day(self):
         """Q3: the window check at `report_index_2`. Recorded mutation (10 November 2026): in `h10_drivers_2`,
-        `REPORT_DAYS_2 = 11` changed to `10`. This test then fails with LookAheadError, raised by `check_window_public`
-        for the fails window at the report day, and the registered-constant test fails with AssertionError."""
+        `REPORT_DAYS_2 = 11` changed to `10`. This test then fails with AssertionError (`50 != 51`: the report day is a day
+        too early), and `RegisteredMethodUntouchedTests` and the real-panel summary fail with AssertionError too; with
+        the report day left at 11 and the fails window checked at 10 days, `check_window_public` raises LookAheadError."""
         self.assertEqual(d2.report_index_2(40, len(self.dates)), 40 + 11)
         for name in d2.NEW_DRIVERS:
             with self.subTest(name):
@@ -226,7 +227,8 @@ class FacilityEventTests(unittest.TestCase):
     def test_the_event_is_the_standing_facility_at_one_billion_or_a_material_repo_operation(self):
         """Recorded mutation (10 November 2026): in `h10_drivers_2.facility_event`, `srf_take_up >= SRF_MATERIAL_BN`
         changed to `srf_take_up > SRF_MATERIAL_BN`. This test then fails with AssertionError: $1.0bn is not an event.
-        A second mutation, dropping `or fed_repo_material_use`, fails the 2019-21 rows with AssertionError."""
+        A second mutation, `or (` changed to `and (` in the same function, fails with AssertionError
+        (`0.0 != 1.0`): a term repo operation alone is not an event."""
         self.assertEqual(d2.SRF_MATERIAL_BN, 1.0)
         self.assertEqual(d2.facility_event(1.0, 0.0), 1.0)      # exactly $1bn at the standing facility
         self.assertEqual(d2.facility_event(0.99, 0.0), 0.0)
@@ -280,8 +282,8 @@ class FacilityLagGuardTests(unittest.TestCase):
         conservative reading (no publication time is stated).
 
         Recorded mutation (10 November 2026): in `metadata/sources_phase3.json`, `nyfed_temp_repo.release_lag.days`
-        changed from 1 to 0. This test then fails with LookAheadError: a day's operations are declared available at
-        16:00 on the operation date itself, before the next business day's 16:00 that the check allows.
+        changed from 1 to 0. This test then fails with LookAheadError: nyfed_temp_repo.temp_repo_take_up for 2026-01-05 is declared
+        available at 2026-01-05 16:00, before 2026-01-06 16:00.
         """
         d2.check_declared_facility_lag(self.registry, self.dates)
 
@@ -295,8 +297,8 @@ class FacilityLagGuardTests(unittest.TestCase):
         """Staleness guard: the declared lag is not later than the next business day at 16:00.
 
         Recorded mutation (10 November 2026): in `metadata/sources_phase3.json`, `nyfed_temp_repo.release_lag.days`
-        changed from 1 to 3. This test then fails with StaleReadError: the day is declared available two business days
-        after the next one.
+        changed from 1 to 3. This test then fails with StaleReadError (the day is declared available later than the next business
+        day's 16:00, checked on the unmutated record after the assertion).
         """
         registry = copy.deepcopy(self.registry)
         registry[d2.TERM_REPO_SOURCE]["release_lag"]["days"] = 3
