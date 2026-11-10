@@ -77,6 +77,11 @@ def _fields():
         "srf_material_use": tuple(contract.SRF_OPERATION_RESULTS_FIELDS),
         "fed_repo_material_use": (("nyfed_temp_repo", "temp_repo_take_up"), ("nyfed_temp_repo", "temp_repo_term_take_up"))
         + tuple(contract.SRF_OPERATION_RESULTS_FIELDS),
+        # #208 (her ruling Q2 of 10 November 2026): H10's second declaration's facility event, the standing facility at
+        # $1bn or more or a 2019-21 term repo operation material on its own date. Read under the same declarations as
+        # `fed_repo_material_use`. Not a built column of any panel until version 6.
+        "facility_material_use": (("nyfed_temp_repo", "temp_repo_take_up"), ("nyfed_temp_repo", "temp_repo_term_take_up"))
+        + tuple(contract.SRF_OPERATION_RESULTS_FIELDS),
         # Stage 1b: fields of a source the parent declares, switched on here (`docs/stages/stage-1b.md`). `effr` is
         # already in the parent's feature map (`nyfed_effr`); only the build reads it.
         "sofr_p1": (("nyfed_sofr", "SOFR_p1"),),
