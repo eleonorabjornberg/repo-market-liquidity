@@ -81,6 +81,11 @@ def _fields():
         # already in the parent's feature map (`nyfed_effr`); only the build reads it.
         "sofr_p1": (("nyfed_sofr", "SOFR_p1"),),
         "sofr_p99": (("nyfed_sofr", "SOFR_p99"),),
+        # #205: the volumes of the dispersion- and volume-based hypothesis (`repo_liquidity.dispersion_volume`), fields of
+        # sources the parent declares, switched on here. Not built columns of any panel. The OFR source is off in every
+        # published declaration of the parent.
+        "bgcr_volume": (("nyfed_bgcr", "BGCR_volume"),),
+        "ofr_dvp_volume": (("ofr_stfm_repo", "REPO-DVP_TV_OO-F"),),
     }
 
 
