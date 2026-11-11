@@ -1,4 +1,6 @@
-"""H10 with new drivers, step 1 (#204): the second declaration's driver set, its inputs' guards and the 30 June 2027 break.
+"""H10 with new drivers, step 1 (#204, amended by #208): the second declaration's driver set, its inputs' guards, the
+facility event with the 2019-21 term repos (her ruling Q2 of 10 November 2026), the 11-day report window (Q3) and the 30 June
+2027 break.
 
 Nothing is attributed and nothing is scored here. The registered method (`h10-method.md`, `attribution.DRIVERS*`,
 `h10_apply`, `h10_live`, its digest) is untouched, and the tests below say so.
@@ -36,7 +38,8 @@ class RegisteredMethodUntouchedTests(unittest.TestCase):
 
     def test_the_second_declaration_is_the_registered_set_plus_four_new_names(self):
         self.assertEqual(d2.DRIVERS_2[: len(attribution.DRIVERS_WITH_ON_RRP)], attribution.DRIVERS_WITH_ON_RRP)
-        self.assertEqual(d2.NEW_DRIVERS, ("srf_material_use", "sofr_volume", "sofr_p99_p1_bp", "pd_fails_deliver_ust"))
+        self.assertEqual(d2.NEW_DRIVERS, ("facility_material_use", "sofr_volume", "sofr_p99_p1_bp", "pd_fails_deliver_ust"))
+        self.assertEqual(len(d2.DRIVERS_2), 9)
         self.assertEqual(d2.DRIVERS_2, attribution.DRIVERS_WITH_ON_RRP + d2.NEW_DRIVERS)
 
     def test_the_method_digest_is_still_the_registered_one(self):
@@ -44,6 +47,11 @@ class RegisteredMethodUntouchedTests(unittest.TestCase):
         self.assertEqual(h10_live.method_digest(), h10_registration.REGISTERED_DIGEST)
         covered = {name for name, _ in h10_live.METHOD_FILES}
         self.assertFalse([name for name in covered if "drivers_2" in name or "method-2" in name])
+
+    def test_the_registered_report_days_are_still_ten_and_the_second_declarations_are_eleven(self):
+        """Q3: this declaration reports at 11 panel days; the registered method's constant is not touched."""
+        self.assertEqual(h10_apply.REPORT_DAYS, 10)
+        self.assertEqual(d2.REPORT_DAYS_2, 11)
 
     def test_the_registered_rule_reads_none_of_the_new_names(self):
         with h10_apply.real_rule() as rule:
@@ -139,15 +147,31 @@ class ReportWindowTests(unittest.TestCase):
             return InformationRule(declaration.registry(), [name], decision_time=h10_apply.DECISION_TIME)
 
     def test_each_new_input_is_reported_after_the_expected_panel_days(self):
-        expected = {"srf_material_use": 6, "sofr_volume": 6, "sofr_p99_p1_bp": 6, "pd_fails_deliver_ust": 11}
+        expected = {"facility_material_use": 6, "sofr_volume": 6, "sofr_p99_p1_bp": 6, "pd_fails_deliver_ust": 11}
         for name, days in expected.items():
             with self.subTest(name):
                 self.assertEqual(d2.report_panel_days(self.rule(name), self.dates, 40), days)
 
-    def test_fails_push_an_onset_past_the_report_days_and_the_others_do_not(self):
+    def test_fails_push_an_onset_past_the_registered_report_days_and_the_others_do_not(self):
         over = {name for name in d2.NEW_DRIVERS
                 if d2.report_panel_days(self.rule(name), self.dates, 40) > h10_apply.REPORT_DAYS}
         self.assertEqual(over, {"pd_fails_deliver_ust"})
+
+    def test_every_new_input_is_public_by_this_declarations_report_day(self):
+        """Q3: the window check at `report_index_2`. Recorded mutation (10 November 2026): in `h10_drivers_2`,
+        `REPORT_DAYS_2 = 11` changed to `10`. This test then fails with AssertionError (`50 != 51`: the report day is a day
+        too early), and `RegisteredMethodUntouchedTests` and the real-panel summary fail with AssertionError too; with
+        the report day left at 11 and the fails window checked at 10 days, `check_window_public` raises LookAheadError."""
+        self.assertEqual(d2.report_index_2(40, len(self.dates)), 40 + 11)
+        for name in d2.NEW_DRIVERS:
+            with self.subTest(name):
+                attribution.check_window_public(self.rule(name), self.dates, 40, d2.report_index_2(40, len(self.dates)))
+        with self.assertRaises(LookAheadError):
+            attribution.check_window_public(self.rule("pd_fails_deliver_ust"), self.dates, 40, 40 + h10_apply.REPORT_DAYS)
+
+    def test_a_report_day_past_the_sample_is_refused(self):
+        with self.assertRaises(ValueError):
+            d2.report_index_2(len(self.dates) - 11, len(self.dates))
 
     def test_the_window_is_public_at_the_returned_day_and_not_before(self):
         """Leakage and staleness guard for the report day: `attribution.check_window_public` accepts the day
@@ -179,17 +203,108 @@ class RealPanelReportDaysTests(unittest.TestCase):
 
     def test_the_summary_over_every_onset_position_of_the_development_panel(self):
         summary = d2.report_days_summary(self.dates)
-        for name in ("srf_material_use", "sofr_volume", "sofr_p99_p1_bp"):
+        for name in ("facility_material_use", "sofr_volume", "sofr_p99_p1_bp"):
             with self.subTest(name):
                 self.assertLessEqual(summary[name]["max"], h10_apply.REPORT_DAYS)
                 self.assertEqual(summary[name]["over_report_days"], 0)
         fails = summary["pd_fails_deliver_ust"]
+        # past the registered 10 at every onset, and within this declaration's 11 at every onset (Q3)
         self.assertGreater(fails["min"], h10_apply.REPORT_DAYS)
-        self.assertEqual(fails["over_report_days"], fails["onsets"])
+        self.assertEqual(fails["over_registered_report_days"], fails["onsets"])
+        self.assertLessEqual(fails["max"], d2.REPORT_DAYS_2)
+        self.assertEqual(fails["over_report_days"], 0)
 
     def test_the_registered_drivers_are_read_the_same_way(self):
         summary = d2.report_days_summary(self.dates)
         self.assertLessEqual(summary["tga"]["max"], h10_apply.REPORT_DAYS)
+        self.assertEqual(summary["tga"]["over_report_days"], 0)
+
+
+class FacilityEventTests(unittest.TestCase):
+    """Q2 (her ruling of 10 November 2026): the facility event is the standing facility at $1bn or more, or a 2019-21 term
+    repo operation material on its own operation date (`fed_repo_material_use`, data-meaning row 14). One driver."""
+
+    def test_the_event_is_the_standing_facility_at_one_billion_or_a_material_repo_operation(self):
+        """Recorded mutation (10 November 2026): in `h10_drivers_2.facility_event`, `srf_take_up >= SRF_MATERIAL_BN`
+        changed to `srf_take_up > SRF_MATERIAL_BN`. This test then fails with AssertionError: $1.0bn is not an event.
+        A second mutation, `or (` changed to `and (` in the same function, fails with AssertionError
+        (`0.0 != 1.0`): a term repo operation alone is not an event."""
+        self.assertEqual(d2.SRF_MATERIAL_BN, 1.0)
+        self.assertEqual(d2.facility_event(1.0, 0.0), 1.0)      # exactly $1bn at the standing facility
+        self.assertEqual(d2.facility_event(0.99, 0.0), 0.0)
+        self.assertEqual(d2.facility_event(0.0, 1.0), 1.0)      # a 2019-21 term repo operation on its own date
+        self.assertEqual(d2.facility_event(5.0, 1.0), 1.0)      # both is still one event, the amount is not an input
+        self.assertEqual(d2.facility_event(0.0, 0.0), 0.0)
+
+    def test_a_missing_reading_is_an_event_only_if_the_other_one_says_so(self):
+        self.assertEqual(d2.facility_event(None, 1.0), 1.0)
+        self.assertEqual(d2.facility_event(2.0, None), 1.0)
+        self.assertIsNone(d2.facility_event(None, 0.0))
+        self.assertIsNone(d2.facility_event(0.0, None))
+        self.assertIsNone(d2.facility_event(None, None))
+
+    def test_the_series_is_built_row_by_row(self):
+        self.assertEqual(d2.facility_series([0.0, 1.5, 0.2, None], [1.0, 0.0, 0.0, 0.0]), [1.0, 1.0, 0.0, None])
+        with self.assertRaises(ValueError):
+            d2.facility_series([0.0], [0.0, 1.0])
+
+    def test_it_is_one_driver_so_the_set_stays_nine(self):
+        self.assertEqual(sum(name == d2.FACILITY_EVENT for name in d2.DRIVERS_2), 1)
+        self.assertNotIn("srf_material_use", d2.DRIVERS_2)
+        self.assertEqual(len(d2.DRIVERS_2), 9)
+
+    def test_the_driver_reads_the_standing_facility_and_the_term_repo_fields(self):
+        fields = set(declaration.FIELDS[d2.FACILITY_EVENT])
+        self.assertEqual(fields, set(declaration.FIELDS["fed_repo_material_use"]))
+        self.assertEqual(fields, set(declaration.FIELDS["srf_take_up"]) | set(d2.TERM_REPO_FIELDS))
+        self.assertEqual({source for source, _ in d2.TERM_REPO_FIELDS}, {d2.TERM_REPO_SOURCE})
+        self.assertIn(d2.TERM_REPO_SOURCE, declaration.overlay())
+
+    def test_the_declared_lag_of_the_term_repo_source_is_the_standing_facilitys_and_the_parents_repo_ops(self):
+        registry = declaration.registry()
+        measurement = json.loads((declaration.parent_root() / PARENT_MEASUREMENT).read_text(encoding="utf-8"))
+        keys = ("available_time", "basis", "days", "timezone", "unit")
+        lag = {k: registry[d2.TERM_REPO_SOURCE]["release_lag"][k] for k in keys}
+        self.assertEqual(lag["days"], 1)
+        self.assertEqual(lag["available_time"], "16:00")
+        self.assertEqual(lag, {k: registry["nyfed_srf"]["release_lag"][k] for k in keys})
+        self.assertEqual(lag, {k: measurement["nyfed_repo_ops"]["release_lag"][k] for k in keys})
+
+
+class FacilityLagGuardTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.registry = declaration.registry()
+        cls.dates = weekdays(date(2026, 1, 5), 60)
+
+    def test_a_day_is_not_declared_public_before_the_next_business_day_at_1600(self):
+        """Leakage guard: each field of the facility event is public at 16:00 on the next business day, the Desk's
+        conservative reading (no publication time is stated).
+
+        Recorded mutation (10 November 2026): in `metadata/sources_phase3.json`, `nyfed_temp_repo.release_lag.days`
+        changed from 1 to 0. This test then fails with LookAheadError: nyfed_temp_repo.temp_repo_take_up for 2026-01-05 is declared
+        available at 2026-01-05 16:00, before 2026-01-06 16:00.
+        """
+        d2.check_declared_facility_lag(self.registry, self.dates)
+
+    def test_a_lag_of_zero_days_is_refused(self):
+        registry = copy.deepcopy(self.registry)
+        registry[d2.TERM_REPO_SOURCE]["release_lag"]["days"] = 0
+        with self.assertRaises(LookAheadError):
+            d2.check_declared_facility_lag(registry, self.dates)
+
+    def test_a_lag_later_than_the_next_business_day_is_stale(self):
+        """Staleness guard: the declared lag is not later than the next business day at 16:00.
+
+        Recorded mutation (10 November 2026): in `metadata/sources_phase3.json`, `nyfed_temp_repo.release_lag.days`
+        changed from 1 to 3. This test then fails with StaleReadError (the day is declared available later than the next business
+        day's 16:00, checked on the unmutated record after the assertion).
+        """
+        registry = copy.deepcopy(self.registry)
+        registry[d2.TERM_REPO_SOURCE]["release_lag"]["days"] = 3
+        with self.assertRaises(StaleReadError):
+            d2.check_declared_facility_lag(registry, self.dates)
+        d2.check_declared_facility_lag(self.registry, self.dates)
 
 
 class BreakTests(unittest.TestCase):
@@ -261,17 +376,26 @@ class RecordTests(unittest.TestCase):
     def setUpClass(cls):
         cls.text = RECORD.read_text(encoding="utf-8")
 
+    def test_the_record_is_amended_for_her_rulings_of_10_november(self):
+        self.assertIn("Amended 10 November 2026", self.text)
+        self.assertIn("issuecomment-6780902686", self.text)
+        for needle in ("facility_material_use", "fed_repo_material_use", "REPORT_DAYS_2", "Q1", "Q2", "Q3", "Q4"):
+            with self.subTest(needle):
+                self.assertIn(needle, self.text)
+        self.assertNotIn("`srf_material_use` |", self.text)
+
     def test_the_record_is_a_draft_for_her_to_merge(self):
         self.assertIn("Status: DRAFT", self.text.split("\n", 4)[2])
         self.assertIn("in force only once she merges", self.text)
 
     def test_the_record_names_the_drivers_the_break_and_the_untouched_method(self):
-        for needle in (*d2.NEW_DRIVERS, "2027-06-30", "54b5f151", "REPORT_DAYS", "panel version 6", "row 11", "row 8", "row 13"):
+        for needle in (*d2.NEW_DRIVERS, "2027-06-30", "54b5f151", "REPORT_DAYS", "panel version 6", "row 11", "row 8", "row 13", "row 14"):
             with self.subTest(needle):
                 self.assertIn(needle.lower(), self.text.lower())
 
     def test_the_record_reports_the_fails_lag_against_the_report_days(self):
         self.assertRegex(self.text, r"11 panel days")
+        self.assertIn("REPORT_DAYS_2 = 11", self.text)
 
 
 if __name__ == "__main__":

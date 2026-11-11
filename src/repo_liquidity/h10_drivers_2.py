@@ -1,4 +1,5 @@
-"""H10 with new drivers, step 1 (#204): the second declaration's driver set, its inputs' guards and the 30 June 2027 break.
+"""H10 with new drivers, step 1 (#204, amended by #208): the second declaration's driver set, its inputs' guards, the
+facility event and the 30 June 2027 break.
 
 `docs/decisions/h10-method-2.md` is the draft record. This module holds what the record states in code, under **new names**:
 it imports `attribution` and `h10_apply` and changes neither. The registered method (`h10-method.md`, `attribution.DRIVERS*`,
@@ -22,16 +23,31 @@ from repo_model.asof import StaleReadError, declared_availability
 from repo_model.splits import LookAheadError
 
 #: The four new drivers, each entering as the window change of its column, like the registered five (`attribution.change`).
-#: Standing Repo Facility take-up as the event indicator (her ruling of 9 November 2026 on #204, data-meaning row 13: material
-#: use of $1bn or more on a day, not the amount); SOFR volume and the 1st-to-99th percentile range of SOFR (both break at
+#: The facility event (her rulings of 9 and 10 November 2026 on #204 and #208, data-meaning rows 13 and 14): material use of
+#: the standing facility, $1bn or more on a day, or a 2019-21 term repo operation material on its operation date; the event,
+#: not the amount, and one driver; SOFR volume and the 1st-to-99th percentile range of SOFR (both break at
 #: 2027-06-30, row 11); the primary dealers' Treasury fails to deliver, a collateral driver (row 8).
-SRF_EVENT = "srf_material_use"
+FACILITY_EVENT = "facility_material_use"
 SOFR_VOLUME = "sofr_volume"
 SOFR_P99_P1 = "sofr_p99_p1_bp"
 FAILS = "pd_fails_deliver_ust"
-NEW_DRIVERS: Tuple[str, ...] = (SRF_EVENT, SOFR_VOLUME, SOFR_P99_P1, FAILS)
+NEW_DRIVERS: Tuple[str, ...] = (FACILITY_EVENT, SOFR_VOLUME, SOFR_P99_P1, FAILS)
 #: The registered five (`attribution.DRIVERS_WITH_ON_RRP`) then the four, in that order.
 DRIVERS_2: Tuple[str, ...] = attribution.DRIVERS_WITH_ON_RRP + NEW_DRIVERS
+
+#: The report window of this declaration, in panel days (her ruling Q3 of 10 November 2026): the fails' whole window is public
+#: 11 panel days after an onset. The registered method's `h10_apply.REPORT_DAYS` (10) is not touched and still governs it.
+REPORT_DAYS_2 = 11
+
+#: Material use of the standing facility, in USD bn (data-meaning row 13), fixed in advance.
+SRF_MATERIAL_BN = 1.0
+#: The 2019-21 term repo operations (data-meaning row 14), declared in `metadata/sources_phase3.json`: available at 16:00 on the
+#: next business day, as the standing facility (`nyfed_srf`) and the parent's `nyfed_repo_ops` are. `fed_repo_material_use` reads
+#: these two fields (overnight and term accepted on the operation date) beside the standing facility's.
+TERM_REPO_SOURCE = "nyfed_temp_repo"
+TERM_REPO_FIELDS = ((TERM_REPO_SOURCE, "temp_repo_take_up"), (TERM_REPO_SOURCE, "temp_repo_term_take_up"))
+#: When a day's operation results are public: the next business day, 16:00 (the Desk states no publication time).
+FACILITY_PUBLISH_TIME = time(16, 0)
 
 FAILS_SOURCE = "nyfed_pd_fails"
 #: The Primary Dealer Statistics for a Wednesday as-of date are published the Thursday of the following week, at 16:30
@@ -78,10 +94,24 @@ def report_panel_days(rule, dates: Sequence[date], start: int, *, limit: int = 4
     return None
 
 
+def report_index_2(start: int, count: int) -> int:
+    """The panel day on which an episode starting at `start` is reported under this declaration: `REPORT_DAYS_2` panel days
+    later (the registered method's `h10_apply.report_index` uses `REPORT_DAYS`).
+
+    Raises:
+        ValueError: that day is not in the sample of `count` panel days.
+    """
+    index = start + REPORT_DAYS_2
+    if index >= count:
+        raise ValueError("the report day is past the last development day")
+    return index
+
+
 def report_days_summary(dates: Sequence[date], inputs: Sequence[str] = (*NEW_DRIVERS, "tga")) -> Dict[str, dict]:
     """For each input, over every onset position of `dates` that has a full window and a report day in the sample, the
     fewest and most panel days until its whole window is public (with the spread's own lag), and how many onsets that is
-    past `REPORT_DAYS`. A calendar fact about the declared lags; no value is read and nothing is attributed."""
+    past this declaration's `REPORT_DAYS_2` (`over_report_days`) and past the registered `REPORT_DAYS`
+    (`over_registered_report_days`). A calendar fact about the declared lags; no value is read and nothing is attributed."""
     out: Dict[str, dict] = {}
     starts = range(attribution.BASELINE_DAYS, len(dates) - attribution.WINDOW_DAYS)
     for name in inputs:
@@ -89,9 +119,55 @@ def report_days_summary(dates: Sequence[date], inputs: Sequence[str] = (*NEW_DRI
             days = [d for d in (report_panel_days(rule, dates, s) for s in starts) if d is not None]
         out[name] = {
             "onsets": len(days), "min": min(days), "max": max(days),
-            "over_report_days": sum(1 for d in days if d > h10_apply.REPORT_DAYS),
+            "over_report_days": sum(1 for d in days if d > REPORT_DAYS_2),
+            "over_registered_report_days": sum(1 for d in days if d > h10_apply.REPORT_DAYS),
         }
     return out
+
+
+# --------------------------------------------------------------------------- the facility event and its declared lag
+
+
+def facility_event(srf_take_up: Optional[float], fed_repo_material_use: Optional[float]) -> Optional[float]:
+    """The facility event on one panel day: 1.0 when the standing facility's take-up is `SRF_MATERIAL_BN` or more, or a
+    2019-21 term repo operation was material on its own operation date (`fed_repo_material_use`, 1.0), else 0.0. The amount is
+    not an input. A reading that is missing counts as an event only if the other says so; with no event and a missing reading
+    the day is missing."""
+    if (srf_take_up is not None and srf_take_up >= SRF_MATERIAL_BN) or (
+        fed_repo_material_use is not None and fed_repo_material_use >= 1.0
+    ):
+        return 1.0
+    if srf_take_up is None or fed_repo_material_use is None:
+        return None
+    return 0.0
+
+
+def facility_series(srf_take_up: Sequence[Optional[float]], fed_repo_material_use: Sequence[Optional[float]]) -> list:
+    """`facility_event` on every panel day. Raises ValueError when the two series are not the same length."""
+    if len(srf_take_up) != len(fed_repo_material_use):
+        raise ValueError(f"srf_take_up has {len(srf_take_up)} days, fed_repo_material_use {len(fed_repo_material_use)}")
+    return [facility_event(a, b) for a, b in zip(srf_take_up, fed_repo_material_use)]
+
+
+def check_declared_facility_lag(registry: Mapping, dates: Sequence[date]) -> None:
+    """Every field of the facility event is declared public on the next business day at 16:00: not earlier, not later.
+
+    `dates` is a calendar without market holidays; the last row has no next day and is skipped.
+
+    Raises:
+        LookAheadError: a day is declared public before the next business day's 16:00.
+        StaleReadError: a day is declared public after it.
+    """
+    for source, field in declaration.FIELDS[FACILITY_EVENT]:
+        for position in range(len(dates) - 1):
+            published = datetime.combine(dates[position + 1], FACILITY_PUBLISH_TIME)
+            declared = declared_availability(registry, source, field, dates, position)
+            if declared < published:
+                raise LookAheadError(
+                    f"{source}.{field} for {dates[position]} is declared available at {declared}, before {published}")
+            if declared > published:
+                raise StaleReadError(
+                    f"{source}.{field} for {dates[position]} is declared available at {declared}, later than {published}")
 
 
 # --------------------------------------------------------------------------- the fails declaration against its schedule
@@ -173,8 +249,14 @@ def attribute_2(series: attribution.Series, start: int, *, dates: Sequence[date]
                 **settings) -> Attribution:
     """`attribution.attribute` with the break applied: the break series are masked from `BREAK_DATE` on, and an onset whose
     window touches the break is "not attributable" for them, with the reason. `settings` are `attribute`'s (`rule`,
-    `report_index`, `draws`, `seed`). Step 2 calls this; step 1 only tests the break."""
+    `report_index`, `draws`, `seed`). `report_index` defaults to `report_index_2` (`REPORT_DAYS_2`), and an onset whose report
+    day is past the sample is "not attributable" with that reason. Step 2 calls this; step 1 only tests the break."""
     refused = break_refusal(dates, start, drivers)
     if refused is not None:
         return refused
+    if settings.get("report_index") is None:
+        try:
+            settings["report_index"] = report_index_2(start, len(dates))
+        except ValueError as error:
+            return Attribution(start, "not attributable", str(error))
     return attribution.attribute(mask_across_break(series, dates), start, dates=dates, drivers=drivers, **settings)
