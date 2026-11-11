@@ -22,8 +22,8 @@ from datetime import date
 from pathlib import Path
 from typing import Dict, List, Optional
 
-from repo_liquidity import (PANEL_SHA256, PARENT_COMMIT, announced_pace, contenthash, development, h41, h8, rca, rde,
-                            scheduled, slr)
+from repo_liquidity import (PANEL_SHA256, PARENT_COMMIT, announced_pace, contenthash, development, h41, h8, pd_fails, rca,
+                            rde, scheduled, slr)
 
 ROOT = Path(__file__).resolve().parents[2]
 SNAPSHOTS = ROOT / "snapshots"
@@ -84,6 +84,7 @@ SERIES: Dict[str, Path] = {
     "slr_headroom": SLR_EXTRACT,
     "rca_anchor": RCA_EXTRACT,
     "rde": RDE_EXTRACT,
+    "pd_fails": pd_fails.EXTRACT,
 }
 #: The tracked tables a derived series is computed from, named in its manifest by digest (#125).
 INPUTS: Dict[str, tuple] = {"announced_pace": (scheduled.CAPS_TABLE, announced_pace.PURCHASES_TABLE,
@@ -214,6 +215,8 @@ def build(series: str, root: Path = ROOT, *, repo_commit: str, agency_extract: O
         return _build_rca(table, root, repo_commit)
     if series == "rde":
         return _build_rde(table, root, repo_commit)
+    if series == "pd_fails":
+        return _build_pd_fails(table, root, repo_commit)
     if series == "agency_securities":
         return _build_agency_securities(root, repo_commit, agency_extract or table, H41_MBS_EXTRACT)
     scheduled._verified_rows(table)
@@ -442,6 +445,53 @@ def _build_rde(table: Path, root: Path, repo_commit: str) -> dict:
         "repo_commit": repo_commit,
     }
     manifest_path("rde", root).write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return manifest
+
+
+#: The columns of the fails snapshot: the extract's three, renamed, and the instant each week is public.
+PD_FAILS_COLUMNS = ("as_of_date", "time_series", "value_musd", "available_from")
+
+
+def _build_pd_fails(table: Path, root: Path, repo_commit: str) -> dict:
+    """The snapshot of the primary dealers' fails extract (#209): its rows, each with the instant it is public.
+
+    The extract is read through `pd_fails.load_extract`, which refuses one that does not match its manifest or holds a week
+    published on a day the parent's lockbox holds. The figures are the New York Fed's export as the parent tracks it, which keeps
+    no vintages, so a later restatement cannot be seen (the declaration says so)."""
+    weeks = pd_fails.load_extract(table)
+    extract_manifest = json.loads(table.with_name(table.name + ".manifest.json").read_text(encoding="utf-8"))
+    buffer = io.StringIO(newline="")
+    writer = csv.writer(buffer, lineterminator="\n")
+    writer.writerow(PD_FAILS_COLUMNS)
+    for week in weeks:
+        writer.writerow([week.as_of.isoformat(), week.field, week.value_musd,
+                         pd_fails.published_instant(week.as_of).isoformat()])
+    data = buffer.getvalue().encode("utf-8")
+    digest = hashlib.sha256(data).hexdigest()
+    (root / "snapshots" / "pd_fails").mkdir(parents=True, exist_ok=True)
+    relative = f"snapshots/pd_fails/{digest}.csv"
+    (root / relative).write_bytes(data)
+    manifest = {
+        "series": "pd_fails",
+        "path": relative,
+        "sha256": digest,
+        "columns": list(PD_FAILS_COLUMNS),
+        "rows": len(weeks),
+        "first_announced": min(pd_fails.published_instant(w.as_of) for w in weeks).isoformat(),
+        "last_announced": max(pd_fails.published_instant(w.as_of) for w in weeks).isoformat(),
+        "last_effective": max(w.as_of for w in weeks).isoformat(),
+        "source_table": str(table.relative_to(ROOT)),
+        "source_table_sha256": hashlib.sha256(table.read_bytes()).hexdigest(),
+        "source_export": {key: extract_manifest[key] for key in ("export_path", "export_sha256", "export_retrieved_at", "url")},
+        "withheld_weeks": extract_manifest["withheld_weeks"],
+        "declaration": "declarations/nyfed_pd_fails.json",
+        "vintage_note": ("The export keeps no vintages: a figure is the one in the export as retrieved, which may differ from "
+                         "the first print. Collateral scarcity, not cash scarcity (data-meaning row 8)."),
+        "parent_commit": PARENT_COMMIT,
+        "parent_panel_sha256": PANEL_SHA256,
+        "repo_commit": repo_commit,
+    }
+    manifest_path("pd_fails", root).write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return manifest
 
 

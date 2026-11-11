@@ -51,7 +51,12 @@ MANIFEST_V4 = ROOT / "metadata" / "phase3_panel_v4_manifest.json"
 #: the same columns and dates. The parent's afternoon test-trade rule (its #938) moved 32 `srf_take_up` rows
 #: (`results/panel/v5_changes.json`), so version 4 no longer rebuilds at this pin and stays as published.
 MANIFEST_V5 = ROOT / "metadata" / "phase3_panel_v5_manifest.json"
-MANIFESTS = {1: MANIFEST, 2: MANIFEST_V2, 3: MANIFEST_V3, 4: MANIFEST_V4, 5: MANIFEST_V5}
+#: Version 5's build with the second declaration's inputs added (#209, H10's second declaration, step 2;
+#: `docs/stages/h10-method2-step2.md`): `sofr_p1`, `sofr_p99`, `sofr_p99_p1_bp`, `fed_repo_material_use`,
+#: `facility_material_use` and `pd_fails_deliver_ust`, after version 5's columns, which are unchanged. Version 5 and its manifest are
+#: not touched, and the readers' default stays 5 (`CURRENT_VERSION`): only the second declaration reads version 6.
+MANIFEST_V6 = ROOT / "metadata" / "phase3_panel_v6_manifest.json"
+MANIFESTS = {1: MANIFEST, 2: MANIFEST_V2, 3: MANIFEST_V3, 4: MANIFEST_V4, 5: MANIFEST_V5, 6: MANIFEST_V6}
 #: The versions kept only as records (see the module docstring).
 RECORD_VERSIONS = (1, 2, 3, 4)
 #: The version the readers build at the current pin.
@@ -62,14 +67,16 @@ PARENT_RAW_ROOTS = ("funding_inputs", "on_rrp_inputs", "h8_inputs", "srf_inputs"
 
 
 @contextmanager
-def _weekly_carry():
-    """Carry the weekly H.4.1 column forward as the parent carries its weekly columns (at most 13 days)."""
+def _weekly_carry(extra_columns: Sequence[str] = ()):
+    """Carry the weekly H.4.1 column forward as the parent carries its weekly columns (at most 13 days), and with it each of
+    `extra_columns` (version 6: the weekly fails)."""
     from repo_model import data
 
     saved = data.CARRY_FORWARD_COLUMNS
     data.CARRY_FORWARD_COLUMNS = MappingProxyType(
         {**saved, h41.SERIES: data.WEEKLY_CARRY_MAX_STALENESS_DAYS,
-         h41.MBS_SERIES: data.WEEKLY_CARRY_MAX_STALENESS_DAYS})
+         h41.MBS_SERIES: data.WEEKLY_CARRY_MAX_STALENESS_DAYS,
+         **{column: data.WEEKLY_CARRY_MAX_STALENESS_DAYS for column in extra_columns}})
     try:
         yield
     finally:
@@ -96,7 +103,8 @@ def _parent_rows(workdir: Path, roots=PARENT_RAW_ROOTS):
 def build(output: Path, version: int) -> Dict:
     """Build the panel to `output` (CSV) and return its manifest.
 
-    Version 5 is Stage 1a's panel (version 1) built at the pin of 2032de4. Versions 1 to 4 are records only
+    Version 5 is Stage 1a's panel (version 1) built at the pin of 2032de4. Version 6 is version 5's build with the second
+    declaration's inputs added after its columns (`panel_v6`, `pd_fails`); version 5's cells are unchanged in it. Versions 1 to 4 are records only
     (`RECORD_VERSIONS`): each is verified at the commit and parent pin it was made from, and a rebuild at this pin is
     version 5, not an earlier one.
 
@@ -106,6 +114,7 @@ def build(output: Path, version: int) -> Dict:
     """
     from repo_model.data import build_daily_panel, verify_daily_panel, write_daily_panel
 
+    v6 = version == 6
     if version in RECORD_VERSIONS:
         raise ValueError(f"panel version {version} is a record; it is verified at the commit and parent pin it was "
                          "made from (scripts/verify_records.py), and a rebuild at this pin is version "
@@ -134,9 +143,18 @@ def build(output: Path, version: int) -> Dict:
     extract_sha = hashlib.sha256(H41_EXTRACT.read_bytes()).hexdigest()
     extra_rows = h41.observations(h41.load_extract(H41_EXTRACT), source_sha=extract_sha)
 
-    with declaration.phase3_declaration(), _weekly_carry():
+    added_built = declaration.BUILT_COLUMNS_V6_ADDED if v6 else ()
+    fails_weeks = []
+    if v6:
+        from repo_liquidity import pd_fails
+
+        fails_weeks = pd_fails.load_extract()
+        fails_sha = hashlib.sha256(pd_fails.EXTRACT.read_bytes()).hexdigest()
+        extra_rows = extra_rows + pd_fails.observations(fails_weeks, source_sha=fails_sha)
+
+    with declaration.phase3_declaration(), _weekly_carry(("pd_fails_deliver_ust",) if v6 else ()):
         phase3 = build_daily_panel(list(rows) + extra_rows, declaration.registry(), build_cutoff=cutoff,
-                                   decision_time=decision, columns=published_columns + built_columns,
+                                   decision_time=decision, columns=published_columns + built_columns + added_built,
                                    snapshot_retrieved_at=retrieved)
     if phase3.refusals:
         raise ValueError(f"the Phase 3 build refused {dict(phase3.refusals)}")
@@ -145,6 +163,10 @@ def build(output: Path, version: int) -> Dict:
 
     observations = scheduled.with_scheduled(phase3.observations, decision_time=decision)
     phase3_columns = list(built_columns) + list(declaration.SCHEDULED_COLUMNS)
+    extra_manifest: Dict = {}
+    if v6:
+        observations, phase3_columns, extra_manifest = _version_6(
+            observations, phase3_columns, fails_weeks, cutoff, [row.date for row in phase3.observations], added_built)
     columns = list(published_columns) + phase3_columns
     _write(observations, columns, output)
     digest = hashlib.sha256(output.read_bytes()).hexdigest()
@@ -164,14 +186,61 @@ def build(output: Path, version: int) -> Dict:
         "columns": columns,
         "phase3_columns": phase3_columns,
         "coverage": _coverage(observations, phase3_columns),
-        "holes": {column: phase3.holes.get(column, 0) for column in built_columns},
+        "holes": {column: phase3.holes.get(column, 0) for column in built_columns + added_built},
         "refusals": dict(phase3.refusals),
         "sha256": digest,
         "version": version,
         "v1_sha256": load_manifest(1)["sha256"],
         "v4_sha256": load_manifest(4)["sha256"],
+        **extra_manifest,
     }
     return manifest
+
+
+def _version_6(observations, phase3_columns, fails_weeks, cutoff, dates, added_built):
+    """Version 6's additions to a version 5 build: the guard on the fails' declared lag, the derived columns, and what the
+    manifest records about them.
+
+    Raises:
+        LookAheadError: a fails week would be read before it is public (`pd_fails.check_declared_lag`).
+        StaleReadError: the panel runs past the last day the repo operation snapshots cover.
+    """
+    from repo_model import fed_liquidity
+    from repo_model.asof import StaleReadError
+    from repo_model.ingest import NYFED_REPO_OPS_ACCEPTED
+
+    from repo_liquidity import indicators, panel_v6, pd_fails
+
+    with declaration.phase3_declaration():
+        pd_fails.check_declared_lag(declaration.registry(), dates, pd_fails.observations(fails_weeks, source_sha="check"))
+
+    snapshots = parent_root() / "tests" / "fixtures" / "snapshots" / "repo_ops_inputs"
+    coverage_end = fed_liquidity.declared_coverage_end()
+    if dates[-1] > coverage_end:
+        raise StaleReadError(f"the panel runs to {dates[-1]}, past the repo operation snapshots' last day {coverage_end}")
+    accepted = fed_liquidity.series_from_snapshots(snapshots, cutoff)[NYFED_REPO_OPS_ACCEPTED]
+    observations = panel_v6.with_v6_columns(observations, accepted)
+    added = list(added_built) + list(panel_v6.ADDED_DERIVED)
+    # `sofr_p99_p1_bp` is the indicator named in `indicators.SPREADS`; the added columns follow version 5's.
+    assert "sofr_p99_p1_bp" in indicators.COLUMNS
+    files = sorted(snapshots.rglob("*.json"))
+    return observations, list(phase3_columns) + added, {
+        "added_columns": added,
+        "v5_sha256": load_manifest(5)["sha256"],
+        "pd_fails_extract_sha256": hashlib.sha256(pd_fails.EXTRACT.read_bytes()).hexdigest(),
+        "fed_repo_ops_snapshots_sha256": hashlib.sha256(
+            "".join(hashlib.sha256(path.read_bytes()).hexdigest() for path in files if not path.name.endswith("manifest.json")
+                    ).encode()).hexdigest(),
+        "fed_repo_ops_coverage_end": coverage_end.isoformat(),
+        "measurement_breaks": {key: list(value) for key, value in indicators.MEASUREMENT_BREAKS.items()},
+        "derived_columns_note": (
+            "sofr_p99_p1_bp is 100 x (sofr_p99 - sofr_p1) on the row. fed_repo_material_use is 1 on an operation date whose "
+            "accepted amount (overnight and term alike, the parent's fed_liquidity over nyfed_repo_ops) is 1.0 USD bn or more: "
+            "0 before 2019-09-17, missing on a date with no operation from then to 2021-07-28, 0 from 2021-07-29. "
+            "facility_material_use is the facility event, 1 when srf_take_up is 1.0 or more or fed_repo_material_use is 1, with "
+            "the standing facility's take-up a structural zero before 2021-07-29. The build choice for the term repos is the "
+            "parent's fed_liquidity, not a restored nyfed_temp_repo snapshot (docs/decisions/h10-method-2.md section 1)."),
+    }
 
 
 def _parent_commit() -> str:

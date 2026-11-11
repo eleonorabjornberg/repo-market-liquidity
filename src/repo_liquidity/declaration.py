@@ -146,6 +146,11 @@ DERIVED_COLUMNS_V2 = ("fed_repo_take_up", "fed_repo_facility", "srf_material_use
 #: Stage 1b's panel (version 3, `docs/stages/stage-1b.md`): the parent inputs it switches on, then its indicators
 #: (`repo_liquidity.indicators.COLUMNS`), derived on each row.
 BUILT_COLUMNS_V3 = BUILT_COLUMNS_V2 + ("sofr_p1", "sofr_p99", "effr")
+#: Panel version 6 (#209, H10's second declaration, step 2): the built columns it adds to version 5's, read by the parent's
+#: `build_daily_panel` (the SOFR percentiles from the parent's own snapshots, the weekly fails from the tracked extract). The
+#: derived columns `sofr_p99_p1_bp`, `fed_repo_material_use` and `facility_material_use` are written on each row afterwards
+#: (`repo_liquidity.panel_v6`).
+BUILT_COLUMNS_V6_ADDED = ("sofr_p1", "sofr_p99", "pd_fails_deliver_ust")
 
 
 def parent_registry() -> Dict[str, Mapping]:
