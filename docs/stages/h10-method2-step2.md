@@ -32,7 +32,7 @@ hand-edited. Until they exist, this page states no figure.
 - **Report window:** 11 panel days (`REPORT_DAYS_2`, her ruling Q3), through `h10_drivers_2.attribute_2`, which also applies the
   30 June 2027 break. No development episode meets the break (development ends 2026-09-03), so the break's refusal applies to none.
   The 11-day window is a property of this declaration (record section 5); it is not tested on development data.
-- **Pieces:** one file per episode and one for the null (`results/h10/method2/`), so an interrupted run is finished by running it
+- **Pieces:** one file per episode and one for the null (`results/h10/method2/`, not tracked: the record carries everything), so an interrupted run is finished by running it
   again and a lost piece costs only itself. The record is assembled only when every piece is there, from one clean commit, with the
   registered digest unchanged.
 - **The comparison:** the registered five drivers' development table is shown beside it unchanged (the registered record, byte for

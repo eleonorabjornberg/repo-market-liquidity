@@ -51,7 +51,16 @@ class RecordBytesTests(unittest.TestCase):
     def test_every_file_under_results_and_metadata_is_a_listed_record(self):
         tracked = subprocess.run(["git", "-C", str(ROOT), "ls-files", "results", "metadata"], check=True,
                                  capture_output=True, text=True).stdout.split()
-        self.assertEqual(sorted(tracked), sorted({**records.RECORD_FILES, **records.OWN_CHECK}))
+        pending = {path: test for path, test in records.PENDING_OWN_CHECK.items() if path in tracked}
+        self.assertEqual(sorted(tracked), sorted({**records.RECORD_FILES, **records.OWN_CHECK, **pending}))
+
+    def test_a_pending_record_names_the_test_that_will_check_it_and_is_not_a_listed_one(self):
+        """#209: the nine-driver record of H10's second declaration comes back from a run on Eleonora's Mac. Its check exists now,
+        and it is listed in neither of the other two tables (it is in `PENDING_OWN_CHECK` until a run has written it)."""
+        for path, test in records.PENDING_OWN_CHECK.items():
+            self.assertTrue((ROOT / test).is_file(), test)
+            self.assertNotIn(path, records.RECORD_FILES)
+            self.assertNotIn(path, records.OWN_CHECK)
 
     def test_a_record_made_after_l0_names_the_test_that_checks_it(self):
         """A record made after L0 is not byte-pinned here (its stage may be re-run only as a new record); it is listed with
