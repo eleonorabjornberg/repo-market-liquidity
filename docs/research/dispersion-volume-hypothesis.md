@@ -146,7 +146,8 @@ Any candidate reads the calendar at the target day, and where it fits on days it
 | M5 | The primary candidate is chosen by v1 §7 and registered (her attested action). |
 | M6 | Checkpoints at 60, 125 and 250 confirmation days. |
 
-M1's estimator is declared in `docs/research/dispersion-estimator.md` (step 2, #210).
+M1's estimator is declared in `docs/research/dispersion-estimator.md` (step 2, #210). M2's candidate set is declared in
+`docs/research/dispersion-candidates.md` (step 3, #214): W1 alone by default, which adds nothing to the count below.
 
 **The variant count** (v1 §10) is carried, not reset. From the records: **12 estimators in play, 10 of them variants** (A's B and
 six variants, C and four variants); D and its four variants were declared and dropped under #142 and are listed, not counted in
