@@ -140,13 +140,13 @@ Any candidate reads the calendar at the target day, and where it fits on days it
 |---|---|
 | M0 | This page and its inputs, guards and leakage and staleness tests are merged (step 1), with her answers to questions (i) to (iii). |
 | M1 | Step 2 merged: the estimand's as-of estimator over the primary measure, with a leakage test and its mutation. No score. |
-
-M1's estimator is declared in `docs/research/dispersion-estimator.md` (step 2, #210), as a draft for her.
 | M2 | The candidates are declared, with their variant count, before any is run. |
 | M3 | A power study on development data says whether 0.05 AUROC points is detectable with these inputs (as G6 did for H7m). |
 | M4 | Development score of the three goalposts for each candidate, and for R and R+S. Reported, never a verdict. |
 | M5 | The primary candidate is chosen by v1 §7 and registered (her attested action). |
 | M6 | Checkpoints at 60, 125 and 250 confirmation days. |
+
+M1's estimator is declared in `docs/research/dispersion-estimator.md` (step 2, #210).
 
 **The variant count** (v1 §10) is carried, not reset. From the records: **12 estimators in play, 10 of them variants** (A's B and
 six variants, C and four variants); D and its four variants were declared and dropped under #142 and are listed, not counted in
