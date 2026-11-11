@@ -57,10 +57,19 @@ OWN_CHECK = {
     "results/panel/v4_changes.json": "tests/test_panel.py",
     "metadata/phase3_panel_v5_manifest.json": "tests/test_panel.py",
     "results/panel/v5_changes.json": "tests/test_panel.py",
+    "metadata/phase3_panel_v6_manifest.json": "tests/test_panel_v6.py",
     "results/h10/development.json": "tests/test_h10_step2.py",
     "results/h10/sensitivity_onrrp_interaction.json": "tests/test_h10_step3.py",
     "results/h10/sensitivity_onrrp_regimes.json": "tests/test_h10_regimes.py",
     "results/h10/placebo_floor_2bp.json": "tests/test_h10_placebo_floor.py",
+}
+
+#: Records that a long run for Eleonora's Mac will add, each with the test file that will check it (#209). Listed here, in the
+#: change that makes the run, because the publish rule lets nothing under `src/` change between the run's commit and the record's
+#: publication: the record comes back as a commit that touches no file of `src/`. A pending record is a tracked file only once the
+#: run has come back; until then it is absent, and `tests/test_records.py` accepts both states.
+PENDING_OWN_CHECK = {
+    "results/h10/development_2.json": "tests/test_h10_apply_2.py",
 }
 
 

@@ -1,0 +1,31 @@
+{
+  "columns": [
+    "as_of_date",
+    "time_series",
+    "value_musd",
+    "available_from"
+  ],
+  "declaration": "declarations/nyfed_pd_fails.json",
+  "first_announced": "2013-04-11T16:30:00-04:00",
+  "last_announced": "2026-09-03T16:30:00-04:00",
+  "last_effective": "2026-08-26",
+  "parent_commit": "2032de4a7d7802289bc5a78dfc02599752bc7c5c",
+  "parent_panel_sha256": "4ddc3882cd6d406b11e1088f8ff6195e16dde175a0ad6818abe40dd5bdac8999",
+  "path": "snapshots/pd_fails/3386b0458e8e901be0a6126c3acc1403940f59fe6756058a306c248b21fee82b.csv",
+  "repo_commit": "4961d4f5a87200fbe16a43fa7e6cf8c0a41bc79e",
+  "rows": 1400,
+  "series": "pd_fails",
+  "sha256": "3386b0458e8e901be0a6126c3acc1403940f59fe6756058a306c248b21fee82b",
+  "source_export": {
+    "export_path": "tests/fixtures/snapshots/funding_inputs/nyfed_fr2004/20260914T003100Z_c98524ef8e48.csv",
+    "export_retrieved_at": "2026-09-14T00:31:00.991705+00:00",
+    "export_sha256": "c98524ef8e4850efad54b979f26561e1641a62aeda009de9cdf240bbd4c9764b",
+    "url": "https://markets.newyorkfed.org/api/pd/get/all/timeseries.csv"
+  },
+  "source_table": "tests/fixtures/snapshots/pd_fails/pd_fails_extract.csv",
+  "source_table_sha256": "e90555d3fdfd43e6201b591735d4462de4d09a83e793256f1fa5e4d0a3f18555",
+  "vintage_note": "The export keeps no vintages: a figure is the one in the export as retrieved, which may differ from the first print. Collateral scarcity, not cash scarcity (data-meaning row 8).",
+  "withheld_weeks": [
+    "2026-09-02"
+  ]
+}

@@ -82,7 +82,7 @@ PUBLICATION_COLUMN = {"on_rrp_rate": "announcement_date", "srf_rate": "announcem
                       "runoff_caps": "announcement_date", "announced_pace": "announcement_date",
                       "agency_securities": "release_date",
                       "h8_groups": "release_date", "slr_headroom": "latest_update",
-                      "rca_anchor": "latest_update", "rde": "available_from"}
+                      "rca_anchor": "latest_update", "rde": "available_from", "pd_fails": "available_from"}
 
 
 class LockedTierTests(unittest.TestCase):
@@ -250,6 +250,28 @@ class SlrHeadroomSnapshotTests(unittest.TestCase):
     def test_the_snapshot_holds_no_figure_updated_in_a_locked_tier(self):
         manifest = snapshots.load_manifest("slr_headroom")
         self.assertFalse(development.is_locked(date.fromisoformat(manifest["last_update"][:10])))
+
+
+class PdFailsSnapshotTests(unittest.TestCase):
+    """#209: the fails snapshot is the extract with the instant each week is public, and says what it was cut from."""
+
+    def test_each_row_carries_the_publication_instant_of_the_declaration(self):
+        from repo_liquidity import pd_fails
+
+        rows = snapshots.read("pd_fails")
+        self.assertEqual(list(rows[0]), list(snapshots.PD_FAILS_COLUMNS))
+        self.assertEqual(len(rows), len(pd_fails.load_extract()))
+        for row in rows:
+            as_of = date.fromisoformat(row["as_of_date"])
+            self.assertEqual(row["available_from"], pd_fails.published_instant(as_of).isoformat())
+
+    def test_the_manifest_names_the_export_and_the_withheld_week_and_the_vintage_caveat(self):
+        manifest = snapshots.load_manifest("pd_fails")
+        self.assertEqual(manifest["withheld_weeks"], ["2026-09-02"])
+        self.assertEqual(manifest["last_effective"], "2026-08-26")
+        self.assertEqual(manifest["source_export"]["export_sha256"],
+                         "c98524ef8e4850efad54b979f26561e1641a62aeda009de9cdf240bbd4c9764b")
+        self.assertIn("no vintages", manifest["vintage_note"])
 
 
 class RcaAnchorSnapshotTests(unittest.TestCase):

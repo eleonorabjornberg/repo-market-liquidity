@@ -1,0 +1,27 @@
+{
+  "development_end": "2026-09-03",
+  "export_byte_count": 26737886,
+  "export_path": "tests/fixtures/snapshots/funding_inputs/nyfed_fr2004/20260914T003100Z_c98524ef8e48.csv",
+  "export_retrieved_at": "2026-09-14T00:31:00.991705+00:00",
+  "export_sha256": "c98524ef8e4850efad54b979f26561e1641a62aeda009de9cdf240bbd4c9764b",
+  "extract_byte_count": 45058,
+  "extract_sha256": "e90555d3fdfd43e6201b591735d4462de4d09a83e793256f1fa5e4d0a3f18555",
+  "kept": "the lines of PDFTD-UST and PDFTR-UST, copied byte for byte, less every week published on a day the parent's lockbox holds",
+  "parent_commit": "2032de4a7d7802289bc5a78dfc02599752bc7c5c",
+  "series": {
+    "PDFTD-UST": {
+      "first": "2013-04-03",
+      "last": "2026-08-26",
+      "rows": 700
+    },
+    "PDFTR-UST": {
+      "first": "2013-04-03",
+      "last": "2026-08-26",
+      "rows": 700
+    }
+  },
+  "url": "https://markets.newyorkfed.org/api/pd/get/all/timeseries.csv",
+  "withheld_weeks": [
+    "2026-09-02"
+  ]
+}
