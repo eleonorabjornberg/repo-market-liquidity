@@ -1,0 +1,25 @@
+{
+  "all_days": {
+    "days": 2101,
+    "distinct": 27,
+    "maximum": 85.0,
+    "minimum": 0.0,
+    "missing": 2,
+    "modal_share": 0.174679,
+    "modal_value": 8.0
+  },
+  "calendar_clean_days": {
+    "days": 1524,
+    "distinct": 17,
+    "maximum": 24.0,
+    "minimum": 0.0,
+    "missing": 1,
+    "modal_share": 0.174541,
+    "modal_value": 8.0
+  },
+  "calendar_days_dropped": 578,
+  "column": "sofr_p75_p25_bp",
+  "first_day": "2018-04-04",
+  "last_day": "2026-09-03",
+  "scored": false
+}
