@@ -146,10 +146,12 @@ Any candidate reads the calendar at the target day, and where it fits on days it
 | M5 | The primary candidate is chosen by v1 §7 and registered (her attested action). |
 | M6 | Checkpoints at 60, 125 and 250 confirmation days. |
 
+M1's estimator is declared in `docs/research/dispersion-estimator.md` (step 2, #210).
+
 **The variant count** (v1 §10) is carried, not reset. From the records: **12 estimators in play, 10 of them variants** (A's B and
 six variants, C and four variants); D and its four variants were declared and dropped under #142 and are listed, not counted in
 play; the count "from Stages 2 to 6's records" is stated by no record (`docs/research/h7-step5.md`, "The variant count"). **This step
-adds none:** it declares inputs, not estimators. Every estimator step 2 or M2 declares adds to the count, a not-scorable one included
+adds none:** it declares inputs, not estimators. Step 2 (#210) adds one, W1, so the count in play is 13, 11 of them variants. Every estimator step 2 or M2 declares adds to the count, a not-scorable one included
 (the default of `docs/stages/h7-step5.md` section 6, Q4).
 
 ## 5. How it differs from what was tried
