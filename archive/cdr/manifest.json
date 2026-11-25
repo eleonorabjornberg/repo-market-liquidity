@@ -53,7 +53,7 @@
       "sha256": "0a375473d58c54c026ba9cc755347934f30d5629d0959ff1100a1b976994e1ad",
       "size": 5981781,
       "first_retrieved_utc": "2026-11-16T15:45:07Z",
-      "last_checked_utc": "2026-11-24T17:43:37Z"
+      "last_checked_utc": "2026-11-25T17:12:03Z"
     },
     {
       "quarter": "2026-09-30",
@@ -63,7 +63,7 @@
       "sha256": "ffe883452f64557941c6cfa6eb4db697f9cb946fb458f714ab01f9de2924a3a2",
       "size": 5481556,
       "first_retrieved_utc": "2026-11-16T15:45:07Z",
-      "last_checked_utc": "2026-11-24T17:43:37Z"
+      "last_checked_utc": "2026-11-25T17:12:03Z"
     }
   ]
 }
